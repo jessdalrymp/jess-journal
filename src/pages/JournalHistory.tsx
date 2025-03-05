@@ -7,11 +7,13 @@ import { useUserData } from "../context/UserDataContext";
 import { JournalEntry } from "../lib/types";
 import { ArrowLeft } from "lucide-react";
 import { ActionButton } from "../components/ui/ActionButton";
+import { useNavigate } from "react-router-dom";
 
 const JournalHistory = () => {
   const { user } = useAuth();
   const { journalEntries } = useUserData();
   const [sortedEntries, setSortedEntries] = useState<JournalEntry[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Sort entries by date (newest first)
@@ -20,6 +22,10 @@ const JournalHistory = () => {
     );
     setSortedEntries(sorted);
   }, [journalEntries]);
+
+  const handleEntryClick = (entry: JournalEntry) => {
+    navigate(`/journal-entry/${entry.id}`, { state: { entry } });
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
@@ -41,7 +47,11 @@ const JournalHistory = () => {
           {sortedEntries.length > 0 ? (
             <div className="space-y-4">
               {sortedEntries.map((entry) => (
-                <div key={entry.id} className="border border-jess-subtle p-4 rounded-lg hover:border-jess-primary transition-colors">
+                <div 
+                  key={entry.id} 
+                  className="border border-jess-subtle p-4 rounded-lg hover:border-jess-primary transition-colors cursor-pointer"
+                  onClick={() => handleEntryClick(entry)}
+                >
                   <h3 className="text-lg font-medium mb-1">{entry.title}</h3>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-jess-muted">

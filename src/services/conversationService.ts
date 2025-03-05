@@ -1,3 +1,4 @@
+
 import { ConversationSession, ChatMessage } from '../lib/types';
 import { supabase } from '../integrations/supabase/client';
 import { getCurrentConversationFromStorage, saveCurrentConversationToStorage } from '../lib/storageUtils';
@@ -194,7 +195,7 @@ export const saveConversationSummary = async (
         prompt: title || 'Conversation Summary',
         content: summary || 'No summary available',
         conversation_id: conversationId,
-        type: 'story_summary'
+        type: 'story_summary' as 'journal' | 'story' | 'sideQuest' | 'action'
       });
     
     if (error) {
@@ -205,7 +206,10 @@ export const saveConversationSummary = async (
     // Also update the conversations table with the summary
     const { error: updateError } = await supabase
       .from('conversations')
-      .update({ summary: summary || 'No summary available' })
+      .update({ 
+        summary: summary || 'No summary available',
+        title: title || 'Conversation Summary'
+      })
       .eq('id', conversationId);
     
     if (updateError) {
@@ -217,6 +221,7 @@ export const saveConversationSummary = async (
     const cachedConversation = getCurrentConversationFromStorage('story');
     if (cachedConversation && cachedConversation.id === conversationId) {
       cachedConversation.summary = summary || 'No summary available';
+      cachedConversation.title = title || 'Conversation Summary';
       saveCurrentConversationToStorage(cachedConversation);
     }
     
