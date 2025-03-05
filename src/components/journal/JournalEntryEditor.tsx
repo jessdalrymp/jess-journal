@@ -11,26 +11,59 @@ export const JournalEntryEditor = ({ content, onChange }: JournalEntryEditorProp
   const [cleanedContent, setCleanedContent] = useState(content);
 
   useEffect(() => {
-    // Remove triple backticks when displaying in the editor
+    // Remove triple backticks and curly braces when displaying in the editor
     const jsonCodeBlockRegex = /^```json\s*([\s\S]*?)```$/;
     const match = content.match(jsonCodeBlockRegex);
     
     if (match && match[1]) {
-      setCleanedContent(match[1].trim());
+      try {
+        // Try to parse the JSON and display its contents directly
+        const parsedJson = JSON.parse(match[1].trim());
+        
+        // Create formatted content from the parsed JSON properties
+        let formattedContent = '';
+        if (parsedJson.title) {
+          formattedContent += `Title: ${parsedJson.title}\n\n`;
+        }
+        if (parsedJson.summary) {
+          formattedContent += `Summary: ${parsedJson.summary}`;
+        }
+        
+        setCleanedContent(formattedContent);
+      } catch (e) {
+        // If parsing fails, just use the content without code blocks
+        setCleanedContent(match[1].trim());
+      }
     } else {
       setCleanedContent(content);
     }
   }, [content]);
 
   const handleChange = (newValue: string) => {
-    // When saving, ensure we're preserving the code block format if needed
-    const jsonRegex = /^\s*\{\s*"title".*"summary".*\}\s*$/s;
+    // When saving, we need to convert the text back to JSON format
+    const titleMatch = newValue.match(/Title:\s*(.*?)(?:\n\n|\n(?=Summary:)|$)/s);
+    const summaryMatch = newValue.match(/Summary:\s*([\s\S]*?)$/s);
     
-    if (jsonRegex.test(newValue)) {
-      // It's valid JSON, so wrap it with code blocks if it wasn't already wrapped
-      onChange(`\`\`\`json\n${newValue}\n\`\`\``);
+    const title = titleMatch ? titleMatch[1].trim() : '';
+    const summary = summaryMatch ? summaryMatch[1].trim() : '';
+    
+    if (title || summary) {
+      // Convert back to JSON format
+      const jsonObj = {
+        title: title || undefined,
+        summary: summary || undefined
+      };
+      
+      // Remove undefined properties
+      Object.keys(jsonObj).forEach(key => 
+        jsonObj[key] === undefined && delete jsonObj[key]
+      );
+      
+      // Format as JSON with code blocks
+      const jsonString = JSON.stringify(jsonObj, null, 2);
+      onChange(`\`\`\`json\n${jsonString}\n\`\`\``);
     } else {
-      // Not JSON format, pass as is
+      // Not in our expected format, pass as is
       onChange(newValue);
     }
   };
