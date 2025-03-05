@@ -1,7 +1,8 @@
 
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User, LogOut } from 'lucide-react';
+import { User, LogOut, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const Header = () => {
   const { user, signOut } = useAuth();
@@ -14,26 +15,36 @@ export const Header = () => {
           JESS
         </h1>
       </div>
-      
-      {user && (
-        <div className="flex items-center space-x-6">
-          <button
-            className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors"
-            onClick={() => {}}
-          >
-            <User size={20} className="mr-2" />
-            <span className="font-medium">Profile</span>
-          </button>
-          
-          <button
-            onClick={() => signOut()}
-            className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors"
-          >
-            <LogOut size={20} className="mr-2" />
-            <span className="font-medium">Sign Out</span>
-          </button>
-        </div>
-      )}
+
+      <div className="flex items-center space-x-6">
+        <Link 
+          to="/"
+          className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors"
+        >
+          <Home size={20} className="mr-2" />
+          <span className="font-medium">Home</span>
+        </Link>
+        
+        {user && (
+          <>
+            <Link
+              to="/account"
+              className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors"
+            >
+              <User size={20} className="mr-2" />
+              <span className="font-medium">Profile</span>
+            </Link>
+            
+            <button
+              onClick={() => signOut()}
+              className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors"
+            >
+              <LogOut size={20} className="mr-2" />
+              <span className="font-medium">Sign Out</span>
+            </button>
+          </>
+        )}
+      </div>
     </header>
   );
 };
