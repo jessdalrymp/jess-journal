@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { useUserData } from '../../context/UserDataContext';
 import { ActionButton } from '../ui/ActionButton';
@@ -67,11 +66,9 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
   useEffect(() => {
     const initializeChat = async () => {
       try {
-        // Start a new conversation session
         const newSession = await startConversation(type);
         setSession(newSession);
         
-        // Add initial AI message
         const initialMessage = getInitialMessage(type);
         await addMessageToConversation(
           newSession.id,
@@ -79,7 +76,6 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
           'assistant'
         );
         
-        // Update the local state
         setSession(prev => {
           if (!prev) return null;
           
@@ -110,7 +106,6 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
     initializeChat();
   }, []);
   
-  // Scroll to bottom when messages change
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -125,10 +120,8 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
     setLoading(true);
     
     try {
-      // Add user message
       await addMessageToConversation(session.id, userMessage, 'user');
       
-      // Update local state immediately for user message
       setSession(prev => {
         if (!prev) return null;
         
@@ -146,16 +139,12 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
         };
       });
       
-      // Simulate AI thinking
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Get AI response (mocked for now, will be replaced with actual AI)
       const aiResponse = mockAIResponse(userMessage, type);
       
-      // Add AI response
       await addMessageToConversation(session.id, aiResponse, 'assistant');
       
-      // Update local state for AI response
       setSession(prev => {
         if (!prev) return null;
         
@@ -239,7 +228,9 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
             disabled={!message.trim() || loading}
             className="ml-2 w-10 h-10 p-0 rounded-full flex items-center justify-center"
             icon={<Send size={18} />}
-          />
+          >
+            <span className="sr-only">Send</span>
+          </ActionButton>
         </div>
       </div>
     </div>

@@ -127,7 +127,7 @@ export const SelfDiscoveryQuiz = ({ onComplete }: { onComplete: () => void }) =>
       const profileData = {
         growthStage: answers['growth-stage'] as string,
         challenges: answers['challenges'] as string[],
-        mindsetPatterns: answers['mindset'] as string,
+        mindsetPatterns: [answers['mindset'] as string], // Convert to array to match the UserProfile type
         learningStyle: answers['learning-style'] as string,
         supportNeeds: answers['support-needs'] as string[],
         completedOnboarding: true

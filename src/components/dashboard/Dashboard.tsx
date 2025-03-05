@@ -31,7 +31,7 @@ export const Dashboard = () => {
     <div className="max-w-4xl mx-auto p-4 md:p-6">
       <div className="mb-6">
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-2xl font-medium">Welcome, {profile?.name || 'Friend'}</h2>
+          <h2 className="text-2xl font-medium">Welcome, Friend</h2>
           <JournalHistory />
         </div>
         <p className="text-jess-muted">
