@@ -111,23 +111,25 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
   return (
     <div className="flex flex-col h-full">
       <ChatHeader type={type} onBack={handleBack} />
-      <div className="flex items-center justify-center border-b border-jess-subtle py-2 px-4">
-        <ActionButton 
-          onClick={handleEndConversation}
-          type="primary"
-          className="px-4 py-2 text-sm"
-          icon={<Flag className="h-4 w-4" />}
-        >
-          End Conversation
-        </ActionButton>
-      </div>
-      <ChatMessageList messages={session.messages || []} />
-      {loading && (
-        <div className="px-4 py-2 bg-gray-100 border-t border-jess-subtle flex items-center">
-          <Loader2 className="h-5 w-5 mr-2 animate-spin text-primary" />
-          <span className="text-sm font-medium">Jess is thinking...</span>
+      <div className="flex-1 relative">
+        <ChatMessageList messages={session.messages || []} />
+        {loading && (
+          <div className="px-4 py-2 bg-gray-100 border-t border-jess-subtle flex items-center">
+            <Loader2 className="h-5 w-5 mr-2 animate-spin text-primary" />
+            <span className="text-sm font-medium">Jess is thinking...</span>
+          </div>
+        )}
+        <div className="absolute bottom-4 right-4">
+          <ActionButton 
+            onClick={handleEndConversation}
+            type="primary"
+            className="shadow-md"
+            icon={<Flag className="h-4 w-4" />}
+          >
+            End Conversation
+          </ActionButton>
         </div>
-      )}
+      </div>
       <ChatInput onSendMessage={sendMessage} loading={loading} />
     </div>
   );
