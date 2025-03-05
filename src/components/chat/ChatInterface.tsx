@@ -12,6 +12,7 @@ import { ChatErrorState } from './ChatErrorState';
 import { ChatUnauthenticatedState } from './ChatUnauthenticatedState';
 import { ChatEndDialog } from './ChatEndDialog';
 import { ChatFooter } from './ChatFooter';
+import { clearCurrentConversationFromStorage } from '@/lib/storageUtils';
 
 interface ChatInterfaceProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
@@ -37,24 +38,31 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
   const handleEndConversation = async () => {
     setShowEndDialog(false);
     
-    if (type === 'story' && session && session.messages.length > 2) {
-      try {
-        toast({
-          title: "Saving conversation...",
-          description: "We're storing your progress so you can continue later.",
-        });
-        await generateSummary();
-      } catch (error) {
-        console.error('Error generating summary:', error);
-        toast({
-          title: "Error saving conversation",
-          description: "There was a problem saving your progress.",
-          variant: "destructive"
-        });
+    try {
+      if (session && session.messages.length > 2) {
+        // Generate summary for story and sideQuest conversations
+        if (type === 'story' || type === 'sideQuest') {
+          toast({
+            title: "Saving conversation...",
+            description: "We're storing your progress to journal history.",
+          });
+          await generateSummary();
+        }
       }
+      
+      // Always clear the conversation cache
+      clearCurrentConversationFromStorage(type);
+      
+      onBack();
+    } catch (error) {
+      console.error('Error ending conversation:', error);
+      toast({
+        title: "Error saving conversation",
+        description: "There was a problem saving your progress.",
+        variant: "destructive"
+      });
+      onBack();
     }
-    
-    onBack();
   };
 
   if (!user) {
@@ -95,7 +103,7 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
         )}
       </div>
       <ChatInput onSendMessage={sendMessage} loading={loading} />
-      <ChatFooter onEndChat={openEndDialog} />
+      <ChatFooter onEndChat={openEndDialog} type={type} />
       <ChatEndDialog 
         open={showEndDialog} 
         onOpenChange={setShowEndDialog} 

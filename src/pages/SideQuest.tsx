@@ -5,6 +5,7 @@ import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { ChatInterface } from "../components/chat/ChatInterface";
 import { useNavigate } from "react-router-dom";
 import { WelcomeModal } from "../components/chat/WelcomeModal";
+import { clearCurrentConversationFromStorage } from "../lib/storageUtils";
 
 const SideQuest = () => {
   const [showWelcome, setShowWelcome] = useState(false);
@@ -18,9 +19,14 @@ const SideQuest = () => {
       localStorage.setItem("hasVisitedSideQuestPage", "true");
     }
     
-    // Always remove any existing side quest conversation to start fresh
-    localStorage.removeItem("currentConversation_sideQuest");
+    // Always clear any existing side quest conversation to start fresh
+    clearCurrentConversationFromStorage('sideQuest');
   }, []);
+
+  const handleBack = () => {
+    clearCurrentConversationFromStorage('sideQuest');
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
@@ -30,7 +36,7 @@ const SideQuest = () => {
         <div className="bg-white rounded-lg shadow-sm h-[calc(100vh-260px)]">
           <ChatInterface 
             type="sideQuest" 
-            onBack={() => navigate('/')} 
+            onBack={handleBack} 
           />
         </div>
       </main>

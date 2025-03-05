@@ -21,7 +21,7 @@ export const useGenerateSummary = () => {
     setLoading(true);
     
     try {
-      console.log("Generating summary for conversation...");
+      console.log(`Generating summary for ${session.type} conversation...`);
       if (!session.messages || session.messages.length <= 2) {
         console.log("Not enough messages to summarize");
         setLoading(false);
@@ -55,15 +55,21 @@ export const useGenerateSummary = () => {
         console.log("Summary not in JSON format, using raw text");
       }
       
-      console.log("Saving summary to journal...", { userId: user.id, title, summary, sessionId: session.id });
+      console.log("Saving summary to journal...", { 
+        userId: user.id, 
+        title, 
+        summary, 
+        sessionId: session.id,
+        type: session.type 
+      });
       
-      await saveConversationSummary(user.id, title, summary, session.id);
+      await saveConversationSummary(user.id, title, summary, session.id, session.type);
       
       console.log("Summary saved to journal");
       
       toast({
         title: "Conversation Summarized",
-        description: "Your story has been saved to your journal.",
+        description: `Your ${session.type === 'story' ? 'story' : 'side quest'} has been saved to your journal.`,
         duration: 3000,
       });
       

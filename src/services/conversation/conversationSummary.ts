@@ -9,10 +9,11 @@ export const saveConversationSummary = async (
   userId: string, 
   title: string, 
   summary: string, 
-  conversationId: string
+  conversationId: string,
+  conversationType: 'story' | 'sideQuest' | 'action' | 'journal' = 'story'
 ): Promise<void> => {
   try {
-    console.log('Saving conversation summary with:', {
+    console.log(`Saving ${conversationType} summary with:`, {
       userId, 
       title: title || 'Conversation Summary', 
       summary: summary || 'No summary available', 
@@ -27,11 +28,11 @@ export const saveConversationSummary = async (
         prompt: title || 'Conversation Summary',
         content: summary || 'No summary available',
         conversation_id: conversationId,
-        type: 'story_summary' as 'journal' | 'story' | 'sideQuest' | 'action'
+        type: conversationType
       });
     
     if (error) {
-      console.error('Error saving conversation summary to journal_entries:', error);
+      console.error(`Error saving ${conversationType} summary to journal_entries:`, error);
       throw error;
     }
     
