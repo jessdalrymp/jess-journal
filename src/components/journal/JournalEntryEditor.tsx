@@ -72,7 +72,7 @@ export const JournalEntryEditor = ({
   };
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-4 overflow-hidden">
       {promptText && (
         <div className="bg-jess-subtle p-4 rounded-md italic text-gray-700">
           <p className="font-medium">Prompt: {promptText}</p>

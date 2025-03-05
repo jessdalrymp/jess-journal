@@ -29,7 +29,7 @@ export const JournalChallengeDisplay = ({
   isLoading
 }: JournalChallengeDisplayProps) => {
   return (
-    <div className="flex flex-col h-full overflow-auto">
+    <div className="flex flex-col h-full">
       <div className="flex items-center p-4 border-b">
         <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
           <ArrowLeft className="h-5 w-5" />
@@ -37,7 +37,7 @@ export const JournalChallengeDisplay = ({
         <h2 className="text-lg font-medium">Journal Challenge</h2>
       </div>
 
-      <div className="flex-1 p-6 overflow-auto">
+      <div className="flex-1 p-6">
         <div className="max-w-3xl mx-auto">
           <div className="mb-6 flex justify-between items-center">
             <Badge variant="outline" className="px-2.5 py-0.5 bg-jess-subtle text-jess-primary">
