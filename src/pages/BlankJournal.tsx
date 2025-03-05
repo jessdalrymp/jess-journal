@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
@@ -11,7 +10,6 @@ import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { JournalEntryEditor } from "@/components/journal/JournalEntryEditor";
-import { Input } from "@/components/ui/input";
 
 const BlankJournal = () => {
   const navigate = useNavigate();
@@ -111,10 +109,10 @@ const BlankJournal = () => {
         
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="mb-6">
-            <Input
+            <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="text-2xl font-semibold border-none px-0 py-0 h-auto text-gray-900 focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="text-2xl font-semibold border-none px-0 py-0 h-auto text-gray-900 focus-visible:outline-none w-full"
               placeholder="Enter title..."
             />
             <p className="text-sm text-jess-muted">
