@@ -25,7 +25,10 @@ const SideQuest = () => {
   }, []); // Empty dependency array to ensure this only runs once
 
   const handleBack = () => {
+    // Always clear conversation on exit
     clearCurrentConversationFromStorage('sideQuest');
+    // Set a new key to force remount if user returns
+    setKey(Date.now());
     navigate('/');
   };
 

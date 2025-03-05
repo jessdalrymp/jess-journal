@@ -29,7 +29,13 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
     if (error && error.includes('authentication')) {
       console.log('Authentication error detected in ChatInterface:', error);
     }
-  }, [error]);
+    
+    // Clean up function
+    return () => {
+      console.log(`ChatInterface unmounting for ${type}`);
+      // No need to clear the conversation here as it's handled in onBack
+    };
+  }, [error, type]);
 
   const openEndDialog = () => {
     // For sideQuest, handle ending directly without showing dialog
@@ -55,9 +61,8 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
         }
       }
       
-      // Always clear the conversation cache
-      clearCurrentConversationFromStorage(type);
-      
+      // Always let the parent component handle navigation and cleanup
+      // to ensure consistency
       onBack();
     } catch (error) {
       console.error('Error ending conversation:', error);

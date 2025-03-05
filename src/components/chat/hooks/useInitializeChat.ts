@@ -12,12 +12,20 @@ import {
 export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false); // Track initialization state
 
   const { startConversation, addMessageToConversation } = useUserData();
   const { user: authUser } = useAuth();
   const { toast } = useToast();
 
   const initializeChat = useCallback(async () => {
+    // Prevent multiple initializations
+    if (isInitialized) {
+      console.log("Chat already initialized, using existing session");
+      const existingSession = getCurrentConversationFromStorage(type);
+      return existingSession;
+    }
+
     try {
       setLoading(true);
       console.log("Initializing chat for type:", type);
@@ -43,6 +51,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           cachedConversation.messages.length >= 1
         ) {
           console.log('Using existing sideQuest conversation from cache');
+          setIsInitialized(true);
           setLoading(false);
           return cachedConversation;
         }
@@ -72,6 +81,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         };
         
         saveCurrentConversationToStorage(updatedSession);
+        setIsInitialized(true);
         setLoading(false);
         return updatedSession;
       }
@@ -166,7 +176,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
     } finally {
       setLoading(false);
     }
-  }, [type, authUser, addMessageToConversation, startConversation, toast]);
+  }, [type, authUser, addMessageToConversation, startConversation, toast, isInitialized]);
 
   return {
     initializeChat,
