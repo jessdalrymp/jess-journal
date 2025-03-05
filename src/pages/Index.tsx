@@ -8,7 +8,6 @@ import { SelfDiscoveryQuiz } from '../components/onboarding/SelfDiscoveryQuiz';
 import { Dashboard } from '../components/dashboard/Dashboard';
 import { Header } from '../components/Header';
 import { DisclaimerBanner } from '../components/ui/DisclaimerBanner';
-import { MoodCheck } from '../components/dashboard/MoodCheck';
 
 const AppContent = () => {
   const { user, loading: authLoading } = useAuth();

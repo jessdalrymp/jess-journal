@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { User, UserProfile, MoodType, MoodEntry, JournalEntry } from '../lib/types';
 import { UserData } from './types';
 import { useUserActions } from '../hooks/useUserActions';
@@ -39,7 +39,6 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
     if (user) {
       fetchProfile();
       fetchMoodEntries();
-      fetchJournalEntries();
     }
   }, [user]);
 
@@ -111,22 +110,28 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
     }
   };
 
-  const fetchJournalEntries = async () => {
+  // Memoize the fetchJournalEntries function to prevent infinite loops
+  const fetchJournalEntries = useCallback(async () => {
     if (!user) return;
     
+    if (isJournalFetched) {
+      // If we've already fetched journal entries, don't fetch again
+      console.log("Journal entries already fetched, skipping redundant fetch");
+      return journalEntries;
+    }
+    
     try {
-      console.log("Dashboard - Fetching journal entries for user:", user.id);
+      console.log("Fetching journal entries for user:", user.id);
       const entries = await journalActions.fetchJournalEntries(user.id);
       setJournalEntries(entries);
       setIsJournalFetched(true);
+      return entries;
     } catch (error) {
       console.error("Error fetching journal entries:", error);
       // Don't set empty array on error to prevent wiping existing entries
-      if (!isJournalFetched) {
-        setJournalEntries([]);
-      }
+      return journalEntries;
     }
-  };
+  }, [user, journalActions, journalEntries, isJournalFetched]);
 
   const startConversation = async (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
     if (!user) {
@@ -152,7 +157,7 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
       
       if (role === 'assistant') {
         // Refresh journal entries when assistant adds a message (might create a journal entry)
-        fetchJournalEntries();
+        setIsJournalFetched(false); // Reset the flag to force a refresh next time
       }
     } catch (error) {
       console.error('Error adding message to conversation:', error);

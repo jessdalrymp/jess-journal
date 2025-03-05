@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -11,24 +10,27 @@ export const Dashboard = () => {
   const { user } = useAuth();
   const { profile, journalEntries, fetchJournalEntries, loading } = useUserData();
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadedInitially, setHasLoadedInitially] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        if (user) {
+    // Only fetch once per component mount
+    if (!hasLoadedInitially && user) {
+      const loadUserData = async () => {
+        try {
           console.log("Dashboard - Loading journal entries for user:", user.id);
           await fetchJournalEntries();
+        } catch (error) {
+          console.error("Error loading dashboard data:", error);
+        } finally {
+          setIsLoading(false);
+          setHasLoadedInitially(true);
         }
-      } catch (error) {
-        console.error("Error loading dashboard data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      };
 
-    loadUserData();
-  }, [user, fetchJournalEntries]);
+      loadUserData();
+    }
+  }, [user, fetchJournalEntries, hasLoadedInitially]);
 
   // Get recent journal entries safely
   const recentEntries = [...(journalEntries || [])]
