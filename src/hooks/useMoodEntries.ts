@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MoodEntry, MoodType } from '../lib/types';
 import { getMoodEntriesFromStorage, saveMoodEntriesToStorage } from '../lib/storageUtils';
 
@@ -19,6 +19,10 @@ export const useMoodEntries = (userId: string | undefined) => {
       console.error('Error loading mood entries:', error);
     }
   };
+
+  useEffect(() => {
+    loadMoodEntries();
+  }, [userId]);
 
   const addMoodEntry = async (mood: MoodType, note?: string) => {
     if (!userId) throw new Error('User not authenticated');

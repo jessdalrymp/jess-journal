@@ -1,9 +1,8 @@
 
 import { useState } from 'react';
 import { useUserData } from '../../context/UserDataContext';
-import { ActionButton } from '../ui/ActionButton';
 import { useToast } from '@/hooks/use-toast';
-import { X, Plus } from 'lucide-react';
+import { X, Smile } from 'lucide-react';
 import { MoodType } from '@/lib/types';
 
 interface MoodOption {
@@ -20,7 +19,11 @@ const moodOptions: MoodOption[] = [
   { type: 'bad', emoji: '😔', label: 'Bad' },
 ];
 
-export const MoodCheck = () => {
+interface MoodCheckProps {
+  compact?: boolean;
+}
+
+export const MoodCheck = ({ compact = false }: MoodCheckProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedMood, setSelectedMood] = useState<MoodType | null>(null);
   const [note, setNote] = useState('');
@@ -72,6 +75,18 @@ export const MoodCheck = () => {
     }
   };
 
+  if (compact) {
+    return (
+      <button 
+        onClick={handleOpenModal}
+        className="bg-white/70 hover:bg-white/90 px-5 py-2 rounded-full flex items-center text-jess-foreground transition-colors border border-gray-200"
+      >
+        <Smile size={18} className="mr-2 text-jess-primary" />
+        <span>How are you today?</span>
+      </button>
+    );
+  }
+
   return (
     <>
       {!todaysMood ? (
@@ -82,7 +97,7 @@ export const MoodCheck = () => {
               <p className="text-sm text-jess-muted">Track your emotional state</p>
             </div>
             <div className="w-10 h-10 rounded-full bg-jess-subtle flex items-center justify-center">
-              <Plus size={20} className="text-jess-primary" />
+              <Smile size={20} className="text-jess-primary" />
             </div>
           </div>
         </div>
@@ -154,14 +169,13 @@ export const MoodCheck = () => {
             </div>
             
             <div className="flex justify-end">
-              <ActionButton
-                type="primary"
+              <button
                 onClick={handleSubmit}
                 disabled={!selectedMood || loading}
-                className="px-6 py-2"
+                className="bg-jess-secondary text-jess-foreground px-6 py-2 rounded-full hover:bg-jess-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Saving...' : 'Save'}
-              </ActionButton>
+              </button>
             </div>
           </div>
         </div>

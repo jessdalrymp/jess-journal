@@ -1,14 +1,13 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../context/UserDataContext';
-import { MoodCheck } from './MoodCheck';
 import { ChatInterface } from '../chat/ChatInterface';
-import { JournalHistory } from '../journal/JournalHistory';
-import { ActionButton } from '../ui/ActionButton';
-import { BookOpen, MessageSquare, Zap, PenLine, Smile } from 'lucide-react';
+import { Book, MessageSquare, Lightbulb, PenLine, Clock, History, User, ArrowRight } from 'lucide-react';
 
 export const Dashboard = () => {
-  const { profile } = useUserData();
+  const { user } = useAuth();
+  const { profile, journalEntries } = useUserData();
   const [activeChat, setActiveChat] = useState<'story' | 'sideQuest' | 'action' | 'journal' | null>(null);
 
   const handleStartChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
@@ -19,6 +18,11 @@ export const Dashboard = () => {
     setActiveChat(null);
   };
 
+  // Get recent journal entries
+  const recentEntries = [...journalEntries]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3);
+
   if (activeChat) {
     return (
       <div className="h-full">
@@ -28,96 +32,119 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-6">
-      <div className="mb-8 text-center">
-        <h1 className="text-4xl md:text-5xl font-cormorant mb-3">Your Growth Journey</h1>
-        <p className="text-jess-muted text-lg">
-          Choose a path to continue your personal transformation with JESS
-        </p>
-        <p className="text-sm text-jess-foreground/70 mt-2 font-light">
-          Rewrite your story, one conversation at a time.
-        </p>
-      </div>
+    <div className="max-w-7xl mx-auto p-4 md:p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Core Actions Section */}
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <h2 className="text-xl font-medium mb-5">Core Actions</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div 
+              onClick={() => handleStartChat('story')}
+              className="bg-jess-subtle rounded-lg p-5 flex flex-col items-center justify-center cursor-pointer hover:shadow-md transition-all"
+            >
+              <div className="text-jess-primary mb-3">
+                <Book size={24} />
+              </div>
+              <h3 className="text-center">My Story</h3>
+            </div>
+            
+            <div 
+              onClick={() => handleStartChat('sideQuest')}
+              className="bg-jess-subtle rounded-lg p-5 flex flex-col items-center justify-center cursor-pointer hover:shadow-md transition-all"
+            >
+              <div className="text-jess-primary mb-3">
+                <MessageSquare size={24} />
+              </div>
+              <h3 className="text-center">Side Quest</h3>
+            </div>
+            
+            <div 
+              onClick={() => handleStartChat('action')}
+              className="bg-jess-subtle rounded-lg p-5 flex flex-col items-center justify-center cursor-pointer hover:shadow-md transition-all"
+            >
+              <div className="text-jess-primary mb-3">
+                <Lightbulb size={24} />
+              </div>
+              <h3 className="text-center">Action Challenge</h3>
+            </div>
+            
+            <div 
+              onClick={() => handleStartChat('journal')}
+              className="bg-jess-subtle rounded-lg p-5 flex flex-col items-center justify-center cursor-pointer hover:shadow-md transition-all"
+            >
+              <div className="text-jess-primary mb-3">
+                <PenLine size={24} />
+              </div>
+              <h3 className="text-center">Journal Challenge</h3>
+            </div>
+          </div>
+        </div>
 
-      <div className="flex justify-center mb-8">
-        <button className="flex items-center gap-2 px-6 py-2 border border-jess-subtle/50 rounded-full hover:bg-jess-subtle/20 transition-colors">
-          <Smile size={18} />
-          <span>How are you feeling?</span>
-        </button>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-        <div className="bg-white rounded-2xl p-8 flex flex-col items-center text-center border border-jess-subtle/30 sketch-border">
-          <div className="w-16 h-16 bg-jess-accent rounded-full flex items-center justify-center mb-6">
-            <BookOpen className="text-jess-foreground" size={28} />
+        {/* Recent Activity Section */}
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="text-xl font-medium">Recent Activity</h2>
+            <button className="text-jess-primary text-sm">View All</button>
           </div>
-          <h3 className="font-cormorant text-2xl mb-3">My Story</h3>
-          <p className="text-jess-muted mb-6">
-            Begin a deep dive into your life story to gain better understanding of yourself.
-          </p>
-          <button 
-            onClick={() => handleStartChat('story')}
-            className="bg-jess-secondary text-jess-foreground px-8 py-2 rounded-full hover:bg-jess-secondary/80 transition-colors"
-          >
-            Begin
-          </button>
+          
+          <div className="flex flex-col items-center justify-center h-[220px]">
+            {recentEntries.length > 0 ? (
+              <div className="w-full space-y-3">
+                {recentEntries.map(entry => (
+                  <div key={entry.id} className="border border-jess-subtle p-3 rounded-lg">
+                    <h3 className="font-medium">{entry.title}</h3>
+                    <div className="text-sm text-jess-muted">
+                      {new Date(entry.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center">
+                <div className="text-jess-muted mb-2">
+                  <Clock size={48} className="mx-auto opacity-50" />
+                </div>
+                <p className="text-jess-muted mb-1">Your journal entries will appear here</p>
+                <p className="text-sm text-jess-muted">Start a conversation to begin</p>
+              </div>
+            )}
+          </div>
         </div>
         
-        <div className="bg-white rounded-2xl p-8 flex flex-col items-center text-center border border-jess-subtle/30 sketch-border">
-          <div className="w-16 h-16 bg-jess-accent rounded-full flex items-center justify-center mb-6">
-            <MessageSquare className="text-jess-foreground" size={28} />
+        {/* Journal History Section */}
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="text-xl font-medium">Journal History</h2>
+            <button className="text-jess-primary text-sm">View All</button>
           </div>
-          <h3 className="font-cormorant text-2xl mb-3">Side Quest</h3>
-          <p className="text-jess-muted mb-6">
-            Delve into a current issue you're working through to gain better self-understanding.
-          </p>
-          <button 
-            onClick={() => handleStartChat('sideQuest')}
-            className="bg-jess-secondary text-jess-foreground px-8 py-2 rounded-full hover:bg-jess-secondary/80 transition-colors"
+          
+          <div 
+            className="bg-jess-subtle rounded-lg p-4 flex items-center justify-between cursor-pointer hover:shadow-md transition-all"
+            onClick={() => {/* Open journal history */}}
           >
-            Begin
-          </button>
+            <div className="flex items-center">
+              <History size={20} className="text-jess-primary mr-3" />
+              <span>View your journal history</span>
+            </div>
+            <ArrowRight size={18} />
+          </div>
         </div>
         
-        <div className="bg-white rounded-2xl p-8 flex flex-col items-center text-center border border-jess-subtle/30 sketch-border">
-          <div className="w-16 h-16 bg-jess-accent rounded-full flex items-center justify-center mb-6">
-            <Zap className="text-jess-foreground" size={28} />
-          </div>
-          <h3 className="font-cormorant text-2xl mb-3">Action Challenge</h3>
-          <p className="text-jess-muted mb-6">
-            Get a personalized real-world challenge to create breakthrough moments.
-          </p>
-          <button 
-            onClick={() => handleStartChat('action')}
-            className="bg-jess-secondary text-jess-foreground px-8 py-2 rounded-full hover:bg-jess-secondary/80 transition-colors"
+        {/* Account Section */}
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <h2 className="text-xl font-medium mb-5">Account</h2>
+          
+          <div 
+            className="bg-jess-subtle rounded-lg p-4 flex items-center justify-between cursor-pointer hover:shadow-md transition-all"
+            onClick={() => {/* Open account settings */}}
           >
-            Begin
-          </button>
-        </div>
-        
-        <div className="bg-white rounded-2xl p-8 flex flex-col items-center text-center border border-jess-subtle/30 sketch-border">
-          <div className="w-16 h-16 bg-jess-accent rounded-full flex items-center justify-center mb-6">
-            <PenLine className="text-jess-foreground" size={28} />
+            <div className="flex items-center">
+              <User size={20} className="text-jess-primary mr-3" />
+              <span>Manage your account</span>
+            </div>
+            <ArrowRight size={18} />
           </div>
-          <h3 className="font-cormorant text-2xl mb-3">Journal Challenge</h3>
-          <p className="text-jess-muted mb-6">
-            Receive thought-provoking writing prompts for deeper self-reflection.
-          </p>
-          <button 
-            onClick={() => handleStartChat('journal')}
-            className="bg-jess-secondary text-jess-foreground px-8 py-2 rounded-full hover:bg-jess-secondary/80 transition-colors"
-          >
-            Begin
-          </button>
         </div>
-      </div>
-      
-      <div className="text-center mb-8 max-w-2xl mx-auto">
-        <p className="text-sm text-jess-muted leading-relaxed">
-          JESS helps you process your stories, reframe limiting beliefs, and take actionable 
-          steps toward real change — just like chatting with a wise, warm friend who guides 
-          you toward deeper awareness.
-        </p>
       </div>
     </div>
   );

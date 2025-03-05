@@ -1,8 +1,7 @@
 
 import { useState } from 'react';
 import { useUserData } from '../../context/UserDataContext';
-import { ActionButton } from '../ui/ActionButton';
-import { X, BookOpen, MessageSquare, Zap, PenLine } from 'lucide-react';
+import { X, BookOpen, MessageSquare, Zap, PenLine, ArrowRight, Clock, History } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 
 const getEntryIcon = (type: string) => {
@@ -63,13 +62,16 @@ export const JournalHistory = () => {
 
   return (
     <>
-      <ActionButton
-        type="ghost"
+      <div 
         onClick={handleOpenModal}
-        className="text-sm py-1 px-3"
+        className="bg-jess-subtle rounded-lg p-4 flex items-center justify-between cursor-pointer hover:shadow-md transition-all"
       >
-        Journal History
-      </ActionButton>
+        <div className="flex items-center">
+          <History size={20} className="text-jess-primary mr-3" />
+          <span>View your journal history</span>
+        </div>
+        <ArrowRight size={18} />
+      </div>
       
       {isOpen && (
         <div className="fixed inset-0 bg-black/25 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
@@ -108,13 +110,12 @@ export const JournalHistory = () => {
                   </div>
                   
                   <div className="mt-6">
-                    <ActionButton
-                      type="ghost"
+                    <button
                       onClick={handleBackToList}
-                      className="text-sm py-1 px-3"
+                      className="text-sm py-1 px-3 bg-transparent text-jess-foreground hover:bg-jess-subtle/50 rounded-full"
                     >
                       Back to list
-                    </ActionButton>
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -148,7 +149,9 @@ export const JournalHistory = () => {
                     ))
                   ) : (
                     <div className="text-center p-6 text-jess-muted">
-                      <p>Your journal history will appear here as you use the app.</p>
+                      <Clock size={48} className="mx-auto opacity-50 mb-2" />
+                      <p className="text-jess-muted mb-1">Your journal history will appear here</p>
+                      <p className="text-sm text-jess-muted">Start a conversation to begin</p>
                     </div>
                   )}
                 </div>

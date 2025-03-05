@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { JournalEntry } from '../lib/types';
 import { getJournalEntriesFromStorage, saveJournalEntriesToStorage } from '../lib/storageUtils';
 
@@ -19,6 +19,10 @@ export const useJournalEntries = (userId: string | undefined) => {
       console.error('Error loading journal entries:', error);
     }
   };
+  
+  useEffect(() => {
+    loadJournalEntries();
+  }, [userId]);
 
   const addJournalEntry = async (entry: Omit<JournalEntry, 'id' | 'userId' | 'createdAt'>) => {
     if (!userId) throw new Error('User not authenticated');
