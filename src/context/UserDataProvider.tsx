@@ -5,7 +5,7 @@ import { UserDataContext } from './UserDataContext';
 import { useUserData } from '../hooks/useUserData';
 import { useMoodActions } from '../hooks/useMoodActions';
 import { useJournalActions } from '../hooks/useJournalActions';
-import { useConversationActions } from '../hooks/useConversationActions';
+import { useConversationData } from '../hooks/useConversationData';
 import { useToast } from '@/hooks/use-toast';
 
 interface UserDataProviderProps {
@@ -28,12 +28,12 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   
   const moodActions = useMoodActions();
   const journalActions = useJournalActions();
-  const conversationActions = useConversationActions();
+  const { loading: conversationLoading, startConversation, addMessageToConversation } = useConversationData(user?.id);
   const { toast } = useToast();
   
   // Combined loading state
   const loading = userLoading || moodActions.loading || 
-                 journalActions.loading || conversationActions.loading;
+                 journalActions.loading || conversationLoading;
 
   useEffect(() => {
     if (user) {
@@ -90,40 +90,12 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   };
 
-  const startConversation = async (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
-    if (!user) {
-      throw new Error("User not authenticated");
-    }
-
-    try {
-      return await conversationActions.startConversation(user.id, type);
-    } catch (error) {
-      console.error(`Error starting ${type} conversation:`, error);
-      toast({
-        title: `Error starting ${type}`,
-        description: "Please try again later",
-        variant: "destructive"
-      });
-      throw error;
-    }
-  };
-
-  const addMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant') => {
-    try {
-      await conversationActions.addMessageToConversation(conversationId, content, role, user?.id);
-      
-      if (role === 'assistant') {
-        // Refresh journal entries when assistant adds a message (might create a journal entry)
-        setIsJournalFetched(false); // Reset the flag to force a refresh next time
-      }
-    } catch (error) {
-      console.error('Error adding message to conversation:', error);
-      toast({
-        title: "Error saving message",
-        description: "Your message might not have been saved",
-        variant: "destructive"
-      });
-      throw error;
+  const handleAddMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant') => {
+    const shouldRefreshJournal = await addMessageToConversation(conversationId, content, role);
+    
+    if (shouldRefreshJournal) {
+      // Reset the flag to force a refresh next time journal entries are requested
+      setIsJournalFetched(false); 
     }
   };
 
@@ -135,7 +107,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     fetchProfile,
     saveProfile,
     startConversation,
-    addMessageToConversation,
+    addMessageToConversation: handleAddMessageToConversation,
     moodEntries,
     addMoodEntry,
     journalEntries,
