@@ -54,6 +54,7 @@ export const JournalEntryEditor = ({
       
       // Remove undefined properties
       Object.keys(jsonObj).forEach(key => 
+        // @ts-ignore - we know the key exists on jsonObj
         jsonObj[key] === undefined && delete jsonObj[key]
       );
       
