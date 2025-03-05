@@ -1,4 +1,3 @@
-
 import { ChatMessage } from '@/lib/types';
 import { DeepseekMessage } from '../../utils/deepseekApi';
 
@@ -65,6 +64,19 @@ export const getSystemPrompt = (type: 'story' | 'sideQuest' | 'action' | 'journa
   }
 };
 
+export const getSummarySystemPrompt = (): string => {
+  return `You are a helpful summarization assistant. Create a concise summary of the conversation 
+  between a user and AI assistant. Focus on:
+  
+  1. Key themes discussed
+  2. Important insights or realizations
+  3. Main challenges identified
+  4. Any action items or goals mentioned
+  
+  Keep the summary under 200 words and written in third-person. Include a brief, engaging title that captures 
+  the essence of the conversation. Format the summary as JSON with "title" and "summary" fields.`;
+};
+
 export const getChatTitle = (type: 'story' | 'sideQuest' | 'action' | 'journal'): string => {
   switch (type) {
     case 'story':
@@ -87,6 +99,22 @@ export const formatMessagesForAI = (messages: ChatMessage[], type: 'story' | 'si
   };
   
   const formattedMessages: DeepseekMessage[] = messages.map(msg => ({
+    role: msg.role as 'user' | 'assistant',
+    content: msg.content
+  }));
+  
+  return [systemMessage, ...formattedMessages];
+};
+
+export const formatMessagesForSummary = (messages: ChatMessage[]): DeepseekMessage[] => {
+  const filteredMessages = messages.filter(msg => msg.content.trim().length > 0);
+  
+  const systemMessage: DeepseekMessage = {
+    role: 'system',
+    content: getSummarySystemPrompt()
+  };
+  
+  const formattedMessages: DeepseekMessage[] = filteredMessages.map(msg => ({
     role: msg.role as 'user' | 'assistant',
     content: msg.content
   }));

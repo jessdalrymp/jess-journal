@@ -8,6 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { saveConversationSummary } from '../../services/conversationService';
 
 interface ChatInterfaceProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
@@ -16,7 +17,7 @@ interface ChatInterfaceProps {
 
 export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
   const { user } = useAuth();
-  const { session, loading, error, sendMessage } = useChat(type);
+  const { session, loading, error, sendMessage, generateSummary } = useChat(type);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -25,6 +26,20 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
       console.log('Authentication error detected in ChatInterface:', error);
     }
   }, [error]);
+
+  // Handle leaving the chat
+  const handleBack = async () => {
+    // Only generate summaries for the story chat
+    if (type === 'story' && session && session.messages.length > 2) {
+      try {
+        await generateSummary();
+      } catch (error) {
+        console.error('Error generating summary:', error);
+      }
+    }
+    
+    onBack();
+  };
 
   // If user is not authenticated, show a sign-in prompt
   if (!user) {
@@ -93,7 +108,7 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
   
   return (
     <div className="flex flex-col h-full">
-      <ChatHeader type={type} onBack={onBack} />
+      <ChatHeader type={type} onBack={handleBack} />
       <ChatMessageList messages={session.messages || []} />
       {loading && (
         <div className="px-4 py-2 bg-gray-50 border-t border-jess-subtle">

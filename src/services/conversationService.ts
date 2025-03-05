@@ -1,4 +1,3 @@
-
 import { ConversationSession, ChatMessage } from '../lib/types';
 import { supabase } from '../integrations/supabase/client';
 import { getCurrentConversationFromStorage, saveCurrentConversationToStorage } from '../lib/storageUtils';
@@ -169,6 +168,52 @@ export const addMessageToConversation = async (
     }
   } catch (error) {
     console.error('Error adding message to conversation:', error);
+    throw error;
+  }
+};
+
+export const saveConversationSummary = async (
+  userId: string, 
+  title: string, 
+  summary: string, 
+  conversationId: string
+): Promise<void> => {
+  try {
+    // Save the summary to the journal_entries table
+    const { data, error } = await supabase
+      .from('journal_entries')
+      .insert({
+        user_id: userId,
+        prompt: title,
+        content: summary,
+        conversation_id: conversationId,
+        type: 'story_summary'
+      });
+    
+    if (error) {
+      console.error('Error saving conversation summary:', error);
+      throw error;
+    }
+    
+    // Also update the conversations table with the summary
+    const { error: updateError } = await supabase
+      .from('conversations')
+      .update({ summary: summary })
+      .eq('id', conversationId);
+    
+    if (updateError) {
+      console.error('Error updating conversation with summary:', updateError);
+      // Not throwing here as the journal entry was already created
+    }
+    
+    // Update the cached conversation if it exists
+    const cachedConversation = getCurrentConversationFromStorage('story');
+    if (cachedConversation && cachedConversation.id === conversationId) {
+      cachedConversation.summary = summary;
+      saveCurrentConversationToStorage(cachedConversation);
+    }
+  } catch (error) {
+    console.error('Error in saveConversationSummary:', error);
     throw error;
   }
 };
