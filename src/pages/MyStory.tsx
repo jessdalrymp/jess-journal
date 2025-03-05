@@ -149,8 +149,11 @@ const MyStory = () => {
       <DisclaimerBanner />
       
       <WelcomeModal 
-        isOpen={showWelcomeModal} 
-        onClose={handleCloseWelcomeModal} 
+        open={showWelcomeModal} 
+        onOpenChange={setShowWelcomeModal}
+        title="Welcome to Your Story" 
+        description="Let's get to know you better"
+        buttonText="Let's Begin"
         type="story"
       />
     </div>
