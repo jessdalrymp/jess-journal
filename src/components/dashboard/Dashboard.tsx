@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../context/UserDataContext';
@@ -45,26 +46,34 @@ export const Dashboard = () => {
     try {
       toast.loading("Creating blank journal entry...");
       
-      // Start a new journal conversation
-      const session = await startConversation('journal');
+      // Create a blank journal entry directly
+      const blankEntryContent = '```json\n{\n  "title": "Untitled Entry",\n  "summary": ""\n}\n```';
       
-      // Add a system message to create a blank entry
-      await addMessageToConversation(
-        session.id, 
-        "Creating a blank journal entry with default title and empty content.", 
-        'assistant'
+      if (!user) {
+        toast.dismiss();
+        toast.error("You need to be logged in to create an entry");
+        return;
+      }
+      
+      // Create the entry using the journal service
+      const newEntry = await journalService.saveJournalEntry(
+        user.id,
+        "New blank entry",
+        blankEntryContent
       );
       
-      // Find the created entry
-      const entries = await journalService.fetchJournalEntries(user.id);
-      const blankEntry = entries[0]; // Most recent entry should be at the top
+      if (!newEntry) {
+        toast.dismiss();
+        toast.error("Failed to create blank journal entry");
+        return;
+      }
       
       // Redirect to the journal entry page in edit mode
       toast.dismiss();
       toast.success("Created blank journal entry");
       
       // Navigate to the entry page with state indicating it should be in edit mode
-      navigate(`/journal-entry/${blankEntry.id}`, { state: { isEditing: true } });
+      navigate(`/journal-entry/${newEntry.id}`, { state: { isEditing: true } });
     } catch (error) {
       toast.dismiss();
       toast.error("Failed to create blank journal entry");
@@ -198,3 +207,4 @@ export const Dashboard = () => {
     </div>
   );
 };
+

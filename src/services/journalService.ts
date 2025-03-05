@@ -88,10 +88,16 @@ export const saveJournalEntry = async (userId: string | undefined, prompt: strin
       return null;
     }
 
+    // Try to parse content to get title
+    const parsedContent = parseContentWithJsonCodeBlock(data.content);
+    const title = parsedContent && parsedContent.title 
+      ? parsedContent.title 
+      : data.prompt.substring(0, 50) + (data.prompt.length > 50 ? '...' : '');
+
     const newEntry: JournalEntry = {
       id: data.id,
       userId: data.user_id,
-      title: data.prompt.substring(0, 50) + (data.prompt.length > 50 ? '...' : ''),
+      title: title,
       content: data.content,
       type: (data.type as 'journal' | 'story' | 'sideQuest' | 'action') || 'journal',
       createdAt: new Date(data.created_at)
