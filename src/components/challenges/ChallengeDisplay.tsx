@@ -24,7 +24,7 @@ export const ChallengeDisplay = ({
 }: ChallengeDisplayProps) => {
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-jess-subtle flex items-center">
+      <div className="p-3 border-b border-jess-subtle flex items-center">
         <Button 
           variant="ghost" 
           size="icon" 
@@ -36,7 +36,7 @@ export const ChallengeDisplay = ({
         <h2 className="text-xl font-medium">Action Challenge</h2>
       </div>
       
-      <div className="flex-grow p-5 flex flex-col">
+      <div className="flex-1 p-4 overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -45,26 +45,23 @@ export const ChallengeDisplay = ({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col h-full">
-            <div className="mb-4">
-              <h1 className="text-2xl font-bold mb-4">{challenge.title}</h1>
-              <h3 className="text-lg font-medium mb-2">Steps to complete:</h3>
-              <ol className="list-decimal pl-6 space-y-2">
-                {challenge.steps.map((step, index) => (
-                  <li key={index} className="text-base">{step}</li>
-                ))}
-              </ol>
-            </div>
-            <div className="mt-auto"></div>
+          <div>
+            <h1 className="text-2xl font-bold mb-3">{challenge.title}</h1>
+            <h3 className="text-lg font-medium mb-2">Steps to complete:</h3>
+            <ol className="list-decimal pl-6 space-y-1.5">
+              {challenge.steps.map((step, index) => (
+                <li key={index} className="text-base">{step}</li>
+              ))}
+            </ol>
           </div>
         )}
       </div>
       
-      <div className="mt-auto p-4 border-t border-jess-subtle flex justify-center gap-4">
+      <div className="p-3 border-t border-jess-subtle flex justify-center gap-4">
         <ActionButton 
           onClick={onAcceptChallenge}
           type="primary"
-          className="shadow-md px-6 py-3 text-base"
+          className="shadow-md px-5 py-2.5 text-base"
           icon={<CheckCircle className="h-5 w-5" />}
           disabled={isLoading}
         >
@@ -74,7 +71,7 @@ export const ChallengeDisplay = ({
         <ActionButton 
           onClick={onNewChallenge}
           type="secondary"
-          className="shadow-md px-6 py-3 text-base"
+          className="shadow-md px-5 py-2.5 text-base"
           icon={<RefreshCw className="h-5 w-5" />}
           disabled={isLoading}
         >
