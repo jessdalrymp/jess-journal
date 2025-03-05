@@ -1,9 +1,11 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { useUserData } from '../../context/UserDataContext';
 import { ActionButton } from '../ui/ActionButton';
 import { useToast } from '@/hooks/use-toast';
 import { Send, ArrowLeft } from 'lucide-react';
 import { ConversationSession, ChatMessage } from '@/lib/types';
+import { generateDeepseekResponse, DeepseekMessage } from '../../utils/deepseekApi';
 
 interface ChatInterfaceProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
@@ -13,7 +15,7 @@ interface ChatInterfaceProps {
 const getInitialMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal'): string => {
   switch (type) {
     case 'story':
-      return "I'd love to hear more about your story. What's a pivotal experience in your life that still holds emotional weight for you?";
+      return "Let's get to know you better. Tell me a pivotal story in your life that still holds emotional weight for you. It could be a moment that changed your perspective or a challenging experience that shaped who you are today.";
     case 'sideQuest':
       return "What specific challenge are you facing right now that you'd like to work through together?";
     case 'action':
@@ -25,10 +27,41 @@ const getInitialMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal'): 
   }
 };
 
+const getSystemPrompt = (type: 'story' | 'sideQuest' | 'action' | 'journal'): string => {
+  switch (type) {
+    case 'story':
+      return `You are Jess, an empathetic AI assistant focused on helping users explore their personal stories. 
+      Your goal is to guide users through a process of self-discovery following this structure:
+      
+      1. STORY EXPLORATION & THEMATIC ANALYSIS:
+        - Help users reflect on pivotal life experiences
+        - Ask layered, thoughtful questions about emotions and motivations
+        - Identify recurring themes and patterns in their narrative
+        - Point out potential limiting beliefs with sensitivity
+        
+      2. NAMING THE HARM & REFRAMING THE NARRATIVE:
+        - Gently challenge limiting beliefs when appropriate
+        - Encourage users to consider alternative perspectives
+        - Prompt users to rewrite their story from a more empowering angle
+      
+      Always:
+      - Focus on questions rather than solutions
+      - Be conversational and empathetic
+      - Adapt your approach based on the user's responses
+      - Remember details from previous exchanges
+      - Keep your responses concise (3-5 sentences max) and conversational
+      
+      Begin by asking about a pivotal story in their life that still holds emotional weight.`;
+    // ... Add cases for other conversation types if needed
+    default:
+      return "You are a helpful assistant.";
+  }
+};
+
 const getChatTitle = (type: 'story' | 'sideQuest' | 'action' | 'journal'): string => {
   switch (type) {
     case 'story':
-      return "My Story";
+      return "Let's Get to Know You";
     case 'sideQuest':
       return "Side Quest";
     case 'action':
@@ -40,27 +73,13 @@ const getChatTitle = (type: 'story' | 'sideQuest' | 'action' | 'journal'): strin
   }
 };
 
-const mockAIResponse = (message: string, type: string): string => {
-  if (type === 'story') {
-    return "Thank you for sharing that story with me. I can see how that experience has shaped your perspective. What emotions come up for you when you think about this event now?";
-  } else if (type === 'sideQuest') {
-    return "That's a challenging situation. Let's break it down together. What do you think is the core issue behind this challenge?";
-  } else if (type === 'action') {
-    return "Here's your personalized challenge: For the next 3 days, start your morning by writing down three things that bring you joy before checking your phone. Notice how this shifts your mindset throughout the day. This simple practice will help interrupt patterns of negative thinking that we've identified in our conversations. Are you up for it?";
-  } else if (type === 'journal') {
-    return "Today's journal prompt: Describe a moment when you felt truly alive and present. What were you doing? Who were you with? What sensations do you remember? Take 10 minutes to write freely without editing yourself.";
-  }
-  
-  return "I understand. Tell me more about how that makes you feel.";
-};
-
 export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
   const [message, setMessage] = useState('');
   const [session, setSession] = useState<ConversationSession | null>(null);
   const [loading, setLoading] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { startConversation, addMessageToConversation } = useUserData();
+  const { startConversation, addMessageToConversation, conversations } = useUserData();
   const { toast } = useToast();
   
   useEffect(() => {
@@ -112,6 +131,20 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
     }
   }, [session?.messages]);
   
+  const formatMessagesForAI = (messages: ChatMessage[]): DeepseekMessage[] => {
+    const systemMessage: DeepseekMessage = {
+      role: 'system',
+      content: getSystemPrompt(type)
+    };
+    
+    const formattedMessages: DeepseekMessage[] = messages.map(msg => ({
+      role: msg.role as 'user' | 'assistant',
+      content: msg.content
+    }));
+    
+    return [systemMessage, ...formattedMessages];
+  };
+  
   const handleSendMessage = async () => {
     if (!message.trim() || !session) return;
     
@@ -139,11 +172,22 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
         };
       });
       
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Get updated messages including the new user message
+      const updatedMessages = session.messages.concat({
+        id: Date.now().toString(),
+        role: 'user',
+        content: userMessage,
+        timestamp: new Date(),
+      });
       
-      const aiResponse = mockAIResponse(userMessage, type);
+      // Format messages for DeepSeek API
+      const aiMessages = formatMessagesForAI(updatedMessages);
       
-      await addMessageToConversation(session.id, aiResponse, 'assistant');
+      // Get AI response
+      const response = await generateDeepseekResponse(aiMessages);
+      const aiResponseText = response.choices[0].message.content;
+      
+      await addMessageToConversation(session.id, aiResponseText, 'assistant');
       
       setSession(prev => {
         if (!prev) return null;
@@ -154,8 +198,14 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
             ...prev.messages,
             {
               id: Date.now().toString(),
+              role: 'user',
+              content: userMessage,
+              timestamp: new Date(),
+            },
+            {
+              id: (Date.now() + 1).toString(),
               role: 'assistant',
-              content: aiResponse,
+              content: aiResponseText,
               timestamp: new Date(),
             },
           ],
@@ -198,7 +248,9 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
         {session.messages.map((msg: ChatMessage) => (
           <div
             key={msg.id}
-            className={msg.role === 'user' ? 'chat-message-user' : 'chat-message-ai'}
+            className={`${msg.role === 'user' ? 'chat-message-user' : 'chat-message-ai'} p-3 rounded-lg mb-2 ${
+              msg.role === 'user' ? 'bg-jess-primary bg-opacity-10 ml-auto max-w-[80%]' : 'bg-gray-100 mr-auto max-w-[80%]'
+            }`}
           >
             {msg.content}
           </div>
