@@ -92,7 +92,8 @@ export const saveProfile = async (userId: string | undefined, profileData: Parti
       learning_style: updatedProfile.learningStyle,
       communication_style: updatedProfile.communicationPreference,
       assessment_completed: updatedProfile.completedOnboarding,
-      email: currentProfile.email || ''
+      // Remove email reference since it doesn't exist in UserProfile type
+      email: '' // Using a default empty string since email is required in the Supabase schema
     };
 
     const { error } = await supabase
