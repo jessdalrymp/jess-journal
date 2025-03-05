@@ -32,7 +32,12 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
   }, [error]);
 
   const openEndDialog = () => {
-    setShowEndDialog(true);
+    // For sideQuest, handle ending directly without showing dialog
+    if (type === 'sideQuest') {
+      handleEndConversation();
+    } else {
+      setShowEndDialog(true);
+    }
   };
 
   const handleEndConversation = async () => {

@@ -31,6 +31,42 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         return null;
       }
       
+      // For sideQuest, always start a fresh conversation
+      if (type === 'sideQuest') {
+        // Make sure we don't use any cached conversation
+        console.log('Starting fresh sideQuest conversation');
+        try {
+          const conversation = await startConversation(type);
+          
+          // Add initial message from assistant
+          const initialMessage = getInitialMessage(type);
+          await addMessageToConversation(
+            conversation.id,
+            initialMessage,
+            'assistant' as const
+          );
+          
+          const updatedSession: ConversationSession = {
+            ...conversation,
+            messages: [
+              {
+                id: Date.now().toString(),
+                role: 'assistant' as const,
+                content: initialMessage,
+                timestamp: new Date(),
+              },
+            ],
+          };
+          
+          saveCurrentConversationToStorage(updatedSession);
+          return updatedSession;
+        } catch (err) {
+          console.error('Error starting fresh sideQuest conversation:', err);
+          throw err;
+        }
+      }
+      
+      // For other types, check for cached conversation first
       const cachedConversation = getCurrentConversationFromStorage(type);
       if (cachedConversation && cachedConversation.userId === authUser.id) {
         console.log(`Loaded ${type} conversation from localStorage`);

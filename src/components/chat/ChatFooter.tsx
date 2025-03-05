@@ -17,7 +17,7 @@ export const ChatFooter = ({ onEndChat, type }: ChatFooterProps) => {
         className="shadow-md px-6 py-3 text-base"
         icon={<LogOut className="h-5 w-5" />}
       >
-        Leave Conversation
+        {type === 'sideQuest' ? 'Save & Exit' : 'Leave Conversation'}
       </ActionButton>
     </div>
   );
