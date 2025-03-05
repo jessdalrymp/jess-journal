@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Header } from "../components/Header";
@@ -34,21 +33,19 @@ const JournalEntry = () => {
     }
   }, [id, location.state, journalEntries]);
 
-  // Function to safely render content with potential HTML
-  const renderContent = (content: string) => {
-    try {
-      // Replace markdown code blocks and backticks with proper formatting
-      const formattedContent = content
-        .replace(/```[a-z]*\n([\s\S]*?)```/g, '<pre class="bg-gray-100 p-4 rounded-md my-4 overflow-x-auto text-sm">$1</pre>')
-        .replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1 rounded text-sm">$1</code>')
-        // Convert URLs to links
-        .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-600 hover:underline">$1</a>');
+  // Function to render content with proper formatting for newlines
+  const renderContent = () => {
+    if (!entry) return null;
+    
+    // Split content by newlines and render each paragraph
+    return entry.content.split('\n').map((paragraph, index) => {
+      // If it's an empty line, render a break
+      if (!paragraph.trim()) {
+        return <br key={index} />;
+      }
       
-      return { __html: formattedContent };
-    } catch (error) {
-      console.error("Error rendering content:", error);
-      return { __html: content };
-    }
+      return <p key={index}>{paragraph}</p>;
+    });
   };
 
   if (loading) {
@@ -118,7 +115,7 @@ const JournalEntry = () => {
           </div>
           
           <div className="prose max-w-none">
-            <div dangerouslySetInnerHTML={renderContent(entry.content)} />
+            {renderContent()}
           </div>
         </div>
       </main>
