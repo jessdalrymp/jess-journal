@@ -111,6 +111,7 @@ export type Database = {
           mood: string | null
           prompt: string
           topic: string | null
+          type: string | null
           user_id: string
         }
         Insert: {
@@ -121,6 +122,7 @@ export type Database = {
           mood?: string | null
           prompt: string
           topic?: string | null
+          type?: string | null
           user_id: string
         }
         Update: {
@@ -131,6 +133,7 @@ export type Database = {
           mood?: string | null
           prompt?: string
           topic?: string | null
+          type?: string | null
           user_id?: string
         }
         Relationships: [
@@ -489,6 +492,7 @@ export type Database = {
           mood: string | null
           prompt: string
           topic: string | null
+          type: string | null
           user_id: string
         }[]
       }

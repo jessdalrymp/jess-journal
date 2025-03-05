@@ -1,4 +1,3 @@
-
 import { ConversationSession, ChatMessage } from '../lib/types';
 import { supabase } from '../integrations/supabase/client';
 import { getCurrentConversationFromStorage, saveCurrentConversationToStorage } from '../lib/storageUtils';
@@ -235,7 +234,8 @@ const saveJournalEntryFromConversation = async (userId: string, prompt: string, 
       .insert({
         user_id: userId,
         prompt,
-        content
+        content,
+        type: 'journal'
       });
 
     if (error) {
