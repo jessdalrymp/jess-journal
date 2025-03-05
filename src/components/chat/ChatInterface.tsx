@@ -1,22 +1,17 @@
+
 import React, { useEffect, useState } from 'react';
 import { useChat } from './useChat';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatInput } from './ChatInput';
-import { Loader2, Save } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { ActionButton } from '../ui/ActionButton';
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter
-} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { ChatLoadingState } from './ChatLoadingState';
+import { ChatErrorState } from './ChatErrorState';
+import { ChatUnauthenticatedState } from './ChatUnauthenticatedState';
+import { ChatEndDialog } from './ChatEndDialog';
+import { ChatFooter } from './ChatFooter';
 
 interface ChatInterfaceProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
@@ -26,7 +21,6 @@ interface ChatInterfaceProps {
 export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
   const { user } = useAuth();
   const { session, loading, error, sendMessage, generateSummary } = useChat(type);
-  const navigate = useNavigate();
   const [showEndDialog, setShowEndDialog] = useState(false);
   const { toast } = useToast();
   
@@ -35,10 +29,6 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
       console.log('Authentication error detected in ChatInterface:', error);
     }
   }, [error]);
-
-  const handleBack = async () => {
-    onBack();
-  };
 
   const openEndDialog = () => {
     setShowEndDialog(true);
@@ -68,51 +58,15 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
   };
 
   if (!user) {
-    return (
-      <div className="h-full flex flex-col">
-        <ChatHeader type={type} onBack={onBack} />
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="text-center">
-            <h3 className="text-lg font-medium mb-2">Sign In Required</h3>
-            <p className="text-gray-500 mb-4">Please sign in to access this feature.</p>
-            <Button onClick={() => navigate('/', { state: { openAuth: true } })} size="sm">
-              Sign In
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
+    return <ChatUnauthenticatedState type={type} onBack={onBack} />;
   }
   
   if (loading && !session) {
-    return (
-      <div className="h-full flex flex-col">
-        <ChatHeader type={type} onBack={onBack} />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-pulse flex items-center">
-            <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-            Loading conversation...
-          </div>
-        </div>
-      </div>
-    );
+    return <ChatLoadingState type={type} onBack={onBack} />;
   }
   
   if (error) {
-    return (
-      <div className="h-full flex flex-col">
-        <ChatHeader type={type} onBack={onBack} />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center p-6">
-            <p className="text-red-500 mb-2">Unable to load conversation</p>
-            <p className="text-sm text-gray-500 mb-4">{error}</p>
-            <Button onClick={onBack} size="sm" variant="outline">
-              Go Back
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
+    return <ChatErrorState type={type} onBack={onBack} error={error} />;
   }
   
   if (!session) {
@@ -130,7 +84,7 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
   
   return (
     <div className="flex flex-col h-full">
-      <ChatHeader type={type} onBack={handleBack} />
+      <ChatHeader type={type} onBack={onBack} />
       <div className="flex-1 relative">
         <ChatMessageList messages={session.messages || []} />
         {loading && (
@@ -141,36 +95,12 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
         )}
       </div>
       <ChatInput onSendMessage={sendMessage} loading={loading} />
-      
-      <div className="p-4 border-t border-jess-subtle flex justify-center">
-        <ActionButton 
-          onClick={openEndDialog}
-          type="primary"
-          className="shadow-md px-6 py-3 text-base"
-          icon={<Save className="h-5 w-5" />}
-        >
-          Leave Conversation
-        </ActionButton>
-      </div>
-
-      <Dialog open={showEndDialog} onOpenChange={setShowEndDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>End Conversation</DialogTitle>
-            <DialogDescription>
-              Good job today, we can join this conversation again next time.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEndDialog(false)}>
-              Continue Chatting
-            </Button>
-            <Button onClick={handleEndConversation}>
-              End For Now
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ChatFooter onEndChat={openEndDialog} />
+      <ChatEndDialog 
+        open={showEndDialog} 
+        onOpenChange={setShowEndDialog} 
+        onEndConversation={handleEndConversation} 
+      />
     </div>
   );
-}
+};
