@@ -20,10 +20,10 @@ export const ActionButton = ({
   disabled = false,
 }: ActionButtonProps) => {
   const baseClasses = cn(
-    'transition-all duration-300 rounded-xl flex items-center justify-center font-medium relative overflow-visible px-6 py-3',
+    'transition-all duration-300 rounded-xl flex items-center justify-center shadow-sm font-medium',
     {
       'bg-jess-primary text-white hover:bg-jess-primary/90': type === 'primary',
-      'bg-[#FFE8D6] text-jess-foreground hover:bg-[#FFE8D6]/80': type === 'secondary',
+      'bg-jess-subtle text-jess-foreground hover:bg-jess-subtle/80': type === 'secondary',
       'bg-transparent text-jess-foreground hover:bg-jess-subtle/50': type === 'ghost',
       'opacity-50 cursor-not-allowed': disabled,
     },
