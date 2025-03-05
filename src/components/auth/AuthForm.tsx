@@ -51,6 +51,10 @@ export const AuthForm = () => {
         <p className="text-jess-muted max-w-xl mx-auto mb-8">
           I made this program because I lost myself, and I had to find my way back alone.
         </p>
+        
+        <div className="inline-block bg-jess-primary text-white px-6 py-3 rounded-full font-medium mb-6">
+          jump to registration
+        </div>
       </div>
       
       <div className="card-base animate-fade-in border-2 border-black/10">
