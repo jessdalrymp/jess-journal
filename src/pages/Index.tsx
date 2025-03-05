@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../context/UserDataContext';
@@ -51,7 +52,7 @@ const AppContent = () => {
         <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center">
             <h1 className="text-2xl font-cormorant text-jess-primary mr-4">JESS</h1>
-            <p className="text-jess-muted">Hi, {user.displayName || 'User'}!</p>
+            <p className="text-jess-muted">Hi, {user.name || 'User'}!</p>
           </div>
           <div className="flex items-center gap-4">
             <MoodCheck compact />
