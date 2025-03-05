@@ -17,9 +17,10 @@ import { clearCurrentConversationFromStorage } from '@/lib/storageUtils';
 interface ChatInterfaceProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
   onBack: () => void;
+  onAcceptChallenge?: () => void;
 }
 
-export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
+export const ChatInterface = ({ type, onBack, onAcceptChallenge }: ChatInterfaceProps) => {
   const { user } = useAuth();
   const { session, loading, error, sendMessage, generateSummary } = useChat(type);
   const [showEndDialog, setShowEndDialog] = useState(false);
@@ -113,7 +114,7 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
         )}
       </div>
       <ChatInput onSendMessage={sendMessage} loading={loading} />
-      <ChatFooter onEndChat={openEndDialog} type={type} />
+      <ChatFooter onEndChat={openEndDialog} type={type} onAcceptChallenge={onAcceptChallenge} />
       <ChatEndDialog 
         open={showEndDialog} 
         onOpenChange={setShowEndDialog} 

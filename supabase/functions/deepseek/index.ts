@@ -29,6 +29,13 @@ serve(async (req) => {
       max_tokens: 1000
     };
 
+    // Log additional info for action challenges to help with debugging
+    if (messages && messages.some(m => 
+      m.content && typeof m.content === 'string' && 
+      m.content.includes('LGAT-style'))) {
+      console.log("Processing Action Challenge request with LGAT parameters");
+    }
+
     console.log("DeepSeek API request - system prompt preview:", 
       messages && messages.length > 0 && messages[0].role === 'system' 
         ? messages[0].content.substring(0, 100) + '...' 
