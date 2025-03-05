@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useUserData } from '../../context/UserDataContext';
 import { MoodCheck } from './MoodCheck';
@@ -32,7 +31,7 @@ export const Dashboard = () => {
       <div className="mb-10 text-center">
         <h1 className="text-4xl mb-2 text-jess-secondary">I made this program because I had to do all this for myself.</h1>
         <p className="text-jess-muted max-w-2xl mx-auto">
-          I made this program because I lost myself, and I had to find my way back alone.
+          I rewrote my story, one conversation at a time.
         </p>
       </div>
 
