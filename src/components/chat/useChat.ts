@@ -215,7 +215,7 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
     try {
       console.log("Generating summary for conversation...");
       // Only proceed if there are at least a few messages to summarize
-      if (session.messages.length <= 2) {
+      if (!session.messages || session.messages.length <= 2) {
         console.log("Not enough messages to summarize");
         return;
       }
@@ -224,8 +224,16 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       const aiMessages = formatMessagesForSummary(session.messages);
       
       // Get AI summary
+      console.log("Requesting AI summary...");
       const response = await generateDeepseekResponse(aiMessages);
-      let summaryText = response.choices[0].message.content;
+      
+      if (!response || !response.choices || !response.choices[0] || !response.choices[0].message) {
+        console.error("Received invalid response from AI service:", response);
+        throw new Error("Failed to generate summary: Invalid AI response");
+      }
+      
+      let summaryText = response.choices[0].message.content || "No summary available";
+      console.log("Received summary from AI:", summaryText);
       
       // Try to parse as JSON if it's in that format
       let title = "Conversation Summary";
@@ -236,6 +244,7 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
         if (jsonSummary.title && jsonSummary.summary) {
           title = jsonSummary.title;
           summary = jsonSummary.summary;
+          console.log("Parsed JSON summary:", { title, summary });
         }
       } catch (e) {
         // If not valid JSON, use the whole text as summary
@@ -243,6 +252,7 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       }
       
       // Save the summary to the user's journal
+      console.log("Saving summary to journal...", { userId: user.id, title, summary, sessionId: session.id });
       await saveConversationSummary(user.id, title, summary, session.id);
       
       console.log("Summary saved to journal");
@@ -261,6 +271,7 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
         title: "Error Saving Summary",
         description: "We couldn't save your conversation summary.",
         variant: "destructive",
+        duration: 5000,
       });
     }
   };

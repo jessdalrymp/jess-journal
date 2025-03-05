@@ -1,3 +1,4 @@
+
 import { ConversationSession, ChatMessage } from '../lib/types';
 import { supabase } from '../integrations/supabase/client';
 import { getCurrentConversationFromStorage, saveCurrentConversationToStorage } from '../lib/storageUtils';
@@ -179,26 +180,33 @@ export const saveConversationSummary = async (
   conversationId: string
 ): Promise<void> => {
   try {
+    console.log('Saving conversation summary with:', {
+      userId, 
+      title: title || 'Conversation Summary', // Provide default title
+      summary: summary || 'No summary available', // Provide default summary
+      conversationId
+    });
+    
     // Save the summary to the journal_entries table
     const { data, error } = await supabase
       .from('journal_entries')
       .insert({
         user_id: userId,
-        prompt: title,
-        content: summary,
+        prompt: title || 'Conversation Summary', // Use default if title is empty
+        content: summary || 'No summary available', // Use default if summary is empty
         conversation_id: conversationId,
         type: 'story_summary'
       });
     
     if (error) {
-      console.error('Error saving conversation summary:', error);
+      console.error('Error saving conversation summary to journal_entries:', error);
       throw error;
     }
     
     // Also update the conversations table with the summary
     const { error: updateError } = await supabase
       .from('conversations')
-      .update({ summary: summary })
+      .update({ summary: summary || 'No summary available' }) // Use default if summary is empty
       .eq('id', conversationId);
     
     if (updateError) {
@@ -209,9 +217,11 @@ export const saveConversationSummary = async (
     // Update the cached conversation if it exists
     const cachedConversation = getCurrentConversationFromStorage('story');
     if (cachedConversation && cachedConversation.id === conversationId) {
-      cachedConversation.summary = summary;
+      cachedConversation.summary = summary || 'No summary available'; // Use default if summary is empty
       saveCurrentConversationToStorage(cachedConversation);
     }
+    
+    console.log('Successfully saved conversation summary');
   } catch (error) {
     console.error('Error in saveConversationSummary:', error);
     throw error;
