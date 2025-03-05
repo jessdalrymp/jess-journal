@@ -148,6 +148,7 @@ const ActionChallenge = () => {
             onBack={handleBack}
             onAcceptChallenge={handleAcceptChallenge}
             onNewChallenge={handleGenerateNewChallenge}
+            onStartJournaling={handleStartJournaling}
             isLoading={isLoading}
           />
         </div>

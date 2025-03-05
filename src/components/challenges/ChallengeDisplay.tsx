@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, RefreshCw, CheckCircle } from "lucide-react";
+import { ArrowLeft, RefreshCw, CheckCircle, BookOpen } from "lucide-react";
 import { ActionButton } from "../ui/ActionButton";
 
 interface ChallengeDisplayProps {
@@ -12,6 +12,7 @@ interface ChallengeDisplayProps {
   onBack: () => void;
   onAcceptChallenge: () => void;
   onNewChallenge: () => void;
+  onStartJournaling?: () => void;
   isLoading: boolean;
 }
 
@@ -20,6 +21,7 @@ export const ChallengeDisplay = ({
   onBack, 
   onAcceptChallenge, 
   onNewChallenge,
+  onStartJournaling,
   isLoading 
 }: ChallengeDisplayProps) => {
   return (
@@ -67,6 +69,18 @@ export const ChallengeDisplay = ({
         >
           Accept Challenge
         </ActionButton>
+        
+        {onStartJournaling && (
+          <ActionButton 
+            onClick={onStartJournaling}
+            type="secondary"
+            className="shadow-md px-4 py-2 text-sm"
+            icon={<BookOpen className="h-4 w-4" />}
+            disabled={isLoading}
+          >
+            Journal
+          </ActionButton>
+        )}
         
         <ActionButton 
           onClick={onNewChallenge}
