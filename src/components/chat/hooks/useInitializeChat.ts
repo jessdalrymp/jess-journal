@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useUserData } from '../../../context/UserDataContext';
 import { useAuth } from '@/context/AuthContext';
@@ -31,55 +30,50 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         return null;
       }
       
-      // For sideQuest, we need to check if we're already in an initialization process
-      // to prevent infinite loops
+      // For sideQuest, handle special logic
       if (type === 'sideQuest') {
-        // Check for cached conversation first - if we have a valid one with just the initial message,
-        // we should use it to prevent infinite loops
+        // Check for cached conversation first
         const cachedConversation = getCurrentConversationFromStorage(type);
+        
+        // If we have a valid cached conversation with messages, use it
         if (
           cachedConversation && 
           cachedConversation.userId === authUser.id && 
           cachedConversation.messages && 
-          cachedConversation.messages.length === 1 && 
-          cachedConversation.messages[0].role === 'assistant'
+          cachedConversation.messages.length >= 1
         ) {
-          console.log('Using existing initialized sideQuest conversation');
+          console.log('Using existing sideQuest conversation from cache');
           setLoading(false);
           return cachedConversation;
         }
         
-        // If no valid cached conversation, start a fresh one
-        console.log('Starting fresh sideQuest conversation');
-        try {
-          const conversation = await startConversation(type);
-          
-          // Add initial message from assistant
-          const initialMessage = getInitialMessage(type);
-          await addMessageToConversation(
-            conversation.id,
-            initialMessage,
-            'assistant' as const
-          );
-          
-          const updatedSession: ConversationSession = {
-            ...conversation,
-            messages: [
-              {
-                id: Date.now().toString(),
-                role: 'assistant' as const,
-                content: initialMessage,
-                timestamp: new Date(),
-              },
-            ],
-          };
-          
-          saveCurrentConversationToStorage(updatedSession);
-          return updatedSession;
-        } catch (err) {
-          console.error('Error starting fresh sideQuest conversation:', err);
-          throw err;
-        }
+        // If no valid cached conversation or it was cleared, start a fresh one
+        console.log('No valid cached sideQuest conversation, creating new one');
+        const conversation = await startConversation(type);
+        
+        // Add initial message from assistant
+        const initialMessage = getInitialMessage(type);
+        await addMessageToConversation(
+          conversation.id,
+          initialMessage,
+          'assistant' as const
+        );
+        
+        const updatedSession: ConversationSession = {
+          ...conversation,
+          messages: [
+            {
+              id: Date.now().toString(),
+              role: 'assistant' as const,
+              content: initialMessage,
+              timestamp: new Date(),
+            },
+          ],
+        };
+        
+        saveCurrentConversationToStorage(updatedSession);
+        setLoading(false);
+        return updatedSession;
       }
       
       // For other types, check for cached conversation first

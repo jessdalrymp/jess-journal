@@ -18,10 +18,10 @@ const SideQuest = () => {
     if (!hasVisitedSideQuest) {
       setShowWelcome(true);
       localStorage.setItem("hasVisitedSideQuestPage", "true");
+      
+      // Only clear conversation cache on first visit
+      clearCurrentConversationFromStorage('sideQuest');
     }
-    
-    // Clear any existing side quest conversation to start fresh - but only once on mount
-    clearCurrentConversationFromStorage('sideQuest');
   }, []); // Empty dependency array to ensure this only runs once
 
   const handleBack = () => {
