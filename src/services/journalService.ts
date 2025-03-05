@@ -28,6 +28,8 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
   if (!userId) return [];
 
   try {
+    console.log('Fetching journal entries for user:', userId);
+    
     const { data, error } = await supabase
       .from('journal_entries')
       .select('*')
@@ -39,29 +41,33 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
       return [];
     }
 
-    if (data) {
-      const entries: JournalEntry[] = data.map(entry => {
-        // Try to parse the content as JSON
-        const parsedContent = parseContentWithJsonCodeBlock(entry.content);
-        
-        // Use the parsed title if available, otherwise use the prompt
-        const title = parsedContent && parsedContent.title 
-          ? parsedContent.title 
-          : entry.prompt.substring(0, 50) + (entry.prompt.length > 50 ? '...' : '');
-
-        return {
-          id: entry.id,
-          userId: entry.user_id,
-          title: title,
-          content: entry.content,
-          type: (entry.type as 'journal' | 'story' | 'sideQuest' | 'action') || 'journal',
-          createdAt: new Date(entry.created_at)
-        };
-      });
-      return entries;
+    if (!data || data.length === 0) {
+      console.log('No journal entries found for user:', userId);
+      return [];
     }
     
-    return [];
+    console.log(`Found ${data.length} journal entries`);
+
+    const entries: JournalEntry[] = data.map(entry => {
+      // Try to parse the content as JSON
+      const parsedContent = parseContentWithJsonCodeBlock(entry.content);
+      
+      // Use the parsed title if available, otherwise use the prompt
+      const title = parsedContent && parsedContent.title 
+        ? parsedContent.title 
+        : entry.prompt.substring(0, 50) + (entry.prompt.length > 50 ? '...' : '');
+
+      return {
+        id: entry.id,
+        userId: entry.user_id,
+        title: title,
+        content: entry.content,
+        type: (entry.type as 'journal' | 'story' | 'sideQuest' | 'action') || 'journal',
+        createdAt: new Date(entry.created_at)
+      };
+    });
+    
+    return entries;
   } catch (error) {
     console.error('Error processing journal entries:', error);
     return [];

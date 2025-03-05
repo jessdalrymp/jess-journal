@@ -28,8 +28,23 @@ const JournalHistory = () => {
   const [sortedEntries, setSortedEntries] = useState<JournalEntry[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState<JournalEntry | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Always refresh entries when component mounts
+    const loadEntries = async () => {
+      setIsLoading(true);
+      if (user) {
+        console.log("JournalHistory - Refreshing journal entries");
+        await fetchJournalEntries();
+      }
+      setIsLoading(false);
+    };
+    
+    loadEntries();
+  }, [user, fetchJournalEntries]);
 
   useEffect(() => {
     // Sort entries by date (newest first)
@@ -37,6 +52,7 @@ const JournalHistory = () => {
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
     setSortedEntries(sorted);
+    console.log(`JournalHistory - Sorted ${sorted.length} entries`);
   }, [journalEntries]);
 
   const handleEntryClick = (entry: JournalEntry) => {
@@ -118,7 +134,12 @@ const JournalHistory = () => {
         </div>
         
         <div className="bg-white rounded-lg shadow-sm p-6">
-          {sortedEntries.length > 0 ? (
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="w-8 h-8 border-2 border-t-jess-primary border-r-jess-primary border-b-jess-subtle border-l-jess-subtle rounded-full animate-spin mx-auto mb-3"></div>
+              <p className="text-jess-muted">Loading journal entries...</p>
+            </div>
+          ) : sortedEntries.length > 0 ? (
             <div className="space-y-4">
               {sortedEntries.map((entry) => (
                 <div 

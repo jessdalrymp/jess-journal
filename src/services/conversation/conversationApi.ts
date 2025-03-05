@@ -175,7 +175,7 @@ export const addMessageToConversation = async (
       
       // Import dynamically to avoid circular dependencies
       const { saveJournalEntryFromConversation } = await import('./journalIntegration');
-      await saveJournalEntryFromConversation(userId, prompt, content);
+      await saveJournalEntryFromConversation(userId, prompt, content, conversationData.type);
     }
   } catch (error) {
     console.error('Error adding message to conversation:', error);

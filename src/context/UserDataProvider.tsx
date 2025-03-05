@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { MoodType, MoodEntry, JournalEntry } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
@@ -74,7 +73,6 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     if (!user) return;
     
     if (isJournalFetched) {
-      // If we've already fetched journal entries, don't fetch again
       console.log("Journal entries already fetched, skipping redundant fetch");
       return;
     }
@@ -86,16 +84,27 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
       setIsJournalFetched(true);
     } catch (error) {
       console.error("Error fetching journal entries:", error);
-      // Don't set empty array on error to prevent wiping existing entries
     }
   };
 
   const handleAddMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant') => {
-    const shouldRefreshJournal = await addMessageToConversation(conversationId, content, role);
-    
-    if (shouldRefreshJournal) {
-      // Reset the flag to force a refresh next time journal entries are requested
-      setIsJournalFetched(false); 
+    try {
+      await addMessageToConversation(conversationId, content, role);
+      
+      if (role === 'assistant') {
+        setIsJournalFetched(false);
+        if (user) {
+          await fetchJournalEntries();
+        }
+      }
+    } catch (error) {
+      console.error('Error adding message to conversation:', error);
+      toast({
+        title: "Error saving message",
+        description: "Your message might not have been saved",
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
