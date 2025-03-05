@@ -4,11 +4,11 @@ import { useChat } from './useChat';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatInput } from './ChatInput';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { saveConversationSummary } from '../../services/conversationService';
+import { ActionButton } from '../ui/ActionButton';
 
 interface ChatInterfaceProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
@@ -29,7 +29,11 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
 
   // Handle leaving the chat
   const handleBack = async () => {
-    // Only generate summaries for the story chat
+    onBack();
+  };
+
+  // Handle ending the conversation and generating summary
+  const handleEndConversation = async () => {
     if (type === 'story' && session && session.messages.length > 2) {
       try {
         await generateSummary();
@@ -37,8 +41,6 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
         console.error('Error generating summary:', error);
       }
     }
-    
-    onBack();
   };
 
   // If user is not authenticated, show a sign-in prompt
@@ -109,6 +111,16 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
   return (
     <div className="flex flex-col h-full">
       <ChatHeader type={type} onBack={handleBack} />
+      <div className="flex items-center justify-center border-b border-jess-subtle py-2 px-4">
+        <ActionButton 
+          onClick={handleEndConversation}
+          type="primary"
+          className="px-4 py-2 text-sm"
+          icon={<Flag className="h-4 w-4" />}
+        >
+          End Conversation
+        </ActionButton>
+      </div>
       <ChatMessageList messages={session.messages || []} />
       {loading && (
         <div className="px-4 py-2 bg-gray-100 border-t border-jess-subtle flex items-center">
