@@ -32,6 +32,7 @@ const ActionChallenge = () => {
   const [showJournaling, setShowJournaling] = useState(false);
   const [challenge, setChallenge] = useState<Challenge>(DEFAULT_CHALLENGE);
   const [isLoading, setIsLoading] = useState(false);
+  const [challengeAccepted, setChallengeAccepted] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -50,6 +51,7 @@ const ActionChallenge = () => {
   };
 
   const handleAcceptChallenge = () => {
+    setChallengeAccepted(true);
     setShowSuccess(true);
   };
 
@@ -68,6 +70,7 @@ const ActionChallenge = () => {
       return;
     }
 
+    setChallengeAccepted(false);
     setIsLoading(true);
     try {
       const systemPrompt = `You are Jess, an AI life coach specializing in creating personalized growth challenges. 
@@ -131,9 +134,9 @@ const ActionChallenge = () => {
     }
   };
 
-  // Generate a challenge when the component mounts if the user is authenticated
+  // Generate a challenge when the component mounts if the user is authenticated and no challenge is accepted
   useEffect(() => {
-    if (user) {
+    if (user && !challengeAccepted) {
       handleGenerateNewChallenge();
     }
   }, [user]);
