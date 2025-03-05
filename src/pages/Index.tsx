@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../context/UserDataContext';
@@ -17,6 +16,7 @@ const AppContent = () => {
 
   useEffect(() => {
     if (!authLoading && !profileLoading && user && profile) {
+      // Only show onboarding if the user hasn't completed it before
       setShowOnboarding(!profile.completedOnboarding);
     }
   }, [user, profile, authLoading, profileLoading]);
@@ -38,10 +38,12 @@ const AppContent = () => {
     return <AuthForm />;
   }
 
+  // Only show onboarding if the user hasn't completed it yet
   if (showOnboarding) {
     return <SelfDiscoveryQuiz onComplete={() => setShowOnboarding(false)} />;
   }
 
+  // Otherwise, show the dashboard
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
