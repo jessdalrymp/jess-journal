@@ -21,10 +21,12 @@ interface ChatInterfaceProps {
 }
 
 export const ChatInterface = ({ type, onBack, onAcceptChallenge }: ChatInterfaceProps) => {
-  const { user } = useAuth();
-  const { session, loading, error, sendMessage, generateSummary } = useChat(type);
+  const { user, loading: authLoading } = useAuth();
+  const { session, loading: chatLoading, error, sendMessage, generateSummary } = useChat(type);
   const [showEndDialog, setShowEndDialog] = useState(false);
   const { toast } = useToast();
+  
+  const loading = authLoading || chatLoading;
   
   useEffect(() => {
     if (error && error.includes('authentication')) {
@@ -76,11 +78,17 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge }: ChatInterface
     }
   };
 
+  // First check if we're still loading auth
+  if (authLoading) {
+    return <ChatLoadingState type={type} onBack={onBack} />;
+  }
+  
+  // Then check if user is authenticated
   if (!user) {
     return <ChatUnauthenticatedState type={type} onBack={onBack} />;
   }
   
-  if (loading && !session) {
+  if (chatLoading && !session) {
     return <ChatLoadingState type={type} onBack={onBack} />;
   }
   

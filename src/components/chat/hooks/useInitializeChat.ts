@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useUserData } from '../../../context/UserDataContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -13,16 +13,28 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   const { startConversation, addMessageToConversation } = useUserData();
   const { user: authUser } = useAuth();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (authUser !== undefined) {
+      setAuthChecked(true);
+    }
+  }, [authUser]);
 
   const initializeChat = useCallback(async () => {
     if (isInitialized) {
       console.log("Chat already initialized, using existing session");
       const existingSession = getCurrentConversationFromStorage(type);
       return existingSession;
+    }
+
+    if (!authChecked) {
+      console.log("Auth status not yet checked, waiting...");
+      return null;
     }
 
     try {
@@ -37,7 +49,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         return null;
       }
       
-      if (type === 'sideQuest') {
+      if (type === 'sideQuest' || type === 'action') {
         const cachedConversation = getCurrentConversationFromStorage(type);
         
         if (
@@ -46,13 +58,13 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           cachedConversation.messages && 
           cachedConversation.messages.length >= 1
         ) {
-          console.log('Using existing sideQuest conversation from cache');
+          console.log(`Using existing ${type} conversation from cache`);
           setIsInitialized(true);
           setLoading(false);
           return cachedConversation;
         }
         
-        console.log('No valid cached sideQuest conversation, creating new one');
+        console.log(`No valid cached ${type} conversation, creating new one`);
         const conversation = await startConversation(type);
         
         const initialMessage = getInitialMessage(type);
@@ -169,7 +181,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
     } finally {
       setLoading(false);
     }
-  }, [type, authUser, addMessageToConversation, startConversation, toast, isInitialized]);
+  }, [type, authUser, addMessageToConversation, startConversation, toast, isInitialized, authChecked]);
 
   return {
     initializeChat,
