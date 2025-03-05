@@ -100,6 +100,30 @@ const JournalEntry = () => {
     });
   };
 
+  // Function to format the content for display in the editor
+  const formatContentForEditing = () => {
+    // If content is already in a good format, just return it
+    if (!entry) return "";
+    
+    // Check if it's JSON in code blocks
+    const jsonRegex = /^```(?:json)?\s*([\s\S]*?)```$/;
+    if (jsonRegex.test(entry.content.trim())) {
+      return entry.content;
+    }
+    
+    // Check if it's valid JSON but not in code blocks
+    try {
+      const parsed = JSON.parse(entry.content);
+      if (parsed && (parsed.title || parsed.summary)) {
+        return "```json\n" + JSON.stringify(parsed, null, 2) + "\n```";
+      }
+    } catch (e) {
+      // Not valid JSON, return as is
+    }
+    
+    return entry.content;
+  };
+
   const handleSave = async () => {
     if (!entry || !id) return;
     
@@ -136,6 +160,13 @@ const JournalEntry = () => {
     }
     setIsEditing(false);
   };
+
+  useEffect(() => {
+    if (isEditing && entry) {
+      // Format the content for editing when entering edit mode
+      setEditableContent(formatContentForEditing());
+    }
+  }, [isEditing, entry]);
 
   if (loading) {
     return (
