@@ -9,7 +9,7 @@ import {
   saveCurrentConversationToStorage, 
   getCurrentConversationFromStorage
 } from '@/lib/storageUtils';
-import { saveConversationSummary } from '@/services/conversationService';
+import { saveConversationSummary } from '@/services/conversation';
 
 export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const [session, setSession] = useState<ConversationSession | null>(null);
