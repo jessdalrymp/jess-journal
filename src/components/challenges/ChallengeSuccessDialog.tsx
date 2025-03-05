@@ -1,7 +1,8 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { BookOpen } from "lucide-react";
+import { Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface ChallengeSuccessDialogProps {
   open: boolean;
@@ -12,8 +13,14 @@ interface ChallengeSuccessDialogProps {
 export const ChallengeSuccessDialog = ({
   open,
   onOpenChange,
-  onStartJournaling,
 }: ChallengeSuccessDialogProps) => {
+  const navigate = useNavigate();
+
+  const handleReturnHome = () => {
+    onOpenChange(false);
+    navigate('/');
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -31,11 +38,11 @@ export const ChallengeSuccessDialog = ({
           </div>
           
           <Button
-            onClick={onStartJournaling}
+            onClick={handleReturnHome}
             className="w-full flex items-center justify-center gap-2"
           >
-            <BookOpen className="h-5 w-5" />
-            Journal About My Experience
+            <Home className="h-5 w-5" />
+            Return to Home
           </Button>
         </div>
       </DialogContent>
