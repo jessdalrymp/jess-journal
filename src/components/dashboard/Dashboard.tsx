@@ -4,7 +4,8 @@ import { useUserData } from '../../context/UserDataContext';
 import { MoodCheck } from './MoodCheck';
 import { ChatInterface } from '../chat/ChatInterface';
 import { JournalHistory } from '../journal/JournalHistory';
-import { BookOpen, MessageSquare, Zap, PenLine } from 'lucide-react';
+import { BookOpen, MessageSquare, Zap, PenLine, Smile } from 'lucide-react';
+import { ActionButton } from '../ui/ActionButton';
 
 export const Dashboard = () => {
   const { profile } = useUserData();
@@ -28,91 +29,87 @@ export const Dashboard = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6">
-      <div className="mb-6 text-center">
-        <h2 className="text-3xl font-serif font-medium mb-2">Welcome, Friend</h2>
-        <p className="text-xl font-serif text-jess-primary/80 italic mb-1">
-          Rewrite your story, one conversation at a time.
+      <div className="mb-10 text-center">
+        <h1 className="text-5xl font-serif font-medium mb-4">Your Growth Journey</h1>
+        <p className="text-xl text-jess-foreground mb-8">
+          Choose a path to continue your personal transformation with JESS
         </p>
-        <p className="text-jess-muted">
-          What would you like to explore today?
-        </p>
-      </div>
-
-      <div className="mb-6">
-        <MoodCheck />
-      </div>
-      
-      <div className="mb-8">
-        <h3 className="text-lg font-medium mb-4">Core Actions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div 
-            onClick={() => handleStartChat('story')} 
-            className="card-base card-hover cursor-pointer sketch-border"
-          >
-            <div className="flex items-center mb-3">
-              <div className="w-10 h-10 rounded-full bg-jess-accent/20 flex items-center justify-center mr-3">
-                <BookOpen className="text-jess-primary" size={20} />
-              </div>
-              <h3 className="font-medium text-lg">My Story</h3>
-            </div>
-            <p className="text-jess-muted text-sm">
-              Share your life stories and gain new perspectives on pivotal moments.
-            </p>
-          </div>
-          
-          <div 
-            onClick={() => handleStartChat('sideQuest')} 
-            className="card-base card-hover cursor-pointer sketch-border"
-          >
-            <div className="flex items-center mb-3">
-              <div className="w-10 h-10 rounded-full bg-jess-accent/20 flex items-center justify-center mr-3">
-                <MessageSquare className="text-jess-primary" size={20} />
-              </div>
-              <h3 className="font-medium text-lg">Side Quest</h3>
-            </div>
-            <p className="text-jess-muted text-sm">
-              Work through a specific challenge you're facing right now.
-            </p>
-          </div>
-          
-          <div 
-            onClick={() => handleStartChat('action')} 
-            className="card-base card-hover cursor-pointer sketch-border"
-          >
-            <div className="flex items-center mb-3">
-              <div className="w-10 h-10 rounded-full bg-jess-accent/20 flex items-center justify-center mr-3">
-                <Zap className="text-jess-primary" size={20} />
-              </div>
-              <h3 className="font-medium text-lg">Action Challenge</h3>
-            </div>
-            <p className="text-jess-muted text-sm">
-              Get a personalized real-world challenge to create breakthrough moments.
-            </p>
-          </div>
-          
-          <div 
-            onClick={() => handleStartChat('journal')} 
-            className="card-base card-hover cursor-pointer sketch-border"
-          >
-            <div className="flex items-center mb-3">
-              <div className="w-10 h-10 rounded-full bg-jess-accent/20 flex items-center justify-center mr-3">
-                <PenLine className="text-jess-primary" size={20} />
-              </div>
-              <h3 className="font-medium text-lg">Journal Challenge</h3>
-            </div>
-            <p className="text-jess-muted text-sm">
-              Receive thought-provoking writing prompts for deeper self-reflection.
-            </p>
-          </div>
+        
+        <div className="max-w-md mx-auto">
+          <button className="flex items-center gap-2 border border-jess-subtle px-4 py-2 rounded-full w-full justify-center text-jess-foreground">
+            <Smile className="text-jess-primary" size={20} />
+            How are you feeling?
+          </button>
         </div>
       </div>
       
-      <div className="mb-8">
-        <h3 className="text-lg font-medium mb-4">Recent Activity</h3>
-        <div className="card-base min-h-[100px] flex items-center justify-center sketch-border">
-          <p className="text-jess-muted">
-            Your recent activity will appear here as you use the app.
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="card-base p-8 text-center">
+          <div className="w-16 h-16 rounded-full bg-jess-accent/20 flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="text-jess-primary" size={24} />
+          </div>
+          <h3 className="font-serif text-2xl mb-3">My Story</h3>
+          <p className="text-jess-muted mb-6">
+            Begin a deep dive into your life story to gain better understanding of yourself.
           </p>
+          <ActionButton 
+            type="secondary" 
+            onClick={() => handleStartChat('story')}
+            className="w-full"
+          >
+            Begin
+          </ActionButton>
+        </div>
+        
+        <div className="card-base p-8 text-center">
+          <div className="w-16 h-16 rounded-full bg-jess-accent/20 flex items-center justify-center mx-auto mb-4">
+            <MessageSquare className="text-jess-primary" size={24} />
+          </div>
+          <h3 className="font-serif text-2xl mb-3">Side Quest</h3>
+          <p className="text-jess-muted mb-6">
+            Delve into a current issue you're working through to gain better self-understanding.
+          </p>
+          <ActionButton 
+            type="secondary" 
+            onClick={() => handleStartChat('sideQuest')}
+            className="w-full"
+          >
+            Begin
+          </ActionButton>
+        </div>
+        
+        <div className="card-base p-8 text-center">
+          <div className="w-16 h-16 rounded-full bg-jess-accent/20 flex items-center justify-center mx-auto mb-4">
+            <Zap className="text-jess-primary" size={24} />
+          </div>
+          <h3 className="font-serif text-2xl mb-3">Action Challenge</h3>
+          <p className="text-jess-muted mb-6">
+            Get a personalized real-world challenge to create breakthrough moments.
+          </p>
+          <ActionButton 
+            type="secondary" 
+            onClick={() => handleStartChat('action')}
+            className="w-full"
+          >
+            Begin
+          </ActionButton>
+        </div>
+        
+        <div className="card-base p-8 text-center">
+          <div className="w-16 h-16 rounded-full bg-jess-accent/20 flex items-center justify-center mx-auto mb-4">
+            <PenLine className="text-jess-primary" size={24} />
+          </div>
+          <h3 className="font-serif text-2xl mb-3">Journal Challenge</h3>
+          <p className="text-jess-muted mb-6">
+            Receive thought-provoking writing prompts for deeper self-reflection.
+          </p>
+          <ActionButton 
+            type="secondary" 
+            onClick={() => handleStartChat('journal')}
+            className="w-full"
+          >
+            Begin
+          </ActionButton>
         </div>
       </div>
       

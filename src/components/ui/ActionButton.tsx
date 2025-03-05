@@ -20,10 +20,10 @@ export const ActionButton = ({
   disabled = false,
 }: ActionButtonProps) => {
   const baseClasses = cn(
-    'transition-all duration-300 rounded-xl flex items-center justify-center shadow-sm font-medium relative overflow-visible',
+    'transition-all duration-300 rounded-xl flex items-center justify-center font-medium relative overflow-visible px-6 py-3',
     {
       'bg-jess-primary text-white hover:bg-jess-primary/90': type === 'primary',
-      'bg-jess-subtle text-jess-foreground hover:bg-jess-subtle/80': type === 'secondary',
+      'bg-[#FFE8D6] text-jess-foreground hover:bg-[#FFE8D6]/80': type === 'secondary',
       'bg-transparent text-jess-foreground hover:bg-jess-subtle/50': type === 'ghost',
       'opacity-50 cursor-not-allowed': disabled,
     },
@@ -34,7 +34,7 @@ export const ActionButton = ({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`${baseClasses} before:absolute before:inset-0 before:rounded-xl before:border before:border-jess-primary/30 before:content-[''] before:rotate-1 before:-z-10`}
+      className={baseClasses}
     >
       {icon && <span className="mr-2">{icon}</span>}
       {children}
