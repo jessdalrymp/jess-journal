@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Header } from "../components/Header";
@@ -32,6 +33,23 @@ const JournalEntry = () => {
       setLoading(false);
     }
   }, [id, location.state, journalEntries]);
+
+  // Function to safely render content with potential HTML
+  const renderContent = (content: string) => {
+    try {
+      // Replace markdown code blocks and backticks with proper formatting
+      const formattedContent = content
+        .replace(/```[a-z]*\n([\s\S]*?)```/g, '<pre class="bg-gray-100 p-4 rounded-md my-4 overflow-x-auto text-sm">$1</pre>')
+        .replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1 rounded text-sm">$1</code>')
+        // Convert URLs to links
+        .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-600 hover:underline">$1</a>');
+      
+      return { __html: formattedContent };
+    } catch (error) {
+      console.error("Error rendering content:", error);
+      return { __html: content };
+    }
+  };
 
   if (loading) {
     return (
@@ -100,9 +118,7 @@ const JournalEntry = () => {
           </div>
           
           <div className="prose max-w-none">
-            {entry.content.split('\n').map((paragraph, index) => (
-              paragraph.trim() ? <p key={index}>{paragraph}</p> : <br key={index} />
-            ))}
+            <div dangerouslySetInnerHTML={renderContent(entry.content)} />
           </div>
         </div>
       </main>
