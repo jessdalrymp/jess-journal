@@ -44,6 +44,8 @@ export const JournalEntryEditor = ({
   }, [content]);
 
   const handleChange = (newValue: string) => {
+    setCleanedContent(newValue);
+    
     // When saving, we need to convert the text back to JSON format
     try {
       // Convert back to JSON format
