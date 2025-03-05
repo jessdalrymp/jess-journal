@@ -47,12 +47,15 @@ export const AuthForm = () => {
   return (
     <div className="w-full max-w-md mx-auto p-6">
       <div className="mb-10 text-center">
-        <h1 className="text-4xl font-bold mb-2 text-jess-primary">JESS</h1>
+        <h1 className="text-5xl font-bold mb-2 text-jess-primary font-serif">JESS</h1>
         <p className="text-lg text-jess-muted">Your AI Storytelling Coach</p>
+        <p className="text-xl font-serif text-jess-primary/80 italic mt-2">
+          Rewrite your story, one conversation at a time.
+        </p>
       </div>
       
-      <div className="card-base animate-fade-in">
-        <h2 className="text-2xl font-medium mb-6 text-center">
+      <div className="card-base animate-fade-in sketch-border bg-white/90">
+        <h2 className="text-2xl font-medium mb-6 text-center font-serif">
           {isLogin ? 'Welcome Back' : 'Create Your Account'}
         </h2>
         
@@ -132,9 +135,11 @@ export const AuthForm = () => {
         </div>
       </div>
       
-      <p className="mt-8 text-center text-sm text-jess-muted">
-        By continuing, you agree to our Terms of Service and Privacy Policy.
-      </p>
+      <div className="mt-8 p-6 bg-jess-subtle/50 rounded-xl text-center border border-jess-subtle">
+        <p className="text-jess-muted text-sm leading-relaxed">
+          JESS helps you process your stories, reframe limiting beliefs, and take actionable steps toward real change — just like chatting with a wise, warm friend who guides you toward deeper awareness.
+        </p>
+      </div>
     </div>
   );
 };

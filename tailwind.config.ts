@@ -19,6 +19,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				serif: ['Cormorant Garamond', 'serif'],
+				sans: ['Source Sans 3', 'sans-serif']
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -64,13 +68,13 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				jess: {
-					primary: '#4A6FA5',         // Medium blue
-					secondary: '#95B8D1',       // Light blue
-					accent: '#F8BD7F',          // Soft orange/amber
-					background: '#F8F9FA',      // Off-white
-					foreground: '#333333',      // Dark gray
-					muted: '#8D9DB6',           // Muted blue/gray
-					subtle: '#E2E8F0',          // Very light gray/blue
+					primary: '#A67C52',         // Warm brown
+					secondary: '#E6CCB2',       // Light beige
+					accent: '#D4A373',          // Soft amber
+					background: '#F9F6F0',      // Light cream
+					foreground: '#5C4033',      // Dark brown
+					muted: '#8C7B6D',           // Muted brown
+					subtle: '#F0ECE3',          // Very light beige
 					warning: '#F5CBA7',         // Soft amber for disclaimer
 				}
 			},
