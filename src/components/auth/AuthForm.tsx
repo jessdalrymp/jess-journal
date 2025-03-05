@@ -45,20 +45,14 @@ export const AuthForm = () => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 sketch-bg">
-      <div className="mb-12 text-center">
-        <h1 className="text-4xl font-serif font-medium mb-6 text-jess-secondary">I made this program because I had to do all this for myself.</h1>
-        <p className="text-jess-muted max-w-xl mx-auto mb-8">
-          I made this program because I lost myself, and I had to find my way back alone.
-        </p>
-        
-        <div className="inline-block bg-jess-primary text-white px-6 py-3 rounded-full font-medium mb-6">
-          jump to registration
-        </div>
+    <div className="w-full max-w-md mx-auto p-6">
+      <div className="mb-10 text-center">
+        <h1 className="text-4xl font-bold mb-2 text-jess-primary">JESS</h1>
+        <p className="text-lg text-jess-muted">Your AI Storytelling Coach</p>
       </div>
       
-      <div className="card-base animate-fade-in border-2 border-black/10">
-        <h2 className="text-2xl font-serif font-medium mb-6 text-center">
+      <div className="card-base animate-fade-in">
+        <h2 className="text-2xl font-medium mb-6 text-center">
           {isLogin ? 'Welcome Back' : 'Create Your Account'}
         </h2>
         
@@ -73,7 +67,7 @@ export const AuthForm = () => {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="input-base border-2 border-black/10"
+                className="input-base"
                 placeholder="Your name"
               />
             </div>
@@ -88,7 +82,7 @@ export const AuthForm = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="input-base border-2 border-black/10"
+              className="input-base"
               placeholder="you@example.com"
               required
             />
@@ -103,16 +97,16 @@ export const AuthForm = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="input-base border-2 border-black/10"
+              className="input-base"
               placeholder="••••••••"
               required
             />
           </div>
           
           <div className="pt-2">
-            <button 
-              type="submit"
-              className="w-full py-3 px-4 bg-jess-primary text-white rounded-full font-medium hover:bg-jess-primary/90 transition-all"
+            <ActionButton 
+              type="primary" 
+              className="w-full py-3"
               disabled={loading}
             >
               {loading
@@ -121,7 +115,7 @@ export const AuthForm = () => {
                   ? 'Sign In'
                   : 'Create Account'
               }
-            </button>
+            </ActionButton>
           </div>
         </form>
         

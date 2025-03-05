@@ -8,9 +8,9 @@ export const Header = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
-    <header className="w-full py-4 px-6 flex items-center justify-between border-b border-black/10 sticky top-0 z-10 bg-jess-background">
+    <header className="w-full py-4 px-6 flex items-center justify-between glassmorphism sticky top-0 z-10">
       <div className="flex items-center">
-        <h1 className="text-2xl font-serif font-medium tracking-tight text-jess-primary">
+        <h1 className="text-2xl font-medium tracking-tight text-jess-primary">
           JESS
         </h1>
         <span className="text-jess-muted ml-2 text-sm hidden sm:inline-block">
@@ -33,7 +33,7 @@ export const Header = () => {
           </button>
           
           {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 animate-fade-in border-2 border-black/10">
+            <div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 animate-fade-in">
               <div className="px-4 py-2 text-sm text-jess-muted border-b border-jess-subtle">
                 Signed in as<br />
                 <span className="font-medium text-jess-foreground">
