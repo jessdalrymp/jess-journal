@@ -1,6 +1,7 @@
 
 import React, { useRef, useEffect } from 'react';
 import { ChatMessage } from '@/lib/types';
+import ReactMarkdown from 'react-markdown';
 
 interface ChatMessageListProps {
   messages: ChatMessage[];
@@ -32,8 +33,15 @@ export const ChatMessageList = ({ messages }: ChatMessageListProps) => {
             msg.role === 'user' ? 'bg-jess-primary bg-opacity-10 ml-auto max-w-[80%]' : 'bg-gray-100 mr-auto max-w-[80%]'
           }`}
         >
-          {/* Apply white-space formatting to preserve line breaks */}
-          <div className="whitespace-pre-wrap">{msg.content}</div>
+          {msg.role === 'assistant' ? (
+            <ReactMarkdown 
+              className="prose prose-sm max-w-none dark:prose-invert"
+            >
+              {msg.content}
+            </ReactMarkdown>
+          ) : (
+            <div className="whitespace-pre-wrap">{msg.content}</div>
+          )}
         </div>
       ))}
       <div ref={messagesEndRef} />
