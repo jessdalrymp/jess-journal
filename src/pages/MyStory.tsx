@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
@@ -46,14 +47,11 @@ const MyStory = () => {
               }
               
               if (data && data.length > 0) {
-                console.log("MyStory - Found existing conversations:", data.length);
                 toast({
                   title: "Welcome back!",
                   description: "Your previous conversation has been loaded.",
                   duration: 3000,
                 });
-              } else {
-                console.log("MyStory - No existing conversations found");
               }
             } catch (error) {
               console.error('Error in conversation check:', error);
