@@ -14,6 +14,7 @@ import ActionChallenge from "./pages/ActionChallenge";
 import JournalChallenge from "./pages/JournalChallenge";
 import JournalHistory from "./pages/JournalHistory";
 import JournalEntry from "./pages/JournalEntry";
+import BlankJournal from "./pages/BlankJournal";
 import Account from "./pages/Account";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/journal-challenge" element={<JournalChallenge />} />
               <Route path="/journal-history" element={<JournalHistory />} />
               <Route path="/journal-entry/:id" element={<JournalEntry />} />
+              <Route path="/blank-journal" element={<BlankJournal />} />
               <Route path="/account" element={<Account />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

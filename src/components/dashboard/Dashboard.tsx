@@ -1,16 +1,13 @@
-
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../context/UserDataContext';
 import { Book, MessageSquare, Lightbulb, PenLine, Clock, History, User, ArrowRight, FilePlus } from 'lucide-react';
 import { ActionButton } from '../ui/ActionButton';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import * as journalService from '../../services/journalService';
 
 export const Dashboard = () => {
   const { user } = useAuth();
-  const { profile, journalEntries, startConversation, addMessageToConversation } = useUserData();
+  const { profile, journalEntries } = useUserData();
   const navigate = useNavigate();
 
   // Get recent journal entries
@@ -41,44 +38,9 @@ export const Dashboard = () => {
     return entry.title;
   };
 
-  // Function to create a blank journal entry
-  const createBlankJournalEntry = async () => {
-    try {
-      toast.loading("Creating blank journal entry...");
-      
-      // Create a blank journal entry directly
-      const blankEntryContent = '```json\n{\n  "title": "Untitled Entry",\n  "summary": ""\n}\n```';
-      
-      if (!user) {
-        toast.dismiss();
-        toast.error("You need to be logged in to create an entry");
-        return;
-      }
-      
-      // Create the entry using the journal service
-      const newEntry = await journalService.saveJournalEntry(
-        user.id,
-        "New blank entry",
-        blankEntryContent
-      );
-      
-      if (!newEntry) {
-        toast.dismiss();
-        toast.error("Failed to create blank journal entry");
-        return;
-      }
-      
-      // Redirect to the journal entry page in edit mode
-      toast.dismiss();
-      toast.success("Created blank journal entry");
-      
-      // Navigate to the entry page with state indicating it should be in edit mode
-      navigate(`/journal-entry/${newEntry.id}`, { state: { isEditing: true } });
-    } catch (error) {
-      toast.dismiss();
-      toast.error("Failed to create blank journal entry");
-      console.error("Error creating blank journal entry:", error);
-    }
+  // Function to navigate to the blank journal page
+  const goToBlankJournal = () => {
+    navigate('/blank-journal');
   };
 
   return (
@@ -132,7 +94,7 @@ export const Dashboard = () => {
             <h2 className="text-xl font-medium">Recent Activity</h2>
             <div className="flex items-center gap-2">
               <ActionButton 
-                onClick={createBlankJournalEntry} 
+                onClick={goToBlankJournal} 
                 type="secondary"
                 className="py-1 px-3 text-sm"
                 icon={<FilePlus size={16} />}
@@ -207,4 +169,3 @@ export const Dashboard = () => {
     </div>
   );
 };
-
