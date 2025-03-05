@@ -12,14 +12,38 @@ interface ChatInterfaceProps {
 }
 
 export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
-  const { session, loading, sendMessage } = useChat(type);
+  const { session, loading, error, sendMessage } = useChat(type);
   
-  if (!session) {
+  // Show loading state
+  if (loading && !session) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="animate-pulse flex items-center">
           <Loader2 className="h-5 w-5 mr-2 animate-spin" />
           Loading conversation...
+        </div>
+      </div>
+    );
+  }
+  
+  // Handle error state
+  if (error) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center p-6">
+          <p className="text-red-500 mb-2">Unable to load conversation</p>
+          <p className="text-sm text-gray-500">Please make sure you're signed in and try again</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // In case session is still null but we're not loading or have an error
+  if (!session) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center p-6">
+          <p className="text-gray-500">Initializing conversation...</p>
         </div>
       </div>
     );

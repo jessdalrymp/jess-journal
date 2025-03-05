@@ -5,13 +5,17 @@ import { useToast } from '@/hooks/use-toast';
 import { ConversationSession, ChatMessage } from '@/lib/types';
 import { generateDeepseekResponse } from '../../utils/deepseekApi';
 import { formatMessagesForAI, getInitialMessage } from './chatUtils';
-import { saveCurrentConversationToStorage } from '@/lib/storageUtils';
+import { 
+  saveCurrentConversationToStorage, 
+  getCurrentConversationFromStorage
+} from '@/lib/storageUtils';
 
 export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const [session, setSession] = useState<ConversationSession | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  const { startConversation, addMessageToConversation } = useUserData();
+  const { user, startConversation, addMessageToConversation } = useUserData();
   const { toast } = useToast();
   
   const initializeChat = useCallback(async () => {
@@ -19,7 +23,24 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       setLoading(true);
       console.log("Initializing chat for type:", type);
       
-      // Get conversation from Supabase or localStorage
+      // Check if user is authenticated first
+      if (!user) {
+        console.log("User not authenticated, cannot initialize chat");
+        setError("Authentication required");
+        setLoading(false);
+        return;
+      }
+      
+      // Try to get conversation from localStorage first
+      const cachedConversation = getCurrentConversationFromStorage(type);
+      if (cachedConversation && cachedConversation.userId === user.id) {
+        console.log(`Loaded ${type} conversation from localStorage`);
+        setSession(cachedConversation);
+        setLoading(false);
+        return;
+      }
+      
+      // Get conversation from Supabase or create a new one
       const conversation = await startConversation(type);
       setSession(conversation);
       
@@ -35,7 +56,7 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
           await addMessageToConversation(
             conversation.id,
             initialMessage,
-            'assistant'
+            'assistant' as const
           );
           
           const updatedSession: ConversationSession = {
@@ -59,7 +80,7 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
           await addMessageToConversation(
             conversation.id,
             briefIntro,
-            'assistant'
+            'assistant' as const
           );
           
           const updatedSession: ConversationSession = {
@@ -81,6 +102,7 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       }
     } catch (error) {
       console.error('Error initializing chat:', error);
+      setError("Failed to initialize chat");
       toast({
         title: "Error starting conversation",
         description: "Please try again later.",
@@ -89,7 +111,7 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
     } finally {
       setLoading(false);
     }
-  }, [type, addMessageToConversation, startConversation, toast]);
+  }, [type, user, addMessageToConversation, startConversation, toast]);
   
   const sendMessage = async (message: string) => {
     if (!session) {
@@ -103,7 +125,7 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       // Update local state first for immediate UI feedback
       const newUserMessage: ChatMessage = {
         id: Date.now().toString(),
-        role: 'user',
+        role: 'user' as const,
         content: message,
         timestamp: new Date(),
       };
@@ -133,7 +155,7 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       // Create AI message object
       const newAIMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        role: 'assistant',
+        role: 'assistant' as const,
         content: aiResponseText,
         timestamp: new Date(),
       };
@@ -164,12 +186,15 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   };
   
   useEffect(() => {
-    initializeChat();
-  }, [initializeChat]);
+    if (user) {
+      initializeChat();
+    }
+  }, [initializeChat, user]);
   
   return {
     session,
     loading,
+    error,
     sendMessage
   };
 };
