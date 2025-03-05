@@ -18,90 +18,67 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       setLoading(true);
       console.log("Initializing chat for type:", type);
       
-      // Try to get existing conversation from storage
-      const storedConversations = localStorage.getItem('conversations');
-      let existingConversation = null;
-      
-      if (storedConversations) {
-        console.log("Found stored conversations");
-        const conversations = JSON.parse(storedConversations);
-        // Find the most recent conversation of this type
-        const typeConversations = conversations.filter((c: any) => c.type === type);
-        
-        if (typeConversations.length > 0) {
-          existingConversation = typeConversations.sort((a: any, b: any) => 
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-          )[0];
-          console.log("Found existing conversation:", existingConversation);
-        }
-      }
-      
-      if (existingConversation) {
-        setSession(existingConversation);
-        return;
-      }
-      
-      // If no existing conversation, create a new one
-      console.log("Creating new conversation");
-      const newSession = await startConversation(type);
-      setSession(newSession);
+      // Get conversation from Supabase (via UserDataContext)
+      const conversation = await startConversation(type);
+      setSession(conversation);
       
       // For first-time users, the welcome message is shown in a modal
       // Only add the AI's first message to the chat if NOT on story page or if not first visit
-      const isStoryType = type === 'story';
-      const hasVisitedStoryPage = localStorage.getItem('hasVisitedStoryPage');
-      const isFirstVisit = isStoryType && !hasVisitedStoryPage;
-      
-      if (!isFirstVisit) {
-        const initialMessage = getInitialMessage(type);
-        await addMessageToConversation(
-          newSession.id,
-          initialMessage,
-          'assistant'
-        );
+      if (!conversation.messages || conversation.messages.length === 0) {
+        const isStoryType = type === 'story';
+        const hasVisitedStoryPage = localStorage.getItem('hasVisitedStoryPage');
+        const isFirstVisit = isStoryType && !hasVisitedStoryPage;
         
-        setSession(prev => {
-          if (!prev) return null;
+        if (!isFirstVisit) {
+          const initialMessage = getInitialMessage(type);
+          await addMessageToConversation(
+            conversation.id,
+            initialMessage,
+            'assistant'
+          );
           
-          return {
-            ...prev,
-            messages: [
-              ...prev.messages,
-              {
-                id: Date.now().toString(),
-                role: 'assistant',
-                content: initialMessage,
-                timestamp: new Date(),
-              },
-            ],
-          };
-        });
-      } else {
-        // On first visit to story page, we'll add a simplified intro message
-        // since the detailed welcome is in the modal
-        const briefIntro = "I'm excited to hear your story! What would you like to talk about today?";
-        await addMessageToConversation(
-          newSession.id,
-          briefIntro,
-          'assistant'
-        );
-        
-        setSession(prev => {
-          if (!prev) return null;
+          setSession(prev => {
+            if (!prev) return null;
+            
+            return {
+              ...prev,
+              messages: [
+                ...(prev.messages || []),
+                {
+                  id: Date.now().toString(),
+                  role: 'assistant',
+                  content: initialMessage,
+                  timestamp: new Date(),
+                },
+              ],
+            };
+          });
+        } else {
+          // On first visit to story page, add a simplified intro message
+          const briefIntro = "I'm excited to hear your story! What would you like to talk about today?";
+          await addMessageToConversation(
+            conversation.id,
+            briefIntro,
+            'assistant'
+          );
           
-          return {
-            ...prev,
-            messages: [
-              ...prev.messages,
-              {
-                id: Date.now().toString(),
-                role: 'assistant',
-                content: briefIntro,
-                timestamp: new Date(),
-              },
-            ],
-          };
-        });
+          setSession(prev => {
+            if (!prev) return null;
+            
+            return {
+              ...prev,
+              messages: [
+                ...(prev.messages || []),
+                {
+                  id: Date.now().toString(),
+                  role: 'assistant',
+                  content: briefIntro,
+                  timestamp: new Date(),
+                },
+              ],
+            };
+          });
+        }
       }
     } catch (error) {
       console.error('Error initializing chat:', error);
@@ -136,11 +113,11 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
         if (!prev) return null;
         return {
           ...prev,
-          messages: [...prev.messages, newUserMessage],
+          messages: [...(prev.messages || []), newUserMessage],
         };
       });
       
-      // Then save to storage
+      // Then save to Supabase
       await addMessageToConversation(session.id, message, 'user');
       
       // Get updated messages including the new user message
@@ -166,11 +143,11 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
         if (!prev) return null;
         return {
           ...prev,
-          messages: [...prev.messages, newAIMessage],
+          messages: [...(prev.messages || []), newAIMessage],
         };
       });
       
-      // Save AI message to storage
+      // Save AI message to Supabase
       await addMessageToConversation(session.id, aiResponseText, 'assistant');
       
     } catch (error) {

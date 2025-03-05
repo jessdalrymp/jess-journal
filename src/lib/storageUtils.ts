@@ -6,9 +6,7 @@
 import { 
   UserProfile,
   JournalEntry,
-  MoodEntry,
-  ConversationSession,
-  ActionChallenge
+  MoodEntry
 } from './types';
 
 export const getProfileFromStorage = (): UserProfile | null => {
@@ -62,41 +60,5 @@ export const saveJournalEntriesToStorage = (entries: JournalEntry[]): void => {
     localStorage.setItem('journalEntries', JSON.stringify(entries));
   } catch (error) {
     console.error('Error saving journal entries to storage:', error);
-  }
-};
-
-export const getConversationsFromStorage = (): ConversationSession[] => {
-  try {
-    const storedConversations = localStorage.getItem('conversations');
-    return storedConversations ? JSON.parse(storedConversations) : [];
-  } catch (error) {
-    console.error('Error loading conversations from storage:', error);
-    return [];
-  }
-};
-
-export const saveConversationsToStorage = (conversations: ConversationSession[]): void => {
-  try {
-    localStorage.setItem('conversations', JSON.stringify(conversations));
-  } catch (error) {
-    console.error('Error saving conversations to storage:', error);
-  }
-};
-
-export const getChallengesFromStorage = (): ActionChallenge[] => {
-  try {
-    const storedChallenges = localStorage.getItem('challenges');
-    return storedChallenges ? JSON.parse(storedChallenges) : [];
-  } catch (error) {
-    console.error('Error loading challenges from storage:', error);
-    return [];
-  }
-};
-
-export const saveChallengesToStorage = (challenges: ActionChallenge[]): void => {
-  try {
-    localStorage.setItem('challenges', JSON.stringify(challenges));
-  } catch (error) {
-    console.error('Error saving challenges to storage:', error);
   }
 };

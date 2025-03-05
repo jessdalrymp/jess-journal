@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { User, UserProfile, ConversationSession, ChatMessage, JournalEntry, MoodType, MoodEntry } from '../lib/types';
 import { supabase } from '../integrations/supabase/client';
@@ -45,7 +44,6 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (authUser) {
-        // Convert Supabase user to our User type
         const userData: User = {
           id: authUser.id,
           email: authUser.email || '',
@@ -76,7 +74,6 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
 
     setLoading(true);
     try {
-      // First, try to get the profile from local storage
       const storedProfile = getProfileFromStorage();
       if (storedProfile && storedProfile.userId === user.id) {
         setProfile(storedProfile);
@@ -84,7 +81,6 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
         return;
       }
 
-      // If not in local storage, fetch from Supabase
       const { data: profileData, error } = await supabase
         .from('profiles')
         .select('*')
@@ -93,7 +89,6 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
 
       if (error) {
         console.error('Error fetching profile from Supabase:', error);
-        // If profile doesn't exist, that's okay, we'll create it later
         if (error.code !== 'PGRST116') {
           toast({
             title: "Error fetching profile",
@@ -105,7 +100,6 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
         return;
       }
 
-      // Convert Supabase profile to our UserProfile type
       const userProfile: UserProfile = {
         id: profileData.id,
         userId: user.id,
@@ -120,7 +114,7 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
       };
       
       setProfile(userProfile);
-      saveProfileToStorage(userProfile); // Save to local storage
+      saveProfileToStorage(userProfile);
       console.log("Profile loaded from Supabase");
     } catch (error) {
       console.error('Error processing profile data:', error);
@@ -153,7 +147,6 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
       };
       const updatedProfile = { ...currentProfile, ...profileData };
 
-      // Convert our UserProfile type to Supabase profile format
       const supabaseProfileData = {
         id: user.id,
         growth_stage: updatedProfile.growthStage,
@@ -179,7 +172,7 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
       }
 
       setProfile(updatedProfile);
-      saveProfileToStorage(updatedProfile); // Save to local storage
+      saveProfileToStorage(updatedProfile);
       console.log("Profile saved successfully");
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -193,7 +186,6 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
     }
   };
 
-  // Fetch mood entries
   const fetchMoodEntries = async () => {
     if (!user) return;
 
@@ -224,7 +216,6 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
     }
   };
 
-  // Add new mood entry
   const addMoodEntry = async (mood: MoodType, note?: string) => {
     if (!user) {
       toast({
@@ -258,7 +249,6 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
         return;
       }
 
-      // Add the new entry to the state
       const newMoodEntry: MoodEntry = {
         id: data.id,
         userId: data.user_id,
@@ -283,7 +273,6 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
     }
   };
 
-  // Fetch journal entries
   const fetchJournalEntries = async () => {
     if (!user) return;
 
@@ -315,87 +304,145 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
     }
   };
 
-  // Start a new conversation or return an existing one
   const startConversation = async (type: 'story' | 'sideQuest' | 'action' | 'journal'): Promise<ConversationSession> => {
     if (!user) {
       throw new Error("User not authenticated");
     }
 
     try {
-      // Try to get existing conversations from local storage
-      const storedConversations = localStorage.getItem('conversations');
-      let conversations: ConversationSession[] = [];
+      const { data: existingConversations, error: fetchError } = await supabase
+        .from('conversations')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('type', type)
+        .order('updated_at', { ascending: false })
+        .limit(1);
       
-      if (storedConversations) {
-        conversations = JSON.parse(storedConversations);
-        // Find if there's an existing conversation of this type
-        const existingConversation = conversations.find(c => c.type === type);
-        
-        if (existingConversation) {
-          return existingConversation;
-        }
+      if (fetchError) {
+        console.error('Error fetching conversations:', fetchError);
+        throw fetchError;
       }
       
-      // Create a new conversation
-      const newConversation: ConversationSession = {
-        id: generateId(),
-        userId: user.id,
+      if (existingConversations && existingConversations.length > 0) {
+        const existingConv = existingConversations[0];
+        
+        const { data: messagesData, error: messagesError } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', existingConv.id)
+          .order('timestamp', { ascending: true });
+        
+        if (messagesError) {
+          console.error('Error fetching messages:', messagesError);
+          throw messagesError;
+        }
+        
+        const messages: ChatMessage[] = messagesData ? messagesData.map(msg => ({
+          id: msg.id,
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content,
+          timestamp: new Date(msg.timestamp)
+        })) : [];
+        
+        return {
+          id: existingConv.id,
+          userId: existingConv.user_id,
+          type: existingConv.type as 'story' | 'sideQuest' | 'action' | 'journal',
+          title: existingConv.title,
+          messages: messages,
+          summary: existingConv.summary || undefined,
+          createdAt: new Date(existingConv.created_at),
+          updatedAt: new Date(existingConv.updated_at)
+        };
+      }
+      
+      const newConversationData = {
+        user_id: user.id,
         type,
         title: `${type.charAt(0).toUpperCase() + type.slice(1)} Conversation`,
-        messages: [],
-        createdAt: new Date(),
-        updatedAt: new Date()
       };
       
-      // Save to local storage
-      conversations.push(newConversation);
-      localStorage.setItem('conversations', JSON.stringify(conversations));
+      const { data: newConversation, error: createError } = await supabase
+        .from('conversations')
+        .insert(newConversationData)
+        .select()
+        .single();
       
-      return newConversation;
+      if (createError || !newConversation) {
+        console.error('Error creating conversation:', createError);
+        throw createError || new Error('Failed to create conversation');
+      }
+      
+      return {
+        id: newConversation.id,
+        userId: newConversation.user_id,
+        type: newConversation.type as 'story' | 'sideQuest' | 'action' | 'journal',
+        title: newConversation.title,
+        messages: [],
+        summary: newConversation.summary || undefined,
+        createdAt: new Date(newConversation.created_at),
+        updatedAt: new Date(newConversation.updated_at)
+      };
     } catch (error) {
       console.error('Error starting conversation:', error);
       throw error;
     }
   };
 
-  // Add a message to a conversation
   const addMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<void> => {
     try {
-      // Get conversations from local storage
-      const storedConversations = localStorage.getItem('conversations');
-      if (!storedConversations) {
-        throw new Error("No conversations found");
-      }
-      
-      const conversations: ConversationSession[] = JSON.parse(storedConversations);
-      const conversationIndex = conversations.findIndex(c => c.id === conversationId);
-      
-      if (conversationIndex === -1) {
-        throw new Error("Conversation not found");
-      }
-      
-      // Add the new message
-      const newMessage: ChatMessage = {
-        id: generateId(),
-        role,
+      const newMessageData = {
+        conversation_id: conversationId,
         content,
-        timestamp: new Date()
+        role
       };
       
-      conversations[conversationIndex].messages.push(newMessage);
-      conversations[conversationIndex].updatedAt = new Date();
+      const { error: messageError } = await supabase
+        .from('messages')
+        .insert(newMessageData);
       
-      // Save back to local storage
-      localStorage.setItem('conversations', JSON.stringify(conversations));
+      if (messageError) {
+        console.error('Error adding message:', messageError);
+        throw messageError;
+      }
       
-      // If this is a journal entry and from the assistant, save it to the journal
-      if (conversations[conversationIndex].type === 'journal' && role === 'assistant') {
-        // Get the last user message as the prompt
-        const userMessages = conversations[conversationIndex].messages.filter(m => m.role === 'user');
-        if (userMessages.length > 0) {
-          const prompt = userMessages[userMessages.length - 1].content;
-          saveJournalEntry(prompt, content);
+      const { error: updateError } = await supabase
+        .from('conversations')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', conversationId);
+      
+      if (updateError) {
+        console.error('Error updating conversation timestamp:', updateError);
+        throw updateError;
+      }
+      
+      const { data: conversationData, error: fetchError } = await supabase
+        .from('conversations')
+        .select('type')
+        .eq('id', conversationId)
+        .single();
+      
+      if (fetchError) {
+        console.error('Error fetching conversation type:', fetchError);
+        return;
+      }
+      
+      if (conversationData.type === 'journal' && role === 'assistant') {
+        const { data: userMessages, error: userMessagesError } = await supabase
+          .from('messages')
+          .select('content')
+          .eq('conversation_id', conversationId)
+          .eq('role', 'user')
+          .order('timestamp', { ascending: false })
+          .limit(1);
+        
+        if (userMessagesError || !userMessages || userMessages.length === 0) {
+          console.error('Error fetching user messages:', userMessagesError);
+          return;
         }
+        
+        const prompt = userMessages[0].content;
+        saveJournalEntry(prompt, content);
       }
     } catch (error) {
       console.error('Error adding message to conversation:', error);
@@ -403,7 +450,6 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
     }
   };
 
-  // Save a journal entry
   const saveJournalEntry = async (prompt: string, content: string) => {
     if (!user) return;
 
@@ -423,7 +469,6 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
         return;
       }
 
-      // Add to local state
       const newEntry: JournalEntry = {
         id: data.id,
         userId: data.user_id,
@@ -439,7 +484,6 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
     }
   };
 
-  // Helper function to generate unique IDs
   const generateId = (): string => {
     return Date.now().toString(36) + Math.random().toString(36).substring(2);
   };
