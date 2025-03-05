@@ -37,7 +37,7 @@ export const JournalChallengeDisplay = ({
         <h2 className="text-lg font-medium font-cormorant">Journal Challenge</h2>
       </div>
 
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-6 overflow-y-auto">
         <div className="max-w-3xl mx-auto">
           <div className="mb-6 flex justify-between items-center">
             <Badge variant="outline" className="px-2.5 py-0.5 bg-jess-subtle text-jess-primary">
@@ -71,7 +71,7 @@ export const JournalChallengeDisplay = ({
             </ol>
           </Card>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <Button 
               onClick={onAcceptChallenge} 
               className="bg-jess-primary hover:bg-jess-primary/90 text-white font-sourcesans"
@@ -92,9 +92,9 @@ export const JournalChallengeDisplay = ({
             </Button>
           </div>
 
-          <Separator className="my-8" />
+          <Separator className="my-6" />
 
-          <div className="bg-jess-subtle p-5 rounded-lg">
+          <div className="bg-jess-subtle p-5 rounded-lg mb-4">
             <h3 className="font-semibold text-gray-700 mb-3 font-cormorant">Journal Progress Tracker</h3>
             <p className="text-gray-600 mb-4 font-sourcesans">Track your journaling progress and view your previous entries to see how your thoughts and insights have evolved over time.</p>
             <Button
