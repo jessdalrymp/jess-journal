@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { User, UserProfile, MoodType, MoodEntry, JournalEntry, ConversationSession } from '../lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -171,7 +170,6 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
     try {
       await conversationService.addMessageToConversation(conversationId, content, role, user?.id);
       
-      // If it's a journal entry and from assistant, refresh journal entries
       if (role === 'assistant') {
         fetchJournalEntries();
       }
@@ -193,6 +191,7 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
     moodEntries,
     addMoodEntry,
     journalEntries,
+    fetchJournalEntries,
   };
 
   return (

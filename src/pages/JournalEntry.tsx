@@ -1,26 +1,40 @@
+
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save, Edit, X } from "lucide-react";
 import { ActionButton } from "../components/ui/ActionButton";
 import { JournalEntry as JournalEntryType } from "../lib/types";
 import { useUserData } from "../context/UserDataContext";
+import { updateJournalEntry } from "../services/journalService";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 const JournalEntry = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { id } = useParams();
-  const { journalEntries } = useUserData();
+  const { journalEntries, fetchJournalEntries } = useUserData();
   const [entry, setEntry] = useState<JournalEntryType | null>(null);
   const [loading, setLoading] = useState(true);
   const [parsedContent, setParsedContent] = useState<{ title?: string; summary?: string } | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editableContent, setEditableContent] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
+    // Check if editing mode was passed via state
+    if (location.state?.isEditing) {
+      setIsEditing(true);
+    }
+
     // First check if entry was passed via location state
     if (location.state?.entry) {
       setEntry(location.state.entry);
       parseEntryContent(location.state.entry.content);
+      setEditableContent(location.state.entry.content);
       setLoading(false);
       return;
     }
@@ -31,6 +45,7 @@ const JournalEntry = () => {
       if (foundEntry) {
         setEntry(foundEntry);
         parseEntryContent(foundEntry.content);
+        setEditableContent(foundEntry.content);
       }
       setLoading(false);
     }
@@ -85,6 +100,43 @@ const JournalEntry = () => {
     });
   };
 
+  const handleSave = async () => {
+    if (!entry || !id) return;
+    
+    const success = await updateJournalEntry(id, editableContent);
+    if (success) {
+      toast({
+        title: "Entry updated",
+        description: "Journal entry has been updated successfully",
+      });
+      
+      // Update local state
+      if (entry) {
+        setEntry({...entry, content: editableContent});
+        parseEntryContent(editableContent);
+      }
+      
+      // Refresh entries list
+      fetchJournalEntries();
+      
+      // Exit editing mode
+      setIsEditing(false);
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to update journal entry",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    if (entry) {
+      setEditableContent(entry.content);
+    }
+    setIsEditing(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-jess-background">
@@ -122,15 +174,35 @@ const JournalEntry = () => {
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
       <main className="flex-1 py-6 container mx-auto">
-        <div className="flex items-center mb-6">
-          <ActionButton 
-            type="ghost" 
-            className="mr-4" 
-            onClick={() => navigate('/journal-history')}
-          >
-            <ArrowLeft size={18} className="mr-2" />
-            Back to Journal
-          </ActionButton>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center">
+            <ActionButton 
+              type="ghost" 
+              className="mr-4" 
+              onClick={() => navigate('/journal-history')}
+            >
+              <ArrowLeft size={18} className="mr-2" />
+              Back to Journal
+            </ActionButton>
+          </div>
+          
+          {!isEditing ? (
+            <Button onClick={() => setIsEditing(true)} variant="outline" className="flex items-center gap-2">
+              <Edit size={16} />
+              Edit
+            </Button>
+          ) : (
+            <div className="flex space-x-2">
+              <Button onClick={handleCancelEdit} variant="outline" className="flex items-center gap-2">
+                <X size={16} />
+                Cancel
+              </Button>
+              <Button onClick={handleSave} variant="default" className="flex items-center gap-2">
+                <Save size={16} />
+                Save
+              </Button>
+            </div>
+          )}
         </div>
         
         <div className="bg-white rounded-lg shadow-sm p-6">
@@ -153,9 +225,17 @@ const JournalEntry = () => {
             </p>
           </div>
           
-          <div className="prose max-w-none">
-            {renderContent()}
-          </div>
+          {isEditing ? (
+            <Textarea 
+              value={editableContent} 
+              onChange={(e) => setEditableContent(e.target.value)}
+              className="w-full min-h-[300px] font-mono text-sm"
+            />
+          ) : (
+            <div className="prose max-w-none">
+              {renderContent()}
+            </div>
+          )}
         </div>
       </main>
       <DisclaimerBanner />

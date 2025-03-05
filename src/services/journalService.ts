@@ -71,3 +71,41 @@ export const saveJournalEntry = async (userId: string | undefined, prompt: strin
     return null;
   }
 };
+
+export const updateJournalEntry = async (entryId: string, content: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('journal_entries')
+      .update({ content })
+      .eq('id', entryId);
+
+    if (error) {
+      console.error('Error updating journal entry:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error updating journal entry:', error);
+    return false;
+  }
+};
+
+export const deleteJournalEntry = async (entryId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('journal_entries')
+      .delete()
+      .eq('id', entryId);
+
+    if (error) {
+      console.error('Error deleting journal entry:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error deleting journal entry:', error);
+    return false;
+  }
+};
