@@ -1,9 +1,9 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUserData } from '../../context/UserDataContext';
 import { ActionButton } from '../ui/ActionButton';
 import { useToast } from '@/hooks/use-toast';
 import { ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const questions = [
   {
@@ -75,7 +75,14 @@ export const SelfDiscoveryQuiz = ({ onComplete }: { onComplete: () => void }) =>
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const { saveProfile } = useUserData();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      // Handle user authentication logic here
+    }
+  }, [user]);
 
   const handleAnswer = (option: string) => {
     const question = questions[currentQuestion];

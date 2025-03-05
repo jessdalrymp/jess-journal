@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   email: string;
@@ -8,6 +9,7 @@ export interface User {
 export interface UserProfile {
   id: string;
   userId: string;
+  email?: string;
   growthStage?: string;
   challenges?: string[];
   mindsetPatterns?: string[];

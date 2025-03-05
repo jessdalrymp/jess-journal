@@ -52,6 +52,7 @@ export const fetchProfile = async (userId: string | undefined): Promise<UserProf
     const userProfile: UserProfile = {
       id: profileData.id,
       userId: userId,
+      email: profileData.email || undefined,
       growthStage: profileData.growth_stage || undefined,
       challenges: profileData.goals || undefined,
       mindsetPatterns: undefined,
@@ -92,8 +93,7 @@ export const saveProfile = async (userId: string | undefined, profileData: Parti
       learning_style: updatedProfile.learningStyle,
       communication_style: updatedProfile.communicationPreference,
       assessment_completed: updatedProfile.completedOnboarding,
-      // Remove email reference since it doesn't exist in UserProfile type
-      email: '' // Using a default empty string since email is required in the Supabase schema
+      email: updatedProfile.email || ''
     };
 
     const { error } = await supabase
