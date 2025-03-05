@@ -24,7 +24,7 @@ export const ChatInput = ({ onSendMessage, loading }: ChatInputProps) => {
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder={loading ? "AI is thinking..." : "Type your message..."}
+          placeholder={loading ? "Jess is thinking..." : "Type your message..."}
           className="flex-1 input-base"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -35,8 +35,8 @@ export const ChatInput = ({ onSendMessage, loading }: ChatInputProps) => {
           disabled={loading}
         />
         {loading ? (
-          <div className="ml-2 w-10 h-10 p-0 rounded-full flex items-center justify-center bg-gray-100">
-            <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
+          <div className="ml-2 w-10 h-10 p-0 rounded-full flex items-center justify-center bg-gray-200">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
           </div>
         ) : (
           <ActionButton

@@ -111,14 +111,12 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
       <ChatHeader type={type} onBack={handleBack} />
       <ChatMessageList messages={session.messages || []} />
       {loading && (
-        <div className="px-4 py-2 bg-gray-50 border-t border-jess-subtle">
-          <div className="flex items-center text-sm text-gray-500">
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            Jess is thinking...
-          </div>
+        <div className="px-4 py-2 bg-gray-100 border-t border-jess-subtle flex items-center">
+          <Loader2 className="h-5 w-5 mr-2 animate-spin text-primary" />
+          <span className="text-sm font-medium">Jess is thinking...</span>
         </div>
       )}
       <ChatInput onSendMessage={sendMessage} loading={loading} />
     </div>
   );
-};
+}
