@@ -19,51 +19,58 @@ const MyStory = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Only proceed once we have definitive user state
-    if (!userLoading) {
-      if (user) {
-        console.log("MyStory - Auth state: Authenticated");
-        // Check if this is the first visit to the story page
-        const hasVisitedStoryPage = localStorage.getItem('hasVisitedStoryPage');
-        
-        if (!hasVisitedStoryPage) {
-          setShowWelcomeModal(true);
-          // Mark that user has visited the page
-          localStorage.setItem('hasVisitedStoryPage', 'true');
-        } else {
-          // Check if there are existing story conversations for this user
-          const checkExistingConversations = async () => {
-            try {
-              const { data, error } = await supabase
-                .from('conversations')
-                .select('id')
-                .eq('user_id', user.id)
-                .eq('type', 'story')
-                .limit(1);
-              
-              if (error) {
-                console.error('Error checking for existing conversations:', error);
-                return;
-              }
-              
-              if (data && data.length > 0) {
-                toast({
-                  title: "Welcome back!",
-                  description: "Your previous conversation has been loaded.",
-                  duration: 3000,
-                });
-              }
-            } catch (error) {
-              console.error('Error in conversation check:', error);
-            }
-          };
+    console.log("MyStory - Auth state:", user ? "Authenticated" : "Not authenticated");
+    
+    // Check if this is the first visit to the story page
+    const hasVisitedStoryPage = localStorage.getItem('hasVisitedStoryPage');
+    
+    if (!hasVisitedStoryPage && user) {
+      setShowWelcomeModal(true);
+      // Mark that user has visited the page
+      localStorage.setItem('hasVisitedStoryPage', 'true');
+    } else if (user) {
+      // Check if there are existing story conversations for this user
+      const checkExistingConversations = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('conversations')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('type', 'story')
+            .limit(1);
           
-          checkExistingConversations();
+          if (error) {
+            console.error('Error checking for existing conversations:', error);
+            return;
+          }
+          
+          if (data && data.length > 0) {
+            toast({
+              title: "Welcome back!",
+              description: "Your previous conversation has been loaded.",
+              duration: 3000,
+            });
+          }
+        } catch (error) {
+          console.error('Error in conversation check:', error);
         }
-      }
+      };
+      
+      checkExistingConversations();
+    }
+    
+    // Set loading to false after checking user auth status
+    if (!userLoading) {
       setIsLoading(false);
     }
   }, [user, toast, userLoading]);
+  
+  useEffect(() => {
+    // Once user loading is complete, update our loading state
+    if (!userLoading) {
+      setIsLoading(false);
+    }
+  }, [userLoading]);
   
   const handleCloseWelcomeModal = () => {
     setShowWelcomeModal(false);
