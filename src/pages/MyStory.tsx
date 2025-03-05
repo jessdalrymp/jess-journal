@@ -6,7 +6,7 @@ import { ChatInterface } from "../components/chat/ChatInterface";
 import { WelcomeModal } from "../components/chat/WelcomeModal";
 import { useToast } from "../hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useUserData } from "@/context/UserDataContext";
+import { useAuth } from "@/context/AuthContext";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -14,15 +14,17 @@ import { useNavigate } from "react-router-dom";
 const MyStory = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { user, loading: userLoading } = useUserData();
+  const { user, loading: userLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
   useEffect(() => {
+    console.log("MyStory - Auth state:", user ? "Authenticated" : "Not authenticated");
+    
     // Check if this is the first visit to the story page
     const hasVisitedStoryPage = localStorage.getItem('hasVisitedStoryPage');
     
-    if (!hasVisitedStoryPage) {
+    if (!hasVisitedStoryPage && user) {
       setShowWelcomeModal(true);
       // Mark that user has visited the page
       localStorage.setItem('hasVisitedStoryPage', 'true');

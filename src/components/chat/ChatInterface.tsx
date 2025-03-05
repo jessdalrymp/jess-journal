@@ -5,7 +5,6 @@ import { ChatHeader } from './ChatHeader';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatInput } from './ChatInput';
 import { Loader2 } from 'lucide-react';
-import { useUserData } from '@/context/UserDataContext';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -21,9 +20,9 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // If authentication error is detected, log it
+    // If authentication error is detected, log it for debugging
     if (error && error.includes('authentication')) {
-      console.log('Authentication error detected in ChatInterface');
+      console.log('Authentication error detected in ChatInterface:', error);
     }
   }, [error]);
 
@@ -36,8 +35,8 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
           <div className="text-center">
             <h3 className="text-lg font-medium mb-2">Sign In Required</h3>
             <p className="text-gray-500 mb-4">Please sign in to access this feature.</p>
-            <Button onClick={() => navigate('/')} size="sm">
-              Return to Home
+            <Button onClick={() => navigate('/', { state: { openAuth: true } })} size="sm">
+              Sign In
             </Button>
           </div>
         </div>

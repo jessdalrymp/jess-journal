@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useUserData } from '../../context/UserDataContext';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ConversationSession, ChatMessage } from '@/lib/types';
 import { generateDeepseekResponse } from '../../utils/deepseekApi';
@@ -15,13 +16,18 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const { user, startConversation, addMessageToConversation } = useUserData();
+  const { user: contextUser, startConversation, addMessageToConversation } = useUserData();
+  const { user: authUser } = useAuth();
   const { toast } = useToast();
+  
+  // Use the user from Auth context as the source of truth
+  const user = authUser;
   
   const initializeChat = useCallback(async () => {
     try {
       setLoading(true);
       console.log("Initializing chat for type:", type);
+      console.log("User authentication state:", user ? "Authenticated" : "Not authenticated");
       
       // Check if user is authenticated first
       if (!user) {
