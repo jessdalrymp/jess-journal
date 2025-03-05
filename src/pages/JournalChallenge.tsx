@@ -143,8 +143,8 @@ const JournalChallenge = () => {
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
-      <main className="flex-1 px-4 sm:px-6 py-3 container mx-auto max-w-4xl">
-        <div className="bg-white rounded-lg shadow-sm h-[calc(100vh-170px)] flex flex-col">
+      <main className="flex-1 px-4 sm:px-6 py-6 container mx-auto max-w-4xl">
+        <div className="bg-white rounded-lg shadow-sm min-h-[500px]">
           {window.location.pathname === '/journal-challenge/chat' ? (
             <ChatInterface type="journal" onBack={handleBack} />
           ) : (
