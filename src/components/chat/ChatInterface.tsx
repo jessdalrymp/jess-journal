@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useChat } from './useChat';
 import { ChatHeader } from './ChatHeader';
@@ -18,9 +17,10 @@ interface ChatInterfaceProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
   onBack: () => void;
   onAcceptChallenge?: () => void;
+  onRestart?: () => void;
 }
 
-export const ChatInterface = ({ type, onBack, onAcceptChallenge }: ChatInterfaceProps) => {
+export const ChatInterface = ({ type, onBack, onAcceptChallenge, onRestart }: ChatInterfaceProps) => {
   const { user, loading: authLoading } = useAuth();
   const { session, loading: chatLoading, error, sendMessage, generateSummary } = useChat(type);
   const [showEndDialog, setShowEndDialog] = useState(false);
@@ -33,7 +33,6 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge }: ChatInterface
       console.log('Authentication error detected in ChatInterface:', error);
     }
     
-    // Clean up function
     return () => {
       console.log(`ChatInterface unmounting for ${type}`);
       // No need to clear the conversation here as it's handled in onBack
@@ -41,7 +40,6 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge }: ChatInterface
   }, [error, type]);
 
   const openEndDialog = () => {
-    // For sideQuest, handle ending directly without showing dialog
     if (type === 'sideQuest') {
       handleEndConversation();
     } else {
@@ -54,7 +52,6 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge }: ChatInterface
     
     try {
       if (session && session.messages.length > 2) {
-        // Generate summary for story and sideQuest conversations
         if (type === 'story' || type === 'sideQuest') {
           toast({
             title: "Saving conversation...",
@@ -64,8 +61,6 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge }: ChatInterface
         }
       }
       
-      // Always let the parent component handle navigation and cleanup
-      // to ensure consistency
       onBack();
     } catch (error) {
       console.error('Error ending conversation:', error);
@@ -78,12 +73,23 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge }: ChatInterface
     }
   };
 
-  // First check if we're still loading auth
+  const handleNewChallenge = () => {
+    if (onRestart) {
+      onRestart();
+    } else {
+      clearCurrentConversationFromStorage(type);
+      toast({
+        title: "New challenge requested",
+        description: "Generating a new action challenge for you...",
+      });
+      window.location.reload();
+    }
+  };
+
   if (authLoading) {
     return <ChatLoadingState type={type} onBack={onBack} />;
   }
   
-  // Then check if user is authenticated
   if (!user) {
     return <ChatUnauthenticatedState type={type} onBack={onBack} />;
   }
@@ -122,7 +128,12 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge }: ChatInterface
         )}
       </div>
       <ChatInput onSendMessage={sendMessage} loading={loading} />
-      <ChatFooter onEndChat={openEndDialog} type={type} onAcceptChallenge={onAcceptChallenge} />
+      <ChatFooter 
+        onEndChat={openEndDialog} 
+        type={type} 
+        onAcceptChallenge={onAcceptChallenge}
+        onNewChallenge={type === 'action' ? handleNewChallenge : undefined} 
+      />
       <ChatEndDialog 
         open={showEndDialog} 
         onOpenChange={setShowEndDialog} 

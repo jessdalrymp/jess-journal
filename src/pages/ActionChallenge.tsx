@@ -45,6 +45,13 @@ const ActionChallenge = () => {
     setShowJournaling(true);
   };
 
+  const handleRestart = () => {
+    // Clear existing conversation
+    clearCurrentConversationFromStorage('action');
+    // Set a new key to force remount 
+    setKey(Date.now());
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
@@ -56,6 +63,7 @@ const ActionChallenge = () => {
             type="action" 
             onBack={handleBack}
             onAcceptChallenge={handleAcceptChallenge} 
+            onRestart={handleRestart}
           />
         </div>
       </main>
