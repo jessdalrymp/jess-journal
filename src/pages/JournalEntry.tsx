@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { Header } from "../components/Header";
@@ -33,7 +34,7 @@ const JournalEntry = () => {
     if (location.state?.entry) {
       setEntry(location.state.entry);
       setParsedContent(parseEntryContent(location.state.entry.content));
-      setEditableContent(location.state.entry.content);
+      setEditableContent(formatContentForEditing(location.state.entry.content));
       setLoading(false);
       return;
     }
@@ -44,7 +45,7 @@ const JournalEntry = () => {
       if (foundEntry) {
         setEntry(foundEntry);
         setParsedContent(parseEntryContent(foundEntry.content));
-        setEditableContent(foundEntry.content);
+        setEditableContent(formatContentForEditing(foundEntry.content));
       }
       setLoading(false);
     }
@@ -53,7 +54,10 @@ const JournalEntry = () => {
   const handleSave = async () => {
     if (!entry || !id) return;
     
-    const success = await updateJournalEntry(id, editableContent);
+    // Process content before saving - we want to save with proper formatting 
+    let contentToSave = editableContent;
+    
+    const success = await updateJournalEntry(id, contentToSave);
     if (success) {
       toast({
         title: "Entry updated",
@@ -62,8 +66,8 @@ const JournalEntry = () => {
       
       // Update local state
       if (entry) {
-        setEntry({...entry, content: editableContent});
-        setParsedContent(parseEntryContent(editableContent));
+        setEntry({...entry, content: contentToSave});
+        setParsedContent(parseEntryContent(contentToSave));
       }
       
       // Refresh entries list
