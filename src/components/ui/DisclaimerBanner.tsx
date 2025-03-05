@@ -6,9 +6,10 @@ export const DisclaimerBanner = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Check localStorage to see if the user has dismissed the banner
+    // Check localStorage to see if the user has seen the disclaimer before
     const hasSeenDisclaimer = localStorage.getItem('hasSeenDisclaimer');
     
+    // Only show the disclaimer if the user hasn't seen it before
     if (!hasSeenDisclaimer) {
       setIsVisible(true);
     }
