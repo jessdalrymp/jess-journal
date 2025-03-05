@@ -5,10 +5,17 @@ import { Textarea } from "@/components/ui/textarea";
 interface JournalEntryEditorProps {
   content: string;
   onChange: (value: string) => void;
+  title: string;
+  onTitleChange: (value: string) => void;
 }
 
-export const JournalEntryEditor = ({ content, onChange }: JournalEntryEditorProps) => {
-  const [cleanedContent, setCleanedContent] = useState(content);
+export const JournalEntryEditor = ({ 
+  content, 
+  onChange,
+  title,
+  onTitleChange
+}: JournalEntryEditorProps) => {
+  const [cleanedContent, setCleanedContent] = useState("");
 
   useEffect(() => {
     // Remove triple backticks and curly braces when displaying in the editor
@@ -22,11 +29,8 @@ export const JournalEntryEditor = ({ content, onChange }: JournalEntryEditorProp
         
         // Create formatted content from the parsed JSON properties
         let formattedContent = '';
-        if (parsedJson.title) {
-          formattedContent += `Title: ${parsedJson.title}\n\n`;
-        }
         if (parsedJson.summary) {
-          formattedContent += `Summary: ${parsedJson.summary}`;
+          formattedContent += parsedJson.summary;
         }
         
         setCleanedContent(formattedContent);
@@ -41,17 +45,11 @@ export const JournalEntryEditor = ({ content, onChange }: JournalEntryEditorProp
 
   const handleChange = (newValue: string) => {
     // When saving, we need to convert the text back to JSON format
-    const titleMatch = newValue.match(/Title:\s*(.*?)(?:\n\n|\n(?=Summary:)|$)/s);
-    const summaryMatch = newValue.match(/Summary:\s*([\s\S]*?)$/s);
-    
-    const title = titleMatch ? titleMatch[1].trim() : '';
-    const summary = summaryMatch ? summaryMatch[1].trim() : '';
-    
-    if (title || summary) {
+    try {
       // Convert back to JSON format
       const jsonObj = {
-        title: title || undefined,
-        summary: summary || undefined
+        title: title,
+        summary: newValue.trim()
       };
       
       // Remove undefined properties
@@ -62,7 +60,7 @@ export const JournalEntryEditor = ({ content, onChange }: JournalEntryEditorProp
       // Format as JSON with code blocks
       const jsonString = JSON.stringify(jsonObj, null, 2);
       onChange(`\`\`\`json\n${jsonString}\n\`\`\``);
-    } else {
+    } catch (e) {
       // Not in our expected format, pass as is
       onChange(newValue);
     }
@@ -73,6 +71,7 @@ export const JournalEntryEditor = ({ content, onChange }: JournalEntryEditorProp
       value={cleanedContent} 
       onChange={(e) => handleChange(e.target.value)}
       className="w-full min-h-[300px] font-mono text-sm"
+      placeholder="Write your journal entry here..."
     />
   );
 };

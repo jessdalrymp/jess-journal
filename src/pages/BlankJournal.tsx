@@ -3,24 +3,38 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
-import { JournalEntry as JournalEntryType } from "../lib/types";
 import { useUserData } from "../context/UserDataContext";
 import { saveJournalEntry } from "../services/journalService";
-import { useToast } from "@/hooks/use-toast";
-import { JournalEntryEditor } from "@/components/journal/JournalEntryEditor";
 import { useAuth } from "../context/AuthContext";
 import { ActionButton } from "../components/ui/ActionButton";
 import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { JournalEntryEditor } from "@/components/journal/JournalEntryEditor";
+import { Input } from "@/components/ui/input";
 
 const BlankJournal = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { fetchJournalEntries } = useUserData();
   const [content, setContent] = useState('```json\n{\n  "title": "Untitled Entry",\n  "summary": ""\n}\n```');
+  const [title, setTitle] = useState("Untitled Entry");
   const [isSaving, setIsSaving] = useState(false);
-  const { toast: uiToast } = useToast();
+
+  // Initialize the title from the JSON content
+  useEffect(() => {
+    try {
+      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
+      if (jsonMatch && jsonMatch[1]) {
+        const parsedJson = JSON.parse(jsonMatch[1].trim());
+        if (parsedJson.title && title === "Untitled Entry") {
+          setTitle(parsedJson.title);
+        }
+      }
+    } catch (e) {
+      console.error("Error parsing initial JSON content", e);
+    }
+  }, []);
 
   const handleSave = async () => {
     if (!user) {
@@ -31,10 +45,24 @@ const BlankJournal = () => {
     setIsSaving(true);
     
     try {
+      // Update the content with the current title before saving
+      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
+      let contentToSave = content;
+      
+      if (jsonMatch && jsonMatch[1]) {
+        try {
+          const parsedJson = JSON.parse(jsonMatch[1].trim());
+          parsedJson.title = title;
+          contentToSave = `\`\`\`json\n${JSON.stringify(parsedJson, null, 2)}\n\`\`\``;
+        } catch (e) {
+          console.error("Error updating title in JSON content", e);
+        }
+      }
+      
       const newEntry = await saveJournalEntry(
         user.id,
-        "New journal entry",
-        content
+        title,
+        contentToSave
       );
       
       if (!newEntry) {
@@ -83,9 +111,12 @@ const BlankJournal = () => {
         
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="mb-6">
-            <h1 className="text-2xl font-semibold">
-              New Journal Entry
-            </h1>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="text-2xl font-semibold border-none px-0 py-0 h-auto text-gray-900 focus-visible:ring-0 focus-visible:ring-offset-0"
+              placeholder="Enter title..."
+            />
             <p className="text-sm text-jess-muted">
               {new Date().toLocaleDateString('en-US', { 
                 weekday: 'long',
@@ -98,7 +129,9 @@ const BlankJournal = () => {
           
           <JournalEntryEditor 
             content={content} 
-            onChange={setContent} 
+            onChange={setContent}
+            title={title}
+            onTitleChange={setTitle} 
           />
         </div>
       </main>
