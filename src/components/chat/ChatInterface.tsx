@@ -8,6 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { useUserData } from '@/context/UserDataContext';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 interface ChatInterfaceProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
@@ -15,7 +16,7 @@ interface ChatInterfaceProps {
 }
 
 export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
-  const { user } = useUserData();
+  const { user } = useAuth();
   const { session, loading, error, sendMessage } = useChat(type);
   const navigate = useNavigate();
   

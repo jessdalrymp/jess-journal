@@ -10,7 +10,7 @@ export const fetchUser = async (): Promise<User | null> => {
       const userData: User = {
         id: authUser.id,
         email: authUser.email || '',
-        name: authUser.user_metadata?.name,
+        name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
         createdAt: new Date(authUser.created_at || Date.now())
       };
       return userData;
