@@ -14,11 +14,13 @@ const JournalEntry = () => {
   const { journalEntries } = useUserData();
   const [entry, setEntry] = useState<JournalEntryType | null>(null);
   const [loading, setLoading] = useState(true);
+  const [parsedContent, setParsedContent] = useState<{ title?: string; summary?: string } | null>(null);
 
   useEffect(() => {
     // First check if entry was passed via location state
     if (location.state?.entry) {
       setEntry(location.state.entry);
+      parseEntryContent(location.state.entry.content);
       setLoading(false);
       return;
     }
@@ -28,23 +30,58 @@ const JournalEntry = () => {
       const foundEntry = journalEntries.find(entry => entry.id === id);
       if (foundEntry) {
         setEntry(foundEntry);
+        parseEntryContent(foundEntry.content);
       }
       setLoading(false);
     }
   }, [id, location.state, journalEntries]);
 
+  // Function to try parsing JSON content
+  const parseEntryContent = (content: string) => {
+    try {
+      // First, try to detect if this is a JSON string inside code blocks
+      let contentToProcess = content;
+      
+      // Remove code block markers if present
+      const jsonRegex = /```(?:json)?\s*([\s\S]*?)```/;
+      const match = content.match(jsonRegex);
+      if (match && match[1]) {
+        contentToProcess = match[1].trim();
+      }
+      
+      // Try to parse as JSON
+      const parsed = JSON.parse(contentToProcess);
+      if (parsed && (parsed.title || parsed.summary)) {
+        setParsedContent(parsed);
+      } else {
+        setParsedContent(null);
+      }
+    } catch (e) {
+      console.log("Content is not valid JSON or doesn't have the expected format");
+      setParsedContent(null);
+    }
+  };
+
   // Function to render content with proper formatting for newlines
   const renderContent = () => {
     if (!entry) return null;
     
-    // Split content by newlines and render each paragraph
+    // If we have parsed JSON content, use the summary
+    if (parsedContent && parsedContent.summary) {
+      return parsedContent.summary.split('\n').map((paragraph, index) => {
+        if (!paragraph.trim()) {
+          return <br key={index} />;
+        }
+        return <p key={index} className="mb-4">{paragraph}</p>;
+      });
+    }
+    
+    // Otherwise use the raw content
     return entry.content.split('\n').map((paragraph, index) => {
-      // If it's an empty line, render a break
       if (!paragraph.trim()) {
         return <br key={index} />;
       }
-      
-      return <p key={index}>{paragraph}</p>;
+      return <p key={index} className="mb-4">{paragraph}</p>;
     });
   };
 
@@ -99,7 +136,9 @@ const JournalEntry = () => {
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-2xl font-semibold">{entry.title}</h1>
+              <h1 className="text-2xl font-semibold">
+                {parsedContent && parsedContent.title ? parsedContent.title : entry.title}
+              </h1>
               <span className="text-sm px-3 py-1 bg-jess-subtle rounded-full">
                 {entry.type}
               </span>
