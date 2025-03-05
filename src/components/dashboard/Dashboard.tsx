@@ -1,4 +1,6 @@
+
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../context/UserDataContext';
 import { Book, MessageSquare, Lightbulb, PenLine, Clock, History, User, ArrowRight, FilePlus } from 'lucide-react';
@@ -7,8 +9,16 @@ import { useNavigate } from 'react-router-dom';
 
 export const Dashboard = () => {
   const { user } = useAuth();
-  const { profile, journalEntries } = useUserData();
+  const { profile, journalEntries, fetchJournalEntries } = useUserData();
   const navigate = useNavigate();
+
+  // Ensure journal entries are fetched when dashboard is mounted
+  useEffect(() => {
+    if (user) {
+      console.log("Dashboard - Fetching journal entries for user:", user.id);
+      fetchJournalEntries();
+    }
+  }, [user, fetchJournalEntries]);
 
   // Get recent journal entries
   const recentEntries = [...(journalEntries || [])]
