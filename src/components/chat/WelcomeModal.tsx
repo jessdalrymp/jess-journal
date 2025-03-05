@@ -5,21 +5,31 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { getInitialMessage } from './chatUtils';
 
 interface WelcomeModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  type: 'story' | 'sideQuest' | 'action' | 'journal';
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description: string;
+  buttonText: string;
+  type?: 'story' | 'sideQuest' | 'action' | 'journal';
 }
 
-export const WelcomeModal = ({ isOpen, onClose, type }: WelcomeModalProps) => {
-  const welcomeMessage = getInitialMessage(type);
+export const WelcomeModal = ({ 
+  open, 
+  onOpenChange, 
+  title, 
+  description, 
+  buttonText,
+  type 
+}: WelcomeModalProps) => {
+  const welcomeMessage = type ? getInitialMessage(type) : description;
   
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md md:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold mb-2">Welcome to Your Story</DialogTitle>
+          <DialogTitle className="text-xl font-semibold mb-2">{title}</DialogTitle>
           <button 
-            onClick={onClose}
+            onClick={() => onOpenChange(false)}
             className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
             <X className="h-4 w-4" />
@@ -43,6 +53,14 @@ export const WelcomeModal = ({ isOpen, onClose, type }: WelcomeModalProps) => {
             }
             return <p key={i}>{paragraph}</p>;
           })}
+        </div>
+        <div className="mt-4">
+          <button 
+            onClick={() => onOpenChange(false)}
+            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+          >
+            {buttonText}
+          </button>
         </div>
       </DialogContent>
     </Dialog>
