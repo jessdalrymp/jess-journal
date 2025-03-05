@@ -1,44 +1,47 @@
-
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { Header } from "../components/Header";
-import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { JournalEntry as JournalEntryType } from "../lib/types";
 import { useUserData } from "../context/UserDataContext";
-import { updateJournalEntry } from "../services/journalService";
-import { useToast } from "@/hooks/use-toast";
 import { JournalEntryHeader } from "@/components/journal/JournalEntryHeader";
 import { JournalEntryContent } from "@/components/journal/JournalEntryContent";
-import { JournalEntryEditor } from "@/components/journal/JournalEntryEditor";
+import { JournalEntryLayout } from "@/components/journal/JournalEntryLayout";
+import { JournalEntryLoading } from "@/components/journal/JournalEntryLoading";
+import { JournalEntryNotFound } from "@/components/journal/JournalEntryNotFound";
 import { JournalEntryMeta } from "@/components/journal/JournalEntryMeta";
-import { parseEntryContent, formatContentForEditing } from "@/utils/contentParser";
+import { JournalEntryEditForm } from "@/components/journal/JournalEntryEditForm";
+import { useJournalEntryEditor } from "@/hooks/useJournalEntryEditor";
 
 const JournalEntry = () => {
   const location = useLocation();
   const { id } = useParams();
-  const { journalEntries, fetchJournalEntries } = useUserData();
-  const [entry, setEntry] = useState<JournalEntryType | null>(null);
+  const { journalEntries } = useUserData();
   const [loading, setLoading] = useState(true);
-  const [parsedContent, setParsedContent] = useState<{ title?: string; summary?: string } | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editableContent, setEditableContent] = useState("");
-  const [editableTitle, setEditableTitle] = useState("");
-  const { toast } = useToast();
+  const [initialEntry, setInitialEntry] = useState<JournalEntryType | null>(null);
+  
+  const {
+    entry,
+    setEntry,
+    parsedContent,
+    isEditing,
+    editableContent,
+    editableTitle,
+    setEditableContent,
+    setEditableTitle,
+    handleSave,
+    handleCancelEdit,
+    startEditing,
+  } = useJournalEntryEditor(initialEntry);
 
   useEffect(() => {
     // Check if editing mode was passed via state
     if (location.state?.isEditing) {
-      setIsEditing(true);
+      startEditing();
     }
 
     // First check if entry was passed via location state
     if (location.state?.entry) {
-      const formattedContent = formatContentForEditing(location.state.entry.content);
+      setInitialEntry(location.state.entry);
       setEntry(location.state.entry);
-      const parsed = parseEntryContent(location.state.entry.content);
-      setParsedContent(parsed);
-      setEditableContent(formattedContent);
-      setEditableTitle(parsed?.title || location.state.entry.title);
       setLoading(false);
       return;
     }
@@ -47,157 +50,52 @@ const JournalEntry = () => {
     if (id && journalEntries.length > 0) {
       const foundEntry = journalEntries.find(entry => entry.id === id);
       if (foundEntry) {
-        const formattedContent = formatContentForEditing(foundEntry.content);
+        setInitialEntry(foundEntry);
         setEntry(foundEntry);
-        const parsed = parseEntryContent(foundEntry.content);
-        setParsedContent(parsed);
-        setEditableContent(formattedContent);
-        setEditableTitle(parsed?.title || foundEntry.title);
       }
       setLoading(false);
     }
-  }, [id, location.state, journalEntries]);
-
-  const handleSave = async () => {
-    if (!entry || !id) return;
-    
-    // Process content before saving - we want to maintain the format
-    // Update the JSON content with the current title
-    let contentToSave = editableContent;
-    
-    try {
-      const jsonMatch = contentToSave.match(/```json\s*([\s\S]*?)```/);
-      if (jsonMatch && jsonMatch[1]) {
-        const parsedJson = JSON.parse(jsonMatch[1].trim());
-        parsedJson.title = editableTitle;
-        contentToSave = `\`\`\`json\n${JSON.stringify(parsedJson, null, 2)}\n\`\`\``;
-      }
-    } catch (e) {
-      console.error("Error updating title in JSON content", e);
-    }
-    
-    const success = await updateJournalEntry(id, contentToSave);
-    if (success) {
-      toast({
-        title: "Entry updated",
-        description: "Journal entry has been updated successfully",
-      });
-      
-      // Update local state
-      if (entry) {
-        setEntry({...entry, content: contentToSave, title: editableTitle});
-        setParsedContent(parseEntryContent(contentToSave));
-      }
-      
-      // Refresh entries list
-      fetchJournalEntries();
-      
-      // Exit editing mode
-      setIsEditing(false);
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to update journal entry",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleCancelEdit = () => {
-    if (entry) {
-      // Ensure we format the content correctly when canceling edit
-      setEditableContent(formatContentForEditing(entry.content));
-      const parsed = parseEntryContent(entry.content);
-      setEditableTitle(parsed?.title || entry.title);
-    }
-    setIsEditing(false);
-  };
-
-  useEffect(() => {
-    if (isEditing && entry) {
-      // Format the content for editing when entering edit mode
-      const formattedContent = formatContentForEditing(entry.content);
-      setEditableContent(formattedContent);
-      const parsed = parseEntryContent(entry.content);
-      setEditableTitle(parsed?.title || entry.title);
-    }
-  }, [isEditing, entry]);
+  }, [id, location.state, journalEntries, setEntry, startEditing]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col bg-jess-background">
-        <Header />
-        <main className="flex-1 py-6 container mx-auto">
-          <div className="text-center py-8">Loading...</div>
-        </main>
-        <DisclaimerBanner />
-      </div>
-    );
+    return <JournalEntryLoading />;
   }
 
   if (!entry) {
-    return (
-      <div className="min-h-screen flex flex-col bg-jess-background">
-        <Header />
-        <main className="flex-1 py-6 container mx-auto">
-          <div className="text-center py-8">
-            <p className="text-jess-muted mb-2">Entry not found</p>
-            <button 
-              className="mt-4 px-4 py-2 bg-jess-primary text-white rounded-lg"
-              onClick={() => window.history.back()}
-            >
-              Back to Journal History
-            </button>
-          </div>
-        </main>
-        <DisclaimerBanner />
-      </div>
-    );
+    return <JournalEntryNotFound />;
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-jess-background">
-      <Header />
-      <main className="flex-1 py-6 container mx-auto">
-        <JournalEntryHeader 
-          isEditing={isEditing}
-          onEditClick={() => setIsEditing(true)}
-          onSaveClick={handleSave}
-          onCancelEdit={handleCancelEdit}
+    <JournalEntryLayout>
+      <JournalEntryHeader 
+        isEditing={isEditing}
+        onEditClick={startEditing}
+        onSaveClick={handleSave}
+        onCancelEdit={handleCancelEdit}
+      />
+      
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <JournalEntryMeta 
+          entry={entry} 
+          title={isEditing ? editableTitle : parsedContent?.title} 
         />
         
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <JournalEntryMeta 
-            entry={entry} 
-            title={isEditing ? editableTitle : parsedContent?.title} 
+        {isEditing ? (
+          <JournalEntryEditForm
+            entry={entry}
+            editableContent={editableContent}
+            editableTitle={editableTitle}
+            setEditableContent={setEditableContent}
+            setEditableTitle={setEditableTitle}
           />
-          
-          {isEditing ? (
-            <>
-              <input 
-                type="text"
-                value={editableTitle}
-                onChange={(e) => setEditableTitle(e.target.value)}
-                className="text-2xl font-semibold border-none px-0 py-0 mb-4 w-full focus-visible:outline-none"
-                placeholder="Enter title..."
-              />
-              <JournalEntryEditor 
-                content={editableContent} 
-                onChange={setEditableContent}
-                title={editableTitle}
-                onTitleChange={setEditableTitle} 
-              />
-            </>
-          ) : (
-            <JournalEntryContent 
-              entry={entry} 
-              parsedContent={parsedContent} 
-            />
-          )}
-        </div>
-      </main>
-      <DisclaimerBanner />
-    </div>
+        ) : (
+          <JournalEntryContent 
+            entry={entry} 
+            parsedContent={parsedContent} 
+          />
+        )}
+      </div>
+    </JournalEntryLayout>
   );
 };
 
