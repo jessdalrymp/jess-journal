@@ -36,7 +36,7 @@ export const ChallengeDisplay = ({
         <h2 className="text-xl font-medium">Action Challenge</h2>
       </div>
       
-      <div className="flex-1 p-6 flex flex-col justify-between">
+      <div className="flex-grow p-5 flex flex-col">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -45,21 +45,22 @@ export const ChallengeDisplay = ({
             </div>
           </div>
         ) : (
-          <div className="h-full flex flex-col">
-            <h1 className="text-2xl font-bold mb-6">{challenge.title}</h1>
-            <div>
-              <h3 className="text-lg font-medium mb-3">Steps to complete:</h3>
-              <ol className="list-decimal pl-6 space-y-3">
+          <div className="flex flex-col h-full">
+            <div className="mb-4">
+              <h1 className="text-2xl font-bold mb-4">{challenge.title}</h1>
+              <h3 className="text-lg font-medium mb-2">Steps to complete:</h3>
+              <ol className="list-decimal pl-6 space-y-2">
                 {challenge.steps.map((step, index) => (
                   <li key={index} className="text-base">{step}</li>
                 ))}
               </ol>
             </div>
+            <div className="mt-auto"></div>
           </div>
         )}
       </div>
       
-      <div className="p-4 border-t border-jess-subtle flex justify-center gap-4">
+      <div className="mt-auto p-4 border-t border-jess-subtle flex justify-center gap-4">
         <ActionButton 
           onClick={onAcceptChallenge}
           type="primary"
