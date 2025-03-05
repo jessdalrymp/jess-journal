@@ -28,7 +28,7 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
   return (
     <div className="flex flex-col h-full">
       <ChatHeader type={type} onBack={onBack} />
-      <ChatMessageList messages={session.messages} />
+      <ChatMessageList messages={session.messages || []} />
       {loading && (
         <div className="px-4 py-2 bg-gray-50 border-t border-jess-subtle">
           <div className="flex items-center text-sm text-gray-500">

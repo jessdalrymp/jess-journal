@@ -19,9 +19,10 @@ const MyStory = () => {
       localStorage.setItem('hasVisitedStoryPage', 'true');
     } else {
       // Show a notification that the conversation will continue from before
-      const hasExistingStoryConversation = localStorage.getItem('conversations') && 
-        JSON.parse(localStorage.getItem('conversations') || '[]')
-          .some((c: any) => c.type === 'story' && c.messages.length > 1);
+      const storedConversations = localStorage.getItem('conversations');
+      const hasExistingStoryConversation = storedConversations && 
+        JSON.parse(storedConversations)
+          .some((c: any) => c.type === 'story' && c.messages && c.messages.length > 1);
       
       if (hasExistingStoryConversation) {
         toast({

@@ -15,6 +15,14 @@ export const ChatMessageList = ({ messages }: ChatMessageListProps) => {
     }
   }, [messages]);
   
+  if (!messages || messages.length === 0) {
+    return (
+      <div className="flex-1 p-4 flex items-center justify-center text-gray-400">
+        No messages yet
+      </div>
+    );
+  }
+  
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       {messages.map((msg: ChatMessage) => (

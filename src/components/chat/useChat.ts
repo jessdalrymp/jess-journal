@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useUserData } from '../../context/UserDataContext';
 import { useToast } from '@/hooks/use-toast';
 import { ConversationSession, ChatMessage } from '@/lib/types';
@@ -13,13 +13,17 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const { startConversation, addMessageToConversation } = useUserData();
   const { toast } = useToast();
   
-  const initializeChat = async () => {
+  const initializeChat = useCallback(async () => {
     try {
+      setLoading(true);
+      console.log("Initializing chat for type:", type);
+      
       // Try to get existing conversation from storage
       const storedConversations = localStorage.getItem('conversations');
       let existingConversation = null;
       
       if (storedConversations) {
+        console.log("Found stored conversations");
         const conversations = JSON.parse(storedConversations);
         // Find the most recent conversation of this type
         const typeConversations = conversations.filter((c: any) => c.type === type);
@@ -28,16 +32,17 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
           existingConversation = typeConversations.sort((a: any, b: any) => 
             new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
           )[0];
+          console.log("Found existing conversation:", existingConversation);
         }
       }
       
       if (existingConversation) {
-        console.log("Found existing conversation:", existingConversation);
         setSession(existingConversation);
         return;
       }
       
       // If no existing conversation, create a new one
+      console.log("Creating new conversation");
       const newSession = await startConversation(type);
       setSession(newSession);
       
@@ -105,42 +110,41 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
         description: "Please try again later.",
         variant: "destructive",
       });
-      throw error;
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [type, addMessageToConversation, startConversation, toast]);
   
   const sendMessage = async (message: string) => {
-    if (!session) return;
+    if (!session) {
+      console.error("No active session");
+      return;
+    }
     
     setLoading(true);
     
     try {
-      await addMessageToConversation(session.id, message, 'user');
-      
-      setSession(prev => {
-        if (!prev) return null;
-        
-        return {
-          ...prev,
-          messages: [
-            ...prev.messages,
-            {
-              id: Date.now().toString(),
-              role: 'user',
-              content: message,
-              timestamp: new Date(),
-            },
-          ],
-        };
-      });
-      
-      // Get updated messages including the new user message
-      const updatedMessages = session.messages.concat({
+      // Update local state first for immediate UI feedback
+      const newUserMessage: ChatMessage = {
         id: Date.now().toString(),
         role: 'user',
         content: message,
         timestamp: new Date(),
+      };
+      
+      setSession(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          messages: [...prev.messages, newUserMessage],
+        };
       });
+      
+      // Then save to storage
+      await addMessageToConversation(session.id, message, 'user');
+      
+      // Get updated messages including the new user message
+      const updatedMessages = [...(session.messages || []), newUserMessage];
       
       // Format messages for DeepSeek API
       const aiMessages = formatMessagesForAI(updatedMessages, type);
@@ -149,30 +153,26 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       const response = await generateDeepseekResponse(aiMessages);
       const aiResponseText = response.choices[0].message.content;
       
-      await addMessageToConversation(session.id, aiResponseText, 'assistant');
+      // Create AI message object
+      const newAIMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: aiResponseText,
+        timestamp: new Date(),
+      };
       
+      // Update UI
       setSession(prev => {
         if (!prev) return null;
-        
         return {
           ...prev,
-          messages: [
-            ...prev.messages,
-            {
-              id: Date.now().toString(),
-              role: 'user',
-              content: message,
-              timestamp: new Date(),
-            },
-            {
-              id: (Date.now() + 1).toString(),
-              role: 'assistant',
-              content: aiResponseText,
-              timestamp: new Date(),
-            },
-          ],
+          messages: [...prev.messages, newAIMessage],
         };
       });
+      
+      // Save AI message to storage
+      await addMessageToConversation(session.id, aiResponseText, 'assistant');
+      
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -186,8 +186,8 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   };
   
   useEffect(() => {
-    initializeChat().catch((err) => console.error(err));
-  }, []);
+    initializeChat();
+  }, [initializeChat]);
   
   return {
     session,
