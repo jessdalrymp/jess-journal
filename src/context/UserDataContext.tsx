@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { User, UserProfile, MoodType, MoodEntry, JournalEntry } from '../lib/types';
 import { UserData } from './types';
@@ -117,7 +116,7 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
     if (isJournalFetched) {
       // If we've already fetched journal entries, don't fetch again
       console.log("Journal entries already fetched, skipping redundant fetch");
-      return journalEntries;
+      return;
     }
     
     try {
@@ -125,13 +124,11 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
       const entries = await journalActions.fetchJournalEntries(user.id);
       setJournalEntries(entries);
       setIsJournalFetched(true);
-      return entries;
     } catch (error) {
       console.error("Error fetching journal entries:", error);
       // Don't set empty array on error to prevent wiping existing entries
-      return journalEntries;
     }
-  }, [user, journalActions, journalEntries, isJournalFetched]);
+  }, [user, journalActions, isJournalFetched]);
 
   const startConversation = async (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
     if (!user) {
