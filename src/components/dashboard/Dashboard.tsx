@@ -97,8 +97,8 @@ export const Dashboard = () => {
                     to={`/journal-entry/${entry.id}`}
                     className="block border border-jess-subtle p-3 rounded-lg hover:bg-jess-subtle/30 transition-colors"
                   >
-                    <h3 className="font-medium">{getEntryTitle(entry)}</h3>
-                    <div className="text-sm text-jess-muted">
+                    <h3 className="font-medium text-sm line-clamp-1">{getEntryTitle(entry)}</h3>
+                    <div className="text-xs text-jess-muted mt-1">
                       {new Date(entry.createdAt).toLocaleDateString()}
                     </div>
                   </Link>
