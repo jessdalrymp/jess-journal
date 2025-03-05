@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useUserData } from '../../context/UserDataContext';
 import { useAuth } from '@/context/AuthContext';
@@ -21,7 +20,6 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const { user: authUser } = useAuth();
   const { toast } = useToast();
   
-  // Use the user from Auth context as the source of truth
   const user = authUser;
   
   const initializeChat = useCallback(async () => {
@@ -30,7 +28,6 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       console.log("Initializing chat for type:", type);
       console.log("User authentication state:", user ? "Authenticated" : "Not authenticated");
       
-      // Check if user is authenticated first
       if (!user) {
         console.log("User not authenticated, cannot initialize chat");
         setError("Authentication required");
@@ -38,7 +35,6 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
         return;
       }
       
-      // Try to get conversation from localStorage first
       const cachedConversation = getCurrentConversationFromStorage(type);
       if (cachedConversation && cachedConversation.userId === user.id) {
         console.log(`Loaded ${type} conversation from localStorage`);
@@ -47,13 +43,10 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
         return;
       }
       
-      // Get conversation from Supabase or create a new one
       try {
         const conversation = await startConversation(type);
         setSession(conversation);
         
-        // For first-time users, the welcome message is shown in a modal
-        // Only add the AI's first message to the chat if NOT on story page or if not first visit
         if (!conversation.messages || conversation.messages.length === 0) {
           const isStoryType = type === 'story';
           const hasVisitedStoryPage = localStorage.getItem('hasVisitedStoryPage');
@@ -80,10 +73,8 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
             };
             
             setSession(updatedSession);
-            // Save to localStorage
             saveCurrentConversationToStorage(updatedSession);
           } else {
-            // On first visit to story page, add a simplified intro message
             const briefIntro = "I'm excited to hear your story! What would you like to talk about today?";
             await addMessageToConversation(
               conversation.id,
@@ -104,7 +95,6 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
             };
             
             setSession(updatedSession);
-            // Save to localStorage
             saveCurrentConversationToStorage(updatedSession);
           }
         }
@@ -143,7 +133,6 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
     setLoading(true);
     
     try {
-      // Update local state first for immediate UI feedback
       const newUserMessage: ChatMessage = {
         id: Date.now().toString(),
         role: 'user' as const,
@@ -157,23 +146,17 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       };
       
       setSession(updatedSessionWithUserMsg);
-      // Update localStorage with user message
       saveCurrentConversationToStorage(updatedSessionWithUserMsg);
       
-      // Then save to Supabase
       await addMessageToConversation(session.id, message, 'user');
       
-      // Get updated messages including the new user message
       const updatedMessages = [...(session.messages || []), newUserMessage];
       
-      // Format messages for DeepSeek API
       const aiMessages = formatMessagesForAI(updatedMessages, type);
       
-      // Get AI response
       const response = await generateDeepseekResponse(aiMessages);
       const aiResponseText = response.choices[0].message.content;
       
-      // Create AI message object
       const newAIMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant' as const,
@@ -181,17 +164,14 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
         timestamp: new Date(),
       };
       
-      // Update UI
       const finalUpdatedSession: ConversationSession = {
         ...session,
         messages: [...(session.messages || []), newUserMessage, newAIMessage],
       };
       
       setSession(finalUpdatedSession);
-      // Update localStorage with AI response
       saveCurrentConversationToStorage(finalUpdatedSession);
       
-      // Save AI message to Supabase
       await addMessageToConversation(session.id, aiResponseText, 'assistant');
       
     } catch (error) {
@@ -214,16 +194,13 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
     
     try {
       console.log("Generating summary for conversation...");
-      // Only proceed if there are at least a few messages to summarize
       if (!session.messages || session.messages.length <= 2) {
         console.log("Not enough messages to summarize");
         return;
       }
       
-      // Format messages for the AI summary
       const aiMessages = formatMessagesForSummary(session.messages);
       
-      // Get AI summary
       console.log("Requesting AI summary...");
       const response = await generateDeepseekResponse(aiMessages);
       
@@ -235,7 +212,6 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       let summaryText = response.choices[0].message.content || "No summary available";
       console.log("Received summary from AI:", summaryText);
       
-      // Try to parse as JSON if it's in that format
       let title = "Conversation Summary";
       let summary = summaryText;
       
@@ -247,17 +223,16 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
           console.log("Parsed JSON summary:", { title, summary });
         }
       } catch (e) {
-        // If not valid JSON, use the whole text as summary
         console.log("Summary not in JSON format, using raw text");
       }
       
-      // Save the summary to the user's journal
       console.log("Saving summary to journal...", { userId: user.id, title, summary, sessionId: session.id });
+      
+      const { saveConversationSummary } = await import('../../services/conversation');
       await saveConversationSummary(user.id, title, summary, session.id);
       
       console.log("Summary saved to journal");
       
-      // Show success toast
       toast({
         title: "Conversation Summarized",
         description: "Your story has been saved to your journal.",
@@ -280,7 +255,6 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
     if (user) {
       initializeChat();
     } else {
-      // Clear any error if we're not authenticated yet
       setError(null);
     }
   }, [initializeChat, user]);

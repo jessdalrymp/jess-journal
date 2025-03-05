@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { ConversationSession } from '../lib/types';
-import * as conversationService from '../services/conversationService';
+import * as conversationService from '../services/conversation';
 
 export function useConversationActions() {
   const [loading, setLoading] = useState(false);

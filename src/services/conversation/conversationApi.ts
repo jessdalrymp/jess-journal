@@ -1,8 +1,11 @@
 
-import { ConversationSession, ChatMessage } from '../lib/types';
-import { supabase } from '../integrations/supabase/client';
-import { getCurrentConversationFromStorage, saveCurrentConversationToStorage } from '../lib/storageUtils';
+import { ConversationSession, ChatMessage } from '../../lib/types';
+import { supabase } from '../../integrations/supabase/client';
+import { getCachedConversation, cacheConversation } from './conversationCache';
 
+/**
+ * Starts or retrieves an existing conversation for a user
+ */
 export const startConversation = async (userId: string | undefined, type: 'story' | 'sideQuest' | 'action' | 'journal'): Promise<ConversationSession> => {
   if (!userId) {
     throw new Error("User not authenticated");
@@ -10,8 +13,8 @@ export const startConversation = async (userId: string | undefined, type: 'story
 
   try {
     // First check if we have a cached conversation
-    const cachedConversation = getCurrentConversationFromStorage(type);
-    if (cachedConversation && cachedConversation.userId === userId) {
+    const cachedConversation = getCachedConversation(type, userId);
+    if (cachedConversation) {
       console.log(`Loaded ${type} conversation from localStorage`);
       return cachedConversation;
     }
@@ -62,7 +65,7 @@ export const startConversation = async (userId: string | undefined, type: 'story
       };
 
       // Save to localStorage for faster loading next time
-      saveCurrentConversationToStorage(conversation);
+      cacheConversation(conversation);
       console.log(`Loaded ${type} conversation from Supabase and cached to localStorage`);
       
       return conversation;
@@ -97,7 +100,7 @@ export const startConversation = async (userId: string | undefined, type: 'story
     };
 
     // Save to localStorage
-    saveCurrentConversationToStorage(conversation);
+    cacheConversation(conversation);
     console.log(`Created new ${type} conversation and cached to localStorage`);
     
     return conversation;
@@ -107,6 +110,9 @@ export const startConversation = async (userId: string | undefined, type: 'story
   }
 };
 
+/**
+ * Adds a message to an existing conversation
+ */
 export const addMessageToConversation = async (
   conversationId: string, 
   content: string, 
@@ -139,6 +145,7 @@ export const addMessageToConversation = async (
       throw updateError;
     }
     
+    // If this is a journal conversation and the AI responded, create a journal entry
     const { data: conversationData, error: fetchError } = await supabase
       .from('conversations')
       .select('type')
@@ -165,89 +172,13 @@ export const addMessageToConversation = async (
       }
       
       const prompt = userMessages[0].content;
+      
+      // Import dynamically to avoid circular dependencies
+      const { saveJournalEntryFromConversation } = await import('./journalIntegration');
       await saveJournalEntryFromConversation(userId, prompt, content);
     }
   } catch (error) {
     console.error('Error adding message to conversation:', error);
     throw error;
-  }
-};
-
-export const saveConversationSummary = async (
-  userId: string, 
-  title: string, 
-  summary: string, 
-  conversationId: string
-): Promise<void> => {
-  try {
-    console.log('Saving conversation summary with:', {
-      userId, 
-      title: title || 'Conversation Summary', 
-      summary: summary || 'No summary available', 
-      conversationId
-    });
-    
-    // Save the summary to the journal_entries table
-    const { data, error } = await supabase
-      .from('journal_entries')
-      .insert({
-        user_id: userId,
-        prompt: title || 'Conversation Summary',
-        content: summary || 'No summary available',
-        conversation_id: conversationId,
-        type: 'story_summary' as 'journal' | 'story' | 'sideQuest' | 'action'
-      });
-    
-    if (error) {
-      console.error('Error saving conversation summary to journal_entries:', error);
-      throw error;
-    }
-    
-    // Also update the conversations table with the summary
-    const { error: updateError } = await supabase
-      .from('conversations')
-      .update({ 
-        summary: summary || 'No summary available',
-        title: title || 'Conversation Summary'
-      })
-      .eq('id', conversationId);
-    
-    if (updateError) {
-      console.error('Error updating conversation with summary:', updateError);
-      // Not throwing here as the journal entry was already created
-    }
-    
-    // Update the cached conversation if it exists
-    const cachedConversation = getCurrentConversationFromStorage('story');
-    if (cachedConversation && cachedConversation.id === conversationId) {
-      cachedConversation.summary = summary || 'No summary available';
-      cachedConversation.title = title || 'Conversation Summary';
-      saveCurrentConversationToStorage(cachedConversation);
-    }
-    
-    console.log('Successfully saved conversation summary');
-  } catch (error) {
-    console.error('Error in saveConversationSummary:', error);
-    throw error;
-  }
-};
-
-const saveJournalEntryFromConversation = async (userId: string, prompt: string, content: string) => {
-  try {
-    const { data, error } = await supabase
-      .from('journal_entries')
-      .insert({
-        user_id: userId,
-        prompt,
-        content,
-        type: 'journal' as 'journal' | 'story' | 'sideQuest' | 'action'
-      });
-
-    if (error) {
-      console.error('Error saving journal entry from conversation:', error);
-      return;
-    }
-  } catch (error) {
-    console.error('Error processing journal entry from conversation:', error);
   }
 };
