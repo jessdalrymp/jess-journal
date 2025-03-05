@@ -1,14 +1,23 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useChat } from './useChat';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatInput } from './ChatInput';
-import { Loader2, Flag } from 'lucide-react';
+import { Loader2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { ActionButton } from '../ui/ActionButton';
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface ChatInterfaceProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
@@ -19,6 +28,8 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
   const { user } = useAuth();
   const { session, loading, error, sendMessage, generateSummary } = useChat(type);
   const navigate = useNavigate();
+  const [showEndDialog, setShowEndDialog] = useState(false);
+  const { toast } = useToast();
   
   useEffect(() => {
     // If authentication error is detected, log it for debugging
@@ -32,15 +43,33 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
     onBack();
   };
 
+  // Show confirmation dialog for ending conversation
+  const openEndDialog = () => {
+    setShowEndDialog(true);
+  };
+
   // Handle ending the conversation and generating summary
   const handleEndConversation = async () => {
+    setShowEndDialog(false);
+    
     if (type === 'story' && session && session.messages.length > 2) {
       try {
+        toast({
+          title: "Saving conversation...",
+          description: "We're storing your progress so you can continue later.",
+        });
         await generateSummary();
       } catch (error) {
         console.error('Error generating summary:', error);
+        toast({
+          title: "Error saving conversation",
+          description: "There was a problem saving your progress.",
+          variant: "destructive"
+        });
       }
     }
+    
+    onBack();
   };
 
   // If user is not authenticated, show a sign-in prompt
@@ -121,16 +150,35 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
         )}
         <div className="absolute bottom-4 right-4">
           <ActionButton 
-            onClick={handleEndConversation}
+            onClick={openEndDialog}
             type="primary"
-            className="shadow-md"
-            icon={<Flag className="h-4 w-4" />}
+            className="shadow-md px-6 py-3 text-base"
+            icon={<Save className="h-5 w-5" />}
           >
             End Conversation
           </ActionButton>
         </div>
       </div>
       <ChatInput onSendMessage={sendMessage} loading={loading} />
+
+      <Dialog open={showEndDialog} onOpenChange={setShowEndDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>End Conversation</DialogTitle>
+            <DialogDescription>
+              Good job today, we can join this conversation again next time.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEndDialog(false)}>
+              Continue Chatting
+            </Button>
+            <Button onClick={handleEndConversation}>
+              End For Now
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
