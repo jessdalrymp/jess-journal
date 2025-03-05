@@ -105,6 +105,7 @@ export type Database = {
       journal_entries: {
         Row: {
           content: string
+          conversation_id: string | null
           created_at: string
           id: string
           mood: string | null
@@ -114,6 +115,7 @@ export type Database = {
         }
         Insert: {
           content: string
+          conversation_id?: string | null
           created_at?: string
           id?: string
           mood?: string | null
@@ -123,6 +125,7 @@ export type Database = {
         }
         Update: {
           content?: string
+          conversation_id?: string | null
           created_at?: string
           id?: string
           mood?: string | null
@@ -480,6 +483,7 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: {
           content: string
+          conversation_id: string | null
           created_at: string
           id: string
           mood: string | null

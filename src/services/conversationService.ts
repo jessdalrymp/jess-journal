@@ -182,8 +182,8 @@ export const saveConversationSummary = async (
   try {
     console.log('Saving conversation summary with:', {
       userId, 
-      title: title || 'Conversation Summary', // Provide default title
-      summary: summary || 'No summary available', // Provide default summary
+      title: title || 'Conversation Summary', 
+      summary: summary || 'No summary available', 
       conversationId
     });
     
@@ -192,8 +192,8 @@ export const saveConversationSummary = async (
       .from('journal_entries')
       .insert({
         user_id: userId,
-        prompt: title || 'Conversation Summary', // Use default if title is empty
-        content: summary || 'No summary available', // Use default if summary is empty
+        prompt: title || 'Conversation Summary',
+        content: summary || 'No summary available',
         conversation_id: conversationId,
         type: 'story_summary'
       });
@@ -206,7 +206,7 @@ export const saveConversationSummary = async (
     // Also update the conversations table with the summary
     const { error: updateError } = await supabase
       .from('conversations')
-      .update({ summary: summary || 'No summary available' }) // Use default if summary is empty
+      .update({ summary: summary || 'No summary available' })
       .eq('id', conversationId);
     
     if (updateError) {
@@ -217,7 +217,7 @@ export const saveConversationSummary = async (
     // Update the cached conversation if it exists
     const cachedConversation = getCurrentConversationFromStorage('story');
     if (cachedConversation && cachedConversation.id === conversationId) {
-      cachedConversation.summary = summary || 'No summary available'; // Use default if summary is empty
+      cachedConversation.summary = summary || 'No summary available';
       saveCurrentConversationToStorage(cachedConversation);
     }
     
