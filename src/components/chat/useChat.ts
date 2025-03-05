@@ -18,29 +18,63 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       const newSession = await startConversation(type);
       setSession(newSession);
       
-      const initialMessage = getInitialMessage(type);
-      await addMessageToConversation(
-        newSession.id,
-        initialMessage,
-        'assistant'
-      );
+      // For first-time users, the welcome message is shown in a modal
+      // Only add the AI's first message to the chat if NOT on story page or if not first visit
+      const isStoryType = type === 'story';
+      const hasVisitedStoryPage = localStorage.getItem('hasVisitedStoryPage');
+      const isFirstVisit = isStoryType && !hasVisitedStoryPage;
       
-      setSession(prev => {
-        if (!prev) return null;
+      if (!isFirstVisit) {
+        const initialMessage = getInitialMessage(type);
+        await addMessageToConversation(
+          newSession.id,
+          initialMessage,
+          'assistant'
+        );
         
-        return {
-          ...prev,
-          messages: [
-            ...prev.messages,
-            {
-              id: Date.now().toString(),
-              role: 'assistant',
-              content: initialMessage,
-              timestamp: new Date(),
-            },
-          ],
-        };
-      });
+        setSession(prev => {
+          if (!prev) return null;
+          
+          return {
+            ...prev,
+            messages: [
+              ...prev.messages,
+              {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: initialMessage,
+                timestamp: new Date(),
+              },
+            ],
+          };
+        });
+      } else {
+        // On first visit to story page, we'll add a simplified intro message
+        // since the detailed welcome is in the modal
+        const briefIntro = "I'm excited to hear your story! What would you like to talk about today?";
+        await addMessageToConversation(
+          newSession.id,
+          briefIntro,
+          'assistant'
+        );
+        
+        setSession(prev => {
+          if (!prev) return null;
+          
+          return {
+            ...prev,
+            messages: [
+              ...prev.messages,
+              {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: briefIntro,
+                timestamp: new Date(),
+              },
+            ],
+          };
+        });
+      }
     } catch (error) {
       console.error('Error initializing chat:', error);
       toast({

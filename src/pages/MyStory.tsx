@@ -1,9 +1,28 @@
 
+import { useState, useEffect } from "react";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { ChatInterface } from "../components/chat/ChatInterface";
+import { WelcomeModal } from "../components/chat/WelcomeModal";
 
 const MyStory = () => {
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  
+  useEffect(() => {
+    // Check if this is the first visit to the story page
+    const hasVisitedStoryPage = localStorage.getItem('hasVisitedStoryPage');
+    
+    if (!hasVisitedStoryPage) {
+      setShowWelcomeModal(true);
+      // Mark that user has visited the page
+      localStorage.setItem('hasVisitedStoryPage', 'true');
+    }
+  }, []);
+  
+  const handleCloseWelcomeModal = () => {
+    setShowWelcomeModal(false);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
@@ -14,6 +33,12 @@ const MyStory = () => {
         </div>
       </main>
       <DisclaimerBanner />
+      
+      <WelcomeModal 
+        isOpen={showWelcomeModal} 
+        onClose={handleCloseWelcomeModal} 
+        type="story"
+      />
     </div>
   );
 };
