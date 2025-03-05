@@ -36,7 +36,7 @@ export const ChallengeDisplay = ({
         <h2 className="text-xl font-medium">Action Challenge</h2>
       </div>
       
-      <div className="flex-1 p-6 overflow-auto">
+      <div className="flex-1 p-6 flex flex-col justify-between">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -45,17 +45,17 @@ export const ChallengeDisplay = ({
             </div>
           </div>
         ) : (
-          <>
+          <div className="h-full flex flex-col">
             <h1 className="text-2xl font-bold mb-6">{challenge.title}</h1>
-            <div className="mb-8">
+            <div>
               <h3 className="text-lg font-medium mb-3">Steps to complete:</h3>
-              <ol className="list-decimal pl-6 space-y-4">
+              <ol className="list-decimal pl-6 space-y-3">
                 {challenge.steps.map((step, index) => (
                   <li key={index} className="text-base">{step}</li>
                 ))}
               </ol>
             </div>
-          </>
+          </div>
         )}
       </div>
       
