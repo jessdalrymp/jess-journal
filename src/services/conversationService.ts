@@ -1,6 +1,7 @@
 
 import { ConversationSession, ChatMessage } from '../lib/types';
 import { supabase } from '../integrations/supabase/client';
+import { getCurrentConversationFromStorage, saveCurrentConversationToStorage } from '../lib/storageUtils';
 
 export const startConversation = async (userId: string | undefined, type: 'story' | 'sideQuest' | 'action' | 'journal'): Promise<ConversationSession> => {
   if (!userId) {
@@ -8,6 +9,13 @@ export const startConversation = async (userId: string | undefined, type: 'story
   }
 
   try {
+    // First check if we have a cached conversation
+    const cachedConversation = getCurrentConversationFromStorage(type);
+    if (cachedConversation && cachedConversation.userId === userId) {
+      console.log(`Loaded ${type} conversation from localStorage`);
+      return cachedConversation;
+    }
+
     const { data: existingConversations, error: fetchError } = await supabase
       .from('conversations')
       .select('*')
@@ -42,7 +50,7 @@ export const startConversation = async (userId: string | undefined, type: 'story
         timestamp: new Date(msg.timestamp)
       })) : [];
       
-      return {
+      const conversation = {
         id: existingConv.id,
         userId: existingConv.user_id,
         type: existingConv.type as 'story' | 'sideQuest' | 'action' | 'journal',
@@ -52,6 +60,12 @@ export const startConversation = async (userId: string | undefined, type: 'story
         createdAt: new Date(existingConv.created_at),
         updatedAt: new Date(existingConv.updated_at)
       };
+
+      // Save to localStorage for faster loading next time
+      saveCurrentConversationToStorage(conversation);
+      console.log(`Loaded ${type} conversation from Supabase and cached to localStorage`);
+      
+      return conversation;
     }
     
     const newConversationData = {
@@ -71,7 +85,7 @@ export const startConversation = async (userId: string | undefined, type: 'story
       throw createError || new Error('Failed to create conversation');
     }
     
-    return {
+    const conversation = {
       id: newConversation.id,
       userId: newConversation.user_id,
       type: newConversation.type as 'story' | 'sideQuest' | 'action' | 'journal',
@@ -81,6 +95,12 @@ export const startConversation = async (userId: string | undefined, type: 'story
       createdAt: new Date(newConversation.created_at),
       updatedAt: new Date(newConversation.updated_at)
     };
+
+    // Save to localStorage
+    saveCurrentConversationToStorage(conversation);
+    console.log(`Created new ${type} conversation and cached to localStorage`);
+    
+    return conversation;
   } catch (error) {
     console.error('Error starting conversation:', error);
     throw error;

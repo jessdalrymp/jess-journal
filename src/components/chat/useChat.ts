@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ConversationSession, ChatMessage } from '@/lib/types';
 import { generateDeepseekResponse } from '../../utils/deepseekApi';
 import { formatMessagesForAI, getInitialMessage } from './chatUtils';
+import { saveCurrentConversationToStorage } from '@/lib/storageUtils';
 
 export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const [session, setSession] = useState<ConversationSession | null>(null);
@@ -18,7 +19,7 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       setLoading(true);
       console.log("Initializing chat for type:", type);
       
-      // Get conversation from Supabase (via UserDataContext)
+      // Get conversation from Supabase or localStorage
       const conversation = await startConversation(type);
       setSession(conversation);
       
@@ -37,22 +38,21 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
             'assistant'
           );
           
-          setSession(prev => {
-            if (!prev) return null;
-            
-            return {
-              ...prev,
-              messages: [
-                ...(prev.messages || []),
-                {
-                  id: Date.now().toString(),
-                  role: 'assistant',
-                  content: initialMessage,
-                  timestamp: new Date(),
-                },
-              ],
-            };
-          });
+          const updatedSession = {
+            ...conversation,
+            messages: [
+              {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: initialMessage,
+                timestamp: new Date(),
+              },
+            ],
+          };
+          
+          setSession(updatedSession);
+          // Save to localStorage
+          saveCurrentConversationToStorage(updatedSession);
         } else {
           // On first visit to story page, add a simplified intro message
           const briefIntro = "I'm excited to hear your story! What would you like to talk about today?";
@@ -62,22 +62,21 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
             'assistant'
           );
           
-          setSession(prev => {
-            if (!prev) return null;
-            
-            return {
-              ...prev,
-              messages: [
-                ...(prev.messages || []),
-                {
-                  id: Date.now().toString(),
-                  role: 'assistant',
-                  content: briefIntro,
-                  timestamp: new Date(),
-                },
-              ],
-            };
-          });
+          const updatedSession = {
+            ...conversation,
+            messages: [
+              {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: briefIntro,
+                timestamp: new Date(),
+              },
+            ],
+          };
+          
+          setSession(updatedSession);
+          // Save to localStorage
+          saveCurrentConversationToStorage(updatedSession);
         }
       }
     } catch (error) {
@@ -109,13 +108,14 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
         timestamp: new Date(),
       };
       
-      setSession(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          messages: [...(prev.messages || []), newUserMessage],
-        };
-      });
+      const updatedSessionWithUserMsg = {
+        ...session,
+        messages: [...(session.messages || []), newUserMessage],
+      };
+      
+      setSession(updatedSessionWithUserMsg);
+      // Update localStorage with user message
+      saveCurrentConversationToStorage(updatedSessionWithUserMsg);
       
       // Then save to Supabase
       await addMessageToConversation(session.id, message, 'user');
@@ -139,13 +139,14 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       };
       
       // Update UI
-      setSession(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          messages: [...(prev.messages || []), newAIMessage],
-        };
-      });
+      const finalUpdatedSession = {
+        ...session,
+        messages: [...(session.messages || []), newUserMessage, newAIMessage],
+      };
+      
+      setSession(finalUpdatedSession);
+      // Update localStorage with AI response
+      saveCurrentConversationToStorage(finalUpdatedSession);
       
       // Save AI message to Supabase
       await addMessageToConversation(session.id, aiResponseText, 'assistant');

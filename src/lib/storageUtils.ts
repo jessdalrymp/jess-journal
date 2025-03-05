@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for interacting with localStorage
  */
@@ -98,5 +97,34 @@ export const saveConversationsToStorage = (conversations: ConversationSession[])
     localStorage.setItem('conversations', JSON.stringify(conversations));
   } catch (error) {
     console.error('Error saving conversations to storage:', error);
+  }
+};
+
+export const getCurrentConversationFromStorage = (type: 'story' | 'sideQuest' | 'action' | 'journal'): ConversationSession | null => {
+  try {
+    const key = `currentConversation_${type}`;
+    const storedConversation = localStorage.getItem(key);
+    return storedConversation ? JSON.parse(storedConversation) : null;
+  } catch (error) {
+    console.error(`Error loading ${type} conversation from storage:`, error);
+    return null;
+  }
+};
+
+export const saveCurrentConversationToStorage = (conversation: ConversationSession): void => {
+  try {
+    const key = `currentConversation_${conversation.type}`;
+    localStorage.setItem(key, JSON.stringify(conversation));
+  } catch (error) {
+    console.error('Error saving conversation to storage:', error);
+  }
+};
+
+export const clearCurrentConversationFromStorage = (type: 'story' | 'sideQuest' | 'action' | 'journal'): void => {
+  try {
+    const key = `currentConversation_${type}`;
+    localStorage.removeItem(key);
+  } catch (error) {
+    console.error(`Error clearing ${type} conversation from storage:`, error);
   }
 };
