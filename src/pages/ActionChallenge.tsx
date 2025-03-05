@@ -131,6 +131,13 @@ const ActionChallenge = () => {
     }
   };
 
+  // Generate a challenge when the component mounts if the user is authenticated
+  useEffect(() => {
+    if (user) {
+      handleGenerateNewChallenge();
+    }
+  }, [user]);
+
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
