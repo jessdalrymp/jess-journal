@@ -18,8 +18,8 @@ const SideQuest = () => {
       localStorage.setItem("hasVisitedSideQuestPage", "true");
     }
     
-    // Force refresh of the conversation to apply new system prompts
-    localStorage.removeItem("currentSideQuestConversation");
+    // Always remove any existing side quest conversation to start fresh
+    localStorage.removeItem("currentConversation_sideQuest");
   }, []);
 
   return (
