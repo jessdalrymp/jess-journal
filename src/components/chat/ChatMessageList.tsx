@@ -35,7 +35,7 @@ export const ChatMessageList = ({ messages }: ChatMessageListProps) => {
         >
           {msg.role === 'assistant' ? (
             <ReactMarkdown 
-              className="prose prose-sm max-w-none dark:prose-invert"
+              className="whitespace-pre-wrap text-sm prose-headings:text-base prose-headings:font-medium prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-li:ml-4 prose-a:text-blue-600 max-w-none"
             >
               {msg.content}
             </ReactMarkdown>
