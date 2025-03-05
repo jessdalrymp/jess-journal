@@ -1,8 +1,10 @@
-import { ChatMessage } from '@/lib/types';
 
-export const formatMessagesForAI = (messages: ChatMessage[], type: 'story' | 'sideQuest' | 'action' | 'journal') => {
+import { ChatMessage } from '@/lib/types';
+import { DeepseekMessage } from '@/utils/deepseekApi';
+
+export const formatMessagesForAI = (messages: ChatMessage[], type: 'story' | 'sideQuest' | 'action' | 'journal'): DeepseekMessage[] => {
   const formattedMessages = messages.map(msg => ({
-    role: msg.role,
+    role: msg.role as 'user' | 'assistant',
     content: msg.content
   }));
   
@@ -54,12 +56,66 @@ Constraints:
 Present the challenge in a clear, step-by-step format, explaining both what to do and the psychological purpose behind it. Be supportive but push for real action and commitment.`;
   }
   
-  const systemMessage = {
+  const systemMessage: DeepseekMessage = {
     role: 'system',
     content: systemPrompt
   };
   
-  const formattedMessagesWithPrompt = [systemMessage, ...formattedMessages];
+  const formattedMessagesWithPrompt: DeepseekMessage[] = [systemMessage, ...formattedMessages];
   
   return formattedMessagesWithPrompt;
+};
+
+// Added the missing function for summary formatting
+export const formatMessagesForSummary = (messages: ChatMessage[]): DeepseekMessage[] => {
+  const userMessages = messages.filter(msg => msg.role === 'user');
+  const assistantMessages = messages.filter(msg => msg.role === 'assistant');
+  
+  const formattedMessages: DeepseekMessage[] = messages.map(msg => ({
+    role: msg.role as 'user' | 'assistant',
+    content: msg.content
+  }));
+  
+  const systemMessage: DeepseekMessage = {
+    role: 'system',
+    content: `Analyze the conversation and create a concise summary including key insights, themes, and takeaways. 
+    Format your response as a JSON object with two fields:
+    1. "title": A brief, descriptive title for this conversation (max 60 chars)
+    2. "summary": A 2-3 paragraph summary highlighting the most important points discussed.
+    Only respond with valid JSON.`
+  };
+  
+  return [systemMessage, ...formattedMessages];
+};
+
+// Added the missing function for chat titles
+export const getChatTitle = (type: 'story' | 'sideQuest' | 'action' | 'journal'): string => {
+  switch (type) {
+    case 'story':
+      return 'My Story';
+    case 'sideQuest':
+      return 'Side Quest';
+    case 'action':
+      return 'Action Challenge';
+    case 'journal':
+      return 'Journal';
+    default:
+      return 'Conversation';
+  }
+};
+
+// Added the missing function for initial messages
+export const getInitialMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal'): string => {
+  switch (type) {
+    case 'story':
+      return "Welcome to 'My Story.' I'm here to help you explore and reflect on your life journey. You can talk about past experiences, current situations, or future aspirations. What would you like to discuss today?";
+    case 'sideQuest':
+      return "Welcome to Side Quest! This is a focused session where we can work on specific challenges or goals. What specific area of your life would you like to improve or explore?";
+    case 'action':
+      return "Welcome to Action Challenge! I'll create a personalized challenge designed to help you break out of your comfort zone and experience new insights. Tell me a bit about what you've been working on or struggling with lately, and I'll design a unique experiential challenge for you.";
+    case 'journal':
+      return "Welcome to your Journal space. This is a place for reflection and exploration. What's on your mind today that you'd like to process through writing?";
+    default:
+      return "Hello! How can I assist you today?";
+  }
 };

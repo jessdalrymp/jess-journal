@@ -12,14 +12,13 @@ import {
 export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false); // Track initialization state
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const { startConversation, addMessageToConversation } = useUserData();
   const { user: authUser } = useAuth();
   const { toast } = useToast();
 
   const initializeChat = useCallback(async () => {
-    // Prevent multiple initializations
     if (isInitialized) {
       console.log("Chat already initialized, using existing session");
       const existingSession = getCurrentConversationFromStorage(type);
@@ -38,12 +37,9 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         return null;
       }
       
-      // For sideQuest, handle special logic
       if (type === 'sideQuest') {
-        // Check for cached conversation first
         const cachedConversation = getCurrentConversationFromStorage(type);
         
-        // If we have a valid cached conversation with messages, use it
         if (
           cachedConversation && 
           cachedConversation.userId === authUser.id && 
@@ -56,11 +52,9 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           return cachedConversation;
         }
         
-        // If no valid cached conversation or it was cleared, start a fresh one
         console.log('No valid cached sideQuest conversation, creating new one');
         const conversation = await startConversation(type);
         
-        // Add initial message from assistant
         const initialMessage = getInitialMessage(type);
         await addMessageToConversation(
           conversation.id,
@@ -86,7 +80,6 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         return updatedSession;
       }
       
-      // For other types, check for cached conversation first
       const cachedConversation = getCurrentConversationFromStorage(type);
       if (cachedConversation && cachedConversation.userId === authUser.id) {
         console.log(`Loaded ${type} conversation from localStorage`);

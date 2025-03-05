@@ -8,7 +8,7 @@ export const saveJournalEntryFromConversation = async (
   userId: string, 
   prompt: string, 
   content: string,
-  conversationType: 'journal' | 'sideQuest' = 'journal'
+  conversationType: 'journal' | 'sideQuest' | 'action' = 'journal'
 ): Promise<void> => {
   try {
     console.log(`Saving ${conversationType} entry from conversation for user ${userId}`);
