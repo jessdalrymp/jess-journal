@@ -16,7 +16,7 @@ export const saveJournalEntryFromConversation = async (
         user_id: userId,
         prompt,
         content,
-        type: 'journal' as 'journal' | 'story' | 'sideQuest' | 'action'
+        type: 'sideQuest' as 'journal' | 'story' | 'sideQuest' | 'action'
       });
 
     if (error) {

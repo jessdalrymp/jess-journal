@@ -145,7 +145,7 @@ export const addMessageToConversation = async (
       throw updateError;
     }
     
-    // If this is a journal conversation and the AI responded, create a journal entry
+    // If this is a journal or sideQuest conversation and the AI responded, create a journal entry
     const { data: conversationData, error: fetchError } = await supabase
       .from('conversations')
       .select('type')
@@ -157,7 +157,7 @@ export const addMessageToConversation = async (
       return;
     }
     
-    if (conversationData.type === 'journal' && role === 'assistant' && userId) {
+    if ((conversationData.type === 'journal' || conversationData.type === 'sideQuest') && role === 'assistant' && userId) {
       const { data: userMessages, error: userMessagesError } = await supabase
         .from('messages')
         .select('content')
