@@ -2,11 +2,15 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../context/UserDataContext';
-import { Book, MessageSquare, Lightbulb, PenLine, Clock, History, User, ArrowRight } from 'lucide-react';
+import { Book, MessageSquare, Lightbulb, PenLine, Clock, History, User, ArrowRight, FilePlus } from 'lucide-react';
+import { ActionButton } from '../ui/ActionButton';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export const Dashboard = () => {
   const { user } = useAuth();
-  const { profile, journalEntries } = useUserData();
+  const { profile, journalEntries, startConversation, addMessageToConversation } = useUserData();
+  const navigate = useNavigate();
 
   // Get recent journal entries
   const recentEntries = [...(journalEntries || [])]
@@ -34,6 +38,32 @@ export const Dashboard = () => {
     }
     
     return entry.title;
+  };
+
+  // Function to create a blank journal entry
+  const createBlankJournalEntry = async () => {
+    try {
+      toast.loading("Creating blank journal entry...");
+      
+      // Start a new journal conversation
+      const session = await startConversation('journal');
+      
+      // Add a system message to create a blank entry
+      await addMessageToConversation(
+        session.id, 
+        "Creating a blank journal entry with default title and empty content.", 
+        'assistant'
+      );
+      
+      // Redirect to the journal history page
+      toast.dismiss();
+      toast.success("Blank journal entry created");
+      navigate('/journal-history');
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Failed to create blank journal entry");
+      console.error("Error creating blank journal entry:", error);
+    }
   };
 
   return (
@@ -85,7 +115,17 @@ export const Dashboard = () => {
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <div className="flex justify-between items-center mb-5">
             <h2 className="text-xl font-medium">Recent Activity</h2>
-            <Link to="/journal-history" className="text-jess-primary text-sm">View All</Link>
+            <div className="flex items-center gap-2">
+              <ActionButton 
+                onClick={createBlankJournalEntry} 
+                type="secondary"
+                className="py-1 px-3 text-sm"
+                icon={<FilePlus size={16} />}
+              >
+                New Entry
+              </ActionButton>
+              <Link to="/journal-history" className="text-jess-primary text-sm">View All</Link>
+            </div>
           </div>
           
           <div className="flex flex-col items-center justify-center h-[220px]">
