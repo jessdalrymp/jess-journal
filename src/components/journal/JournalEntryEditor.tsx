@@ -75,14 +75,14 @@ export const JournalEntryEditor = ({
     <div className="w-full space-y-4 overflow-hidden">
       {promptText && (
         <div className="bg-jess-subtle p-4 rounded-md italic text-gray-700">
-          <p className="font-medium">Prompt: {promptText}</p>
+          <p className="font-medium font-sourcesans">Prompt: {promptText}</p>
         </div>
       )}
       
       <Textarea 
         value={cleanedContent} 
         onChange={(e) => handleChange(e.target.value)}
-        className="w-full min-h-[300px] font-mono text-sm"
+        className="w-full min-h-[300px] font-sourcesans text-sm"
         placeholder="Write your journal entry here..."
       />
     </div>

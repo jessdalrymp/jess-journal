@@ -34,7 +34,7 @@ export const JournalChallengeDisplay = ({
         <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h2 className="text-lg font-medium">Journal Challenge</h2>
+        <h2 className="text-lg font-medium font-cormorant">Journal Challenge</h2>
       </div>
 
       <div className="flex-1 p-6">
@@ -49,6 +49,7 @@ export const JournalChallengeDisplay = ({
               size="sm" 
               onClick={onNewChallenge}
               disabled={isLoading}
+              className="font-sourcesans"
             >
               <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
               {isLoading ? "Generating..." : "Get New Prompt"}
@@ -56,14 +57,14 @@ export const JournalChallengeDisplay = ({
           </div>
 
           <Card className="bg-white p-6 rounded-lg shadow-sm border mb-6">
-            <h1 className="text-2xl font-bold text-jess-primary mb-4">{journalPrompt.title}</h1>
+            <h1 className="text-2xl font-bold text-jess-primary mb-4 font-cormorant">{journalPrompt.title}</h1>
             
             <div className="bg-jess-subtle p-5 rounded-lg mb-6">
-              <p className="text-lg font-medium italic">{journalPrompt.prompt}</p>
+              <p className="text-lg font-medium italic font-sourcesans">{journalPrompt.prompt}</p>
             </div>
             
-            <h3 className="font-semibold text-gray-700 mb-3">Instructions:</h3>
-            <ol className="space-y-3 list-decimal pl-5">
+            <h3 className="font-semibold text-gray-700 mb-3 font-cormorant">Instructions:</h3>
+            <ol className="space-y-3 list-decimal pl-5 font-sourcesans">
               {journalPrompt.instructions.map((instruction, index) => (
                 <li key={index} className="text-gray-600">{instruction}</li>
               ))}
@@ -73,7 +74,7 @@ export const JournalChallengeDisplay = ({
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               onClick={onAcceptChallenge} 
-              className="bg-jess-primary hover:bg-jess-primary/90 text-white"
+              className="bg-jess-primary hover:bg-jess-primary/90 text-white font-sourcesans"
               size="lg"
             >
               <Pen className="mr-2 h-5 w-5" />
@@ -84,6 +85,7 @@ export const JournalChallengeDisplay = ({
               variant="outline" 
               onClick={onStartChat}
               size="lg"
+              className="font-sourcesans"
             >
               <MessageSquare className="mr-2 h-5 w-5" />
               Chat with Jess
@@ -93,12 +95,12 @@ export const JournalChallengeDisplay = ({
           <Separator className="my-8" />
 
           <div className="bg-jess-subtle p-5 rounded-lg">
-            <h3 className="font-semibold text-gray-700 mb-3">Journal Progress Tracker</h3>
-            <p className="text-gray-600 mb-4">Track your journaling progress and view your previous entries to see how your thoughts and insights have evolved over time.</p>
+            <h3 className="font-semibold text-gray-700 mb-3 font-cormorant">Journal Progress Tracker</h3>
+            <p className="text-gray-600 mb-4 font-sourcesans">Track your journaling progress and view your previous entries to see how your thoughts and insights have evolved over time.</p>
             <Button
               variant="outline"
               onClick={() => window.location.href = '/journal-history'}
-              className="w-full"
+              className="w-full font-sourcesans"
             >
               View Journal History
             </Button>
