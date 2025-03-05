@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, UserProfile, MoodType, MoodEntry, JournalEntry } from '../lib/types';
+import { MoodType, MoodEntry, JournalEntry } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
-import { useUserActions } from '../hooks/useUserActions';
+import { useUserData } from '../hooks/useUserData';
 import { useMoodActions } from '../hooks/useMoodActions';
 import { useJournalActions } from '../hooks/useJournalActions';
 import { useConversationActions } from '../hooks/useConversationActions';
@@ -13,71 +13,33 @@ interface UserDataProviderProps {
 }
 
 export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null | undefined>(null);
-  const [profile, setProfile] = useState<UserProfile | null | undefined>(null);
+  const { 
+    user, 
+    profile, 
+    loading: userLoading, 
+    fetchUser, 
+    fetchProfile, 
+    saveProfile 
+  } = useUserData();
+
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [isJournalFetched, setIsJournalFetched] = useState(false);
   
-  const userActions = useUserActions();
   const moodActions = useMoodActions();
   const journalActions = useJournalActions();
   const conversationActions = useConversationActions();
   const { toast } = useToast();
   
   // Combined loading state
-  const loading = userActions.loading || moodActions.loading || 
+  const loading = userLoading || moodActions.loading || 
                  journalActions.loading || conversationActions.loading;
 
   useEffect(() => {
-    fetchUser();
-  }, []);
-
-  useEffect(() => {
     if (user) {
-      fetchProfile();
       fetchMoodEntries();
     }
   }, [user]);
-
-  const fetchUser = async () => {
-    try {
-      const userData = await userActions.fetchUser();
-      setUser(userData);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      toast({
-        title: "Error loading user data",
-        description: "Please try refreshing the page",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const fetchProfile = async () => {
-    if (!user) {
-      setProfile(null);
-      return;
-    }
-
-    try {
-      const profileData = await userActions.fetchProfile(user.id);
-      setProfile(profileData);
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-    }
-  };
-
-  const saveProfile = async (profileData: Partial<UserProfile>) => {
-    if (!user) {
-      return;
-    }
-
-    const updatedProfile = await userActions.saveProfile(user.id, profileData);
-    if (updatedProfile) {
-      setProfile(updatedProfile);
-    }
-  };
 
   const fetchMoodEntries = async () => {
     if (user) {
