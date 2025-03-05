@@ -20,6 +20,32 @@ export const useConversations = (userId: string | undefined) => {
     }
   };
 
+  const getConversation = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
+    if (!userId) return null;
+    
+    try {
+      // Get conversations from storage
+      const storedConversations = getConversationsFromStorage();
+      
+      // Find the most recent conversation of the requested type for this user
+      const typeConversations = storedConversations.filter(
+        c => c.type === type && c.userId === userId
+      );
+      
+      if (typeConversations.length === 0) {
+        return null;
+      }
+      
+      // Return the most recent conversation
+      return typeConversations.sort((a, b) => 
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      )[0];
+    } catch (error) {
+      console.error('Error getting conversation:', error);
+      return null;
+    }
+  };
+
   const startConversation = async (type: 'story' | 'sideQuest' | 'action' | 'journal', title?: string) => {
     if (!userId) throw new Error('User not authenticated');
     
@@ -70,6 +96,7 @@ export const useConversations = (userId: string | undefined) => {
   return {
     conversations,
     loadConversations,
+    getConversation,
     startConversation,
     addMessageToConversation
   };

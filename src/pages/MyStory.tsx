@@ -4,6 +4,7 @@ import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { ChatInterface } from "../components/chat/ChatInterface";
 import { WelcomeModal } from "../components/chat/WelcomeModal";
+import { toast } from "../hooks/use-toast";
 
 const MyStory = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -16,6 +17,19 @@ const MyStory = () => {
       setShowWelcomeModal(true);
       // Mark that user has visited the page
       localStorage.setItem('hasVisitedStoryPage', 'true');
+    } else {
+      // Show a notification that the conversation will continue from before
+      const hasExistingStoryConversation = localStorage.getItem('conversations') && 
+        JSON.parse(localStorage.getItem('conversations') || '[]')
+          .some((c: any) => c.type === 'story' && c.messages.length > 1);
+      
+      if (hasExistingStoryConversation) {
+        toast({
+          title: "Welcome back!",
+          description: "Your previous conversation has been loaded.",
+          duration: 3000,
+        });
+      }
     }
   }, []);
   

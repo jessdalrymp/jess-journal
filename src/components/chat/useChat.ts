@@ -15,6 +15,29 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   
   const initializeChat = async () => {
     try {
+      // Try to get existing conversation from storage
+      const storedConversations = localStorage.getItem('conversations');
+      let existingConversation = null;
+      
+      if (storedConversations) {
+        const conversations = JSON.parse(storedConversations);
+        // Find the most recent conversation of this type
+        const typeConversations = conversations.filter((c: any) => c.type === type);
+        
+        if (typeConversations.length > 0) {
+          existingConversation = typeConversations.sort((a: any, b: any) => 
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          )[0];
+        }
+      }
+      
+      if (existingConversation) {
+        console.log("Found existing conversation:", existingConversation);
+        setSession(existingConversation);
+        return;
+      }
+      
+      // If no existing conversation, create a new one
       const newSession = await startConversation(type);
       setSession(newSession);
       

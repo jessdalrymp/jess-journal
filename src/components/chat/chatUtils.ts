@@ -1,3 +1,4 @@
+
 import { ChatMessage } from '@/lib/types';
 import { DeepseekMessage } from '../../utils/deepseekApi';
 
@@ -47,11 +48,14 @@ export const getSystemPrompt = (type: 'story' | 'sideQuest' | 'action' | 'journa
         - Prompt users to rewrite their story from a more empowering angle
       
       Always:
+      - Remember key details the user shares about themselves
+      - Adapt your conversation style and suggestions to match their personality and values
+      - Refer back to previous topics they've mentioned to create continuity
+      - Be supportive, kind, and empathetic regardless of their circumstances
       - Focus on questions rather than solutions
-      - Be conversational and empathetic
-      - Adapt your approach based on the user's responses
-      - Remember details from previous exchanges
+      - Be conversational and warm
       - Keep your responses concise (3-5 sentences max) and conversational
+      - Remember details from previous exchanges
       
       Begin by asking about a pivotal story in their life that still holds emotional weight.`;
     default:
