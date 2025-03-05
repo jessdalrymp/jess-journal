@@ -41,67 +41,81 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       }
       
       // Get conversation from Supabase or create a new one
-      const conversation = await startConversation(type);
-      setSession(conversation);
-      
-      // For first-time users, the welcome message is shown in a modal
-      // Only add the AI's first message to the chat if NOT on story page or if not first visit
-      if (!conversation.messages || conversation.messages.length === 0) {
-        const isStoryType = type === 'story';
-        const hasVisitedStoryPage = localStorage.getItem('hasVisitedStoryPage');
-        const isFirstVisit = isStoryType && !hasVisitedStoryPage;
+      try {
+        const conversation = await startConversation(type);
+        setSession(conversation);
         
-        if (!isFirstVisit) {
-          const initialMessage = getInitialMessage(type);
-          await addMessageToConversation(
-            conversation.id,
-            initialMessage,
-            'assistant' as const
-          );
+        // For first-time users, the welcome message is shown in a modal
+        // Only add the AI's first message to the chat if NOT on story page or if not first visit
+        if (!conversation.messages || conversation.messages.length === 0) {
+          const isStoryType = type === 'story';
+          const hasVisitedStoryPage = localStorage.getItem('hasVisitedStoryPage');
+          const isFirstVisit = isStoryType && !hasVisitedStoryPage;
           
-          const updatedSession: ConversationSession = {
-            ...conversation,
-            messages: [
-              {
-                id: Date.now().toString(),
-                role: 'assistant' as const,
-                content: initialMessage,
-                timestamp: new Date(),
-              },
-            ],
-          };
-          
-          setSession(updatedSession);
-          // Save to localStorage
-          saveCurrentConversationToStorage(updatedSession);
-        } else {
-          // On first visit to story page, add a simplified intro message
-          const briefIntro = "I'm excited to hear your story! What would you like to talk about today?";
-          await addMessageToConversation(
-            conversation.id,
-            briefIntro,
-            'assistant' as const
-          );
-          
-          const updatedSession: ConversationSession = {
-            ...conversation,
-            messages: [
-              {
-                id: Date.now().toString(),
-                role: 'assistant' as const,
-                content: briefIntro,
-                timestamp: new Date(),
-              },
-            ],
-          };
-          
-          setSession(updatedSession);
-          // Save to localStorage
-          saveCurrentConversationToStorage(updatedSession);
+          if (!isFirstVisit) {
+            const initialMessage = getInitialMessage(type);
+            await addMessageToConversation(
+              conversation.id,
+              initialMessage,
+              'assistant' as const
+            );
+            
+            const updatedSession: ConversationSession = {
+              ...conversation,
+              messages: [
+                {
+                  id: Date.now().toString(),
+                  role: 'assistant' as const,
+                  content: initialMessage,
+                  timestamp: new Date(),
+                },
+              ],
+            };
+            
+            setSession(updatedSession);
+            // Save to localStorage
+            saveCurrentConversationToStorage(updatedSession);
+          } else {
+            // On first visit to story page, add a simplified intro message
+            const briefIntro = "I'm excited to hear your story! What would you like to talk about today?";
+            await addMessageToConversation(
+              conversation.id,
+              briefIntro,
+              'assistant' as const
+            );
+            
+            const updatedSession: ConversationSession = {
+              ...conversation,
+              messages: [
+                {
+                  id: Date.now().toString(),
+                  role: 'assistant' as const,
+                  content: briefIntro,
+                  timestamp: new Date(),
+                },
+              ],
+            };
+            
+            setSession(updatedSession);
+            // Save to localStorage
+            saveCurrentConversationToStorage(updatedSession);
+          }
         }
+      } catch (err) {
+        console.error('Error initializing chat:', err);
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Failed to initialize chat");
+        }
+        toast({
+          title: "Error starting conversation",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error('Error initializing chat:', error);
+      console.error('Error in initializeChat:', error);
       setError("Failed to initialize chat");
       toast({
         title: "Error starting conversation",
@@ -188,6 +202,9 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   useEffect(() => {
     if (user) {
       initializeChat();
+    } else {
+      // Clear any error if we're not authenticated yet
+      setError(null);
     }
   }, [initializeChat, user]);
   

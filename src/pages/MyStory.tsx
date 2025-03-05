@@ -78,6 +78,10 @@ const MyStory = () => {
     navigate('/');
   };
 
+  const handleSignIn = () => {
+    navigate('/', { state: { openAuth: true } });
+  };
+
   // Show loading state while checking authentication
   if (isLoading) {
     return (
@@ -103,9 +107,14 @@ const MyStory = () => {
           <div className="bg-white rounded-lg shadow-sm p-8 max-w-md mx-auto text-center">
             <h2 className="text-xl font-medium mb-4">Sign In Required</h2>
             <p className="mb-6">Please sign in to access your personal story.</p>
-            <Button onClick={() => navigate('/')}>
-              Return to Home
-            </Button>
+            <div className="flex flex-col gap-3">
+              <Button onClick={handleSignIn} className="w-full">
+                Sign In
+              </Button>
+              <Button onClick={handleBack} variant="outline" className="w-full">
+                Back to Home
+              </Button>
+            </div>
           </div>
         </main>
         <DisclaimerBanner />
