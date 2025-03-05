@@ -1,9 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Save, X } from "lucide-react";
+import { Save, X, Clock } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -13,18 +13,52 @@ interface JournalingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   challengeType: 'action' | 'journal';
+  promptText?: string;
 }
 
 export const JournalingDialog = ({
   open,
   onOpenChange,
   challengeType,
+  promptText
 }: JournalingDialogProps) => {
   const [journalContent, setJournalContent] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [timeSpent, setTimeSpent] = useState(0);
+  const [timerActive, setTimerActive] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Start the timer when the dialog opens
+  useEffect(() => {
+    let interval: number;
+    
+    if (open && timerActive) {
+      interval = window.setInterval(() => {
+        setTimeSpent(prev => prev + 1);
+      }, 1000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [open, timerActive]);
+
+  useEffect(() => {
+    if (open) {
+      setTimerActive(true);
+    } else {
+      setTimerActive(false);
+      setTimeSpent(0);
+    }
+  }, [open]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
 
   const handleSaveAndClose = async () => {
     if (!user || !journalContent.trim()) return;
@@ -35,7 +69,9 @@ export const JournalingDialog = ({
       // Format the journal content as JSON
       const jsonContent = JSON.stringify({
         title: `${challengeType === 'action' ? 'Action' : 'Journal'} Challenge Reflection`,
-        summary: journalContent.trim()
+        summary: journalContent.trim(),
+        timeSpent: timeSpent,
+        prompt: promptText || ""
       }, null, 2);
       
       const formattedContent = `\`\`\`json\n${jsonContent}\n\`\`\``;
@@ -43,7 +79,7 @@ export const JournalingDialog = ({
       // Save to journal entries
       await saveJournalEntryFromConversation(
         user.id, 
-        `${challengeType === 'action' ? 'Action' : 'Journal'} Challenge Reflection`, 
+        promptText || `${challengeType === 'action' ? 'Action' : 'Journal'} Challenge Reflection`, 
         formattedContent,
         challengeType
       );
@@ -82,12 +118,25 @@ export const JournalingDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl max-h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl mb-4">Reflect on Your Experience</DialogTitle>
+          <DialogTitle className="text-center text-2xl mb-4">Write Your Journal Entry</DialogTitle>
         </DialogHeader>
+        
+        {promptText && (
+          <div className="bg-jess-subtle p-4 rounded-md mb-4">
+            <p className="italic font-medium text-gray-700">{promptText}</p>
+          </div>
+        )}
+        
+        <div className="flex items-center justify-between mb-2 text-gray-500">
+          <div className="flex items-center">
+            <Clock className="h-4 w-4 mr-1" />
+            <span className="text-sm">Time spent: {formatTime(timeSpent)}</span>
+          </div>
+        </div>
         
         <div className="flex-1 overflow-auto min-h-[300px] mb-4">
           <Textarea
-            placeholder="Write about your experience with the challenge. What did you notice? How did it feel? What insights did you gain?"
+            placeholder="Write about your thoughts, feelings, and insights related to this prompt. Let your ideas flow freely."
             className="min-h-[300px] p-4 text-base"
             value={journalContent}
             onChange={(e) => setJournalContent(e.target.value)}
@@ -104,7 +153,7 @@ export const JournalingDialog = ({
             disabled={!journalContent.trim() || isSaving}
           >
             <Save className="mr-2 h-4 w-4" />
-            Save & Close Challenge
+            Save & View History
           </Button>
         </div>
       </DialogContent>

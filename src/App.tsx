@@ -33,6 +33,7 @@ const App = () => (
               <Route path="/side-quest" element={<SideQuest />} />
               <Route path="/action-challenge" element={<ActionChallenge />} />
               <Route path="/journal-challenge" element={<JournalChallenge />} />
+              <Route path="/journal-challenge/chat" element={<JournalChallenge />} />
               <Route path="/journal-history" element={<JournalHistory />} />
               <Route path="/journal-entry/:id" element={<JournalEntry />} />
               <Route path="/blank-journal" element={<BlankJournal />} />

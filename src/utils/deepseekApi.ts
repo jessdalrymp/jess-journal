@@ -54,3 +54,54 @@ export function extractDeepseekResponseText(response: DeepseekResponse): string 
   }
   return "";
 }
+
+// Helper function to generate personalized journal prompts based on user history
+export async function generatePersonalizedJournalPrompt(
+  userId: string
+): Promise<string> {
+  try {
+    // Get the user's previous journal entries
+    const { data: journalEntries, error: journalError } = await supabase
+      .from('journal_entries')
+      .select('content, prompt, created_at')
+      .eq('user_id', userId)
+      .eq('type', 'journal')
+      .order('created_at', { ascending: false })
+      .limit(5);
+    
+    if (journalError) {
+      console.error("Error fetching journal entries:", journalError);
+      throw journalError;
+    }
+    
+    // Extract themes and patterns from the entries
+    let previousEntries = '';
+    if (journalEntries && journalEntries.length > 0) {
+      previousEntries = journalEntries.map(entry => 
+        `Date: ${new Date(entry.created_at).toLocaleDateString()}\nPrompt: ${entry.prompt}\nContent: ${entry.content.substring(0, 100)}...`
+      ).join('\n\n');
+    }
+    
+    // Generate a personalized prompt
+    const systemPrompt = `You are Jess, an AI life coach specializing in creating personalized writing prompts.
+    Create a unique journaling prompt based on the user's previous journal entries.
+    Identify patterns, themes, or areas for further reflection based on what they've written.
+    If there are no previous entries, create a general prompt about self-discovery.
+    
+    Your response should be a single, thought-provoking question or statement.`;
+    
+    const userPrompt = previousEntries 
+      ? `Here are my previous journal entries:\n\n${previousEntries}\n\nBased on these entries, suggest a personalized journaling prompt that will help me go deeper.` 
+      : "I'm starting my journaling journey. Suggest a prompt for self-discovery.";
+    
+    const response = await generateDeepseekResponse([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ]);
+    
+    return extractDeepseekResponseText(response);
+  } catch (error) {
+    console.error("Error generating personalized journal prompt:", error);
+    return "What patterns have you noticed in how you respond to challenges, and how has your perspective shifted over time?";
+  }
+}

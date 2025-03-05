@@ -7,13 +7,15 @@ interface JournalEntryEditorProps {
   onChange: (value: string) => void;
   title: string;
   onTitleChange: (value: string) => void;
+  promptText?: string;
 }
 
 export const JournalEntryEditor = ({ 
   content, 
   onChange,
   title,
-  onTitleChange
+  onTitleChange,
+  promptText
 }: JournalEntryEditorProps) => {
   const [cleanedContent, setCleanedContent] = useState("");
 
@@ -70,11 +72,19 @@ export const JournalEntryEditor = ({
   };
 
   return (
-    <Textarea 
-      value={cleanedContent} 
-      onChange={(e) => handleChange(e.target.value)}
-      className="w-full min-h-[300px] font-mono text-sm"
-      placeholder="Write your journal entry here..."
-    />
+    <div className="w-full space-y-4">
+      {promptText && (
+        <div className="bg-jess-subtle p-4 rounded-md italic text-gray-700">
+          <p className="font-medium">Prompt: {promptText}</p>
+        </div>
+      )}
+      
+      <Textarea 
+        value={cleanedContent} 
+        onChange={(e) => handleChange(e.target.value)}
+        className="w-full min-h-[300px] font-mono text-sm"
+        placeholder="Write your journal entry here..."
+      />
+    </div>
   );
 };
