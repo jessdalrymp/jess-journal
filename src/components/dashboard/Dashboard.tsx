@@ -16,14 +16,20 @@ export const Dashboard = () => {
   useEffect(() => {
     if (user) {
       console.log("Dashboard - Fetching journal entries for user:", user.id);
-      fetchJournalEntries();
+      try {
+        fetchJournalEntries();
+      } catch (error) {
+        console.error("Error fetching journal entries:", error);
+      }
     }
   }, [user, fetchJournalEntries]);
 
-  // Get recent journal entries
-  const recentEntries = [...(journalEntries || [])]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 3);
+  // Get recent journal entries - safely handle the case when journalEntries is undefined
+  const recentEntries = journalEntries 
+    ? [...journalEntries]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 3)
+    : [];
 
   // Function to parse the entry content for potential JSON with a title
   const getEntryTitle = (entry) => {
