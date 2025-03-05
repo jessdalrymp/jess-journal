@@ -9,7 +9,7 @@ import { clearCurrentConversationFromStorage } from "../lib/storageUtils";
 
 const SideQuest = () => {
   const [showWelcome, setShowWelcome] = useState(false);
-  const [key, setKey] = useState(Date.now()); // Add a key to force remount of ChatInterface
+  const [key, setKey] = useState(Date.now()); // Key to force ChatInterface remount
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,11 +20,9 @@ const SideQuest = () => {
       localStorage.setItem("hasVisitedSideQuestPage", "true");
     }
     
-    // Always clear any existing side quest conversation to start fresh
+    // Clear any existing side quest conversation to start fresh - but only once on mount
     clearCurrentConversationFromStorage('sideQuest');
-    // Force a remount of the ChatInterface to ensure a fresh start
-    setKey(Date.now());
-  }, []);
+  }, []); // Empty dependency array to ensure this only runs once
 
   const handleBack = () => {
     clearCurrentConversationFromStorage('sideQuest');
@@ -38,7 +36,7 @@ const SideQuest = () => {
         <h1 className="text-2xl font-medium mb-6">Side Quest</h1>
         <div className="bg-white rounded-lg shadow-sm h-[calc(100vh-260px)]">
           <ChatInterface 
-            key={key} // Add a key to force remount when clearing conversations
+            key={key} // The key ensures a fresh ChatInterface on each visit
             type="sideQuest" 
             onBack={handleBack} 
           />

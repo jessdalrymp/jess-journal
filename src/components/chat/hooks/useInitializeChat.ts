@@ -31,9 +31,25 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         return null;
       }
       
-      // For sideQuest, always start a fresh conversation
+      // For sideQuest, we need to check if we're already in an initialization process
+      // to prevent infinite loops
       if (type === 'sideQuest') {
-        // Make sure we don't use any cached conversation
+        // Check for cached conversation first - if we have a valid one with just the initial message,
+        // we should use it to prevent infinite loops
+        const cachedConversation = getCurrentConversationFromStorage(type);
+        if (
+          cachedConversation && 
+          cachedConversation.userId === authUser.id && 
+          cachedConversation.messages && 
+          cachedConversation.messages.length === 1 && 
+          cachedConversation.messages[0].role === 'assistant'
+        ) {
+          console.log('Using existing initialized sideQuest conversation');
+          setLoading(false);
+          return cachedConversation;
+        }
+        
+        // If no valid cached conversation, start a fresh one
         console.log('Starting fresh sideQuest conversation');
         try {
           const conversation = await startConversation(type);
