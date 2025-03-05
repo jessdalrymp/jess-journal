@@ -35,12 +35,12 @@ export const ChatMessageList = ({ messages }: ChatMessageListProps) => {
         >
           {msg.role === 'assistant' ? (
             <ReactMarkdown 
-              className="whitespace-pre-wrap max-w-none"
+              className="whitespace-pre-wrap max-w-none leading-tight"
             >
               {msg.content}
             </ReactMarkdown>
           ) : (
-            <div className="whitespace-pre-wrap">{msg.content}</div>
+            <div className="whitespace-pre-wrap leading-tight">{msg.content}</div>
           )}
         </div>
       ))}
