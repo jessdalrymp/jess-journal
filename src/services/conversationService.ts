@@ -235,7 +235,7 @@ const saveJournalEntryFromConversation = async (userId: string, prompt: string, 
         user_id: userId,
         prompt,
         content,
-        type: 'journal'
+        type: 'journal' as 'journal' | 'story' | 'sideQuest' | 'action'
       });
 
     if (error) {

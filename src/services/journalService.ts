@@ -23,7 +23,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         userId: entry.user_id,
         title: entry.prompt.substring(0, 50) + (entry.prompt.length > 50 ? '...' : ''),
         content: entry.content,
-        type: entry.type || 'journal',
+        type: (entry.type as 'journal' | 'story' | 'sideQuest' | 'action') || 'journal',
         createdAt: new Date(entry.created_at)
       }));
       return entries;
@@ -61,7 +61,7 @@ export const saveJournalEntry = async (userId: string | undefined, prompt: strin
       userId: data.user_id,
       title: data.prompt.substring(0, 50) + (data.prompt.length > 50 ? '...' : ''),
       content: data.content,
-      type: data.type || 'journal',
+      type: (data.type as 'journal' | 'story' | 'sideQuest' | 'action') || 'journal',
       createdAt: new Date(data.created_at)
     };
 
