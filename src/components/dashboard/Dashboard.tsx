@@ -9,7 +9,7 @@ export const Dashboard = () => {
   const { profile, journalEntries } = useUserData();
 
   // Get recent journal entries
-  const recentEntries = [...journalEntries]
+  const recentEntries = [...(journalEntries || [])]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 3);
 

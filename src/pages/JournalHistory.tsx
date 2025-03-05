@@ -3,14 +3,14 @@ import { useEffect, useState } from "react";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { useAuth } from "../context/AuthContext";
-import { useJournalEntries } from "../hooks/useJournalEntries";
+import { useUserData } from "../context/UserDataContext";
 import { JournalEntry } from "../lib/types";
 import { ArrowLeft } from "lucide-react";
 import { ActionButton } from "../components/ui/ActionButton";
 
 const JournalHistory = () => {
   const { user } = useAuth();
-  const { journalEntries } = useJournalEntries(user?.id);
+  const { journalEntries } = useUserData();
   const [sortedEntries, setSortedEntries] = useState<JournalEntry[]>([]);
 
   useEffect(() => {
