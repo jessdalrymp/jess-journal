@@ -28,6 +28,9 @@ export async function generateDeepseekResponse(
   model = "deepseek-chat"
 ): Promise<DeepseekResponse> {
   try {
+    console.log("Sending messages to DeepSeek API:", 
+      messages.map(m => ({role: m.role, contentPreview: m.content.substring(0, 50) + '...'})));
+    
     const { data, error } = await supabase.functions.invoke('deepseek', {
       body: { messages, model },
     });

@@ -17,6 +17,9 @@ const SideQuest = () => {
       setShowWelcome(true);
       localStorage.setItem("hasVisitedSideQuestPage", "true");
     }
+    
+    // Force refresh of the conversation to apply new system prompts
+    localStorage.removeItem("currentSideQuestConversation");
   }, []);
 
   return (

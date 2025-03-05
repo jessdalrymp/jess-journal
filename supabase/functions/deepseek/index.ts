@@ -29,7 +29,10 @@ serve(async (req) => {
       max_tokens: 1000
     };
 
-    console.log("DeepSeek API request:", JSON.stringify(requestBody, null, 2));
+    console.log("DeepSeek API request - system prompt preview:", 
+      messages && messages.length > 0 && messages[0].role === 'system' 
+        ? messages[0].content.substring(0, 100) + '...' 
+        : 'No system prompt');
 
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -53,7 +56,8 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log("DeepSeek API response:", JSON.stringify(data, null, 2));
+    console.log("DeepSeek API response - preview:", 
+      data?.choices?.[0]?.message?.content?.substring(0, 100) + '...');
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

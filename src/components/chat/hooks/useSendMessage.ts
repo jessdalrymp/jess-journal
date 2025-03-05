@@ -39,10 +39,17 @@ export const useSendMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal
       
       const updatedMessages = [...(session.messages || []), newUserMessage];
       
+      // Here we format messages according to the chat type, which includes the updated system prompts
       const aiMessages = formatMessagesForAI(updatedMessages, type);
+      
+      console.log(`Sending ${type} messages to AI with system prompt:`, 
+        aiMessages.length > 0 ? aiMessages[0].content.substring(0, 100) + '...' : 'No system prompt');
       
       const response = await generateDeepseekResponse(aiMessages);
       const aiResponseText = response.choices[0].message.content;
+      
+      console.log(`Received AI response for ${type}:`, 
+        aiResponseText.substring(0, 100) + (aiResponseText.length > 100 ? '...' : ''));
       
       const newAIMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
