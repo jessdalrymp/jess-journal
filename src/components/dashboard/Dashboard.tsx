@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../context/UserDataContext';
@@ -6,6 +5,7 @@ import { Book, MessageSquare, Lightbulb, PenLine, Clock, History, User, ArrowRig
 import { ActionButton } from '../ui/ActionButton';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import * as journalService from '../../services/journalService';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -55,10 +55,16 @@ export const Dashboard = () => {
         'assistant'
       );
       
-      // Redirect to the journal history page
+      // Find the created entry
+      const entries = await journalService.fetchJournalEntries(user.id);
+      const blankEntry = entries[0]; // Most recent entry should be at the top
+      
+      // Redirect to the journal entry page in edit mode
       toast.dismiss();
-      toast.success("Blank journal entry created");
-      navigate('/journal-history');
+      toast.success("Created blank journal entry");
+      
+      // Navigate to the entry page with state indicating it should be in edit mode
+      navigate(`/journal-entry/${blankEntry.id}`, { state: { isEditing: true } });
     } catch (error) {
       toast.dismiss();
       toast.error("Failed to create blank journal entry");
