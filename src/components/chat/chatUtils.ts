@@ -1,11 +1,23 @@
-
 import { ChatMessage } from '@/lib/types';
 import { DeepseekMessage } from '../../utils/deepseekApi';
 
 export const getInitialMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal'): string => {
   switch (type) {
     case 'story':
-      return "Let's get to know you better. Tell me a pivotal story in your life that still holds emotional weight for you. It could be a moment that changed your perspective or a challenging experience that shaped who you are today.";
+      return `Welcome! It's great to have you here. I'm designed to help us explore ideas, connect on a deeper level, and maybe even spark a little self-discovery. To get us started, I've got a few areas we can dive into. Think of these as starting points, not rigid boxes. There's no right or wrong answer, just your authentic experience.
+
+Here are some themes we can explore:
+
+• Moments that Shaped You: What experiences have really changed how you see the world?
+• Challenges and Growth: Where do you feel a pull between how things are and how you'd like them to be? What tough times have you navigated?
+• What Matters Most: What values guide you? Who or what has influenced you deeply?
+• Small Acts, Big Impact: How do you subtly push against expectations or norms in your daily life?
+• Connections and Belonging: How has your search for community shaped you?
+• Unique Perspectives: What have you learned that others might overlook?
+• The Lighter Side: What funny or quirky things have happened to you?
+• Leaving Your Mark: What kind of impact do you hope to have?
+
+Would you like to start with one of these areas, or is there a story or idea you're already eager to share?`;
     case 'sideQuest':
       return "What specific challenge are you facing right now that you'd like to work through together?";
     case 'action':
@@ -42,7 +54,6 @@ export const getSystemPrompt = (type: 'story' | 'sideQuest' | 'action' | 'journa
       - Keep your responses concise (3-5 sentences max) and conversational
       
       Begin by asking about a pivotal story in their life that still holds emotional weight.`;
-    // ... Add cases for other conversation types if needed
     default:
       return "You are a helpful assistant.";
   }
