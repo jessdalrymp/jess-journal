@@ -60,7 +60,7 @@ export const JournalChallengeDisplay = ({
             <h1 className="text-2xl font-bold text-jess-primary mb-4 font-cormorant">{journalPrompt.title}</h1>
             
             <div className="bg-jess-subtle p-5 rounded-lg mb-6">
-              <p className="text-lg font-medium italic font-sourcesans">{journalPrompt.prompt}</p>
+              <p className="text-lg font-medium font-sourcesans">{journalPrompt.prompt}</p>
             </div>
             
             <h3 className="font-semibold text-gray-700 mb-3 font-cormorant">Instructions:</h3>
