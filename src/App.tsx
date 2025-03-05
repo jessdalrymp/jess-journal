@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { UserDataProvider } from "./context/UserDataContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import MyStory from "./pages/MyStory";
@@ -20,19 +22,23 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/my-story" element={<MyStory />} />
-          <Route path="/side-quest" element={<SideQuest />} />
-          <Route path="/action-challenge" element={<ActionChallenge />} />
-          <Route path="/journal-challenge" element={<JournalChallenge />} />
-          <Route path="/journal-history" element={<JournalHistory />} />
-          <Route path="/account" element={<Account />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <UserDataProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/my-story" element={<MyStory />} />
+              <Route path="/side-quest" element={<SideQuest />} />
+              <Route path="/action-challenge" element={<ActionChallenge />} />
+              <Route path="/journal-challenge" element={<JournalChallenge />} />
+              <Route path="/journal-history" element={<JournalHistory />} />
+              <Route path="/account" element={<Account />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </UserDataProvider>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
