@@ -1,11 +1,11 @@
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { User, UserProfile, MoodType, MoodEntry, JournalEntry, ConversationSession } from '../lib/types';
-import { useToast } from '@/hooks/use-toast';
+import { User, UserProfile, MoodType, MoodEntry, JournalEntry } from '../lib/types';
 import { UserData } from './types';
-import * as userService from '../services/userService';
-import * as moodService from '../services/moodService';
-import * as journalService from '../services/journalService';
-import * as conversationService from '../services/conversationService';
+import { useUserActions } from '../hooks/useUserActions';
+import { useMoodActions } from '../hooks/useMoodActions';
+import { useJournalActions } from '../hooks/useJournalActions';
+import { useConversationActions } from '../hooks/useConversationActions';
 
 const UserDataContext = createContext<UserData | undefined>(undefined);
 
@@ -16,10 +16,17 @@ interface UserDataProviderProps {
 const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null | undefined>(null);
   const [profile, setProfile] = useState<UserProfile | null | undefined>(null);
-  const [loading, setLoading] = useState(false);
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
-  const { toast } = useToast();
+  
+  const userActions = useUserActions();
+  const moodActions = useMoodActions();
+  const journalActions = useJournalActions();
+  const conversationActions = useConversationActions();
+  
+  // Combined loading state
+  const loading = userActions.loading || moodActions.loading || 
+                 journalActions.loading || conversationActions.loading;
 
   useEffect(() => {
     fetchUser();
@@ -34,20 +41,8 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
   }, [user]);
 
   const fetchUser = async () => {
-    setLoading(true);
-    try {
-      const userData = await userService.fetchUser();
-      setUser(userData);
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      toast({
-        title: "Error fetching user",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+    const userData = await userActions.fetchUser();
+    setUser(userData);
   };
 
   const fetchProfile = async () => {
@@ -56,119 +51,55 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
       return;
     }
 
-    setLoading(true);
-    try {
-      const profileData = await userService.fetchProfile(user.id);
-      setProfile(profileData);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      toast({
-        title: "Error fetching profile",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+    const profileData = await userActions.fetchProfile(user.id);
+    setProfile(profileData);
   };
 
   const saveProfile = async (profileData: Partial<UserProfile>) => {
     if (!user) {
-      toast({
-        title: "Not authenticated",
-        description: "Please sign in to save your profile.",
-        variant: "destructive",
-      });
       return;
     }
 
-    setLoading(true);
-    try {
-      const updatedProfile = await userService.saveProfile(user.id, profileData);
+    const updatedProfile = await userActions.saveProfile(user.id, profileData);
+    if (updatedProfile) {
       setProfile(updatedProfile);
-      toast({
-        title: "Profile saved",
-        description: "Your profile has been updated.",
-      });
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast({
-        title: "Error updating profile",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
     }
   };
 
   const fetchMoodEntries = async () => {
-    try {
-      if (user) {
-        const entries = await moodService.fetchMoodEntries(user.id);
-        setMoodEntries(entries);
-      }
-    } catch (error) {
-      console.error('Error fetching mood entries:', error);
+    if (user) {
+      const entries = await moodActions.fetchMoodEntries(user.id);
+      setMoodEntries(entries);
     }
   };
 
   const addMoodEntry = async (mood: MoodType, note?: string) => {
-    if (!user) {
-      toast({
-        title: "Not authenticated",
-        description: "Please sign in to save your mood.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!user) return;
 
-    try {
-      const newEntry = await moodService.addMoodEntry(user.id, mood, note);
-      if (newEntry) {
-        setMoodEntries(prev => [newEntry, ...prev]);
-        toast({
-          title: "Mood saved",
-          description: "Your mood has been recorded.",
-        });
-      }
-    } catch (error) {
-      console.error('Error adding mood entry:', error);
-      toast({
-        title: "Error saving mood",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
+    const newEntry = await moodActions.addMoodEntry(user.id, mood, note);
+    if (newEntry) {
+      setMoodEntries(prev => [newEntry, ...prev]);
     }
   };
 
   const fetchJournalEntries = async () => {
-    try {
-      if (user) {
-        const entries = await journalService.fetchJournalEntries(user.id);
-        setJournalEntries(entries);
-      }
-    } catch (error) {
-      console.error('Error fetching journal entries:', error);
+    if (user) {
+      const entries = await journalActions.fetchJournalEntries(user.id);
+      setJournalEntries(entries);
     }
   };
 
-  const startConversation = async (type: 'story' | 'sideQuest' | 'action' | 'journal'): Promise<ConversationSession> => {
+  const startConversation = async (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
     if (!user) {
       throw new Error("User not authenticated");
     }
 
-    try {
-      return await conversationService.startConversation(user.id, type);
-    } catch (error) {
-      console.error('Error starting conversation:', error);
-      throw error;
-    }
+    return await conversationActions.startConversation(user.id, type);
   };
 
-  const addMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<void> => {
+  const addMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant') => {
     try {
-      await conversationService.addMessageToConversation(conversationId, content, role, user?.id);
+      await conversationActions.addMessageToConversation(conversationId, content, role, user?.id);
       
       if (role === 'assistant') {
         fetchJournalEntries();
