@@ -19,6 +19,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				'sans': ['Source Sans 3', 'sans-serif'],
+				'serif': ['Playfair Display', 'serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -64,13 +68,13 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				jess: {
-					primary: '#4A6FA5',         // Medium blue
-					secondary: '#95B8D1',       // Light blue
-					accent: '#F8BD7F',          // Soft orange/amber
-					background: '#F8F9FA',      // Off-white
-					foreground: '#333333',      // Dark gray
-					muted: '#8D9DB6',           // Muted blue/gray
-					subtle: '#E2E8F0',          // Very light gray/blue
+					primary: '#FF7E45',         // Orange from images
+					secondary: '#4D4D4D',       // Dark gray
+					accent: '#FFD28F',          // Soft orange/amber
+					background: '#FCFCFA',      // Light cream
+					foreground: '#3D3D3D',      // Dark gray
+					muted: '#6B6B6B',           // Muted gray
+					subtle: '#F5F5F3',          // Very light gray
 					warning: '#F5CBA7',         // Soft amber for disclaimer
 				}
 			},
