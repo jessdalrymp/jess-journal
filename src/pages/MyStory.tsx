@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 const MyStory = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCheckingConversations, setIsCheckingConversations] = useState(false);
   const { user, loading: userLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -21,17 +22,29 @@ const MyStory = () => {
   useEffect(() => {
     console.log("MyStory - Auth state:", user ? "Authenticated" : "Not authenticated");
     
+    // Only proceed if we have a definitive authentication state
+    if (userLoading) {
+      return; // Wait until user authentication state is resolved
+    }
+    
+    if (!user) {
+      setIsLoading(false);
+      return; // Not authenticated, don't try to load conversations
+    }
+    
     // Check if this is the first visit to the story page
     const hasVisitedStoryPage = localStorage.getItem('hasVisitedStoryPage');
     
-    if (!hasVisitedStoryPage && user) {
+    if (!hasVisitedStoryPage) {
       setShowWelcomeModal(true);
       // Mark that user has visited the page
       localStorage.setItem('hasVisitedStoryPage', 'true');
-    } else if (user) {
+    } else {
       // Check if there are existing story conversations for this user
       const checkExistingConversations = async () => {
+        setIsCheckingConversations(true);
         try {
+          console.log("Checking for existing story conversations for user:", user.id);
           const { data, error } = await supabase
             .from('conversations')
             .select('id')
@@ -45,35 +58,35 @@ const MyStory = () => {
           }
           
           if (data && data.length > 0) {
+            console.log("Found existing story conversations:", data.length);
             toast({
               title: "Welcome back!",
               description: "Your previous conversation has been loaded.",
               duration: 3000,
             });
+          } else {
+            console.log("No existing story conversations found");
           }
         } catch (error) {
           console.error('Error in conversation check:', error);
+        } finally {
+          setIsCheckingConversations(false);
+          setIsLoading(false);
         }
       };
       
       checkExistingConversations();
     }
     
-    // Set loading to false after checking user auth status
-    if (!userLoading) {
+    // If not checking conversations, set loading to false
+    if (!isCheckingConversations) {
       setIsLoading(false);
     }
   }, [user, toast, userLoading]);
   
-  useEffect(() => {
-    // Once user loading is complete, update our loading state
-    if (!userLoading) {
-      setIsLoading(false);
-    }
-  }, [userLoading]);
-  
   const handleCloseWelcomeModal = () => {
     setShowWelcomeModal(false);
+    setIsLoading(false);
   };
 
   const handleBack = () => {

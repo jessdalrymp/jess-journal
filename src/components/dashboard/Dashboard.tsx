@@ -1,3 +1,5 @@
+
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../context/UserDataContext';
@@ -7,16 +9,36 @@ import { useNavigate } from 'react-router-dom';
 
 export const Dashboard = () => {
   const { user } = useAuth();
-  const { profile, journalEntries } = useUserData();
+  const { profile, journalEntries, fetchJournalEntries, loading } = useUserData();
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Get recent journal entries
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        if (user) {
+          console.log("Dashboard - Loading journal entries for user:", user.id);
+          await fetchJournalEntries();
+        }
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, [user, fetchJournalEntries]);
+
+  // Get recent journal entries safely
   const recentEntries = [...(journalEntries || [])]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 3);
 
   // Function to parse the entry content for potential JSON with a title
   const getEntryTitle = (entry) => {
+    if (!entry) return "Untitled Entry";
+    
     try {
       // First check if it's JSON content inside code blocks
       let contentToProcess = entry.content;
@@ -35,7 +57,7 @@ export const Dashboard = () => {
       // Not valid JSON or doesn't have a title, just use the original title
     }
     
-    return entry.title;
+    return entry.title || "Untitled Entry";
   };
 
   // Function to navigate to the blank journal page
@@ -106,7 +128,12 @@ export const Dashboard = () => {
           </div>
           
           <div className="flex flex-col items-center justify-center h-[220px]">
-            {recentEntries.length > 0 ? (
+            {isLoading || loading ? (
+              <div className="text-center">
+                <div className="w-8 h-8 border-2 border-t-jess-primary border-r-jess-primary border-b-jess-subtle border-l-jess-subtle rounded-full animate-spin mx-auto mb-3"></div>
+                <p className="text-jess-muted">Loading your entries...</p>
+              </div>
+            ) : recentEntries.length > 0 ? (
               <div className="w-full space-y-3">
                 {recentEntries.map(entry => (
                   <Link 
