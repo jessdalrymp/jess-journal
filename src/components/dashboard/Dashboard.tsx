@@ -13,6 +13,29 @@ export const Dashboard = () => {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 3);
 
+  // Function to parse the entry content for potential JSON with a title
+  const getEntryTitle = (entry) => {
+    try {
+      // First check if it's JSON content inside code blocks
+      let contentToProcess = entry.content;
+      const jsonRegex = /```(?:json)?\s*([\s\S]*?)```/;
+      const match = entry.content.match(jsonRegex);
+      if (match && match[1]) {
+        contentToProcess = match[1].trim();
+      }
+      
+      // Try to parse as JSON
+      const parsed = JSON.parse(contentToProcess);
+      if (parsed && parsed.title) {
+        return parsed.title;
+      }
+    } catch (e) {
+      // Not valid JSON or doesn't have a title, just use the original title
+    }
+    
+    return entry.title;
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -69,12 +92,16 @@ export const Dashboard = () => {
             {recentEntries.length > 0 ? (
               <div className="w-full space-y-3">
                 {recentEntries.map(entry => (
-                  <div key={entry.id} className="border border-jess-subtle p-3 rounded-lg">
-                    <h3 className="font-medium">{entry.title}</h3>
+                  <Link 
+                    key={entry.id} 
+                    to={`/journal-entry/${entry.id}`}
+                    className="block border border-jess-subtle p-3 rounded-lg hover:bg-jess-subtle/30 transition-colors"
+                  >
+                    <h3 className="font-medium">{getEntryTitle(entry)}</h3>
                     <div className="text-sm text-jess-muted">
                       {new Date(entry.createdAt).toLocaleDateString()}
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             ) : (
