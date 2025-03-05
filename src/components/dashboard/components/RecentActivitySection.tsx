@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { FilePlus, Clock } from 'lucide-react';
@@ -18,11 +18,19 @@ export const RecentActivitySection = ({
   loading 
 }: RecentActivitySectionProps) => {
   const navigate = useNavigate();
+  const [recentEntries, setRecentEntries] = useState<JournalEntry[]>([]);
 
-  // Get recent journal entries safely
-  const recentEntries = [...(journalEntries || [])]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 3);
+  // Update recent entries whenever journalEntries change
+  useEffect(() => {
+    if (journalEntries && journalEntries.length > 0) {
+      const sorted = [...journalEntries]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 3);
+      setRecentEntries(sorted);
+    } else {
+      setRecentEntries([]);
+    }
+  }, [journalEntries]);
 
   // Function to navigate to the blank journal page
   const goToBlankJournal = () => {
@@ -86,8 +94,13 @@ export const RecentActivitySection = ({
                 className="block border border-jess-subtle p-3 rounded-lg hover:bg-jess-subtle/30 transition-colors"
               >
                 <h3 className="font-medium text-sm line-clamp-1">{getEntryTitle(entry)}</h3>
-                <div className="text-xs text-jess-muted mt-1">
-                  {new Date(entry.createdAt).toLocaleDateString()}
+                <div className="flex justify-between items-center mt-1">
+                  <div className="text-xs text-jess-muted">
+                    {new Date(entry.createdAt).toLocaleDateString()}
+                  </div>
+                  <div className="text-xs px-2 py-0.5 bg-jess-subtle rounded-full text-jess-muted">
+                    {entry.type}
+                  </div>
                 </div>
               </Link>
             ))}

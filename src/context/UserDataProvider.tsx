@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { MoodType, MoodEntry, JournalEntry } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
@@ -72,27 +73,24 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const fetchJournalEntries = async () => {
     if (!user) return;
     
-    if (isJournalFetched) {
-      console.log("Journal entries already fetched, skipping redundant fetch");
-      return;
-    }
-    
     try {
       console.log("Fetching journal entries for user:", user.id);
       const entries = await journalActions.fetchJournalEntries(user.id);
       setJournalEntries(entries);
       setIsJournalFetched(true);
+      return entries;
     } catch (error) {
       console.error("Error fetching journal entries:", error);
+      return [];
     }
   };
 
   const handleAddMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant') => {
     try {
-      await addMessageToConversation(conversationId, content, role);
+      const shouldRefreshEntries = await addMessageToConversation(conversationId, content, role);
       
-      if (role === 'assistant') {
-        setIsJournalFetched(false);
+      // Always refresh journal entries after assistant messages
+      if (role === 'assistant' || shouldRefreshEntries) {
         if (user) {
           await fetchJournalEntries();
         }
