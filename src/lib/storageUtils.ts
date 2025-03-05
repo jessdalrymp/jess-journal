@@ -1,3 +1,4 @@
+
 /**
  * Utility functions for interacting with localStorage
  */
@@ -7,7 +8,8 @@ import {
   JournalEntry,
   MoodEntry,
   ActionChallenge,
-  ConversationSession
+  ConversationSession,
+  ChatMessage
 } from './types';
 
 export const getProfileFromStorage = (): UserProfile | null => {
@@ -85,7 +87,19 @@ export const saveChallengesToStorage = (challenges: ActionChallenge[]): void => 
 export const getConversationsFromStorage = (): ConversationSession[] => {
   try {
     const storedConversations = localStorage.getItem('conversations');
-    return storedConversations ? JSON.parse(storedConversations) : [];
+    if (!storedConversations) return [];
+    
+    const parsed = JSON.parse(storedConversations);
+    
+    // Ensure the roles are strictly typed as 'user' | 'assistant'
+    return parsed.map((conv: any) => ({
+      ...conv,
+      messages: conv.messages ? conv.messages.map((msg: any) => ({
+        ...msg,
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        timestamp: new Date(msg.timestamp)
+      })) : []
+    }));
   } catch (error) {
     console.error('Error loading conversations from storage:', error);
     return [];
@@ -104,7 +118,19 @@ export const getCurrentConversationFromStorage = (type: 'story' | 'sideQuest' | 
   try {
     const key = `currentConversation_${type}`;
     const storedConversation = localStorage.getItem(key);
-    return storedConversation ? JSON.parse(storedConversation) : null;
+    if (!storedConversation) return null;
+    
+    const parsed = JSON.parse(storedConversation);
+    
+    // Ensure the roles are strictly typed as 'user' | 'assistant'
+    return {
+      ...parsed,
+      messages: parsed.messages ? parsed.messages.map((msg: any) => ({
+        ...msg,
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        timestamp: new Date(msg.timestamp)
+      })) : []
+    };
   } catch (error) {
     console.error(`Error loading ${type} conversation from storage:`, error);
     return null;

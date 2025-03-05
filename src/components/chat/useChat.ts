@@ -38,12 +38,12 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
             'assistant'
           );
           
-          const updatedSession = {
+          const updatedSession: ConversationSession = {
             ...conversation,
             messages: [
               {
                 id: Date.now().toString(),
-                role: 'assistant',
+                role: 'assistant' as const,
                 content: initialMessage,
                 timestamp: new Date(),
               },
@@ -62,12 +62,12 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
             'assistant'
           );
           
-          const updatedSession = {
+          const updatedSession: ConversationSession = {
             ...conversation,
             messages: [
               {
                 id: Date.now().toString(),
-                role: 'assistant',
+                role: 'assistant' as const,
                 content: briefIntro,
                 timestamp: new Date(),
               },
@@ -108,7 +108,7 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
         timestamp: new Date(),
       };
       
-      const updatedSessionWithUserMsg = {
+      const updatedSessionWithUserMsg: ConversationSession = {
         ...session,
         messages: [...(session.messages || []), newUserMessage],
       };
@@ -139,7 +139,7 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       };
       
       // Update UI
-      const finalUpdatedSession = {
+      const finalUpdatedSession: ConversationSession = {
         ...session,
         messages: [...(session.messages || []), newUserMessage, newAIMessage],
       };
