@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useChat } from './useChat';
 import { ChatHeader } from './ChatHeader';
@@ -32,23 +31,19 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
   const { toast } = useToast();
   
   useEffect(() => {
-    // If authentication error is detected, log it for debugging
     if (error && error.includes('authentication')) {
       console.log('Authentication error detected in ChatInterface:', error);
     }
   }, [error]);
 
-  // Handle leaving the chat
   const handleBack = async () => {
     onBack();
   };
 
-  // Show confirmation dialog for ending conversation
   const openEndDialog = () => {
     setShowEndDialog(true);
   };
 
-  // Handle ending the conversation and generating summary
   const handleEndConversation = async () => {
     setShowEndDialog(false);
     
@@ -72,7 +67,6 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
     onBack();
   };
 
-  // If user is not authenticated, show a sign-in prompt
   if (!user) {
     return (
       <div className="h-full flex flex-col">
@@ -90,7 +84,6 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
     );
   }
   
-  // Show loading state
   if (loading && !session) {
     return (
       <div className="h-full flex flex-col">
@@ -105,7 +98,6 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
     );
   }
   
-  // Handle error state
   if (error) {
     return (
       <div className="h-full flex flex-col">
@@ -123,7 +115,6 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
     );
   }
   
-  // In case session is still null but we're not loading or have an error
   if (!session) {
     return (
       <div className="h-full flex flex-col">
@@ -148,18 +139,19 @@ export const ChatInterface = ({ type, onBack }: ChatInterfaceProps) => {
             <span className="text-sm font-medium">Jess is thinking...</span>
           </div>
         )}
-        <div className="absolute bottom-4 right-4">
-          <ActionButton 
-            onClick={openEndDialog}
-            type="primary"
-            className="shadow-md px-6 py-3 text-base"
-            icon={<Save className="h-5 w-5" />}
-          >
-            End Conversation
-          </ActionButton>
-        </div>
       </div>
       <ChatInput onSendMessage={sendMessage} loading={loading} />
+      
+      <div className="p-4 border-t border-jess-subtle flex justify-center">
+        <ActionButton 
+          onClick={openEndDialog}
+          type="primary"
+          className="shadow-md px-6 py-3 text-base"
+          icon={<Save className="h-5 w-5" />}
+        >
+          Leave Conversation
+        </ActionButton>
+      </div>
 
       <Dialog open={showEndDialog} onOpenChange={setShowEndDialog}>
         <DialogContent className="sm:max-w-md">
