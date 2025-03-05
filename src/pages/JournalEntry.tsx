@@ -32,9 +32,10 @@ const JournalEntry = () => {
 
     // First check if entry was passed via location state
     if (location.state?.entry) {
+      const formattedContent = formatContentForEditing(location.state.entry.content);
       setEntry(location.state.entry);
       setParsedContent(parseEntryContent(location.state.entry.content));
-      setEditableContent(formatContentForEditing(location.state.entry.content));
+      setEditableContent(formattedContent);
       setLoading(false);
       return;
     }
@@ -43,9 +44,10 @@ const JournalEntry = () => {
     if (id && journalEntries.length > 0) {
       const foundEntry = journalEntries.find(entry => entry.id === id);
       if (foundEntry) {
+        const formattedContent = formatContentForEditing(foundEntry.content);
         setEntry(foundEntry);
         setParsedContent(parseEntryContent(foundEntry.content));
-        setEditableContent(formatContentForEditing(foundEntry.content));
+        setEditableContent(formattedContent);
       }
       setLoading(false);
     }
@@ -54,8 +56,8 @@ const JournalEntry = () => {
   const handleSave = async () => {
     if (!entry || !id) return;
     
-    // Process content before saving - we want to save with proper formatting 
-    let contentToSave = editableContent;
+    // Process content before saving - we want to maintain the format
+    const contentToSave = editableContent;
     
     const success = await updateJournalEntry(id, contentToSave);
     if (success) {
@@ -86,7 +88,8 @@ const JournalEntry = () => {
 
   const handleCancelEdit = () => {
     if (entry) {
-      setEditableContent(entry.content);
+      // Ensure we format the content correctly when canceling edit
+      setEditableContent(formatContentForEditing(entry.content));
     }
     setIsEditing(false);
   };
@@ -94,7 +97,8 @@ const JournalEntry = () => {
   useEffect(() => {
     if (isEditing && entry) {
       // Format the content for editing when entering edit mode
-      setEditableContent(formatContentForEditing(entry.content));
+      const formattedContent = formatContentForEditing(entry.content);
+      setEditableContent(formattedContent);
     }
   }, [isEditing, entry]);
 

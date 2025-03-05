@@ -28,12 +28,7 @@ export const JournalEntryEditor = ({ content, onChange }: JournalEntryEditorProp
     
     if (jsonRegex.test(newValue)) {
       // It's valid JSON, so wrap it with code blocks if it wasn't already wrapped
-      if (!content.trim().startsWith('```json')) {
-        onChange(`\`\`\`json\n${newValue}\n\`\`\``);
-      } else {
-        // It was already wrapped, so maintain the wrapper
-        onChange(`\`\`\`json\n${newValue}\n\`\`\``);
-      }
+      onChange(`\`\`\`json\n${newValue}\n\`\`\``);
     } else {
       // Not JSON format, pass as is
       onChange(newValue);
