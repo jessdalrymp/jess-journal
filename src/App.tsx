@@ -1,7 +1,10 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from "@/components/ui/theme-provider"
+import { ThemeProvider } from "./components/ui/theme-provider";
 import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from './context/AuthContext';
+import { UserDataProvider } from './context/UserDataProvider';
 import Index from './pages/Index';
 import Account from './pages/Account';
 import MyStory from './pages/MyStory';
@@ -19,21 +22,25 @@ const App = () => {
   return (
     <BrowserRouter>
       <ThemeProvider>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/account" element={<Account />} />
-          <Route path="/subscription" element={<Subscription />} />
-          <Route path="/payment-success" element={<PaymentSuccess />} />
-          <Route path="/my-story" element={<MyStory />} />
-          <Route path="/side-quest" element={<SideQuest />} />
-          <Route path="/action-challenge" element={<ActionChallenge />} />
-          <Route path="/journal" element={<BlankJournal />} />
-          <Route path="/journal-challenge" element={<JournalChallenge />} />
-          <Route path="/journal-entry/:id" element={<JournalEntry />} />
-          <Route path="/journal-history" element={<JournalHistory />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Toaster />
+        <AuthProvider>
+          <UserDataProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/account" element={<Account />} />
+              <Route path="/subscription" element={<Subscription />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/my-story" element={<MyStory />} />
+              <Route path="/side-quest" element={<SideQuest />} />
+              <Route path="/action-challenge" element={<ActionChallenge />} />
+              <Route path="/journal" element={<BlankJournal />} />
+              <Route path="/journal-challenge" element={<JournalChallenge />} />
+              <Route path="/journal-entry/:id" element={<JournalEntry />} />
+              <Route path="/journal-history" element={<JournalHistory />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+          </UserDataProvider>
+        </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>
   );
