@@ -6,7 +6,6 @@
 import { 
   UserProfile,
   JournalEntry,
-  MoodEntry,
   ActionChallenge,
   ConversationSession,
   ChatMessage
@@ -45,24 +44,6 @@ export const saveJournalEntriesToStorage = (entries: JournalEntry[]): void => {
     localStorage.setItem('journalEntries', JSON.stringify(entries));
   } catch (error) {
     console.error('Error saving journal entries to storage:', error);
-  }
-};
-
-export const getMoodEntriesFromStorage = (): MoodEntry[] => {
-  try {
-    const storedEntries = localStorage.getItem('moodEntries');
-    return storedEntries ? JSON.parse(storedEntries) : [];
-  } catch (error) {
-    console.error('Error loading mood entries from storage:', error);
-    return [];
-  }
-};
-
-export const saveMoodEntriesToStorage = (entries: MoodEntry[]): void => {
-  try {
-    localStorage.setItem('moodEntries', JSON.stringify(entries));
-  } catch (error) {
-    console.error('Error saving mood entries to storage:', error);
   }
 };
 

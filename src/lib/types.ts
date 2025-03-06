@@ -29,16 +29,6 @@ export interface JournalEntry {
   createdAt: Date;
 }
 
-export type MoodType = 'great' | 'good' | 'neutral' | 'low' | 'bad';
-
-export interface MoodEntry {
-  id: string;
-  userId: string;
-  mood: MoodType;
-  note?: string;
-  createdAt: Date;
-}
-
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';

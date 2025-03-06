@@ -1,9 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { MoodType, MoodEntry, JournalEntry } from '../lib/types';
+import { JournalEntry } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
 import { useUserData } from '../hooks/useUserData';
-import { useMoodActions } from '../hooks/useMoodActions';
 import { useJournalActions } from '../hooks/useJournalActions';
 import { useConversationData } from '../hooks/useConversationData';
 import { useSubscription } from '../hooks/useSubscription';
@@ -24,39 +23,24 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     saveProfile 
   } = useUserData();
 
-  const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [isJournalFetched, setIsJournalFetched] = useState(false);
   const [isJournalLoading, setIsJournalLoading] = useState(false);
   const isFetchingJournalRef = useRef(false);
   
-  const moodActions = useMoodActions();
   const journalActions = useJournalActions();
   const { loading: conversationLoading, startConversation, addMessageToConversation } = useConversationData(user?.id);
   const { subscription, loading: subscriptionLoading, checkSubscriptionStatus, applyCoupon } = useSubscription(user?.id);
   const { toast } = useToast();
   
-  const loading = userLoading || moodActions.loading || 
-                 isJournalLoading || conversationLoading || subscriptionLoading;
+  const loading = userLoading || isJournalLoading || conversationLoading || subscriptionLoading;
 
   useEffect(() => {
     if (user && !isJournalFetched && !isFetchingJournalRef.current) {
       fetchJournalEntries();
-      fetchMoodEntries();
       checkSubscriptionStatus();
     }
   }, [user, isJournalFetched]);
-
-  const fetchMoodEntries = async () => {
-    if (user) {
-      try {
-        const entries = await moodActions.fetchMoodEntries(user.id);
-        setMoodEntries(entries);
-      } catch (error) {
-        console.error("Error fetching mood entries:", error);
-      }
-    }
-  };
 
   const fetchJournalEntries = async () => {
     if (!user) return [];
@@ -82,31 +66,6 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     } finally {
       isFetchingJournalRef.current = false;
       setIsJournalLoading(false);
-    }
-  };
-
-  const handleAddMoodEntry = async (mood: MoodType, note?: string) => {
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to record your mood",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    try {
-      const newEntry = await moodActions.addMoodEntry(user.id, mood, note);
-      if (newEntry) {
-        setMoodEntries(prev => [newEntry, ...prev]);
-      }
-    } catch (error) {
-      console.error("Error adding mood entry:", error);
-      toast({
-        title: "Error saving mood",
-        description: "Please try again later",
-        variant: "destructive"
-      });
     }
   };
 
@@ -140,8 +99,6 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     saveProfile,
     startConversation,
     addMessageToConversation: handleAddMessageToConversation,
-    moodEntries,
-    addMoodEntry: handleAddMoodEntry,
     journalEntries,
     fetchJournalEntries,
     subscription,
