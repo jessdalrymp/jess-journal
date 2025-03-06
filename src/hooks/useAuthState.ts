@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { User } from '../lib/types';
 import { supabase } from '../integrations/supabase/client';
@@ -58,8 +59,8 @@ export const useAuthState = () => {
               createdAt: new Date(session.user.created_at),
             });
           }
-        } else if (event === 'SIGNED_OUT') {
-          console.log('User signed out');
+        } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+          console.log('User signed out or deleted');
           setUser(null);
         }
         
