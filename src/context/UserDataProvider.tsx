@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { MoodType, MoodEntry, JournalEntry } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
@@ -31,7 +30,6 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const { loading: conversationLoading, startConversation, addMessageToConversation } = useConversationData(user?.id);
   const { toast } = useToast();
   
-  // Combined loading state
   const loading = userLoading || moodActions.loading || 
                  journalActions.loading || conversationLoading;
 
@@ -70,8 +68,8 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   };
 
-  const fetchJournalEntries = async () => {
-    if (!user) return;
+  const fetchJournalEntries = async (): Promise<JournalEntry[]> => {
+    if (!user) return [];
     
     try {
       console.log("Fetching journal entries for user:", user.id);
@@ -89,7 +87,6 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     try {
       const shouldRefreshEntries = await addMessageToConversation(conversationId, content, role);
       
-      // Always refresh journal entries after assistant messages
       if (role === 'assistant' || shouldRefreshEntries) {
         if (user) {
           await fetchJournalEntries();

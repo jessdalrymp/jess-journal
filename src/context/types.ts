@@ -13,5 +13,5 @@ export interface UserData {
   moodEntries: MoodEntry[];
   addMoodEntry: (mood: MoodType, note?: string) => Promise<void>;
   journalEntries: JournalEntry[];
-  fetchJournalEntries: () => Promise<void>;
+  fetchJournalEntries: () => Promise<JournalEntry[]>;
 }
