@@ -301,7 +301,7 @@ const Subscription = () => {
                   <Label htmlFor="couponCode">Coupon Code</Label>
                   <Input 
                     id="couponCode"
-                    placeholder="Enter coupon code (e.g. UNLIMITED2024)" 
+                    placeholder="Enter coupon code" 
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
                   />
