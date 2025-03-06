@@ -45,7 +45,7 @@ export const ChatFooter = ({ onEndChat, type, onAcceptChallenge, onNewChallenge 
         className="shadow-md px-6 py-3 text-base"
         icon={<LogOut className="h-5 w-5" />}
       >
-        {type === 'sideQuest' ? 'Save & Exit' : 'Leave Conversation'}
+        {type === 'sideQuest' ? 'Save & Exit' : 'Save and Go Home'}
       </ActionButton>
     </div>
   );
