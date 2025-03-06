@@ -27,6 +27,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [isJournalFetched, setIsJournalFetched] = useState(false);
+  const [isJournalLoading, setIsJournalLoading] = useState(false);
   const isFetchingJournalRef = useRef(false);
   
   const moodActions = useMoodActions();
@@ -36,14 +37,15 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const { toast } = useToast();
   
   const loading = userLoading || moodActions.loading || 
-                 journalActions.loading || conversationLoading || subscriptionLoading;
+                 isJournalLoading || conversationLoading || subscriptionLoading;
 
   useEffect(() => {
-    if (user && !isFetchingJournalRef.current) {
+    if (user && !isJournalFetched && !isFetchingJournalRef.current) {
+      fetchJournalEntries();
       fetchMoodEntries();
       checkSubscriptionStatus();
     }
-  }, [user]);
+  }, [user, isJournalFetched]);
 
   const fetchMoodEntries = async () => {
     if (user) {
@@ -56,45 +58,30 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   };
 
-  const addMoodEntry = async (mood: MoodType, note?: string) => {
-    if (!user) return;
-
-    try {
-      const newEntry = await moodActions.addMoodEntry(user.id, mood, note);
-      if (newEntry) {
-        setMoodEntries(prev => [newEntry, ...prev]);
-      }
-    } catch (error) {
-      console.error("Error adding mood entry:", error);
-      toast({
-        title: "Error saving mood",
-        description: "Please try again",
-        variant: "destructive"
-      });
-    }
-  };
-
   const fetchJournalEntries = async () => {
     if (!user) return [];
     
-    if (isJournalFetched || isFetchingJournalRef.current) {
-      console.log("Journal entries already fetched or being fetched, skipping redundant fetch");
+    if (isFetchingJournalRef.current) {
+      console.log("Journal entries already being fetched, skipping redundant fetch");
       return journalEntries;
     }
     
     isFetchingJournalRef.current = true;
+    setIsJournalLoading(true);
     
     try {
       console.log("Fetching journal entries for user:", user.id);
       const entries = await journalActions.fetchJournalEntries(user.id);
       setJournalEntries(entries);
       setIsJournalFetched(true);
+      console.log("Successfully fetched", entries.length, "journal entries");
       return entries;
     } catch (error) {
       console.error("Error fetching journal entries:", error);
       return [];
     } finally {
       isFetchingJournalRef.current = false;
+      setIsJournalLoading(false);
     }
   };
 

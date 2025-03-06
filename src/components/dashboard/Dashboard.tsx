@@ -11,11 +11,10 @@ export const Dashboard = () => {
   const { user } = useAuth();
   const { journalEntries, fetchJournalEntries, loading } = useUserData();
   const [isLoading, setIsLoading] = useState(true);
-  const [hasLoadedInitially, setHasLoadedInitially] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    // Only fetch once per component mount
-    if (!hasLoadedInitially && user && !loading) {
+    if (user && !initialized && !loading) {
       const loadUserData = async () => {
         try {
           console.log("Dashboard - Loading journal entries for user:", user.id);
@@ -24,13 +23,16 @@ export const Dashboard = () => {
           console.error("Error loading dashboard data:", error);
         } finally {
           setIsLoading(false);
-          setHasLoadedInitially(true);
+          setInitialized(true);
         }
       };
 
       loadUserData();
+    } else if (!loading) {
+      // If we're not loading but also don't have a user, we should stop showing the loading indicator
+      setIsLoading(false);
     }
-  }, [user, fetchJournalEntries, hasLoadedInitially, loading]);
+  }, [user, fetchJournalEntries, loading, initialized]);
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6">

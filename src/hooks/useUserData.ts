@@ -7,10 +7,14 @@ import { useToast } from '@/hooks/use-toast';
 export function useUserData() {
   const [user, setUser] = useState<User | null | undefined>(null);
   const [profile, setProfile] = useState<UserProfile | null | undefined>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [isLoadingJournal, setIsLoadingJournal] = useState(false);
   const userActions = useUserActions();
   const { toast } = useToast();
   
-  const loading = userActions.loading;
+  // Combined loading state
+  const loading = isLoadingUser || isLoadingProfile || isLoadingJournal || userActions.loading;
 
   useEffect(() => {
     fetchUser();
@@ -24,6 +28,7 @@ export function useUserData() {
 
   const fetchUser = async () => {
     try {
+      setIsLoadingUser(true);
       const userData = await userActions.fetchUser();
       setUser(userData);
     } catch (error) {
@@ -33,6 +38,8 @@ export function useUserData() {
         description: "Please try refreshing the page",
         variant: "destructive"
       });
+    } finally {
+      setIsLoadingUser(false);
     }
   };
 
@@ -43,10 +50,13 @@ export function useUserData() {
     }
 
     try {
+      setIsLoadingProfile(true);
       const profileData = await userActions.fetchProfile(user.id);
       setProfile(profileData);
     } catch (error) {
       console.error("Error fetching profile:", error);
+    } finally {
+      setIsLoadingProfile(false);
     }
   };
 
@@ -55,9 +65,18 @@ export function useUserData() {
       return;
     }
 
-    const updatedProfile = await userActions.saveProfile(user.id, profileData);
-    if (updatedProfile) {
-      setProfile(updatedProfile);
+    try {
+      const updatedProfile = await userActions.saveProfile(user.id, profileData);
+      if (updatedProfile) {
+        setProfile(updatedProfile);
+      }
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      toast({
+        title: "Error saving profile",
+        description: "Please try again",
+        variant: "destructive"
+      });
     }
   };
 
