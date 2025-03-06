@@ -85,6 +85,31 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   };
 
+  const handleAddMoodEntry = async (mood: MoodType, note?: string) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to record your mood",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const newEntry = await moodActions.addMoodEntry(user.id, mood, note);
+      if (newEntry) {
+        setMoodEntries(prev => [newEntry, ...prev]);
+      }
+    } catch (error) {
+      console.error("Error adding mood entry:", error);
+      toast({
+        title: "Error saving mood",
+        description: "Please try again later",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleAddMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant') => {
     try {
       await addMessageToConversation(conversationId, content, role);
@@ -116,7 +141,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     startConversation,
     addMessageToConversation: handleAddMessageToConversation,
     moodEntries,
-    addMoodEntry,
+    addMoodEntry: handleAddMoodEntry,
     journalEntries,
     fetchJournalEntries,
     subscription,
