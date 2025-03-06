@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ContactDialogProps {
   open: boolean;
@@ -34,11 +35,19 @@ export const ContactDialog = ({ open, onOpenChange, userEmail }: ContactDialogPr
     
     setIsSubmitting(true);
     
-    // Here you would typically send this data to your backend
-    // For now, we'll simulate a successful submission
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Send email using Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('send-contact-email', {
+        body: {
+          email: userEmail,
+          subject: subject,
+          message: message
+        }
+      });
+      
+      if (error) {
+        throw new Error(error.message);
+      }
       
       toast({
         title: "Message sent",
@@ -50,6 +59,7 @@ export const ContactDialog = ({ open, onOpenChange, userEmail }: ContactDialogPr
       setMessage('');
       onOpenChange(false);
     } catch (error) {
+      console.error("Error sending message:", error);
       toast({
         title: "Something went wrong",
         description: "Your message couldn't be sent. Please try again later.",
