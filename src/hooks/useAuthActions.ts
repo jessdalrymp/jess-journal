@@ -27,7 +27,7 @@ export const useAuthActions = () => {
           title: "Welcome back!",
           description: "You've successfully logged in.",
         });
-        return data;
+        return data; // Return the data so the AuthContext has access to it if needed
       } else {
         console.error("No user returned after sign in");
         throw new Error("Authentication failed. Please try again.");
@@ -63,14 +63,14 @@ export const useAuthActions = () => {
           title: "Welcome!",
           description: "Your account has been created successfully.",
         });
-        return data;
+        return data; // Return the data so the AuthContext has access to it if needed
       } else if (data?.user) {
         console.log("Sign-up requires email verification:", data.user.id);
         toast({
           title: "Verification required",
           description: "Please check your email to verify your account.",
         });
-        return data;
+        return data; // Return the data so the AuthContext has access to it if needed
       } else {
         console.error("No user or session returned after sign up");
         throw new Error("Account creation failed. Please try again.");

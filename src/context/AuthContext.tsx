@@ -4,11 +4,12 @@ import { User } from '../lib/types';
 import { useAuthState } from '../hooks/useAuthState';
 import { useAuthActions } from '../hooks/useAuthActions';
 
+// Update the return types of signIn and signUp to match what they actually return
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name?: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<any>; // Changed from Promise<void> to Promise<any>
+  signUp: (email: string, password: string, name?: string) => Promise<any>; // Changed from Promise<void> to Promise<any>
   signOut: () => Promise<void>;
 }
 
