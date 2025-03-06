@@ -1,8 +1,11 @@
+
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { ActionButton } from '../ui/ActionButton';
 import { useToast } from '@/hooks/use-toast';
-import { Input } from '../ui/input';
+import { ActionButton } from '../ui/ActionButton';
+import { AuthFormInput } from './AuthFormInput';
+import { AuthFormHeader } from './AuthFormHeader';
+import { validateEmail, validatePassword, validateName } from '../../utils/authValidation';
 
 export const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,77 +17,66 @@ export const AuthForm = () => {
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
 
+  const validateForm = (): boolean => {
+    if (!email || !password) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!validateEmail(email)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!validatePassword(password)) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!isLogin && !validateName(name)) {
+      toast({
+        title: "Name required",
+        description: "Please enter your name to create an account.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      if (!email || !password) {
-        toast({
-          title: "Missing fields",
-          description: "Please fill in all required fields.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        toast({
-          title: "Invalid email",
-          description: "Please enter a valid email address.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Validate password length
-      if (password.length < 6) {
-        toast({
-          title: "Password too short",
-          description: "Password must be at least 6 characters long.",
-          variant: "destructive",
-        });
+      if (!validateForm()) {
         setLoading(false);
         return;
       }
 
       if (isLogin) {
         console.log("Attempting to sign in with:", { email });
-        try {
-          const result = await signIn(email, password);
-          console.log("Sign in successful in form component:", result);
-        } catch (error: any) {
-          console.error("Sign in failed in form component:", error);
-          throw error;
-        }
+        await signIn(email, password);
       } else {
-        if (!name.trim()) {
-          toast({
-            title: "Name required",
-            description: "Please enter your name to create an account.",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
-        
         console.log("Attempting to sign up with:", { email, name });
-        try {
-          const result = await signUp(email, password, name);
-          console.log("Sign up successful in form component:", result);
-        } catch (error: any) {
-          console.error("Sign up failed in form component:", error);
-          throw error;
-        }
+        await signUp(email, password, name);
       }
     } catch (error: any) {
       console.error('Authentication error:', error);
       
-      // Handle specific error messages from Supabase
       let errorMessage = "An unexpected error occurred. Please try again.";
       
       if (error.message) {
@@ -111,10 +103,7 @@ export const AuthForm = () => {
 
   return (
     <div className="w-full max-w-md mx-auto p-6">
-      <div className="mb-10 text-center">
-        <h1 className="text-4xl font-bold mb-2 text-jess-primary">JESS</h1>
-        <p className="text-lg text-jess-muted">Your AI Storytelling Coach</p>
-      </div>
+      <AuthFormHeader />
       
       <div className="card-base animate-fade-in">
         <h2 className="text-2xl font-medium mb-6 text-center">
@@ -123,50 +112,33 @@ export const AuthForm = () => {
         
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-jess-muted mb-1">
-                Name
-              </label>
-              <Input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="bg-jess-subtle text-jess-foreground"
-                placeholder="Your name"
-              />
-            </div>
+            <AuthFormInput
+              id="name"
+              type="text"
+              value={name}
+              onChange={setName}
+              label="Name"
+              placeholder="Your name"
+            />
           )}
           
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-jess-muted mb-1">
-              Email
-            </label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="bg-jess-subtle text-jess-foreground"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
+          <AuthFormInput
+            id="email"
+            type="email"
+            value={email}
+            onChange={setEmail}
+            label="Email"
+            placeholder="you@example.com"
+          />
           
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-jess-muted mb-1">
-              Password
-            </label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="bg-jess-subtle text-jess-foreground"
-              placeholder="••••••••"
-              required
-            />
-          </div>
+          <AuthFormInput
+            id="password"
+            type="password"
+            value={password}
+            onChange={setPassword}
+            label="Password"
+            placeholder="••••••••"
+          />
           
           <div className="pt-2">
             <ActionButton 
