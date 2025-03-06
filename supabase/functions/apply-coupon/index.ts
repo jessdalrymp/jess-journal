@@ -72,12 +72,25 @@ serve(async (req) => {
 
     let subscriptionUpdate = {}
     
-    // Special handling for UNLIMITED2024 coupon
+    // Special handling for different coupon codes
     if (couponCode === 'UNLIMITED2024') {
       subscriptionUpdate = {
         status: 'active',
         is_trial: false,
         is_unlimited: true,
+        coupon_code: couponCode,
+        updated_at: new Date().toISOString()
+      }
+    } else if (couponCode === 'FreeTrial') {
+      // Set trial end date to 30 days from now for FreeTrial coupon
+      const trialEndDate = new Date()
+      trialEndDate.setDate(trialEndDate.getDate() + 30)
+      
+      subscriptionUpdate = {
+        status: 'active',
+        is_trial: true,
+        is_unlimited: false,
+        trial_ends_at: trialEndDate.toISOString(),
         coupon_code: couponCode,
         updated_at: new Date().toISOString()
       }
