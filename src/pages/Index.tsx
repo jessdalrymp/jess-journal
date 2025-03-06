@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../context/UserDataContext';
-import { AuthProvider } from '../context/AuthContext';
-import { UserDataProvider } from '../context/UserDataContext';
 import { AuthForm } from '../components/auth/AuthForm';
 import { SelfDiscoveryQuiz } from '../components/onboarding/SelfDiscoveryQuiz';
 import { Dashboard } from '../components/dashboard/Dashboard';
 import { Header } from '../components/Header';
 import { DisclaimerBanner } from '../components/ui/DisclaimerBanner';
 
-const AppContent = () => {
+const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useUserData();
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -52,16 +50,6 @@ const AppContent = () => {
       </main>
       <DisclaimerBanner />
     </div>
-  );
-};
-
-const Index = () => {
-  return (
-    <AuthProvider>
-      <UserDataProvider>
-        <AppContent />
-      </UserDataProvider>
-    </AuthProvider>
   );
 };
 
