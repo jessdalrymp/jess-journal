@@ -15,7 +15,7 @@ import JournalChallenge from './pages/JournalChallenge';
 import JournalEntry from './pages/JournalEntry';
 import JournalHistory from './pages/JournalHistory';
 import NotFound from './pages/NotFound';
-import Subscription from './pages/Subscription';
+import Subscription from './pages/subscription';
 import PaymentSuccess from './pages/PaymentSuccess';
 import Legal from './pages/Legal';
 
