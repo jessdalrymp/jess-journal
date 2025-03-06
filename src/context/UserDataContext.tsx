@@ -8,7 +8,7 @@ export const UserDataContext = createContext<UserData | undefined>(undefined);
 // Custom hook to use the UserData context
 export const useUserData = () => {
   const context = useContext(UserDataContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useUserData must be used within a UserDataProvider');
   }
   return context;

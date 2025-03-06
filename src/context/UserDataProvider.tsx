@@ -1,13 +1,13 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { MoodType, MoodEntry, JournalEntry } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
-import { useUserData } from '../hooks/useUserData';
+import { useUserData as useUserDataHook } from '../hooks/useUserData';
 import { useMoodActions } from '../hooks/useMoodActions';
 import { useJournalActions } from '../hooks/useJournalActions';
 import { useConversationData } from '../hooks/useConversationData';
 import { useSubscription } from '../hooks/useSubscription';
 import { useToast } from '@/hooks/use-toast';
-import { Subscription } from './types';
 
 interface UserDataProviderProps {
   children: React.ReactNode;
@@ -21,7 +21,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     fetchUser, 
     fetchProfile, 
     saveProfile 
-  } = useUserData();
+  } = useUserDataHook();
 
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
