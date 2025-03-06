@@ -10,7 +10,7 @@ import { ArrowLeft, Settings, LogOut, CreditCard, RefreshCw, Pencil } from "luci
 
 const Account = () => {
   const { user, signOut } = useAuth();
-  const { profile, saveProfile } = useUserData();
+  const { profile, saveProfile, subscription } = useUserData();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(user?.name || '');
