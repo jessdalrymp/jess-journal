@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { useUserData } from '../../../context/UserDataContext';
 import { useAuth } from '@/context/AuthContext';
@@ -26,10 +27,10 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
   }, [authUser]);
 
   const initializeChat = useCallback(async () => {
-    if (isInitialized) {
-      console.log("Chat already initialized, using existing session");
-      const existingSession = getCurrentConversationFromStorage(type);
-      return existingSession;
+    // Return early if already initialized or loading
+    if (isInitialized && !loading) {
+      console.log(`Chat for ${type} already initialized, using existing session`);
+      return getCurrentConversationFromStorage(type);
     }
 
     if (!authChecked) {
@@ -37,34 +38,35 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       return null;
     }
 
+    // Prevent re-initialization while loading
+    if (loading) {
+      console.log(`${type} chat initialization already in progress`);
+      return null;
+    }
+
     try {
       setLoading(true);
-      console.log("Initializing chat for type:", type);
+      console.log(`Initializing chat for type: ${type}`);
       console.log("User authentication state:", authUser ? "Authenticated" : "Not authenticated");
       
       if (!authUser) {
         console.log("User not authenticated, cannot initialize chat");
         setError("Authentication required");
-        setLoading(false);
         return null;
       }
       
+      // Check for cached conversation first
+      const cachedConversation = getCurrentConversationFromStorage(type);
+      
+      if (cachedConversation && cachedConversation.userId === authUser.id) {
+        console.log(`Using existing ${type} conversation from cache`);
+        setIsInitialized(true);
+        return cachedConversation;
+      }
+      
+      // For sideQuest or action, create with initial message
       if (type === 'sideQuest' || type === 'action') {
-        const cachedConversation = getCurrentConversationFromStorage(type);
-        
-        if (
-          cachedConversation && 
-          cachedConversation.userId === authUser.id && 
-          cachedConversation.messages && 
-          cachedConversation.messages.length >= 1
-        ) {
-          console.log(`Using existing ${type} conversation from cache`);
-          setIsInitialized(true);
-          setLoading(false);
-          return cachedConversation;
-        }
-        
-        console.log(`No valid cached ${type} conversation, creating new one`);
+        console.log(`Creating new ${type} conversation`);
         const conversation = await startConversation(type);
         
         const initialMessage = getInitialMessage(type);
@@ -88,18 +90,12 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         
         saveCurrentConversationToStorage(updatedSession);
         setIsInitialized(true);
-        setLoading(false);
         return updatedSession;
       }
       
-      const cachedConversation = getCurrentConversationFromStorage(type);
-      if (cachedConversation && cachedConversation.userId === authUser.id) {
-        console.log(`Loaded ${type} conversation from localStorage`);
-        setLoading(false);
-        return cachedConversation;
-      }
-      
+      // For other types (story, journal)
       try {
+        console.log(`Starting new ${type} conversation from API`);
         const conversation = await startConversation(type);
         
         if (!conversation.messages || conversation.messages.length === 0) {
@@ -107,53 +103,38 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           const hasVisitedStoryPage = localStorage.getItem('hasVisitedStoryPage');
           const isFirstVisit = isStoryType && !hasVisitedStoryPage;
           
+          let initialMessage = "";
+          
           if (!isFirstVisit) {
-            const initialMessage = getInitialMessage(type);
-            await addMessageToConversation(
-              conversation.id,
-              initialMessage,
-              'assistant' as const
-            );
-            
-            const updatedSession: ConversationSession = {
-              ...conversation,
-              messages: [
-                {
-                  id: Date.now().toString(),
-                  role: 'assistant' as const,
-                  content: initialMessage,
-                  timestamp: new Date(),
-                },
-              ],
-            };
-            
-            saveCurrentConversationToStorage(updatedSession);
-            return updatedSession;
+            initialMessage = getInitialMessage(type);
           } else {
-            const briefIntro = "I'm excited to hear your story! What would you like to talk about today?";
-            await addMessageToConversation(
-              conversation.id,
-              briefIntro,
-              'assistant' as const
-            );
-            
-            const updatedSession: ConversationSession = {
-              ...conversation,
-              messages: [
-                {
-                  id: Date.now().toString(),
-                  role: 'assistant' as const,
-                  content: briefIntro,
-                  timestamp: new Date(),
-                },
-              ],
-            };
-            
-            saveCurrentConversationToStorage(updatedSession);
-            return updatedSession;
+            initialMessage = "I'm excited to hear your story! What would you like to talk about today?";
           }
+          
+          await addMessageToConversation(
+            conversation.id,
+            initialMessage,
+            'assistant' as const
+          );
+          
+          const updatedSession: ConversationSession = {
+            ...conversation,
+            messages: [
+              {
+                id: Date.now().toString(),
+                role: 'assistant' as const,
+                content: initialMessage,
+                timestamp: new Date(),
+              },
+            ],
+          };
+          
+          saveCurrentConversationToStorage(updatedSession);
+          setIsInitialized(true);
+          return updatedSession;
         }
         
+        setIsInitialized(true);
         return conversation;
       } catch (err) {
         console.error('Error initializing chat:', err);
@@ -181,7 +162,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
     } finally {
       setLoading(false);
     }
-  }, [type, authUser, addMessageToConversation, startConversation, toast, isInitialized, authChecked]);
+  }, [type, authUser, addMessageToConversation, startConversation, toast, isInitialized, authChecked, loading]);
 
   return {
     initializeChat,

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { ChatInterface } from "../components/chat/ChatInterface";
@@ -15,6 +15,7 @@ const MyStory = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingConversations, setIsCheckingConversations] = useState(false);
+  const initializationAttempted = useRef(false);
   const { user, loading: userLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -22,10 +23,12 @@ const MyStory = () => {
   useEffect(() => {
     console.log("MyStory - Auth state:", user ? "Authenticated" : "Not authenticated");
     
-    // Only proceed if we have a definitive authentication state
-    if (userLoading) {
-      return; // Wait until user authentication state is resolved
+    // Only proceed if we have a definitive authentication state and haven't attempted initialization
+    if (userLoading || initializationAttempted.current) {
+      return; // Wait until user authentication state is resolved or skip if already attempted
     }
+    
+    initializationAttempted.current = true;
     
     if (!user) {
       setIsLoading(false);
@@ -36,9 +39,11 @@ const MyStory = () => {
     const hasVisitedStoryPage = localStorage.getItem('hasVisitedStoryPage');
     
     if (!hasVisitedStoryPage) {
+      console.log("First visit to story page, showing welcome modal");
       setShowWelcomeModal(true);
       // Mark that user has visited the page
       localStorage.setItem('hasVisitedStoryPage', 'true');
+      setIsLoading(false);
     } else {
       // Check if there are existing story conversations for this user
       const checkExistingConversations = async () => {
@@ -54,6 +59,7 @@ const MyStory = () => {
           
           if (error) {
             console.error('Error checking for existing conversations:', error);
+            setIsLoading(false);
             return;
           }
           
@@ -77,11 +83,6 @@ const MyStory = () => {
       
       checkExistingConversations();
     }
-    
-    // If not checking conversations, set loading to false
-    if (!isCheckingConversations) {
-      setIsLoading(false);
-    }
   }, [user, toast, userLoading]);
   
   const handleCloseWelcomeModal = () => {
@@ -98,7 +99,7 @@ const MyStory = () => {
   };
 
   // Show loading state while checking authentication
-  if (isLoading) {
+  if (userLoading || isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-jess-background">
         <Header />

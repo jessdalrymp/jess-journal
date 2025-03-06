@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ConversationSession } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
 import { useInitializeChat } from './hooks/useInitializeChat';
@@ -8,6 +8,7 @@ import { useGenerateSummary } from './hooks/useGenerateSummary';
 
 export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const [session, setSession] = useState<ConversationSession | null>(null);
+  const isInitializing = useRef(false);
   
   const { user } = useAuth();
   const { initializeChat, loading: initLoading, error: initError } = useInitializeChat(type);
@@ -18,19 +19,27 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const error = initError;
   
   useEffect(() => {
-    if (user) {
+    // Only load chat if user exists and we haven't started initializing yet
+    if (user && !isInitializing.current && !session) {
       const loadChat = async () => {
-        const chatSession = await initializeChat();
-        if (chatSession) {
-          setSession(chatSession);
+        isInitializing.current = true;
+        try {
+          console.log(`Loading ${type} chat for user:`, user.id);
+          const chatSession = await initializeChat();
+          if (chatSession) {
+            console.log(`Successfully loaded ${type} chat session`);
+            setSession(chatSession);
+          }
+        } catch (err) {
+          console.error(`Error loading ${type} chat:`, err);
+        } finally {
+          isInitializing.current = false;
         }
       };
       
       loadChat();
-    } else {
-      setSession(null);
     }
-  }, [initializeChat, user]);
+  }, [initializeChat, user, type, session]);
   
   const handleSendMessage = async (message: string) => {
     if (!session) return;

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useState, useRef } from 'react';
 import { useChat } from './useChat';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessageList } from './ChatMessageList';
@@ -24,6 +25,7 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge, onRestart }: Ch
   const { user, loading: authLoading } = useAuth();
   const { session, loading: chatLoading, error, sendMessage, generateSummary } = useChat(type);
   const [showEndDialog, setShowEndDialog] = useState(false);
+  const hasInitialized = useRef(false);
   const { toast } = useToast();
   
   const loading = authLoading || chatLoading;
@@ -35,9 +37,17 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge, onRestart }: Ch
     
     return () => {
       console.log(`ChatInterface unmounting for ${type}`);
-      // No need to clear the conversation here as it's handled in onBack
     };
   }, [error, type]);
+
+  // Prevent repeated re-renders while loading
+  useEffect(() => {
+    hasInitialized.current = true;
+    
+    return () => {
+      hasInitialized.current = false;
+    };
+  }, []);
 
   const openEndDialog = () => {
     if (type === 'sideQuest') {
