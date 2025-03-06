@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ActionButton } from '../ui/ActionButton';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '../ui/input';
 
 export const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -77,12 +78,12 @@ export const AuthForm = () => {
               <label htmlFor="name" className="block text-sm font-medium text-jess-muted mb-1">
                 Name
               </label>
-              <input
+              <Input
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="input-base"
+                className="bg-jess-subtle text-jess-foreground"
                 placeholder="Your name"
               />
             </div>
@@ -92,12 +93,12 @@ export const AuthForm = () => {
             <label htmlFor="email" className="block text-sm font-medium text-jess-muted mb-1">
               Email
             </label>
-            <input
+            <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="input-base"
+              className="bg-jess-subtle text-jess-foreground"
               placeholder="you@example.com"
               required
             />
@@ -107,12 +108,12 @@ export const AuthForm = () => {
             <label htmlFor="password" className="block text-sm font-medium text-jess-muted mb-1">
               Password
             </label>
-            <input
+            <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="input-base"
+              className="bg-jess-subtle text-jess-foreground"
               placeholder="••••••••"
               required
             />
