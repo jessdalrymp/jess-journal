@@ -88,11 +88,11 @@ export const SubscriptionSection = ({ subscription }: SubscriptionSectionProps) 
             Manage Subscription
           </Button>
           <Button 
-            variant="destructive" 
+            variant="outline" 
             size="sm"
             onClick={handleCancelSubscription}
             disabled={isCancelling}
-            className="flex items-center"
+            className="flex items-center bg-[#FEC6A1] hover:bg-[#FEC6A1]/80 text-foreground"
           >
             <XCircle size={16} className="mr-1" />
             Cancel Subscription
@@ -128,11 +128,11 @@ export const SubscriptionSection = ({ subscription }: SubscriptionSectionProps) 
             Manage Subscription
           </Button>
           <Button 
-            variant="destructive" 
+            variant="outline" 
             size="sm"
             onClick={handleCancelSubscription}
             disabled={isCancelling}
-            className="flex items-center"
+            className="flex items-center bg-[#FEC6A1] hover:bg-[#FEC6A1]/80 text-foreground"
           >
             <XCircle size={16} className="mr-1" />
             Cancel Trial
@@ -164,11 +164,11 @@ export const SubscriptionSection = ({ subscription }: SubscriptionSectionProps) 
         </Button>
         {subscription.status === "active" && (
           <Button 
-            variant="destructive" 
+            variant="outline" 
             size="sm"
             onClick={handleCancelSubscription}
             disabled={isCancelling}
-            className="flex items-center"
+            className="flex items-center bg-[#FEC6A1] hover:bg-[#FEC6A1]/80 text-foreground"
           >
             <XCircle size={16} className="mr-1" />
             Cancel Subscription
