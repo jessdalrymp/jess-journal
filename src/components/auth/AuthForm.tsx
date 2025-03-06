@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ActionButton } from '../ui/ActionButton';
@@ -20,33 +19,28 @@ export const AuthForm = () => {
     setLoading(true);
     
     try {
-      if (isLogin) {
-        // Login flow
-        await signIn(email, password);
+      if (!email || !password) {
         toast({
-          title: "Welcome back!",
-          description: "You've successfully logged in.",
+          title: "Missing fields",
+          description: "Please fill in all required fields.",
+          variant: "destructive",
         });
+        return;
+      }
+
+      if (isLogin) {
+        await signIn(email, password);
       } else {
-        // Registration flow
         if (!name.trim()) {
           toast({
             title: "Name required",
             description: "Please enter your name to create an account.",
             variant: "destructive",
           });
-          setLoading(false);
           return;
         }
         
         await signUp(email, password, name);
-        toast({
-          title: "Account created!",
-          description: "Your account has been successfully created. Please check your email for verification if required.",
-        });
-        
-        // Automatically switch to login view after successful registration
-        setIsLogin(true);
       }
     } catch (error: any) {
       console.error('Authentication error:', error);

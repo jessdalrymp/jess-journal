@@ -3,8 +3,6 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { User } from '../lib/types';
 import { supabase } from '../integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
-import { Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
@@ -31,53 +29,52 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Transform Supabase session user to app User type
-  const transformUser = (session: Session | null): User | null => {
-    if (!session?.user) return null;
-    
-    return {
-      id: session.user.id,
-      email: session.user.email || '',
-      name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
-      createdAt: new Date(session.user.created_at),
-    };
-  };
-
-  // Check for existing session on mount
   useEffect(() => {
-    const checkSession = async () => {
+    // Check current session and set up auth state listener
+    const initAuth = async () => {
       try {
-        setLoading(true);
-        
         // Get current session
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error('Error getting session:', error);
-          return;
+        if (sessionError) throw sessionError;
+        
+        if (session?.user) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+            name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+            createdAt: new Date(session.user.created_at),
+          });
         }
-        
-        // Transform and set user if session exists
-        setUser(transformUser(session));
       } catch (error) {
-        console.error('Session check error:', error);
+        console.error('Auth initialization error:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    checkSession();
+    initAuth();
 
     // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event);
-        setUser(transformUser(session));
+        console.log('Auth state changed:', event, session);
+        
+        if (session?.user) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+            name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+            createdAt: new Date(session.user.created_at),
+          });
+        } else {
+          setUser(null);
+        }
+        
         setLoading(false);
       }
     );
 
-    // Clean up subscription
     return () => {
       subscription.unsubscribe();
     };
@@ -91,18 +88,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         password,
       });
 
-      if (error) {
-        console.error('Login failed:', error);
-        toast({
-          title: 'Login failed',
-          description: error.message,
-          variant: 'destructive',
-        });
-        throw error;
-      }
+      if (error) throw error;
 
-      setUser(transformUser(data.session));
-    } catch (error) {
+      if (data.user) {
+        toast({
+          title: "Welcome back!",
+          description: "You've successfully logged in.",
+        });
+      }
+    } catch (error: any) {
       console.error('Login error:', error);
       throw error;
     } finally {
@@ -113,59 +107,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (email: string, password: string, name?: string) => {
     setLoading(true);
     try {
-      // First, check if the user already exists
-      const { data: existingUser, error: checkError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (existingUser?.user) {
-        // User already exists, just log them in
-        setUser(transformUser(existingUser.session));
-        toast({
-          title: 'Welcome back!',
-          description: 'This account already exists. You have been logged in.',
-        });
-        setLoading(false);
-        return;
-      }
-      
-      // User doesn't exist, proceed with sign up
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: {
-            name,
-          },
+          data: { name },
         },
       });
 
-      if (error) {
-        toast({
-          title: 'Registration failed',
-          description: error.message,
-          variant: 'destructive',
-        });
-        throw error;
-      }
+      if (error) throw error;
 
-      // Check if email confirmation is required
       if (data.session) {
-        // No email confirmation required, user is automatically signed in
-        setUser(transformUser(data.session));
         toast({
-          title: 'Registration successful',
-          description: 'Your account has been created and you are now logged in.',
+          title: "Welcome!",
+          description: "Your account has been created successfully.",
         });
       } else {
-        // Email confirmation required
         toast({
-          title: 'Registration successful',
-          description: 'Please check your email for verification instructions.',
+          title: "Verification required",
+          description: "Please check your email to verify your account.",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
       throw error;
     } finally {
@@ -175,28 +138,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      setLoading(true);
       const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        toast({
-          title: 'Sign out failed',
-          description: error.message,
-          variant: 'destructive',
-        });
-        throw error;
-      }
-      
+      if (error) throw error;
       setUser(null);
-      toast({
-        title: 'Signed out',
-        description: 'You have been successfully signed out.',
-      });
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Signout error:', error);
       throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
