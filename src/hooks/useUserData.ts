@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { User, UserProfile } from '../lib/types';
 import { useUserActions } from './useUserActions';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export function useUserData() {
   const [user, setUser] = useState<User | null | undefined>(null);

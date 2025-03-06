@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from "./components/ui/theme-provider";
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from './context/AuthContext';
-import { UserDataProvider } from './context/UserDataProvider';
+import { UserDataProvider } from './context/UserDataContext';
 import Index from './pages/Index';
 import Account from './pages/Account';
 import MyStory from './pages/MyStory';
