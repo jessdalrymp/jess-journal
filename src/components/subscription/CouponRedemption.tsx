@@ -53,9 +53,12 @@ export const CouponRedemption = ({
               disabled={isApplyingCoupon || !couponCode.trim()}
               variant="outline"
             >
-              Apply
+              {isApplyingCoupon ? 'Applying...' : 'Apply'}
             </Button>
           </div>
+        </div>
+        <div className="mt-2 text-xs text-muted-foreground">
+          Note: You may need to restart your session if the coupon doesn't apply immediately.
         </div>
       </CardContent>
     </Card>
