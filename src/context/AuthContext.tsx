@@ -8,8 +8,8 @@ import { useAuthActions } from '../hooks/useAuthActions';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<any>; // Changed from Promise<void> to Promise<any>
-  signUp: (email: string, password: string, name?: string) => Promise<any>; // Changed from Promise<void> to Promise<any>
+  signIn: (email: string, password: string) => Promise<any>;
+  signUp: (email: string, password: string, name?: string) => Promise<any>;
   signOut: () => Promise<void>;
 }
 
@@ -31,6 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const isLoading = stateLoading || actionLoading;
   console.log("AuthProvider loading state:", isLoading);
+  console.log("Current user state:", user);
 
   return (
     <AuthContext.Provider 
