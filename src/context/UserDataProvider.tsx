@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { MoodType, MoodEntry, JournalEntry } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
 import { useUserData } from '../hooks/useUserData';
@@ -24,6 +25,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [isJournalFetched, setIsJournalFetched] = useState(false);
+  const isFetchingJournal = useRef(false);
   
   const moodActions = useMoodActions();
   const journalActions = useJournalActions();
@@ -71,7 +73,14 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const fetchJournalEntries = async (): Promise<JournalEntry[]> => {
     if (!user) return [];
     
+    // Prevent concurrent fetches
+    if (isFetchingJournal.current) {
+      console.log("Journal fetch already in progress, skipping");
+      return journalEntries;
+    }
+    
     try {
+      isFetchingJournal.current = true;
       console.log("Fetching journal entries for user:", user.id);
       const entries = await journalActions.fetchJournalEntries(user.id);
       setJournalEntries(entries);
@@ -80,6 +89,8 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     } catch (error) {
       console.error("Error fetching journal entries:", error);
       return [];
+    } finally {
+      isFetchingJournal.current = false;
     }
   };
 
@@ -88,7 +99,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
       const shouldRefreshEntries = await addMessageToConversation(conversationId, content, role);
       
       if (role === 'assistant' || shouldRefreshEntries) {
-        if (user) {
+        if (user && !isFetchingJournal.current) {
           await fetchJournalEntries();
         }
       }
