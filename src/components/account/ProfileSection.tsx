@@ -1,6 +1,7 @@
 
 import { Settings } from "lucide-react";
 import { User } from "../../lib/types";
+import { LegalLinks } from "../common/LegalLinks";
 
 interface ProfileSectionProps {
   user: User | null | undefined;
@@ -14,7 +15,11 @@ export const ProfileSection = ({ user }: ProfileSectionProps) => {
         Profile Settings
       </h3>
       <p className="text-sm text-jess-muted mb-2">Email: {user?.email}</p>
-      <p className="text-sm text-jess-muted">Member since: {new Date(user?.createdAt || Date.now()).toLocaleDateString()}</p>
+      <p className="text-sm text-jess-muted mb-4">Member since: {new Date(user?.createdAt || Date.now()).toLocaleDateString()}</p>
+      
+      <div className="pt-3 border-t border-jess-subtle">
+        <LegalLinks className="mt-2" />
+      </div>
     </div>
   );
 };

@@ -17,6 +17,7 @@ import JournalHistory from './pages/JournalHistory';
 import NotFound from './pages/NotFound';
 import Subscription from './pages/Subscription';
 import PaymentSuccess from './pages/PaymentSuccess';
+import Legal from './pages/Legal';
 
 const App = () => {
   console.log("App component initialized");
@@ -37,6 +38,7 @@ const App = () => {
               <Route path="/journal-challenge" element={<JournalChallenge />} />
               <Route path="/journal-entry/:id" element={<JournalEntry />} />
               <Route path="/journal-history" element={<JournalHistory />} />
+              <Route path="/legal" element={<Legal />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />

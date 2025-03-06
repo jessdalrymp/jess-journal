@@ -7,6 +7,7 @@ import { AuthFormInput } from './AuthFormInput';
 import { AuthFormHeader } from './AuthFormHeader';
 import { ForgotPasswordDialog } from './ForgotPasswordDialog';
 import { validateEmail, validatePassword, validateName } from '../../utils/authValidation';
+import { LegalLinks } from '../common/LegalLinks';
 
 export const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -184,9 +185,13 @@ export const AuthForm = () => {
         </div>
       </div>
       
-      <p className="mt-8 text-center text-sm text-jess-muted">
-        By continuing, you agree to our Terms of Service and Privacy Policy.
-      </p>
+      <div className="mt-8 space-y-3">
+        <p className="text-center text-sm text-jess-muted">
+          By continuing, you agree to our Terms of Service and Privacy Policy.
+        </p>
+        
+        <LegalLinks className="mt-1" />
+      </div>
       
       <ForgotPasswordDialog 
         isOpen={showForgotPassword} 
