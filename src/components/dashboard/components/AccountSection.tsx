@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { User, ArrowRight, CreditCard } from 'lucide-react';
+import { User, ArrowRight, CreditCard, AlertCircle } from 'lucide-react';
 import { useUserData } from '../../../context/UserDataContext';
 
 export const AccountSection = () => {
@@ -29,7 +29,8 @@ export const AccountSection = () => {
       
       return (
         <div className="mt-3">
-          <p className="text-sm font-medium text-jess-primary">
+          <p className={`text-sm font-medium ${daysLeft <= 2 ? 'text-jess-accent flex items-center' : 'text-jess-primary'}`}>
+            {daysLeft <= 2 && <AlertCircle size={14} className="mr-1" />}
             Trial Active - {daysLeft} days left
           </p>
         </div>

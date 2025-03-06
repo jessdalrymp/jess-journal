@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { useAuth } from "../context/AuthContext";
@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { useToast } from "../hooks/use-toast";
-import { ArrowLeft, Check, CreditCard, Gift, ShieldCheck, Clock } from "lucide-react";
+import { ArrowLeft, Check, CreditCard, Gift, ShieldCheck, Clock, AlertCircle } from "lucide-react";
 import { useUserData } from "../context/UserDataContext";
 import { supabase } from "../integrations/supabase/client";
 
@@ -17,6 +17,7 @@ const Subscription = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const { subscription, checkSubscriptionStatus, applyCoupon } = useUserData();
   const [couponCode, setCouponCode] = useState("");
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
@@ -26,7 +27,16 @@ const Subscription = () => {
     if (user) {
       checkSubscriptionStatus();
     }
-  }, [user, checkSubscriptionStatus]);
+    
+    // Check for success parameter in URL
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get('success') === 'true') {
+      toast({
+        title: "Payment successful!",
+        description: "Your subscription has been activated",
+      });
+    }
+  }, [user, checkSubscriptionStatus, location, toast]);
 
   const handleStartTrial = async () => {
     if (!user) {
@@ -48,7 +58,7 @@ const Subscription = () => {
 
       toast({
         title: "Trial started!",
-        description: "Your 14-day free trial has been activated",
+        description: "Your 7-day free trial has been activated",
       });
       
       await checkSubscriptionStatus();
@@ -167,10 +177,20 @@ const Subscription = () => {
             Trial Active
           </h3>
           <p className="text-jess-muted">Your trial ends in {daysLeft} days on {trialEndDate.toLocaleDateString()}</p>
-          {daysLeft <= 3 && (
-            <p className="mt-2 text-sm text-jess-accent font-medium">
-              Your trial is ending soon! Subscribe to continue using premium features.
-            </p>
+          {daysLeft <= 2 && (
+            <div className="mt-3 p-3 bg-jess-accent/10 rounded-md border border-jess-accent">
+              <p className="text-sm text-jess-accent font-medium flex items-start">
+                <AlertCircle size={16} className="mr-2 flex-shrink-0 mt-0.5" />
+                Your trial is ending soon! Subscribe now to continue using premium features.
+              </p>
+              <Button 
+                onClick={handleInitiatePayment} 
+                className="mt-2 w-full"
+                disabled={isProcessing}
+              >
+                Subscribe Now
+              </Button>
+            </div>
           )}
         </div>
       );
@@ -245,7 +265,7 @@ const Subscription = () => {
                   </li>
                   <li className="flex items-start">
                     <Check size={18} className="mr-2 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>14-day free trial</span>
+                    <span>7-day free trial</span>
                   </li>
                 </ul>
                 
@@ -255,7 +275,7 @@ const Subscription = () => {
                     onClick={handleStartTrial}
                     disabled={isProcessing}
                   >
-                    Start 14-Day Free Trial
+                    Start 7-Day Free Trial
                   </Button>
                 ) : subscription.is_trial ? (
                   <Button 

@@ -51,7 +51,7 @@ serve(async (req) => {
     // Create trial subscription
     const trialStartDate = new Date()
     const trialEndDate = new Date()
-    trialEndDate.setDate(trialStartDate.getDate() + 14) // 14-day trial
+    trialEndDate.setDate(trialStartDate.getDate() + 7) // 7-day trial instead of 14
 
     const subscriptionId = crypto.randomUUID()
     

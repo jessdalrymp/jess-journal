@@ -1,6 +1,6 @@
 
 import { useNavigate } from "react-router-dom";
-import { CreditCard } from "lucide-react";
+import { CreditCard, AlertCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Subscription } from "../../context/types";
 
@@ -67,10 +67,11 @@ export const SubscriptionSection = ({ subscription }: SubscriptionSectionProps) 
           Trial Subscription
         </h3>
         <p className="text-sm text-jess-muted mb-2">Your trial ends in {daysLeft} days ({trialEndDate.toLocaleDateString()}).</p>
-        {daysLeft <= 3 && (
-          <p className="text-sm text-jess-accent font-medium mb-2">
-            Your trial is ending soon! Please renew to continue using premium features.
-          </p>
+        {daysLeft <= 2 && (
+          <div className="mb-2 flex items-start text-sm text-jess-accent">
+            <AlertCircle size={16} className="mr-1 flex-shrink-0 mt-0.5" />
+            <span>Your trial is ending soon! Please subscribe to continue using premium features.</span>
+          </div>
         )}
         <Button 
           variant="outline" 
