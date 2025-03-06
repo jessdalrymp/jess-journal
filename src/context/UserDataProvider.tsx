@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MoodType, MoodEntry, JournalEntry } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
 import { useUserData } from '../hooks/useUserData';
@@ -24,13 +24,13 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [isJournalFetched, setIsJournalFetched] = useState(false);
-  const isFetchingJournal = useRef(false);
   
   const moodActions = useMoodActions();
   const journalActions = useJournalActions();
   const { loading: conversationLoading, startConversation, addMessageToConversation } = useConversationData(user?.id);
   const { toast } = useToast();
   
+  // Combined loading state
   const loading = userLoading || moodActions.loading || 
                  journalActions.loading || conversationLoading;
 
@@ -69,36 +69,33 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   };
 
-  const fetchJournalEntries = async (): Promise<JournalEntry[]> => {
-    if (!user) return [];
+  const fetchJournalEntries = async () => {
+    if (!user) return;
     
-    // Prevent concurrent fetches
-    if (isFetchingJournal.current) {
-      console.log("Journal fetch already in progress, skipping");
-      return journalEntries;
+    if (isJournalFetched) {
+      console.log("Journal entries already fetched, skipping redundant fetch");
+      return;
     }
     
     try {
-      isFetchingJournal.current = true;
       console.log("Fetching journal entries for user:", user.id);
       const entries = await journalActions.fetchJournalEntries(user.id);
       setJournalEntries(entries);
       setIsJournalFetched(true);
-      return entries;
     } catch (error) {
       console.error("Error fetching journal entries:", error);
-      return [];
-    } finally {
-      isFetchingJournal.current = false;
     }
   };
 
   const handleAddMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant') => {
     try {
-      const shouldRefreshEntries = await addMessageToConversation(conversationId, content, role);
+      await addMessageToConversation(conversationId, content, role);
       
-      if (role === 'assistant' && shouldRefreshEntries) {
-        // Don't fetch here, just let the dashboard handle this when viewed
+      if (role === 'assistant') {
+        setIsJournalFetched(false);
+        if (user) {
+          await fetchJournalEntries();
+        }
       }
     } catch (error) {
       console.error('Error adding message to conversation:', error);

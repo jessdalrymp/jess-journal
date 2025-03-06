@@ -41,7 +41,7 @@ export const useGenerateSummary = () => {
       let summaryText = response.choices[0].message.content || "No summary available";
       console.log("Received summary from AI:", summaryText);
       
-      let title = `${session.type.charAt(0).toUpperCase() + session.type.slice(1)} Summary`;
+      let title = "Conversation Summary";
       let summary = summaryText;
       
       try {
@@ -52,16 +52,7 @@ export const useGenerateSummary = () => {
           console.log("Parsed JSON summary:", { title, summary });
         }
       } catch (e) {
-        // If not in JSON format, try to create a more structured summary
-        console.log("Summary not in JSON format, formatting as JSON");
-        const currentDate = new Date().toISOString();
-        const jsonObj = {
-          title: title,
-          summary: summary,
-          timestamp: currentDate
-        };
-        summary = JSON.stringify(jsonObj, null, 2);
-        summary = `\`\`\`json\n${summary}\n\`\`\``;
+        console.log("Summary not in JSON format, using raw text");
       }
       
       console.log("Saving summary to journal...", { 
@@ -78,7 +69,7 @@ export const useGenerateSummary = () => {
       
       toast({
         title: "Conversation Summarized",
-        description: `Your ${session.type} has been saved to your journal.`,
+        description: `Your ${session.type === 'story' ? 'story' : 'side quest'} has been saved to your journal.`,
         duration: 3000,
       });
       

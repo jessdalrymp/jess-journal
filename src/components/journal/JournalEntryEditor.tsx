@@ -53,8 +53,7 @@ export const JournalEntryEditor = ({
       // Convert back to JSON format
       const jsonObj = {
         title: title,
-        summary: newValue.trim(),
-        timestamp: new Date().toISOString() // Add timestamp for better tracking
+        summary: newValue.trim()
       };
       
       // Remove undefined properties

@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../context/UserDataContext';
 import { CoreActionsSection } from './components/CoreActionsSection';
@@ -11,32 +11,26 @@ export const Dashboard = () => {
   const { user } = useAuth();
   const { journalEntries, fetchJournalEntries, loading } = useUserData();
   const [isLoading, setIsLoading] = useState(true);
-  const [isFetching, setIsFetching] = useState(false);
+  const [hasLoadedInitially, setHasLoadedInitially] = useState(false);
 
-  // Fetch journal entries only once when the dashboard loads
-  const loadJournalEntries = useCallback(async () => {
-    if (user && !isFetching) {
-      try {
-        setIsFetching(true);
-        console.log("Dashboard - Loading journal entries for user:", user.id);
-        await fetchJournalEntries();
-      } catch (error) {
-        console.error("Error loading dashboard data:", error);
-      } finally {
-        setIsLoading(false);
-        setIsFetching(false);
-      }
-    }
-  }, [user, fetchJournalEntries, isFetching]);
-
-  // Load entries once when component mounts
   useEffect(() => {
-    if (user && !isFetching) {
-      loadJournalEntries();
-    }
-  }, [user, loadJournalEntries]);
+    // Only fetch once per component mount
+    if (!hasLoadedInitially && user) {
+      const loadUserData = async () => {
+        try {
+          console.log("Dashboard - Loading journal entries for user:", user.id);
+          await fetchJournalEntries();
+        } catch (error) {
+          console.error("Error loading dashboard data:", error);
+        } finally {
+          setIsLoading(false);
+          setHasLoadedInitially(true);
+        }
+      };
 
-  // No periodic refresh - removed to prevent excessive fetching
+      loadUserData();
+    }
+  }, [user, fetchJournalEntries, hasLoadedInitially]);
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6">

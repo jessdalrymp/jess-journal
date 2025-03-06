@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useChat } from './useChat';
 import { ChatHeader } from './ChatHeader';
@@ -13,7 +12,6 @@ import { ChatUnauthenticatedState } from './ChatUnauthenticatedState';
 import { ChatEndDialog } from './ChatEndDialog';
 import { ChatFooter } from './ChatFooter';
 import { clearCurrentConversationFromStorage } from '@/lib/storageUtils';
-import { useUserData } from '@/context/UserDataContext';
 
 interface ChatInterfaceProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
@@ -27,7 +25,6 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge, onRestart }: Ch
   const { session, loading: chatLoading, error, sendMessage, generateSummary } = useChat(type);
   const [showEndDialog, setShowEndDialog] = useState(false);
   const { toast } = useToast();
-  const { fetchJournalEntries } = useUserData();
   
   const loading = authLoading || chatLoading;
   
@@ -55,16 +52,12 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge, onRestart }: Ch
     
     try {
       if (session && session.messages.length > 2) {
-        // Always generate summary for all conversation types
-        toast({
-          title: "Saving conversation...",
-          description: "We're storing your conversation to journal history.",
-        });
-        await generateSummary();
-        
-        // Refresh journal entries to show the latest entries
-        if (user) {
-          await fetchJournalEntries();
+        if (type === 'story' || type === 'sideQuest') {
+          toast({
+            title: "Saving conversation...",
+            description: "We're storing your progress to journal history.",
+          });
+          await generateSummary();
         }
       }
       
