@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
@@ -129,9 +128,6 @@ const Account = () => {
         
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex flex-col items-center mb-6 pb-6 border-b border-jess-subtle">
-            <div className="w-24 h-24 rounded-full bg-jess-subtle flex items-center justify-center mb-4">
-              <User size={40} className="text-jess-primary" />
-            </div>
             <h2 className="text-xl font-medium">{user?.name || 'User'}</h2>
             <p className="text-jess-muted">{user?.email}</p>
           </div>
