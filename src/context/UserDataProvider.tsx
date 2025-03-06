@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { MoodType, MoodEntry, JournalEntry } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
@@ -6,7 +7,7 @@ import { useMoodActions } from '../hooks/useMoodActions';
 import { useJournalActions } from '../hooks/useJournalActions';
 import { useConversationData } from '../hooks/useConversationData';
 import { useSubscription } from '../hooks/useSubscription';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { Subscription } from './types';
 
 interface UserDataProviderProps {
@@ -38,7 +39,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
                  journalActions.loading || conversationLoading || subscriptionLoading;
 
   useEffect(() => {
-    if (user) {
+    if (user && !isFetchingJournalRef.current) {
       fetchMoodEntries();
       checkSubscriptionStatus();
     }
@@ -76,7 +77,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const fetchJournalEntries = async () => {
     if (!user) return [];
     
-    if (isJournalFetched && isFetchingJournalRef.current) {
+    if (isJournalFetched || isFetchingJournalRef.current) {
       console.log("Journal entries already fetched or being fetched, skipping redundant fetch");
       return journalEntries;
     }

@@ -15,7 +15,7 @@ export const Dashboard = () => {
 
   useEffect(() => {
     // Only fetch once per component mount
-    if (!hasLoadedInitially && user) {
+    if (!hasLoadedInitially && user && !loading) {
       const loadUserData = async () => {
         try {
           console.log("Dashboard - Loading journal entries for user:", user.id);
@@ -30,7 +30,7 @@ export const Dashboard = () => {
 
       loadUserData();
     }
-  }, [user, fetchJournalEntries, hasLoadedInitially]);
+  }, [user, fetchJournalEntries, hasLoadedInitially, loading]);
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6">

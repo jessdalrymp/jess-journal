@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../context/UserDataContext';
-import { AuthProvider } from '../context/AuthContext';
-import { UserDataProvider } from '../context/UserDataContext';
 import { AuthForm } from '../components/auth/AuthForm';
 import { SelfDiscoveryQuiz } from '../components/onboarding/SelfDiscoveryQuiz';
 import { Dashboard } from '../components/dashboard/Dashboard';
@@ -56,13 +54,7 @@ const AppContent = () => {
 };
 
 const Index = () => {
-  return (
-    <AuthProvider>
-      <UserDataProvider>
-        <AppContent />
-      </UserDataProvider>
-    </AuthProvider>
-  );
+  return <AppContent />;
 };
 
 export default Index;
