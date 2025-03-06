@@ -23,10 +23,10 @@ export const useAuthActions = () => {
         throw error;
       }
 
-      console.log("Sign-in response:", data);
+      console.log("Sign-in successful response:", data);
       
       if (data?.user) {
-        console.log("Sign-in successful:", data.user.id);
+        console.log("Sign-in successful for user:", data.user.id);
         toast({
           title: "Welcome back!",
           description: "You've successfully logged in.",

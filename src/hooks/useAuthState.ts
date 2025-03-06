@@ -49,8 +49,8 @@ export const useAuthState = () => {
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id);
         
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          if (session?.user) {
+        if (session?.user) {
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
             console.log('User authenticated:', session.user.email);
             setUser({
               id: session.user.id,
