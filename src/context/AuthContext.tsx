@@ -113,6 +113,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (email: string, password: string, name?: string) => {
     setLoading(true);
     try {
+      // First, check if the user already exists
+      const { data: existingUser, error: checkError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (existingUser?.user) {
+        // User already exists, just log them in
+        setUser(transformUser(existingUser.session));
+        toast({
+          title: 'Welcome back!',
+          description: 'This account already exists. You have been logged in.',
+        });
+        setLoading(false);
+        return;
+      }
+      
+      // User doesn't exist, proceed with sign up
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -132,14 +150,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
 
-      toast({
-        title: 'Registration successful',
-        description: 'Please check your email for verification instructions.',
-      });
-
-      // Set user if session is available (email confirmation might be required)
+      // Check if email confirmation is required
       if (data.session) {
+        // No email confirmation required, user is automatically signed in
         setUser(transformUser(data.session));
+        toast({
+          title: 'Registration successful',
+          description: 'Your account has been created and you are now logged in.',
+        });
+      } else {
+        // Email confirmation required
+        toast({
+          title: 'Registration successful',
+          description: 'Please check your email for verification instructions.',
+        });
       }
     } catch (error) {
       console.error('Registration error:', error);

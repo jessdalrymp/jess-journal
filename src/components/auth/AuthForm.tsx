@@ -20,23 +20,38 @@ export const AuthForm = () => {
     
     try {
       if (isLogin) {
+        // Login flow
         await signIn(email, password);
         toast({
           title: "Welcome back!",
           description: "You've successfully logged in.",
         });
       } else {
+        // Registration flow
+        if (!name.trim()) {
+          toast({
+            title: "Name required",
+            description: "Please enter your name to create an account.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+        
         await signUp(email, password, name);
         toast({
           title: "Account created!",
-          description: "Your account has been successfully created.",
+          description: "Your account has been successfully created. Please check your email for verification if required.",
         });
+        
+        // Automatically switch to login view after successful registration
+        setIsLogin(true);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Authentication error:', error);
       toast({
-        title: "Authentication failed",
-        description: "Please check your credentials and try again.",
+        title: isLogin ? "Login failed" : "Registration failed",
+        description: error.message || "Please check your credentials and try again.",
         variant: "destructive",
       });
     } finally {
