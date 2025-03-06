@@ -59,8 +59,8 @@ export const useAuthState = () => {
               createdAt: new Date(session.user.created_at),
             });
           }
-        } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-          console.log('User signed out or deleted');
+        } else if (event === 'SIGNED_OUT') {
+          console.log('User signed out');
           setUser(null);
         }
         
