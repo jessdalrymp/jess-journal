@@ -9,6 +9,7 @@ import { useGenerateSummary } from './hooks/useGenerateSummary';
 export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const [session, setSession] = useState<ConversationSession | null>(null);
   const isInitializing = useRef(false);
+  const hasInitialized = useRef(false);
   
   const { user } = useAuth();
   const { initializeChat, loading: initLoading, error: initError } = useInitializeChat(type);
@@ -20,7 +21,8 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   
   useEffect(() => {
     // Only load chat if user exists and we haven't started initializing yet
-    if (user && !isInitializing.current && !session) {
+    // and we haven't already successfully initialized
+    if (user && !isInitializing.current && !session && !hasInitialized.current) {
       const loadChat = async () => {
         isInitializing.current = true;
         try {
@@ -29,6 +31,7 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
           if (chatSession) {
             console.log(`Successfully loaded ${type} chat session`);
             setSession(chatSession);
+            hasInitialized.current = true;
           }
         } catch (err) {
           console.error(`Error loading ${type} chat:`, err);
@@ -40,6 +43,11 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
       loadChat();
     }
   }, [initializeChat, user, type, session]);
+  
+  // Reset hasInitialized when user or type changes
+  useEffect(() => {
+    hasInitialized.current = false;
+  }, [user, type]);
   
   const handleSendMessage = async (message: string) => {
     if (!session) return;

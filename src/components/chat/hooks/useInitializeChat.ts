@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useUserData } from '../../../context/UserDataContext';
 import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { ConversationSession, ChatMessage } from '@/lib/types';
 import { getInitialMessage } from '../chatUtils';
 import {
@@ -30,7 +30,10 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
     // Return early if already initialized or loading
     if (isInitialized && !loading) {
       console.log(`Chat for ${type} already initialized, using existing session`);
-      return getCurrentConversationFromStorage(type);
+      const cachedConversation = getCurrentConversationFromStorage(type);
+      if (cachedConversation && authUser && cachedConversation.userId === authUser.id) {
+        return cachedConversation;
+      }
     }
 
     if (!authChecked) {
@@ -67,30 +70,36 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       // For sideQuest or action, create with initial message
       if (type === 'sideQuest' || type === 'action') {
         console.log(`Creating new ${type} conversation`);
-        const conversation = await startConversation(type);
-        
-        const initialMessage = getInitialMessage(type);
-        await addMessageToConversation(
-          conversation.id,
-          initialMessage,
-          'assistant' as const
-        );
-        
-        const updatedSession: ConversationSession = {
-          ...conversation,
-          messages: [
-            {
-              id: Date.now().toString(),
-              role: 'assistant' as const,
-              content: initialMessage,
-              timestamp: new Date(),
-            },
-          ],
-        };
-        
-        saveCurrentConversationToStorage(updatedSession);
-        setIsInitialized(true);
-        return updatedSession;
+        try {
+          const conversation = await startConversation(type);
+          
+          const initialMessage = getInitialMessage(type);
+          await addMessageToConversation(
+            conversation.id,
+            initialMessage,
+            'assistant' as const
+          );
+          
+          const updatedSession: ConversationSession = {
+            ...conversation,
+            messages: [
+              {
+                id: Date.now().toString(),
+                role: 'assistant' as const,
+                content: initialMessage,
+                timestamp: new Date(),
+              },
+            ],
+          };
+          
+          saveCurrentConversationToStorage(updatedSession);
+          setIsInitialized(true);
+          return updatedSession;
+        } catch (err) {
+          console.error(`Error starting ${type} conversation:`, err);
+          setError(`Failed to initialize ${type} chat`);
+          throw err;
+        }
       }
       
       // For other types (story, journal)
