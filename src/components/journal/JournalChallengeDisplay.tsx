@@ -30,82 +30,71 @@ export const JournalChallengeDisplay = ({
 }: JournalChallengeDisplayProps) => {
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center p-4 border-b">
-        <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
+      <div className="p-2 border-b border-jess-subtle flex items-center">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={onBack}
+          className="mr-2"
+        >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h2 className="text-lg font-medium font-cormorant">Journal Challenge</h2>
+        <h2 className="text-xl font-medium">Journal Challenge</h2>
       </div>
-
-      <div className="flex-1 p-6">
-        <div className="max-w-3xl mx-auto">
-          <div className="mb-6 flex justify-between items-center">
-            <Badge variant="outline" className="px-2.5 py-0.5 bg-jess-subtle text-jess-primary">
-              <BookOpen className="mr-1 h-3.5 w-3.5" />
-              Writing Prompt
-            </Badge>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onNewChallenge}
-              disabled={isLoading}
-              className="font-sourcesans"
-            >
-              <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-              {isLoading ? "Generating..." : "Get New Prompt"}
-            </Button>
-          </div>
-
-          <Card className="bg-white p-6 rounded-lg shadow-sm border mb-6">
-            <h1 className="text-2xl font-bold text-jess-primary mb-4 font-cormorant">{journalPrompt.title}</h1>
-            
-            <div className="bg-jess-subtle p-5 rounded-lg mb-6">
-              <p className="text-lg font-medium font-sourcesans">{journalPrompt.prompt}</p>
+      
+      <div className="flex-1 p-3">
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-3"></div>
+              <p className="text-lg">Generating your journal prompt...</p>
             </div>
-            
-            <h3 className="font-semibold text-gray-700 mb-3 font-cormorant">Instructions:</h3>
-            <ol className="space-y-3 list-decimal pl-5 font-sourcesans">
+          </div>
+        ) : (
+          <div>
+            <h1 className="text-xl font-bold mb-2">{journalPrompt.title}</h1>
+            <div className="mb-2 bg-jess-subtle p-3 rounded-lg">
+              <p className="text-sm leading-tight">{journalPrompt.prompt}</p>
+            </div>
+            <h3 className="text-base font-medium mb-1.5">Instructions:</h3>
+            <ol className="list-decimal pl-5 space-y-1">
               {journalPrompt.instructions.map((instruction, index) => (
-                <li key={index} className="text-gray-600">{instruction}</li>
+                <li key={index} className="text-sm leading-tight">{instruction}</li>
               ))}
             </ol>
-          </Card>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-            <Button 
-              onClick={onAcceptChallenge} 
-              className="bg-jess-primary hover:bg-jess-primary/90 text-white font-sourcesans"
-              size="lg"
-            >
-              <Pen className="mr-2 h-5 w-5" />
-              Start Journaling
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              onClick={onStartChat}
-              size="lg"
-              className="font-sourcesans"
-            >
-              <MessageSquare className="mr-2 h-5 w-5" />
-              Chat with Jess
-            </Button>
           </div>
-
-          <Separator className="my-6" />
-
-          <div className="bg-jess-subtle p-5 rounded-lg mb-4">
-            <h3 className="font-semibold text-gray-700 mb-3 font-cormorant">Journal Progress Tracker</h3>
-            <p className="text-gray-600 mb-4 font-sourcesans">Track your journaling progress and view your previous entries to see how your thoughts and insights have evolved over time.</p>
-            <Button
-              variant="outline"
-              onClick={() => window.location.href = '/journal-history'}
-              className="w-full font-sourcesans"
-            >
-              View Journal History
-            </Button>
-          </div>
-        </div>
+        )}
+      </div>
+      
+      <div className="p-2 border-t border-jess-subtle flex justify-center gap-3">
+        <Button 
+          onClick={onAcceptChallenge} 
+          className="bg-jess-primary hover:bg-jess-primary/90 text-white shadow-md px-4 py-2 text-sm"
+          disabled={isLoading}
+        >
+          <Pen className="mr-2 h-4 w-4" />
+          Start Journaling
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          onClick={onStartChat}
+          className="shadow-md px-4 py-2 text-sm"
+          disabled={isLoading}
+        >
+          <MessageSquare className="mr-2 h-4 w-4" />
+          Chat with Jess
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          onClick={onNewChallenge}
+          className="shadow-md px-4 py-2 text-sm"
+          disabled={isLoading}
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Get New Prompt
+        </Button>
       </div>
     </div>
   );
