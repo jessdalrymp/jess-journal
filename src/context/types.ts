@@ -1,6 +1,16 @@
 
 import { User, UserProfile, ConversationSession, ChatMessage, JournalEntry, MoodType, MoodEntry } from '../lib/types';
 
+export interface Subscription {
+  id: string;
+  status: string;
+  is_trial: boolean;
+  is_unlimited?: boolean;
+  trial_ends_at?: string;
+  current_period_ends_at?: string;
+  coupon_code?: string;
+}
+
 export interface UserData {
   user: User | null | undefined;
   profile: UserProfile | null | undefined;
@@ -13,5 +23,8 @@ export interface UserData {
   moodEntries: MoodEntry[];
   addMoodEntry: (mood: MoodType, note?: string) => Promise<void>;
   journalEntries: JournalEntry[];
-  fetchJournalEntries: () => Promise<void>;
+  fetchJournalEntries: () => Promise<JournalEntry[]>;
+  subscription: Subscription | null;
+  checkSubscriptionStatus: () => Promise<void>;
+  applyCoupon: (couponCode: string) => Promise<boolean>;
 }
