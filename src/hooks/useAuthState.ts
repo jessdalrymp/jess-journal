@@ -15,7 +15,9 @@ export const useAuthState = () => {
         
         if (sessionError) {
           console.error("Session error:", sessionError);
-          throw sessionError;
+          setUser(null);
+          setLoading(false);
+          return;
         }
         
         if (session?.user) {

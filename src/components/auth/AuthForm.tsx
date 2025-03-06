@@ -55,8 +55,14 @@ export const AuthForm = () => {
 
       if (isLogin) {
         console.log("Attempting to sign in with:", { email });
-        await signIn(email, password);
-        // No need to manipulate the returned value since useAuthState will update the user context
+        try {
+          await signIn(email, password);
+          console.log("Sign in successful in form component");
+          // No need to manipulate the returned value since useAuthState will update the user context
+        } catch (error: any) {
+          console.error("Sign in failed in form component:", error);
+          throw error;
+        }
       } else {
         if (!name.trim()) {
           toast({
@@ -69,8 +75,14 @@ export const AuthForm = () => {
         }
         
         console.log("Attempting to sign up with:", { email, name });
-        await signUp(email, password, name);
-        // No need to manipulate the returned value since useAuthState will update the user context
+        try {
+          await signUp(email, password, name);
+          console.log("Sign up successful in form component");
+          // No need to manipulate the returned value since useAuthState will update the user context
+        } catch (error: any) {
+          console.error("Sign up failed in form component:", error);
+          throw error;
+        }
       }
     } catch (error: any) {
       console.error('Authentication error:', error);

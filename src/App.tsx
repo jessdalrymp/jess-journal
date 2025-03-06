@@ -19,6 +19,7 @@ import Subscription from './pages/Subscription';
 import PaymentSuccess from './pages/PaymentSuccess';
 
 const App = () => {
+  console.log("App component initialized");
   return (
     <BrowserRouter>
       <ThemeProvider>

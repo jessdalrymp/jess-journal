@@ -29,11 +29,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { user, loading: stateLoading } = useAuthState();
   const { signIn, signUp, signOut, loading: actionLoading } = useAuthActions();
 
+  const isLoading = stateLoading || actionLoading;
+  console.log("AuthProvider loading state:", isLoading);
+
   return (
     <AuthContext.Provider 
       value={{ 
         user, 
-        loading: stateLoading || actionLoading,
+        loading: isLoading,
         signIn,
         signUp,
         signOut
