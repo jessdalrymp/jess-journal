@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
@@ -5,12 +6,32 @@ import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { useAuth } from "../context/AuthContext";
 import { useUserData } from "../context/UserDataContext";
 import { Button } from "../components/ui/button";
-import { ArrowLeft, User, Settings, LogOut, CreditCard } from "lucide-react";
+import { ArrowLeft, Settings, LogOut, CreditCard, RefreshCw, Pencil } from "lucide-react";
 
 const Account = () => {
   const { user, signOut } = useAuth();
-  const { profile, subscription } = useUserData();
+  const { profile, saveProfile } = useUserData();
   const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState(user?.name || '');
+
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+    setEditedName(user?.name || '');
+  };
+
+  const handleSavePersonalInfo = () => {
+    // Here you would update the user's name in your database
+    // For now, we'll just toggle the editing mode
+    setIsEditing(false);
+  };
+
+  const handleRetakeAssessment = () => {
+    // Set the completedOnboarding to false to trigger the assessment
+    saveProfile({ completedOnboarding: false });
+    // Navigate to the homepage where the assessment should appear
+    navigate('/');
+  };
 
   const renderSubscriptionInfo = () => {
     if (!subscription) {
@@ -144,25 +165,71 @@ const Account = () => {
             
             {renderSubscriptionInfo()}
             
-            {profile && (
-              <div className="p-4 border border-jess-subtle rounded-lg">
-                <h3 className="font-medium mb-3">Personal Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {profile.growthStage && (
-                    <div>
-                      <p className="text-sm font-medium">Growth Stage</p>
-                      <p className="text-sm text-jess-muted">{profile.growthStage}</p>
-                    </div>
-                  )}
-                  {profile.learningStyle && (
-                    <div>
-                      <p className="text-sm font-medium">Learning Style</p>
-                      <p className="text-sm text-jess-muted">{profile.learningStyle}</p>
-                    </div>
-                  )}
+            <div className="p-4 border border-jess-subtle rounded-lg">
+              <h3 className="font-medium mb-3 flex items-center">
+                <Pencil size={18} className="mr-2" />
+                Edit Personal Information
+              </h3>
+              
+              {isEditing ? (
+                <div className="space-y-3">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium mb-1">Name</label>
+                    <input
+                      type="text"
+                      id="name"
+                      value={editedName}
+                      onChange={(e) => setEditedName(e.target.value)}
+                      className="w-full px-3 py-2 border border-jess-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-jess-primary"
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button 
+                      onClick={handleSavePersonalInfo} 
+                      className="bg-jess-primary hover:bg-jess-primary/90"
+                    >
+                      Save Changes
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={handleEditToggle}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div>
+                  <p className="text-sm text-jess-muted mb-3">Update your personal details</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleEditToggle}
+                  >
+                    <Pencil size={14} className="mr-2" />
+                    Edit Details
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            <div className="p-4 border border-jess-subtle rounded-lg">
+              <h3 className="font-medium mb-3">Self-Discovery Assessment</h3>
+              <p className="text-sm text-jess-muted mb-3">
+                {profile?.completedOnboarding 
+                  ? "You've completed your self-discovery assessment. You can retake it anytime."
+                  : "You haven't completed your self-discovery assessment yet."}
+              </p>
+              <Button 
+                variant="secondary" 
+                size="sm"
+                onClick={handleRetakeAssessment}
+                className="flex items-center"
+              >
+                <RefreshCw size={14} className="mr-2" />
+                {profile?.completedOnboarding ? "Retake Assessment" : "Take Assessment"}
+              </Button>
+            </div>
             
             <div className="mt-8">
               <Button 
