@@ -66,34 +66,36 @@ export const JournalChallengeDisplay = ({
         )}
       </div>
       
-      <div className="p-2 border-t border-jess-subtle flex justify-center gap-3">
-        <Button 
-          onClick={onAcceptChallenge} 
-          className="bg-jess-primary hover:bg-jess-primary/90 text-white shadow-md px-4 py-2 text-sm"
-          disabled={isLoading}
-        >
-          <Pen className="mr-2 h-4 w-4" />
-          Start Journaling
-        </Button>
+      <div className="p-2 border-t border-jess-subtle flex flex-col sm:flex-row sm:justify-center gap-2 sm:gap-3">
+        <div className="flex justify-center gap-2 sm:gap-3">
+          <Button 
+            onClick={onAcceptChallenge} 
+            className="bg-jess-primary hover:bg-jess-primary/90 text-white shadow-md px-3 py-2 text-sm flex-grow sm:flex-grow-0"
+            disabled={isLoading}
+          >
+            <Pen className="mr-2 h-4 w-4" />
+            Start Journaling
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            onClick={onNewChallenge}
+            className="shadow-md px-3 py-2 text-sm flex-grow sm:flex-grow-0"
+            disabled={isLoading}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            New Prompt
+          </Button>
+        </div>
         
         <Button 
           variant="outline" 
           onClick={onStartChat}
-          className="shadow-md px-4 py-2 text-sm"
+          className="shadow-md px-3 py-2 text-sm mt-2 sm:mt-0"
           disabled={isLoading}
         >
           <MessageSquare className="mr-2 h-4 w-4" />
           Chat with Jess
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          onClick={onNewChallenge}
-          className="shadow-md px-4 py-2 text-sm"
-          disabled={isLoading}
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Get New Prompt
         </Button>
       </div>
     </div>
