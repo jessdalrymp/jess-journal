@@ -13,7 +13,7 @@ export const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
 
-  // Wrap fetchJournalEntries in useCallback to prevent infinite loops
+  // Fetch journal entries only once when the dashboard loads
   const loadJournalEntries = useCallback(async () => {
     if (user && !isFetching) {
       try {
@@ -29,26 +29,14 @@ export const Dashboard = () => {
     }
   }, [user, fetchJournalEntries, isFetching]);
 
+  // Load entries once when component mounts
   useEffect(() => {
     if (user && !isFetching) {
       loadJournalEntries();
     }
   }, [user, loadJournalEntries]);
 
-  // Add periodic refresh with a longer interval (5 minutes instead of 60 seconds)
-  // and prevent concurrent fetches
-  useEffect(() => {
-    if (!user) return;
-    
-    const intervalId = setInterval(() => {
-      if (!isFetching) {
-        console.log("Dashboard - Refreshing journal entries periodically");
-        loadJournalEntries();
-      }
-    }, 300000); // 5 minutes
-    
-    return () => clearInterval(intervalId);
-  }, [user, loadJournalEntries, isFetching]);
+  // No periodic refresh - removed to prevent excessive fetching
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6">

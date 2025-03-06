@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { MoodType, MoodEntry, JournalEntry } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
@@ -98,10 +97,8 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     try {
       const shouldRefreshEntries = await addMessageToConversation(conversationId, content, role);
       
-      if (role === 'assistant' || shouldRefreshEntries) {
-        if (user && !isFetchingJournal.current) {
-          await fetchJournalEntries();
-        }
+      if (role === 'assistant' && shouldRefreshEntries) {
+        // Don't fetch here, just let the dashboard handle this when viewed
       }
     } catch (error) {
       console.error('Error adding message to conversation:', error);
