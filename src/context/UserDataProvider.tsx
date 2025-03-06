@@ -7,7 +7,6 @@ import { useJournalActions } from '../hooks/useJournalActions';
 import { useConversationData } from '../hooks/useConversationData';
 import { useSubscription } from '../hooks/useSubscription';
 import { useToast } from '@/components/ui/use-toast';
-import { Subscription } from './types';
 
 interface UserDataProviderProps {
   children: React.ReactNode;
