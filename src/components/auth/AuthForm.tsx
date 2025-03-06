@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ActionButton } from '../ui/ActionButton';
@@ -56,9 +55,8 @@ export const AuthForm = () => {
       if (isLogin) {
         console.log("Attempting to sign in with:", { email });
         try {
-          await signIn(email, password);
-          console.log("Sign in successful in form component");
-          // No need to manipulate the returned value since useAuthState will update the user context
+          const result = await signIn(email, password);
+          console.log("Sign in successful in form component:", result);
         } catch (error: any) {
           console.error("Sign in failed in form component:", error);
           throw error;
@@ -76,9 +74,8 @@ export const AuthForm = () => {
         
         console.log("Attempting to sign up with:", { email, name });
         try {
-          await signUp(email, password, name);
-          console.log("Sign up successful in form component");
-          // No need to manipulate the returned value since useAuthState will update the user context
+          const result = await signUp(email, password, name);
+          console.log("Sign up successful in form component:", result);
         } catch (error: any) {
           console.error("Sign up failed in form component:", error);
           throw error;
