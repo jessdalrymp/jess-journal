@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LogOut, CheckCircle, RefreshCw } from 'lucide-react';
+import { Save, CheckCircle, RefreshCw } from 'lucide-react';
 import { ActionButton } from '../ui/ActionButton';
 
 interface ChatFooterProps {
@@ -43,7 +43,7 @@ export const ChatFooter = ({ onEndChat, type, onAcceptChallenge, onNewChallenge 
         onClick={onEndChat}
         type={type === 'action' && (onAcceptChallenge || onNewChallenge) ? "ghost" : "primary"}
         className="shadow-md px-6 py-3 text-base"
-        icon={<LogOut className="h-5 w-5" />}
+        icon={<Save className="h-5 w-5" />}
       >
         {type === 'sideQuest' ? 'Save & Exit' : 'Save and Go Home'}
       </ActionButton>
