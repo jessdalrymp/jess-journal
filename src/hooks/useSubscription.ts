@@ -1,15 +1,15 @@
 
-import { useState } from 'react';
-import { Subscription } from '../context/types';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '../integrations/supabase/client';
+import { useState } from "react";
+import { supabase } from "../integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Subscription } from "../context/types";
 
-export function useSubscription() {
-  const [loading, setLoading] = useState(false);
+export function useSubscription(userId: string | undefined) {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const checkSubscriptionStatus = async (userId?: string) => {
+  const checkSubscriptionStatus = async () => {
     if (!userId) return null;
     
     setLoading(true);
@@ -19,58 +19,91 @@ export function useSubscription() {
         .select('*')
         .eq('user_id', userId)
         .single();
-
+        
       if (error) {
-        if (error.code !== 'PGRST116') { // PGRST116 means no rows returned
-          console.error('Error checking subscription:', error);
-        }
-        setSubscription(null);
+        console.error("Error fetching subscription:", error);
         return null;
       }
-
-      // Transform raw data to our Subscription type
-      const subscriptionData: Subscription = {
+      
+      const subscription: Subscription = {
         id: data.id,
         status: data.status,
-        is_trial: data.is_trial || false,
-        is_unlimited: data.is_unlimited || false,
+        is_trial: data.is_trial,
+        is_unlimited: data.is_unlimited,
         trial_ends_at: data.trial_ends_at,
         current_period_ends_at: data.current_period_ends_at,
         coupon_code: data.coupon_code
       };
       
-      setSubscription(subscriptionData);
-      return subscriptionData;
+      setSubscription(subscription);
+      return subscription;
     } catch (error) {
-      console.error('Error fetching subscription status:', error);
-      toast({
-        title: "Error checking subscription",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
+      console.error("Error checking subscription status:", error);
       return null;
     } finally {
       setLoading(false);
     }
   };
 
-  const applyCoupon = async (userId: string, couponCode: string): Promise<boolean> => {
+  const applyCoupon = async (couponCode: string): Promise<boolean> => {
+    if (!userId) {
+      toast({
+        title: "Error applying coupon",
+        description: "You must be logged in to apply a coupon",
+        variant: "destructive"
+      });
+      return false;
+    }
+
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('apply-coupon', {
-        body: { userId, couponCode }
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/apply-coupon`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          userId,
+          couponCode
+        })
       });
 
-      if (error || !data?.valid) {
-        console.error('Error applying coupon:', error || data?.error);
+      const result = await response.json();
+      
+      if (!response.ok) {
+        toast({
+          title: "Error",
+          description: result.error || "Could not apply coupon",
+          variant: "destructive"
+        });
         return false;
       }
 
-      // Refresh subscription after applying coupon
-      await checkSubscriptionStatus(userId);
-      return true;
+      if (result.valid) {
+        toast({
+          title: "Success",
+          description: "Coupon applied successfully"
+        });
+        
+        // Refresh subscription status
+        await checkSubscriptionStatus();
+        return true;
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Invalid coupon code",
+          variant: "destructive"
+        });
+        return false;
+      }
     } catch (error) {
-      console.error('Error applying coupon:', error);
+      console.error("Error applying coupon:", error);
+      toast({
+        title: "Error",
+        description: "Failed to apply coupon",
+        variant: "destructive"
+      });
       return false;
     } finally {
       setLoading(false);
@@ -78,9 +111,9 @@ export function useSubscription() {
   };
 
   return {
-    loading,
     subscription,
+    loading,
     checkSubscriptionStatus,
-    applyCoupon,
+    applyCoupon
   };
 }

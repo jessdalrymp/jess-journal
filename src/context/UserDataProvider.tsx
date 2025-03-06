@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { MoodType, MoodEntry, JournalEntry } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
 import { useUserData } from '../hooks/useUserData';
 import { useMoodActions } from '../hooks/useMoodActions';
 import { useJournalActions } from '../hooks/useJournalActions';
 import { useConversationData } from '../hooks/useConversationData';
+import { useSubscription } from '../hooks/useSubscription';
 import { useToast } from '@/hooks/use-toast';
+import { Subscription } from './types';
 
 interface UserDataProviderProps {
   children: React.ReactNode;
@@ -24,19 +27,22 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [isJournalFetched, setIsJournalFetched] = useState(false);
+  const isFetchingJournalRef = useRef(false);
   
   const moodActions = useMoodActions();
   const journalActions = useJournalActions();
   const { loading: conversationLoading, startConversation, addMessageToConversation } = useConversationData(user?.id);
+  const { subscription, loading: subscriptionLoading, checkSubscriptionStatus, applyCoupon } = useSubscription(user?.id);
   const { toast } = useToast();
   
   // Combined loading state
   const loading = userLoading || moodActions.loading || 
-                 journalActions.loading || conversationLoading;
+                 journalActions.loading || conversationLoading || subscriptionLoading;
 
   useEffect(() => {
     if (user) {
       fetchMoodEntries();
+      checkSubscriptionStatus();
     }
   }, [user]);
 
@@ -70,20 +76,26 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   };
 
   const fetchJournalEntries = async () => {
-    if (!user) return;
+    if (!user) return [];
     
-    if (isJournalFetched) {
-      console.log("Journal entries already fetched, skipping redundant fetch");
-      return;
+    if (isJournalFetched && isFetchingJournalRef.current) {
+      console.log("Journal entries already fetched or being fetched, skipping redundant fetch");
+      return journalEntries;
     }
+    
+    isFetchingJournalRef.current = true;
     
     try {
       console.log("Fetching journal entries for user:", user.id);
       const entries = await journalActions.fetchJournalEntries(user.id);
       setJournalEntries(entries);
       setIsJournalFetched(true);
+      return entries;
     } catch (error) {
       console.error("Error fetching journal entries:", error);
+      return [];
+    } finally {
+      isFetchingJournalRef.current = false;
     }
   };
 
@@ -121,6 +133,9 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     addMoodEntry,
     journalEntries,
     fetchJournalEntries,
+    subscription,
+    checkSubscriptionStatus,
+    applyCoupon
   };
 
   return (
