@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { User, UserProfile } from '../lib/types';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import * as userService from '../services/userService';
 
 export function useUserActions() {
