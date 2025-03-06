@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "../integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -9,8 +8,8 @@ export function useSubscription(userId: string | undefined) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const checkSubscriptionStatus = async () => {
-    if (!userId) return null;
+  const checkSubscriptionStatus = async (): Promise<void> => {
+    if (!userId) return;
     
     setLoading(true);
     try {
@@ -22,7 +21,7 @@ export function useSubscription(userId: string | undefined) {
         
       if (error) {
         console.error("Error fetching subscription:", error);
-        return null;
+        return;
       }
       
       const subscription: Subscription = {
@@ -36,10 +35,8 @@ export function useSubscription(userId: string | undefined) {
       };
       
       setSubscription(subscription);
-      return subscription;
     } catch (error) {
       console.error("Error checking subscription status:", error);
-      return null;
     } finally {
       setLoading(false);
     }

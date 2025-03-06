@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { MoodType, MoodEntry, JournalEntry } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
@@ -35,7 +34,6 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const { subscription, loading: subscriptionLoading, checkSubscriptionStatus, applyCoupon } = useSubscription(user?.id);
   const { toast } = useToast();
   
-  // Combined loading state
   const loading = userLoading || moodActions.loading || 
                  journalActions.loading || conversationLoading || subscriptionLoading;
 
