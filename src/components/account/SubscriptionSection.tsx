@@ -1,8 +1,11 @@
 
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CreditCard, AlertCircle } from "lucide-react";
+import { CreditCard, AlertCircle, XCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Subscription } from "../../context/types";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "../../integrations/supabase/client";
 
 interface SubscriptionSectionProps {
   subscription: Subscription | null;
@@ -10,6 +13,38 @@ interface SubscriptionSectionProps {
 
 export const SubscriptionSection = ({ subscription }: SubscriptionSectionProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  const handleCancelSubscription = async () => {
+    if (!subscription) return;
+    
+    setIsCancelling(true);
+    try {
+      const { error } = await supabase.functions.invoke("cancel-subscription", {
+        body: { subscriptionId: subscription.id }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Subscription cancelled",
+        description: "Your subscription has been cancelled successfully",
+      });
+      
+      // Redirect to subscription page to show updated status
+      navigate('/subscription');
+    } catch (error) {
+      console.error("Error cancelling subscription:", error);
+      toast({
+        title: "Error cancelling subscription",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   if (!subscription) {
     return (
@@ -44,14 +79,25 @@ export const SubscriptionSection = ({ subscription }: SubscriptionSectionProps) 
         {subscription.coupon_code && (
           <p className="text-xs text-jess-muted">Applied coupon: {subscription.coupon_code}</p>
         )}
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="mt-2"
-          onClick={() => navigate('/subscription')}
-        >
-          Manage Subscription
-        </Button>
+        <div className="flex flex-col space-y-2 mt-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate('/subscription')}
+          >
+            Manage Subscription
+          </Button>
+          <Button 
+            variant="destructive" 
+            size="sm"
+            onClick={handleCancelSubscription}
+            disabled={isCancelling}
+            className="flex items-center"
+          >
+            <XCircle size={16} className="mr-1" />
+            Cancel Subscription
+          </Button>
+        </div>
       </div>
     );
   }
@@ -73,14 +119,25 @@ export const SubscriptionSection = ({ subscription }: SubscriptionSectionProps) 
             <span>Your trial is ending soon! Please subscribe to continue using premium features.</span>
           </div>
         )}
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="mt-2"
-          onClick={() => navigate('/subscription')}
-        >
-          Manage Subscription
-        </Button>
+        <div className="flex flex-col space-y-2 mt-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate('/subscription')}
+          >
+            Manage Subscription
+          </Button>
+          <Button 
+            variant="destructive" 
+            size="sm"
+            onClick={handleCancelSubscription}
+            disabled={isCancelling}
+            className="flex items-center"
+          >
+            <XCircle size={16} className="mr-1" />
+            Cancel Trial
+          </Button>
+        </div>
       </div>
     );
   }
@@ -97,14 +154,27 @@ export const SubscriptionSection = ({ subscription }: SubscriptionSectionProps) 
           Next payment due: {new Date(subscription.current_period_ends_at).toLocaleDateString()}
         </p>
       )}
-      <Button 
-        variant="outline" 
-        size="sm"
-        className="mt-2"
-        onClick={() => navigate('/subscription')}
-      >
-        Manage Subscription
-      </Button>
+      <div className="flex flex-col space-y-2 mt-2">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => navigate('/subscription')}
+        >
+          Manage Subscription
+        </Button>
+        {subscription.status === "active" && (
+          <Button 
+            variant="destructive" 
+            size="sm"
+            onClick={handleCancelSubscription}
+            disabled={isCancelling}
+            className="flex items-center"
+          >
+            <XCircle size={16} className="mr-1" />
+            Cancel Subscription
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

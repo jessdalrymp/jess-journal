@@ -14,7 +14,7 @@ import { AssessmentSection } from "../components/account/AssessmentSection";
 
 const Account = () => {
   const { user, signOut } = useAuth();
-  const { profile, saveProfile, subscription } = useUserData();
+  const { profile, saveProfile, subscription, checkSubscriptionStatus } = useUserData();
   const navigate = useNavigate();
 
   const handleSavePersonalInfo = (editedName: string) => {
@@ -37,7 +37,7 @@ const Account = () => {
         <AccountHeader user={user} />
         
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="space-y-4">
+          <div className="space-y-6">
             <ProfileSection user={user} />
             
             <SubscriptionSection subscription={subscription} />
