@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ActionButton } from '../ui/ActionButton';
@@ -25,10 +26,35 @@ export const AuthForm = () => {
           description: "Please fill in all required fields.",
           variant: "destructive",
         });
+        setLoading(false);
+        return;
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        toast({
+          title: "Invalid email",
+          description: "Please enter a valid email address.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Validate password length
+      if (password.length < 6) {
+        toast({
+          title: "Password too short",
+          description: "Password must be at least 6 characters long.",
+          variant: "destructive",
+        });
+        setLoading(false);
         return;
       }
 
       if (isLogin) {
+        console.log("Attempting to sign in with:", { email });
         await signIn(email, password);
       } else {
         if (!name.trim()) {
@@ -37,16 +63,34 @@ export const AuthForm = () => {
             description: "Please enter your name to create an account.",
             variant: "destructive",
           });
+          setLoading(false);
           return;
         }
         
+        console.log("Attempting to sign up with:", { email, name });
         await signUp(email, password, name);
       }
     } catch (error: any) {
       console.error('Authentication error:', error);
+      
+      // Handle specific error messages from Supabase
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      
+      if (error.message) {
+        if (error.message.includes("Invalid login credentials")) {
+          errorMessage = "Invalid email or password. Please check your credentials and try again.";
+        } else if (error.message.includes("Email not confirmed")) {
+          errorMessage = "Please check your email to confirm your account before signing in.";
+        } else if (error.message.includes("User already registered")) {
+          errorMessage = "An account with this email already exists. Try signing in instead.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: isLogin ? "Login failed" : "Registration failed",
-        description: error.message || "Please check your credentials and try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

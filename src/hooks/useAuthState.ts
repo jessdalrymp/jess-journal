@@ -10,20 +10,29 @@ export const useAuthState = () => {
   useEffect(() => {
     const initAuth = async () => {
       try {
+        console.log("Initializing auth state");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (sessionError) throw sessionError;
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          throw sessionError;
+        }
         
         if (session?.user) {
+          console.log("User found in session:", session.user.id);
           setUser({
             id: session.user.id,
             email: session.user.email || '',
             name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
             createdAt: new Date(session.user.created_at),
           });
+        } else {
+          console.log("No user session found");
+          setUser(null);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -33,9 +42,10 @@ export const useAuthState = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session);
+        console.log('Auth state changed:', event, session?.user?.id);
         
         if (session?.user) {
+          console.log('User authenticated:', session.user.email);
           setUser({
             id: session.user.id,
             email: session.user.email || '',
@@ -43,6 +53,7 @@ export const useAuthState = () => {
             createdAt: new Date(session.user.created_at),
           });
         } else {
+          console.log('User signed out or session expired');
           setUser(null);
         }
         
