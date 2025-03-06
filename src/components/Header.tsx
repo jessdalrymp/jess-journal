@@ -1,12 +1,11 @@
 
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User, LogOut, Home } from 'lucide-react';
+import { Pencil, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const Header = () => {
-  const { user, signOut } = useAuth();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <header className="w-full py-4 px-6 flex items-center justify-between sticky top-0 z-10 bg-white border-b border-jess-subtle/30">
@@ -26,23 +25,13 @@ export const Header = () => {
         </Link>
         
         {user && (
-          <>
-            <Link
-              to="/account"
-              className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors"
-            >
-              <User size={20} className="mr-2" />
-              <span className="font-medium">Profile</span>
-            </Link>
-            
-            <button
-              onClick={() => signOut()}
-              className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors"
-            >
-              <LogOut size={20} className="mr-2" />
-              <span className="font-medium">Sign Out</span>
-            </button>
-          </>
+          <Link
+            to="/account"
+            className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors"
+          >
+            <Pencil size={20} className="mr-2" />
+            <span className="font-medium">Edit Profile</span>
+          </Link>
         )}
       </div>
     </header>
