@@ -34,6 +34,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   
   const loading = userLoading || isJournalLoading || conversationLoading || subscriptionLoading;
 
+  // Only fetch journal entries once when the user is loaded and not already fetched
   useEffect(() => {
     if (user && !isJournalFetched && !isFetchingJournalRef.current) {
       fetchJournalEntries();
@@ -61,6 +62,11 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
       return entries;
     } catch (error) {
       console.error("Error fetching journal entries:", error);
+      toast({
+        title: "Error loading journal entries",
+        description: "Please try refreshing the page",
+        variant: "destructive"
+      });
       return [];
     } finally {
       isFetchingJournalRef.current = false;
@@ -72,9 +78,11 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     try {
       await addMessageToConversation(conversationId, content, role);
       
+      // Only refetch journal entries when an assistant message is added
       if (role === 'assistant') {
-        setIsJournalFetched(false);
-        if (user) {
+        // Using a ref to prevent duplicate fetches
+        if (!isFetchingJournalRef.current && user) {
+          setIsJournalFetched(false);
           await fetchJournalEntries();
         }
       }

@@ -1,7 +1,6 @@
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { FilePlus, Clock } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { ActionButton } from '@/components/ui/ActionButton';
@@ -20,13 +19,15 @@ export const RecentActivitySection = ({
   const navigate = useNavigate();
 
   // Get recent journal entries safely
-  const recentEntries = [...(journalEntries || [])]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 3);
+  const recentEntries = journalEntries && journalEntries.length > 0
+    ? [...journalEntries]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 3)
+    : [];
 
   // Function to navigate to the blank journal page
   const goToBlankJournal = () => {
-    navigate('/blank-journal');
+    navigate('/journal');
   };
 
   // Function to parse the entry content for potential JSON with a title

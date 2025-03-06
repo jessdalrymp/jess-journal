@@ -9,30 +9,15 @@ import { AccountSection } from './components/AccountSection';
 
 export const Dashboard = () => {
   const { user } = useAuth();
-  const { journalEntries, fetchJournalEntries, loading } = useUserData();
+  const { journalEntries, loading } = useUserData();
   const [isLoading, setIsLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    if (user && !initialized && !loading) {
-      const loadUserData = async () => {
-        try {
-          console.log("Dashboard - Loading journal entries for user:", user.id);
-          await fetchJournalEntries();
-        } catch (error) {
-          console.error("Error loading dashboard data:", error);
-        } finally {
-          setIsLoading(false);
-          setInitialized(true);
-        }
-      };
-
-      loadUserData();
-    } else if (!loading) {
-      // If we're not loading but also don't have a user, we should stop showing the loading indicator
+    // Simply track the loading state
+    if (!loading) {
       setIsLoading(false);
     }
-  }, [user, fetchJournalEntries, loading, initialized]);
+  }, [loading]);
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6">
