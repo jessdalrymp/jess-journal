@@ -37,7 +37,7 @@ const SideQuest = () => {
       <Header />
       <main className="flex-1 py-6 container mx-auto">
         <h1 className="text-2xl font-medium mb-6">Side Quest</h1>
-        <div className="bg-white rounded-lg shadow-sm h-[calc(100vh-260px)]">
+        <div className="bg-white rounded-lg shadow-sm h-[calc(100vh-200px)] md:h-[calc(100vh-260px)]">
           <ChatInterface 
             key={key} // The key ensures a fresh ChatInterface on each visit
             type="sideQuest" 
