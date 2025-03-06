@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ActionButton } from '../ui/ActionButton';
 import { AuthFormInput } from './AuthFormInput';
 import { AuthFormHeader } from './AuthFormHeader';
+import { ForgotPasswordDialog } from './ForgotPasswordDialog';
 import { validateEmail, validatePassword, validateName } from '../../utils/authValidation';
 
 export const AuthForm = () => {
@@ -13,6 +14,7 @@ export const AuthForm = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
@@ -141,6 +143,18 @@ export const AuthForm = () => {
             placeholder="••••••••"
           />
           
+          {isLogin && (
+            <div className="text-right">
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-jess-primary hover:underline text-sm transition-colors"
+              >
+                Forgot password?
+              </button>
+            </div>
+          )}
+          
           <div className="pt-2">
             <ActionButton 
               type="primary" 
@@ -173,6 +187,11 @@ export const AuthForm = () => {
       <p className="mt-8 text-center text-sm text-jess-muted">
         By continuing, you agree to our Terms of Service and Privacy Policy.
       </p>
+      
+      <ForgotPasswordDialog 
+        isOpen={showForgotPassword} 
+        onClose={() => setShowForgotPassword(false)} 
+      />
     </div>
   );
 };

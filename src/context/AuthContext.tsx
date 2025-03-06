@@ -11,6 +11,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<any>;
   signUp: (email: string, password: string, name?: string) => Promise<any>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<boolean>;
 }
 
 const defaultAuthContext: AuthContextType = {
@@ -19,6 +20,7 @@ const defaultAuthContext: AuthContextType = {
   signIn: async () => {},
   signUp: async () => {},
   signOut: async () => {},
+  resetPassword: async () => false,
 };
 
 const AuthContext = createContext<AuthContextType>(defaultAuthContext);
@@ -27,7 +29,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { user, loading: stateLoading } = useAuthState();
-  const { signIn, signUp, signOut, loading: actionLoading } = useAuthActions();
+  const { signIn, signUp, signOut, resetPassword, loading: actionLoading } = useAuthActions();
 
   const isLoading = stateLoading || actionLoading;
   console.log("AuthProvider loading state:", isLoading);
@@ -40,7 +42,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading: isLoading,
         signIn,
         signUp,
-        signOut
+        signOut,
+        resetPassword
       }}
     >
       {children}
