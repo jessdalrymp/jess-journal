@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { ActionButton } from '../ui/ActionButton';
 import { Send, Loader2 } from 'lucide-react';
+import { Input } from '../ui/input';
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -20,12 +21,12 @@ export const ChatInput = ({ onSendMessage, loading }: ChatInputProps) => {
   return (
     <div className="border-t border-jess-subtle p-4">
       <div className="flex items-center">
-        <input
+        <Input
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder={loading ? "Jess is thinking..." : "Type your message..."}
-          className="flex-1 input-base"
+          className="flex-1 bg-jess-subtle text-jess-foreground"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -35,7 +36,7 @@ export const ChatInput = ({ onSendMessage, loading }: ChatInputProps) => {
           disabled={loading}
         />
         {loading ? (
-          <div className="ml-2 w-10 h-10 p-0 rounded-full flex items-center justify-center bg-gray-200">
+          <div className="ml-2 w-10 h-10 p-0 rounded-full flex items-center justify-center bg-jess-subtle">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
           </div>
         ) : (
