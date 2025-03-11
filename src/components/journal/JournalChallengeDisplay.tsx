@@ -1,15 +1,9 @@
-
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BookOpen, RefreshCw, MessageSquare, Pen } from "lucide-react";
+import { ArrowLeft, RefreshCw, MessageSquare, Pen } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-
-interface JournalPrompt {
-  title: string;
-  prompt: string;
-  instructions: string[];
-}
+import { JournalPrompt } from "./JournalChallengeContent";
 
 interface JournalChallengeDisplayProps {
   journalPrompt: JournalPrompt;
