@@ -118,7 +118,7 @@ export const JournalingDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col bg-white rounded-lg border border-jess-subtle">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl mb-4 font-cormorant">Write Your Journal Entry</DialogTitle>
+          <DialogTitle className="text-center text-2xl mb-4 font-cormorant bg-gray-100 py-2 rounded-md">Write Your Journal Entry</DialogTitle>
         </DialogHeader>
         
         {promptText && (
