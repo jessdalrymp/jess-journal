@@ -9,7 +9,7 @@ export const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
             <h2 className="text-2xl font-bold text-jess-primary">JESS</h2>
-            <p className="text-jess-muted">Your AI Storytelling Coach</p>
+            <p className="text-jess-muted">Your AI Journaling Coach</p>
           </div>
           <div className="flex flex-col md:flex-row gap-4 md:gap-8">
             <Link to="/legal" className="text-jess-muted hover:text-jess-primary">
