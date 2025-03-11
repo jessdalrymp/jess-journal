@@ -9,7 +9,7 @@ interface JournalEntryLayoutProps {
 
 export const JournalEntryLayout: React.FC<JournalEntryLayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
       <main className="flex-1 py-6 container mx-auto">
         {children}
