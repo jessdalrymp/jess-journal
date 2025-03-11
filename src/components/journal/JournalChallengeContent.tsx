@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { JournalingDialog } from "../challenges/JournalingDialog";
 import { JournalChallengeDisplay } from "./JournalChallengeDisplay";
 import { JournalWelcomeModal } from "./JournalWelcomeModal";
-import { useJournalPrompt } from "@/hooks/useJournalPrompt";
+import { useJournalPrompt } from "@/hooks/journal";
 
 export const JournalChallengeContent = () => {
   const [showWelcome, setShowWelcome] = useState(false);

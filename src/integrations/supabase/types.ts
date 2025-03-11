@@ -178,30 +178,6 @@ export type Database = {
           },
         ]
       }
-      mood_entries: {
-        Row: {
-          created_at: string
-          id: string
-          mood: string
-          note: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          mood: string
-          note?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          mood?: string
-          note?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       payment_plans: {
         Row: {
           created_at: string | null
@@ -455,38 +431,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      user_moods: {
-        Row: {
-          created_at: string
-          id: string
-          mood_score: number
-          note: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          mood_score: number
-          note?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          mood_score?: number
-          note?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_moods_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Views: {
