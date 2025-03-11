@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { X, RefreshCw, Check } from 'lucide-react';
+import { X, RefreshCw, Check, MessageSquare } from 'lucide-react';
 
 interface ChatFooterProps {
   onEndChat: () => void;
@@ -11,6 +11,10 @@ interface ChatFooterProps {
 }
 
 export const ChatFooter = ({ onEndChat, onAcceptChallenge, onNewChallenge, type }: ChatFooterProps) => {
+  const getNewChallengeText = () => {
+    return type === 'action' ? 'New Challenge' : 'New Prompt';
+  };
+  
   return (
     <div className="p-3 border-t border-jess-subtle">
       <div className="flex justify-between items-center">
@@ -43,7 +47,7 @@ export const ChatFooter = ({ onEndChat, onAcceptChallenge, onNewChallenge, type 
             className="text-xs px-2 py-1 h-auto"
           >
             <RefreshCw className="h-3.5 w-3.5 mr-1" />
-            {type === 'action' ? 'New Challenge' : 'New Prompt'}
+            {getNewChallengeText()}
           </Button>
         )}
       </div>

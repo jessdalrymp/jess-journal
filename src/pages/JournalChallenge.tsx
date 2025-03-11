@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { ChatInterface } from "../components/chat/ChatInterface";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
 import { WelcomeModal } from "../components/chat/WelcomeModal";
 import { JournalingDialog } from "../components/challenges/JournalingDialog";
 import { useAuth } from "@/context/AuthContext";
@@ -28,17 +28,15 @@ const DEFAULT_PROMPT: JournalPrompt = {
   ]
 };
 
-const JournalChallenge = () => {
+const JournalChallengeContent = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showJournaling, setShowJournaling] = useState(false);
   const [journalPrompt, setJournalPrompt] = useState<JournalPrompt>(DEFAULT_PROMPT);
   const [isLoading, setIsLoading] = useState(false);
   const [challengeAccepted, setChallengeAccepted] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
-  const isChatView = location.pathname === '/journal-challenge/chat';
 
   useEffect(() => {
     // Show welcome modal only first time user visits this page
@@ -50,11 +48,7 @@ const JournalChallenge = () => {
   }, []); 
 
   const handleBack = () => {
-    if (isChatView) {
-      navigate('/journal-challenge');
-    } else {
-      navigate('/');
-    }
+    navigate('/');
   };
 
   const handleAcceptChallenge = () => {
@@ -159,35 +153,17 @@ const JournalChallenge = () => {
     localStorage.setItem('currentJournalPrompt', JSON.stringify(journalPrompt));
     navigate('/journal-challenge/chat');
   };
-  
-  const handleRestartJournalChallenge = () => {
-    navigate('/journal-challenge');
-  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-jess-background">
-      <Header />
-      <main className="flex-1 px-4 sm:px-6 py-3 container mx-auto max-w-4xl">
-        <div className="bg-white rounded-lg shadow-sm h-[calc(100vh-170px)]">
-          {isChatView ? (
-            <ChatInterface 
-              type="journal" 
-              onBack={handleBack}
-              onRestart={handleRestartJournalChallenge}
-            />
-          ) : (
-            <JournalChallengeDisplay
-              journalPrompt={journalPrompt}
-              onBack={handleBack}
-              onAcceptChallenge={handleAcceptChallenge}
-              onNewChallenge={handleGenerateNewChallenge}
-              onStartChat={handleChatView}
-              isLoading={isLoading}
-            />
-          )}
-        </div>
-      </main>
-      <DisclaimerBanner />
+    <>
+      <JournalChallengeDisplay
+        journalPrompt={journalPrompt}
+        onBack={handleBack}
+        onAcceptChallenge={handleAcceptChallenge}
+        onNewChallenge={handleGenerateNewChallenge}
+        onStartChat={handleChatView}
+        isLoading={isLoading}
+      />
       
       <WelcomeModal
         open={showWelcome}
@@ -203,6 +179,46 @@ const JournalChallenge = () => {
         challengeType="journal"
         promptText={journalPrompt.prompt}
       />
+    </>
+  );
+};
+
+const JournalChatContent = () => {
+  const navigate = useNavigate();
+  
+  const handleBack = () => {
+    navigate('/journal-challenge');
+  };
+  
+  const handleRestartJournalChallenge = () => {
+    navigate('/journal-challenge');
+  };
+  
+  return (
+    <ChatInterface 
+      type="journal" 
+      onBack={handleBack}
+      onRestart={handleRestartJournalChallenge}
+    />
+  );
+};
+
+const JournalChallenge = () => {
+  const location = useLocation();
+  const isChatView = location.pathname.includes('/chat');
+  
+  return (
+    <div className="min-h-screen flex flex-col bg-jess-background">
+      <Header />
+      <main className="flex-1 px-4 sm:px-6 py-3 container mx-auto max-w-4xl">
+        <div className="bg-white rounded-lg shadow-sm h-[calc(100vh-170px)]">
+          <Routes>
+            <Route index element={<JournalChallengeContent />} />
+            <Route path="chat" element={<JournalChatContent />} />
+          </Routes>
+        </div>
+      </main>
+      <DisclaimerBanner />
     </div>
   );
 };
