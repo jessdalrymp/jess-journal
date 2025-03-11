@@ -23,7 +23,7 @@ export const ChatHeader = ({ type, onBack }: ChatHeaderProps) => {
       </div>
       
       <Link 
-        to="/"
+        to="/dashboard"
         className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors"
       >
         <Home size={18} className="mr-1" />

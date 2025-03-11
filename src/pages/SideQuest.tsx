@@ -29,7 +29,7 @@ const SideQuest = () => {
     clearCurrentConversationFromStorage('sideQuest');
     // Set a new key to force remount if user returns
     setKey(Date.now());
-    navigate('/');
+    navigate('/dashboard');
   };
 
   return (

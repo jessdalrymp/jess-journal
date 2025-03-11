@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
@@ -91,14 +90,13 @@ const MyStory = () => {
   };
 
   const handleBack = () => {
-    navigate('/');
+    navigate('/dashboard');
   };
 
   const handleSignIn = () => {
     navigate('/', { state: { openAuth: true } });
   };
 
-  // Show loading state while checking authentication
   if (userLoading || isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-jess-background">
@@ -114,7 +112,6 @@ const MyStory = () => {
     );
   }
 
-  // If user is not authenticated, show sign-in prompt
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col bg-jess-background">

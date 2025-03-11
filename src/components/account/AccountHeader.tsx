@@ -17,7 +17,7 @@ export const AccountHeader = ({ user }: AccountHeaderProps) => {
         <Button 
           variant="ghost" 
           className="mr-4" 
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/dashboard')}
         >
           <ArrowLeft size={18} className="mr-2" />
           Back

@@ -25,10 +25,10 @@ export const JournalEntryHeader = ({
         <ActionButton 
           type="ghost" 
           className="mr-4" 
-          onClick={() => navigate('/journal-history')}
+          onClick={() => navigate('/dashboard')}
         >
           <ArrowLeft size={18} className="mr-2" />
-          Back to Journal
+          Back to Dashboard
         </ActionButton>
       </div>
       
