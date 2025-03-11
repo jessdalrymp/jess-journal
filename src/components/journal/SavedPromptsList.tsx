@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { SavedPrompt, fetchSavedPrompts, toggleFavoritePrompt, deleteSavedPrompt } from "../../services/savedPromptsService";
 import { useAuth } from "@/context/AuthContext";
@@ -125,7 +124,7 @@ export const SavedPromptsList = ({ onSelectPrompt }: SavedPromptsListProps) => {
             </TabsList>
           </div>
 
-          <TabsContent value="all" className="p-4 space-y-3">
+          <TabsContent value="all" className="p-4 space-y-3 max-h-[calc(100vh-180px)] overflow-y-auto">
             {isLoading ? (
               <div className="flex justify-center p-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -176,7 +175,7 @@ export const SavedPromptsList = ({ onSelectPrompt }: SavedPromptsListProps) => {
             )}
           </TabsContent>
 
-          <TabsContent value="favorites" className="p-4 space-y-3">
+          <TabsContent value="favorites" className="p-4 space-y-3 max-h-[calc(100vh-180px)] overflow-y-auto">
             {isLoading ? (
               <div className="flex justify-center p-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

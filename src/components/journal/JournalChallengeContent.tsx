@@ -45,7 +45,6 @@ export const JournalChallengeContent = () => {
   const { journalEntries } = useUserData();
 
   useEffect(() => {
-    // Show welcome modal only first time user visits this page
     const hasVisitedJournalChallenge = localStorage.getItem("hasVisitedJournalChallengePage");
     if (!hasVisitedJournalChallenge) {
       setShowWelcome(true);
@@ -54,7 +53,6 @@ export const JournalChallengeContent = () => {
   }, []); 
 
   useEffect(() => {
-    // If user has journal entries, use personalized prompts
     if (journalEntries && journalEntries.length > 2) {
       setUsePersonalized(true);
     }
@@ -86,11 +84,9 @@ export const JournalChallengeContent = () => {
     try {
       let newPrompt;
       
-      // Use personalized prompt if user has enough entries and we're set to use personalized
       if (usePersonalized && journalEntries && journalEntries.length > 2) {
         const personalizedPromptText = await generatePersonalizedJournalPrompt(user.id);
         
-        // Format the personalized prompt in the standard format
         const systemPrompt = `You are Jess, an AI life coach specializing in creating personalized writing prompts.
         Here is a personalized journal prompt: "${personalizedPromptText}"
         
@@ -117,7 +113,6 @@ export const JournalChallengeContent = () => {
         const rawText = extractDeepseekResponseText(response);
         
         try {
-          // Extract JSON from the response
           const jsonMatch = rawText.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             newPrompt = JSON.parse(jsonMatch[0]);
@@ -126,12 +121,10 @@ export const JournalChallengeContent = () => {
           }
         } catch (jsonError) {
           console.error("Failed to parse personalized journal prompt:", jsonError);
-          // Fall back to regular prompt generation
           newPrompt = null;
         }
       }
       
-      // If personalized prompt failed or not applicable, use regular generation
       if (!newPrompt) {
         const systemPrompt = `You are Jess, an AI life coach specializing in creating personalized writing prompts and journaling exercises.
         Create a unique, reflective journaling prompt that will help users gain insights into their thought patterns, behaviors, and growth.
@@ -165,7 +158,6 @@ export const JournalChallengeContent = () => {
         const rawText = extractDeepseekResponseText(response);
         
         try {
-          // Extract JSON from the response (in case there's any extra text)
           const jsonMatch = rawText.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             newPrompt = JSON.parse(jsonMatch[0]);
@@ -183,7 +175,6 @@ export const JournalChallengeContent = () => {
       }
       
       if (newPrompt) {
-        // Store the prompt in localStorage for chat context
         localStorage.setItem('currentJournalPrompt', JSON.stringify(newPrompt));
         setJournalPrompt(newPrompt);
       }
@@ -199,7 +190,6 @@ export const JournalChallengeContent = () => {
     }
   };
 
-  // Save the current prompt
   const handleSavePrompt = async () => {
     if (!user) {
       toast({
@@ -235,24 +225,18 @@ export const JournalChallengeContent = () => {
     }
   };
 
-  // Handle selecting a saved prompt
   const handleSelectSavedPrompt = (savedPrompt: SavedPrompt) => {
     setJournalPrompt(savedPrompt.prompt);
     
-    // Store the prompt in localStorage for chat context
     localStorage.setItem('currentJournalPrompt', JSON.stringify(savedPrompt.prompt));
     
-    // Close the saved prompts view
     setShowSavedPrompts(false);
     
-    // Mark as saved
     setPromptSaved(true);
   };
 
-  // Generate a journal prompt when the component mounts if the user is authenticated and no challenge is accepted
   useEffect(() => {
     if (user && !challengeAccepted) {
-      // Check localStorage first
       const savedPrompt = localStorage.getItem('currentJournalPrompt');
       if (savedPrompt) {
         try {
@@ -267,14 +251,12 @@ export const JournalChallengeContent = () => {
   }, [user]);
 
   const handleChatView = () => {
-    // Save current prompt to localStorage for chat context
     localStorage.setItem('currentJournalPrompt', JSON.stringify(journalPrompt));
     navigate('/journal-challenge/chat');
   };
 
   const togglePersonalizedPrompts = () => {
     setUsePersonalized(!usePersonalized);
-    // If turning on personalized prompts, generate a new one
     if (!usePersonalized) {
       handleGenerateNewChallenge();
     }
@@ -294,7 +276,7 @@ export const JournalChallengeContent = () => {
         </Button>
       </div>
 
-      <div className="flex-1">
+      <div className="flex-1 overflow-y-auto">
         <JournalChallengeDisplay
           journalPrompt={journalPrompt}
           onBack={handleBack}

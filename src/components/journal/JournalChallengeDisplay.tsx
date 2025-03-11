@@ -79,7 +79,7 @@ export const JournalChallengeDisplay = ({
             </div>
           </div>
         ) : (
-          <div className="h-full">
+          <div className="h-full overflow-y-auto">
             {hasEnoughEntries && onTogglePersonalized && (
               <div className="flex items-center justify-end mb-2 gap-2">
                 <span className="text-xs text-gray-500">Personal Prompts</span>
