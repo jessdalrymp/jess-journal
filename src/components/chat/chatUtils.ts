@@ -1,3 +1,4 @@
+
 import { ChatMessage } from '@/lib/types';
 import { DeepseekMessage } from '@/utils/deepseekApi';
 
@@ -73,6 +74,7 @@ Present the challenge in a clear, step-by-step format, explaining both what to d
   return formattedMessagesWithPrompt;
 };
 
+// Added the missing function for summary formatting
 export const formatMessagesForSummary = (messages: ChatMessage[]): DeepseekMessage[] => {
   const userMessages = messages.filter(msg => msg.role === 'user');
   const assistantMessages = messages.filter(msg => msg.role === 'assistant');
@@ -94,6 +96,7 @@ export const formatMessagesForSummary = (messages: ChatMessage[]): DeepseekMessa
   return [systemMessage, ...formattedMessages];
 };
 
+// Added the missing function for chat titles
 export const getChatTitle = (type: 'story' | 'sideQuest' | 'action' | 'journal'): string => {
   switch (type) {
     case 'story':
@@ -109,6 +112,7 @@ export const getChatTitle = (type: 'story' | 'sideQuest' | 'action' | 'journal')
   }
 };
 
+// Added the missing function for initial messages
 export const getInitialMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal'): string => {
   switch (type) {
     case 'story':
@@ -118,7 +122,7 @@ export const getInitialMessage = (type: 'story' | 'sideQuest' | 'action' | 'jour
     case 'action':
       return "Welcome to Action Challenge! I'll create a personalized challenge designed to help you break out of your comfort zone and experience new insights. Tell me a bit about what you've been working on or struggling with lately, and I'll design a unique experiential challenge for you.";
     case 'journal':
-      return "Welcome to your Journal Reflection. This is a place for reflection and exploration. What's on your mind today that you'd like to process through writing?";
+      return "Welcome to your Journal Reflection. I'm here to help you explore the journal prompt more deeply and extract meaningful insights. What thoughts or feelings came up for you while journaling? Or if you'd like guidance, I can suggest some reflection questions to help you get started.";
     default:
       return "Hello! How can I assist you today?";
   }
