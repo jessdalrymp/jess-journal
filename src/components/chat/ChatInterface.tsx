@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useChat } from './useChat';
 import { ChatHeader } from './ChatHeader';
@@ -19,9 +18,16 @@ interface ChatInterfaceProps {
   onBack: () => void;
   onAcceptChallenge?: () => void;
   onRestart?: () => void;
+  initialMessage?: string;
 }
 
-export const ChatInterface = ({ type, onBack, onAcceptChallenge, onRestart }: ChatInterfaceProps) => {
+export const ChatInterface = ({ 
+  type, 
+  onBack, 
+  onAcceptChallenge, 
+  onRestart,
+  initialMessage 
+}: ChatInterfaceProps) => {
   const { user, loading: authLoading } = useAuth();
   const { session, loading: chatLoading, error, sendMessage, generateSummary } = useChat(type);
   const [showEndDialog, setShowEndDialog] = useState(false);
@@ -41,7 +47,12 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge, onRestart }: Ch
       if (savedPrompt) {
         try {
           const promptData = JSON.parse(savedPrompt);
-          const contextMessage = `I'm working on a journaling prompt titled "${promptData.title}" with the main question: "${promptData.prompt}". I'd like some guidance on reflecting deeper on this topic.`;
+          
+          // Use the initial welcome message if provided, otherwise use the default
+          const welcomeMessage = initialMessage || "Welcome to your Journal Reflection. I'm here to help you explore the journal prompt more deeply and extract meaningful insights.";
+          
+          const contextMessage = `${welcomeMessage}\n\nI'm looking at your journaling prompt titled "${promptData.title}" with the main question: "${promptData.prompt}". Let's explore this together and see what insights we can uncover.`;
+          
           sendMessage(contextMessage);
         } catch (e) {
           console.error('Error parsing saved journal prompt:', e);
@@ -52,9 +63,8 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge, onRestart }: Ch
     return () => {
       console.log(`ChatInterface unmounting for ${type}`);
     };
-  }, [error, type, session, loading]);
+  }, [error, type, session, loading, initialMessage]);
 
-  // Prevent repeated re-renders while loading
   useEffect(() => {
     hasInitialized.current = true;
     

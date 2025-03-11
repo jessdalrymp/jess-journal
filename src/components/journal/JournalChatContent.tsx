@@ -41,6 +41,7 @@ export const JournalChatContent = () => {
       onBack={handleBack}
       onAcceptChallenge={handleAcceptChallenge}
       onRestart={handleRestartJournalChallenge}
+      initialMessage="Welcome to your Journal Reflection. This is a place for reflection and exploration. Let's dive into today's prompt and see what insights we can uncover together."
     />
   );
 };
