@@ -35,10 +35,24 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge, onRestart }: Ch
       console.log('Authentication error detected in ChatInterface:', error);
     }
     
+    // If this is a journal chat, see if there's a current prompt to use for context
+    if (type === 'journal' && !loading && session && session.messages.length === 1) {
+      const savedPrompt = localStorage.getItem('currentJournalPrompt');
+      if (savedPrompt) {
+        try {
+          const promptData = JSON.parse(savedPrompt);
+          const contextMessage = `I'm working on a journaling prompt titled "${promptData.title}" with the main question: "${promptData.prompt}". I'd like some guidance on reflecting deeper on this topic.`;
+          sendMessage(contextMessage);
+        } catch (e) {
+          console.error('Error parsing saved journal prompt:', e);
+        }
+      }
+    }
+    
     return () => {
       console.log(`ChatInterface unmounting for ${type}`);
     };
-  }, [error, type]);
+  }, [error, type, session, loading]);
 
   // Prevent repeated re-renders while loading
   useEffect(() => {
@@ -142,7 +156,7 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge, onRestart }: Ch
         onEndChat={openEndDialog} 
         type={type} 
         onAcceptChallenge={onAcceptChallenge}
-        onNewChallenge={type === 'action' ? handleNewChallenge : undefined} 
+        onNewChallenge={type === 'action' || type === 'journal' ? handleNewChallenge : undefined} 
       />
       <ChatEndDialog 
         open={showEndDialog} 

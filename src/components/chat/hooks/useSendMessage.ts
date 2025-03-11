@@ -39,8 +39,22 @@ export const useSendMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal
       
       const updatedMessages = [...(session.messages || []), newUserMessage];
       
-      // Here we format messages according to the chat type, which includes the updated system prompts
-      const aiMessages = formatMessagesForAI(updatedMessages, type);
+      // For journal type, include context from the current journal prompt if available
+      let aiMessages = formatMessagesForAI(updatedMessages, type);
+      
+      if (type === 'journal' && localStorage.getItem('currentJournalPrompt')) {
+        try {
+          const promptData = JSON.parse(localStorage.getItem('currentJournalPrompt') || '{}');
+          const contextMessage = `The user is working on a journaling prompt titled "${promptData.title}" with the prompt: "${promptData.prompt}". 
+          The instructions for this journaling exercise were: ${promptData.instructions.join('; ')}. 
+          Keep this context in mind when responding, but don't repeat it back to the user unless relevant to their question.`;
+          
+          // Add context to the system prompt
+          aiMessages[0].content = aiMessages[0].content + "\n\n" + contextMessage;
+        } catch (e) {
+          console.error('Error adding journal context to AI messages:', e);
+        }
+      }
       
       console.log(`Sending ${type} messages to AI with system prompt:`, 
         aiMessages.length > 0 ? aiMessages[0].content.substring(0, 100) + '...' : 'No system prompt');

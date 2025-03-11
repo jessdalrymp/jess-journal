@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { ChatInterface } from "../components/chat/ChatInterface";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { WelcomeModal } from "../components/chat/WelcomeModal";
 import { JournalingDialog } from "../components/challenges/JournalingDialog";
 import { useAuth } from "@/context/AuthContext";
@@ -35,8 +35,10 @@ const JournalChallenge = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [challengeAccepted, setChallengeAccepted] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
+  const isChatView = location.pathname === '/journal-challenge/chat';
 
   useEffect(() => {
     // Show welcome modal only first time user visits this page
@@ -48,7 +50,11 @@ const JournalChallenge = () => {
   }, []); 
 
   const handleBack = () => {
-    navigate('/');
+    if (isChatView) {
+      navigate('/journal-challenge');
+    } else {
+      navigate('/');
+    }
   };
 
   const handleAcceptChallenge = () => {
@@ -105,6 +111,8 @@ const JournalChallenge = () => {
         const jsonMatch = rawText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const newPrompt = JSON.parse(jsonMatch[0]);
+          // Store the prompt in localStorage for chat context
+          localStorage.setItem('currentJournalPrompt', JSON.stringify(newPrompt));
           setJournalPrompt(newPrompt);
         } else {
           throw new Error("Could not parse journal prompt JSON");
@@ -132,12 +140,28 @@ const JournalChallenge = () => {
   // Generate a journal prompt when the component mounts if the user is authenticated and no challenge is accepted
   useEffect(() => {
     if (user && !challengeAccepted) {
-      handleGenerateNewChallenge();
+      // Check localStorage first
+      const savedPrompt = localStorage.getItem('currentJournalPrompt');
+      if (savedPrompt) {
+        try {
+          setJournalPrompt(JSON.parse(savedPrompt));
+        } catch (e) {
+          handleGenerateNewChallenge();
+        }
+      } else {
+        handleGenerateNewChallenge();
+      }
     }
   }, [user]);
 
   const handleChatView = () => {
+    // Save current prompt to localStorage for chat context
+    localStorage.setItem('currentJournalPrompt', JSON.stringify(journalPrompt));
     navigate('/journal-challenge/chat');
+  };
+  
+  const handleRestartJournalChallenge = () => {
+    navigate('/journal-challenge');
   };
 
   return (
@@ -145,8 +169,12 @@ const JournalChallenge = () => {
       <Header />
       <main className="flex-1 px-4 sm:px-6 py-3 container mx-auto max-w-4xl">
         <div className="bg-white rounded-lg shadow-sm h-[calc(100vh-170px)]">
-          {window.location.pathname === '/journal-challenge/chat' ? (
-            <ChatInterface type="journal" onBack={handleBack} />
+          {isChatView ? (
+            <ChatInterface 
+              type="journal" 
+              onBack={handleBack}
+              onRestart={handleRestartJournalChallenge}
+            />
           ) : (
             <JournalChallengeDisplay
               journalPrompt={journalPrompt}

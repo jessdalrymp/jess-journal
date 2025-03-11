@@ -62,6 +62,16 @@ export const JournalChallengeDisplay = ({
                 <li key={index} className="text-sm leading-tight">{instruction}</li>
               ))}
             </ol>
+            
+            <div className="mt-4 pt-3 border-t border-jess-subtle">
+              <h3 className="text-base font-medium mb-1.5">Guiding Questions:</h3>
+              <ul className="list-disc pl-5 space-y-1">
+                <li className="text-sm leading-tight">What emotions came up as you reflected on this prompt?</li>
+                <li className="text-sm leading-tight">What patterns or insights did you discover about yourself?</li>
+                <li className="text-sm leading-tight">How might this reflection change your perspective going forward?</li>
+                <li className="text-sm leading-tight">What specific actions could you take based on these insights?</li>
+              </ul>
+            </div>
           </div>
         )}
       </div>
