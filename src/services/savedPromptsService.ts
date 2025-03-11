@@ -29,7 +29,7 @@ export const fetchSavedPrompts = async (userId: string): Promise<SavedPrompt[]> 
     return data.map(item => ({
       id: item.id,
       userId: item.user_id,
-      prompt: JSON.parse(item.prompt_data),
+      prompt: item.prompt_data as JournalPrompt, // Use type assertion instead of JSON.parse
       createdAt: new Date(item.created_at),
       favorite: item.favorite || false
     }));
@@ -61,7 +61,7 @@ export const savePrompt = async (userId: string, prompt: JournalPrompt): Promise
       .from('saved_prompts')
       .insert({
         user_id: userId,
-        prompt_data: JSON.stringify(prompt),
+        prompt_data: prompt, // Send as object, Supabase will handle JSONB conversion
         favorite: false
       })
       .select()
@@ -75,7 +75,7 @@ export const savePrompt = async (userId: string, prompt: JournalPrompt): Promise
     return {
       id: data.id,
       userId: data.user_id,
-      prompt: JSON.parse(data.prompt_data),
+      prompt: data.prompt_data as JournalPrompt, // Use type assertion instead of JSON.parse
       createdAt: new Date(data.created_at),
       favorite: data.favorite || false
     };
