@@ -17,7 +17,7 @@ export const Header = () => {
 
       <div className="flex items-center space-x-6">
         <Link 
-          to="/"
+          to="/dashboard"
           className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors"
         >
           <Home size={20} className="mr-2" />
