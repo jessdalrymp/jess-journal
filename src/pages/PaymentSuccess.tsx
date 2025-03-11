@@ -16,7 +16,7 @@ const PaymentSuccess = () => {
   const { checkSubscriptionStatus } = useUserData();
   
   useEffect(() => {
-    // Refresh subscription status
+    // Refresh subscription status only once on component mount
     checkSubscriptionStatus();
     
     // Show success toast
@@ -24,7 +24,8 @@ const PaymentSuccess = () => {
       title: "Payment Successful",
       description: "Thank you for your subscription!",
     });
-  }, [checkSubscriptionStatus, toast]);
+    // Empty dependency array to ensure it only runs once
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
