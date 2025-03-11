@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from "./components/ui/theme-provider";
@@ -39,6 +40,7 @@ const App = () => {
               <Route path="/journal-entry/:id" element={<JournalEntry />} />
               <Route path="/journal-history" element={<JournalHistory />} />
               <Route path="/legal" element={<Legal />} />
+              <Route path="/admin" element={<AdminPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />
