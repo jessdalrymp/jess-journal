@@ -1,4 +1,3 @@
-
 import { JournalEntry } from "@/lib/types";
 
 interface JournalEntryContentProps {
@@ -28,8 +27,7 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
     });
   };
 
-  // For TypeScript, we need to handle the case where prompt might exist in the entry
-  // even though it's not in the type definition
+  // Using type assertion for prompt property which might exist
   const prompt = (entry as any).prompt;
 
   return (
