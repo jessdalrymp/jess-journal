@@ -1,4 +1,4 @@
 
-export { DEFAULT_PROMPT } from './journal';
-export type { JournalPrompt } from './journal';
-export { useJournalPrompt } from './journal';
+export { DEFAULT_PROMPT } from './journal/types';
+export type { JournalPrompt } from './journal/types';
+export { useJournalPrompt } from './journal/useJournalPrompt';
