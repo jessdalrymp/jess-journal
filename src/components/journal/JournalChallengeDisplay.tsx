@@ -1,9 +1,11 @@
+
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, RefreshCw, MessageSquare, Pen } from "lucide-react";
+import { ArrowLeft, RefreshCw, MessageSquare, Pen, Sparkles } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { JournalPrompt } from "./JournalChallengeContent";
+import { Switch } from "@/components/ui/switch";
 
 interface JournalChallengeDisplayProps {
   journalPrompt: JournalPrompt;
@@ -11,6 +13,9 @@ interface JournalChallengeDisplayProps {
   onAcceptChallenge: () => void;
   onNewChallenge: () => void;
   onStartChat: () => void;
+  onTogglePersonalized?: () => void;
+  isPersonalized?: boolean;
+  hasEnoughEntries?: boolean;
   isLoading: boolean;
 }
 
@@ -20,6 +25,9 @@ export const JournalChallengeDisplay = ({
   onAcceptChallenge,
   onNewChallenge,
   onStartChat,
+  onTogglePersonalized,
+  isPersonalized = false,
+  hasEnoughEntries = false,
   isLoading
 }: JournalChallengeDisplayProps) => {
   return (
@@ -46,6 +54,18 @@ export const JournalChallengeDisplay = ({
           </div>
         ) : (
           <div>
+            {hasEnoughEntries && onTogglePersonalized && (
+              <div className="flex items-center justify-end mb-2 gap-2">
+                <span className="text-xs text-gray-500">Personal Prompts</span>
+                <Switch 
+                  checked={isPersonalized} 
+                  onCheckedChange={onTogglePersonalized} 
+                  disabled={isLoading}
+                />
+                <Sparkles className="h-4 w-4 text-jess-primary" />
+              </div>
+            )}
+            
             <h1 className="text-xl font-bold mb-2">{journalPrompt.title}</h1>
             <div className="mb-2 bg-jess-subtle p-3 rounded-lg">
               <p className="text-sm leading-tight">{journalPrompt.prompt}</p>
