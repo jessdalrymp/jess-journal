@@ -476,6 +476,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       delete_journal_entry: {
         Args: {
           p_entry_id: string
@@ -509,6 +513,10 @@ export type Database = {
           p_mood?: string
         }
         Returns: undefined
+      }
+      make_user_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       update_journal_entry: {
         Args: {
