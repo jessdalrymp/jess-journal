@@ -25,17 +25,16 @@ const AdminPage = () => {
   const checkAdminStatus = async () => {
     try {
       setIsLoading(true);
-      // Check if user is already an admin
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user?.id)
-        .eq('role', 'admin')
-        .single();
-
-      if (data) {
-        setIsAdmin(true);
+      // Instead of directly querying the user_roles table, 
+      // use a Postgres function call or check through RPC
+      const { data, error } = await supabase.rpc('check_is_admin');
+      
+      if (error) {
+        console.error("Error checking admin status:", error);
+        return;
       }
+      
+      setIsAdmin(data || false);
     } catch (error) {
       console.error("Error checking admin status:", error);
     } finally {
@@ -47,10 +46,8 @@ const AdminPage = () => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .insert({ user_id: user.id, role: 'admin' })
-        .select();
+      // Use an RPC function call instead of directly inserting
+      const { data, error } = await supabase.rpc('make_user_admin');
 
       if (error) {
         console.error("Error making admin:", error);
@@ -62,11 +59,13 @@ const AdminPage = () => {
         return;
       }
 
-      setIsAdmin(true);
-      toast({
-        title: "Success",
-        description: "You are now an administrator",
-      });
+      if (data) {
+        setIsAdmin(true);
+        toast({
+          title: "Success",
+          description: "You are now an administrator",
+        });
+      }
     } catch (error) {
       console.error("Error making admin:", error);
       toast({
