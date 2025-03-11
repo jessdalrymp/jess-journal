@@ -23,7 +23,7 @@ export const Pricing = () => {
               <PricingFeature text="Personalized story exploration" />
               <PricingFeature text="Advanced self-discovery tools" />
             </ul>
-            <Link to="/">
+            <Link to="/dashboard">
               <Button size="lg" className="w-full">
                 Start 7-Day Free Trial
               </Button>
