@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Book, MessageSquare, Lightbulb, PenLine } from 'lucide-react';
+import { Book, MessageSquare, PenLine, FilePlus } from 'lucide-react';
 
 export const CoreActionsSection = () => {
   return (
@@ -25,12 +25,12 @@ export const CoreActionsSection = () => {
           </div>
         </Link>
         
-        <Link to="/action-challenge">
+        <Link to="/journal">
           <div className="bg-jess-subtle rounded-lg p-5 flex flex-col items-center justify-center cursor-pointer hover:shadow-md transition-all">
             <div className="text-jess-primary mb-3">
-              <Lightbulb size={24} />
+              <FilePlus size={24} />
             </div>
-            <h3 className="text-center">Action Challenge</h3>
+            <h3 className="text-center">New Journal</h3>
           </div>
         </Link>
         

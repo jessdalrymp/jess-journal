@@ -9,7 +9,6 @@ import Index from './pages/Index';
 import Account from './pages/Account';
 import MyStory from './pages/MyStory';
 import SideQuest from './pages/SideQuest';
-import ActionChallenge from './pages/ActionChallenge';
 import BlankJournal from './pages/BlankJournal';
 import JournalChallenge from './pages/JournalChallenge';
 import JournalEntry from './pages/JournalEntry';
@@ -33,7 +32,6 @@ const App = () => {
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/my-story" element={<MyStory />} />
               <Route path="/side-quest" element={<SideQuest />} />
-              <Route path="/action-challenge" element={<ActionChallenge />} />
               <Route path="/journal" element={<BlankJournal />} />
               <Route path="/journal-challenge" element={<JournalChallenge />} />
               <Route path="/journal-entry/:id" element={<JournalEntry />} />
