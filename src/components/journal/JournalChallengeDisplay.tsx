@@ -4,7 +4,7 @@ import { ArrowLeft, RefreshCw, MessageSquare, Pen, Sparkles } from "lucide-react
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { JournalPrompt } from "./JournalChallengeContent";
+import { JournalPrompt } from "@/hooks/useJournalPrompt";
 import { Switch } from "@/components/ui/switch";
 
 interface JournalChallengeDisplayProps {

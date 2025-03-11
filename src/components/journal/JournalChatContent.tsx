@@ -2,13 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { ChatInterface } from "../chat/ChatInterface";
 import { useEffect, useState } from "react";
-import { DEFAULT_PROMPT } from "@/hooks/useJournalPrompt";
-
-export type JournalPrompt = {
-  title: string;
-  prompt: string;
-  instructions: string[];
-};
+import { DEFAULT_PROMPT, JournalPrompt } from "@/hooks/useJournalPrompt";
 
 export const JournalChatContent = () => {
   const navigate = useNavigate();
