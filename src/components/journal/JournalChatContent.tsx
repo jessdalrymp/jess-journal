@@ -23,20 +23,20 @@ export const JournalChatContent = () => {
     }
   }, []);
   
-  // Generate a welcome message with initial questions based on the prompt
+  // Generate a simplified welcome message that focuses on the prompt steps
   const generateWelcomeMessage = (prompt: JournalPrompt | null) => {
     if (!prompt) return "";
     
+    // Create a more focused, step-by-step approach to the prompt
     const welcomeMessage = [
-      "Welcome to your Journal Reflection space. I'm here to help you explore your thoughts on today's prompt:",
+      `Welcome to your journaling session. Today's prompt is:`,
       `"${prompt.title}: ${prompt.prompt}"`,
       "",
-      "Let's break this down into manageable parts. You could start by considering:",
-      `• What was your initial reaction to this prompt?`,
-      `• Can you recall a specific experience related to this topic?`,
-      `• What emotions come up when you think about this?`,
+      "Let's explore this prompt step by step:",
       "",
-      "Feel free to start wherever feels most comfortable for you. What aspect would you like to explore first?"
+      ...prompt.instructions.map((instruction, index) => `${index + 1}. ${instruction}`),
+      "",
+      "Which part of this journaling exercise would you like to start with? Or is there a specific aspect of the prompt that interests you the most?"
     ].join("\n");
     
     return welcomeMessage;

@@ -42,13 +42,16 @@ export const useSendMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal
       
       let aiMessages = formatMessagesForAI(updatedMessages, type);
       
-      // For journal type, include context from the current journal prompt
+      // For journal type, include more structured context from the current journal prompt
       if (type === 'journal' && localStorage.getItem('currentJournalPrompt')) {
         try {
           const promptData = JSON.parse(localStorage.getItem('currentJournalPrompt') || '{}');
           const contextMessage = `The user is working on a journaling prompt titled "${promptData.title}" with the prompt: "${promptData.prompt}". 
-          The instructions for this journaling exercise were: ${promptData.instructions.join('; ')}. 
-          Keep this context in mind when responding, but don't repeat it back to the user unless relevant to their question.`;
+          The specific steps for this journaling exercise are:
+          ${promptData.instructions.map((instruction, i) => `${i+1}. ${instruction}`).join('\n')}
+          
+          The user's message is related to this prompt. Help them work through one step at a time, focusing on depth rather than breadth. 
+          Be concise but targeted in your questions and responses. Don't repeat the full prompt or all steps unless relevant.`;
           
           aiMessages[0].content = aiMessages[0].content + "\n\n" + contextMessage;
         } catch (e) {
