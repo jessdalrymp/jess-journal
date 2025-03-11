@@ -1,11 +1,12 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, RefreshCw, MessageSquare, Pen, Sparkles } from "lucide-react";
+import { ArrowLeft, RefreshCw, MessageSquare, Pen, Sparkles, BookmarkPlus } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { JournalPrompt } from "./JournalChallengeContent";
 import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface JournalChallengeDisplayProps {
   journalPrompt: JournalPrompt;
@@ -14,9 +15,11 @@ interface JournalChallengeDisplayProps {
   onNewChallenge: () => void;
   onStartChat: () => void;
   onTogglePersonalized?: () => void;
+  onSavePrompt?: () => void;
   isPersonalized?: boolean;
   hasEnoughEntries?: boolean;
   isLoading: boolean;
+  promptSaved?: boolean;
 }
 
 export const JournalChallengeDisplay = ({
@@ -26,9 +29,11 @@ export const JournalChallengeDisplay = ({
   onNewChallenge,
   onStartChat,
   onTogglePersonalized,
+  onSavePrompt,
   isPersonalized = false,
   hasEnoughEntries = false,
-  isLoading
+  isLoading,
+  promptSaved = false
 }: JournalChallengeDisplayProps) => {
   return (
     <div className="flex flex-col h-full">
@@ -42,6 +47,27 @@ export const JournalChallengeDisplay = ({
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h2 className="text-xl font-medium">Journal Challenge</h2>
+        
+        {onSavePrompt && !isLoading && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={onSavePrompt}
+                  className="ml-auto"
+                  disabled={promptSaved}
+                >
+                  <BookmarkPlus className={`h-5 w-5 ${promptSaved ? 'text-jess-primary' : ''}`} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{promptSaved ? 'Prompt saved' : 'Save this prompt'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
       
       <div className="flex-1 p-3 overflow-y-auto">

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { WelcomeModal } from "../chat/WelcomeModal";
@@ -7,7 +6,12 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { generateDeepseekResponse, extractDeepseekResponseText, generatePersonalizedJournalPrompt } from "../../utils/deepseekApi";
 import { JournalChallengeDisplay } from "./JournalChallengeDisplay";
+import { SavedPromptsList } from "./SavedPromptsList";
 import { useUserData } from "@/context/UserDataContext";
+import { savePrompt, SavedPrompt } from "../../services/savedPromptsService";
+import { Button } from "@/components/ui/button";
+import { Bookmark, ArrowLeft } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export type JournalPrompt = {
   title: string;
@@ -33,6 +37,8 @@ export const JournalChallengeContent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [challengeAccepted, setChallengeAccepted] = useState(false);
   const [usePersonalized, setUsePersonalized] = useState(false);
+  const [promptSaved, setPromptSaved] = useState(false);
+  const [showSavedPrompts, setShowSavedPrompts] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -75,6 +81,8 @@ export const JournalChallengeContent = () => {
 
     setChallengeAccepted(false);
     setIsLoading(true);
+    setPromptSaved(false);
+    
     try {
       let newPrompt;
       
@@ -191,6 +199,56 @@ export const JournalChallengeContent = () => {
     }
   };
 
+  // Save the current prompt
+  const handleSavePrompt = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to save this prompt",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const result = await savePrompt(user.id, journalPrompt);
+      if (result) {
+        setPromptSaved(true);
+        toast({
+          title: "Prompt saved",
+          description: "You can access it from your saved prompts"
+        });
+      } else {
+        toast({
+          title: "Already saved",
+          description: "This prompt has already been saved"
+        });
+        setPromptSaved(true);
+      }
+    } catch (error) {
+      console.error("Error saving prompt:", error);
+      toast({
+        title: "Error saving prompt",
+        description: "Please try again later",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Handle selecting a saved prompt
+  const handleSelectSavedPrompt = (savedPrompt: SavedPrompt) => {
+    setJournalPrompt(savedPrompt.prompt);
+    
+    // Store the prompt in localStorage for chat context
+    localStorage.setItem('currentJournalPrompt', JSON.stringify(savedPrompt.prompt));
+    
+    // Close the saved prompts view
+    setShowSavedPrompts(false);
+    
+    // Mark as saved
+    setPromptSaved(true);
+  };
+
   // Generate a journal prompt when the component mounts if the user is authenticated and no challenge is accepted
   useEffect(() => {
     if (user && !challengeAccepted) {
@@ -223,18 +281,40 @@ export const JournalChallengeContent = () => {
   };
 
   return (
-    <>
-      <JournalChallengeDisplay
-        journalPrompt={journalPrompt}
-        onBack={handleBack}
-        onAcceptChallenge={handleAcceptChallenge}
-        onNewChallenge={handleGenerateNewChallenge}
-        onStartChat={handleChatView}
-        onTogglePersonalized={togglePersonalizedPrompts}
-        isPersonalized={usePersonalized}
-        hasEnoughEntries={journalEntries && journalEntries.length > 2}
-        isLoading={isLoading}
-      />
+    <div className="h-full flex flex-col">
+      <div className="flex items-center p-2 border-b border-jess-subtle">
+        <Button 
+          variant="ghost"
+          size="sm"
+          className="mr-2"
+          onClick={() => setShowSavedPrompts(true)}
+        >
+          <Bookmark className="mr-2 h-4 w-4" />
+          Saved Prompts
+        </Button>
+      </div>
+
+      <div className="flex-1">
+        <JournalChallengeDisplay
+          journalPrompt={journalPrompt}
+          onBack={handleBack}
+          onAcceptChallenge={handleAcceptChallenge}
+          onNewChallenge={handleGenerateNewChallenge}
+          onStartChat={handleChatView}
+          onTogglePersonalized={togglePersonalizedPrompts}
+          onSavePrompt={handleSavePrompt}
+          isPersonalized={usePersonalized}
+          hasEnoughEntries={journalEntries && journalEntries.length > 2}
+          isLoading={isLoading}
+          promptSaved={promptSaved}
+        />
+      </div>
+      
+      <Sheet open={showSavedPrompts} onOpenChange={setShowSavedPrompts}>
+        <SheetContent side="left" className="w-full sm:max-w-md p-0">
+          <SavedPromptsList onSelectPrompt={handleSelectSavedPrompt} />
+        </SheetContent>
+      </Sheet>
       
       <WelcomeModal
         open={showWelcome}
@@ -250,6 +330,6 @@ export const JournalChallengeContent = () => {
         challengeType="journal"
         promptText={journalPrompt.prompt}
       />
-    </>
+    </div>
   );
 };
