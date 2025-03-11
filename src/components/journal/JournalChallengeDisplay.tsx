@@ -1,9 +1,7 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, RefreshCw, MessageSquare, Pen, Sparkles } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { ArrowLeft, RefreshCw, Pen, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { JournalPrompt } from "@/hooks/useJournalPrompt";
 import { Switch } from "@/components/ui/switch";
 
@@ -12,7 +10,6 @@ interface JournalChallengeDisplayProps {
   onBack: () => void;
   onAcceptChallenge: () => void;
   onNewChallenge: () => void;
-  onStartChat: () => void;
   onTogglePersonalized?: () => void;
   isPersonalized?: boolean;
   hasEnoughEntries?: boolean;
@@ -24,7 +21,6 @@ export const JournalChallengeDisplay = ({
   onBack,
   onAcceptChallenge,
   onNewChallenge,
-  onStartChat,
   onTogglePersonalized,
   isPersonalized = false,
   hasEnoughEntries = false,
@@ -90,36 +86,24 @@ export const JournalChallengeDisplay = ({
         )}
       </div>
       
-      <div className="p-2 border-t border-jess-subtle flex flex-col sm:flex-row sm:justify-center gap-2 sm:gap-3">
-        <div className="flex justify-center gap-2 sm:gap-3">
-          <Button 
-            onClick={onAcceptChallenge} 
-            className="bg-jess-primary hover:bg-jess-primary/90 text-white shadow-md px-3 py-2 text-sm flex-grow sm:flex-grow-0"
-            disabled={isLoading}
-          >
-            <Pen className="mr-2 h-4 w-4" />
-            Start Journaling
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            onClick={onNewChallenge}
-            className="shadow-md px-3 py-2 text-sm flex-grow sm:flex-grow-0"
-            disabled={isLoading}
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            New Prompt
-          </Button>
-        </div>
+      <div className="p-2 border-t border-jess-subtle flex flex-row justify-center gap-3">
+        <Button 
+          onClick={onAcceptChallenge} 
+          className="bg-jess-primary hover:bg-jess-primary/90 text-white shadow-md px-3 py-2 text-sm"
+          disabled={isLoading}
+        >
+          <Pen className="mr-2 h-4 w-4" />
+          Start Journaling
+        </Button>
         
         <Button 
           variant="outline" 
-          onClick={onStartChat}
-          className="shadow-md px-3 py-2 text-sm mt-2 sm:mt-0"
+          onClick={onNewChallenge}
+          className="shadow-md px-3 py-2 text-sm"
           disabled={isLoading}
         >
-          <MessageSquare className="mr-2 h-4 w-4" />
-          Chat with Jess
+          <RefreshCw className="h-4 w-4 mr-2" />
+          New Prompt
         </Button>
       </div>
     </div>

@@ -40,12 +40,6 @@ export const JournalChallengeContent = () => {
     setShowJournaling(true);
   };
 
-  const handleChatView = () => {
-    // Save current prompt to localStorage for chat context
-    localStorage.setItem('currentJournalPrompt', JSON.stringify(journalPrompt));
-    navigate('/journal-challenge/chat');
-  };
-
   return (
     <>
       <JournalChallengeDisplay
@@ -53,7 +47,6 @@ export const JournalChallengeContent = () => {
         onBack={handleBack}
         onAcceptChallenge={handleAcceptChallenge}
         onNewChallenge={generateNewPrompt}
-        onStartChat={handleChatView}
         onTogglePersonalized={togglePersonalizedPrompts}
         isPersonalized={usePersonalized}
         hasEnoughEntries={hasEnoughEntries}

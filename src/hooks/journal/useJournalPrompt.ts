@@ -25,17 +25,7 @@ export const useJournalPrompt = () => {
   useEffect(() => {
     // Generate a journal prompt when the component mounts if the user is authenticated and no challenge is accepted
     if (user && !challengeAccepted) {
-      // Check localStorage first
-      const savedPrompt = localStorage.getItem('currentJournalPrompt');
-      if (savedPrompt) {
-        try {
-          setJournalPrompt(JSON.parse(savedPrompt));
-        } catch (e) {
-          generateNewPrompt();
-        }
-      } else {
-        generateNewPrompt();
-      }
+      generateNewPrompt();
     }
   }, [user, challengeAccepted]);
 
@@ -65,8 +55,6 @@ export const useJournalPrompt = () => {
       }
       
       if (newPrompt) {
-        // Store the prompt in localStorage for chat context
-        localStorage.setItem('currentJournalPrompt', JSON.stringify(newPrompt));
         setJournalPrompt(newPrompt);
       } else {
         toast({
