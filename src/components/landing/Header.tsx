@@ -10,10 +10,10 @@ export const Header = () => {
       <div className="flex justify-between items-center">
         <AuthFormHeader />
         <div className="hidden md:flex space-x-4">
-          <Link to="/login">
+          <Link to="/">
             <Button variant="ghost">Login</Button>
           </Link>
-          <Link to="/signup">
+          <Link to="/">
             <Button>Get Started</Button>
           </Link>
         </div>

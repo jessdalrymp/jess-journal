@@ -16,13 +16,13 @@ export const Hero = () => {
           to help you understand your narrative and grow.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Link to="/signup">
+          <Link to="/">
             <Button size="lg" className="w-full sm:w-auto">
               Start Your Journey
               <ChevronRight className="ml-2" size={18} />
             </Button>
           </Link>
-          <Link to="/login">
+          <Link to="/">
             <Button size="lg" variant="outline" className="w-full sm:w-auto">
               Login to Continue
             </Button>

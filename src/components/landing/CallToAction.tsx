@@ -11,7 +11,7 @@ export const CallToAction = () => {
         <p className="text-xl text-jess-muted max-w-2xl mx-auto mb-8">
           Join thousands who are using JESS to better understand themselves and shape their futures.
         </p>
-        <Link to="/signup">
+        <Link to="/">
           <Button size="lg" className="px-8">
             Begin Your Story
           </Button>
