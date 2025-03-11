@@ -31,7 +31,7 @@ export const JournalChallengeDisplay = ({
   isLoading
 }: JournalChallengeDisplayProps) => {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col">
       <div className="p-2 border-b border-jess-subtle flex items-center">
         <Button 
           variant="ghost" 
@@ -44,16 +44,16 @@ export const JournalChallengeDisplay = ({
         <h2 className="text-xl font-medium">Journal Challenge</h2>
       </div>
       
-      <div className="flex-1 p-3 overflow-y-auto">
+      <div className="p-3">
         {isLoading ? (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex items-center justify-center py-8">
             <div className="text-center">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-3"></div>
               <p className="text-lg">Generating your journal prompt...</p>
             </div>
           </div>
         ) : (
-          <div className="h-full">
+          <div>
             {hasEnoughEntries && onTogglePersonalized && (
               <div className="flex items-center justify-end mb-2 gap-2">
                 <span className="text-xs text-gray-500">Personal Prompts</span>
