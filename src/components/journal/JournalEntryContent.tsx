@@ -28,16 +28,18 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
     });
   };
 
+  // For TypeScript, we need to handle the case where prompt might exist in the entry
+  // even though it's not in the type definition
+  const prompt = (entry as any).prompt;
+
   return (
     <div className="prose max-w-none">
-      <div className="bg-jess-subtle rounded-lg p-4 mb-6">
-        {entry.prompt && (
-          <>
-            <h4 className="text-lg font-medium mb-2">Journal Prompt:</h4>
-            <p>{entry.prompt}</p>
-          </>
-        )}
-      </div>
+      {prompt && (
+        <div className="bg-jess-subtle rounded-lg p-4 mb-6">
+          <h4 className="text-lg font-medium mb-2">Journal Prompt:</h4>
+          <p>{prompt}</p>
+        </div>
+      )}
       {renderContent()}
     </div>
   );
