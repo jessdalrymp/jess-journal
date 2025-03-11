@@ -44,12 +44,16 @@ export const savePrompt = async (userId: string, prompt: JournalPrompt): Promise
   if (!userId) return null;
   
   try {
-    // First check if this prompt is already saved
-    const { data: existingData } = await supabase
+    // First check if this prompt is already saved - using a simpler query to avoid excessive type instantiation
+    const { data: existingData, error: checkError } = await supabase
       .from('saved_prompts')
       .select('id')
       .eq('user_id', userId)
-      .eq('prompt_data->title', prompt.title);
+      .contains('prompt_data', { title: prompt.title });
+    
+    if (checkError) {
+      console.error('Error checking for existing prompt:', checkError);
+    }
     
     if (existingData && existingData.length > 0) {
       // Prompt already exists
