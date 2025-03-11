@@ -27,6 +27,10 @@ export const JournalChatContent = () => {
     navigate('/journal-challenge');
   };
   
+  const handleAcceptChallenge = () => {
+    navigate('/journal-challenge');
+  };
+  
   const handleRestartJournalChallenge = () => {
     navigate('/journal-challenge');
   };
@@ -35,6 +39,7 @@ export const JournalChatContent = () => {
     <ChatInterface 
       type="journal" 
       onBack={handleBack}
+      onAcceptChallenge={handleAcceptChallenge}
       onRestart={handleRestartJournalChallenge}
     />
   );
