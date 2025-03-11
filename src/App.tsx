@@ -5,6 +5,7 @@ import { ThemeProvider } from "./components/ui/theme-provider";
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from './context/AuthContext';
 import { UserDataProvider } from './context/UserDataProvider';
+import LandingPage from './pages/LandingPage';
 import Index from './pages/Index';
 import Account from './pages/Account';
 import MyStory from './pages/MyStory';
@@ -26,7 +27,8 @@ const App = () => {
         <AuthProvider>
           <UserDataProvider>
             <Routes>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/dashboard" element={<Index />} />
               <Route path="/account" element={<Account />} />
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
