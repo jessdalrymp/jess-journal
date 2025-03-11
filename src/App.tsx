@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from "./components/ui/theme-provider";
@@ -18,6 +17,7 @@ import NotFound from './pages/NotFound';
 import Subscription from './pages/subscription';
 import PaymentSuccess from './pages/PaymentSuccess';
 import Legal from './pages/Legal';
+import AdminPage from "./pages/admin";
 
 const App = () => {
   console.log("App component initialized");
