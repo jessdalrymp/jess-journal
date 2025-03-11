@@ -1,9 +1,8 @@
 
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { FilePlus, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
-import { ActionButton } from '@/components/ui/ActionButton';
 
 interface RecentActivitySectionProps {
   journalEntries: JournalEntry[];
@@ -24,11 +23,6 @@ export const RecentActivitySection = ({
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, 3)
     : [];
-
-  // Function to navigate to the blank journal page
-  const goToBlankJournal = () => {
-    navigate('/journal');
-  };
 
   // Function to parse the entry content for potential JSON with a title
   const getEntryTitle = (entry: JournalEntry) => {
@@ -59,17 +53,7 @@ export const RecentActivitySection = ({
     <div className="bg-white rounded-xl p-6 shadow-sm">
       <div className="flex justify-between items-center mb-5">
         <h2 className="text-xl font-medium">Recent Activity</h2>
-        <div className="flex items-center gap-2">
-          <ActionButton 
-            onClick={goToBlankJournal} 
-            type="secondary"
-            className="py-1 px-3 text-sm"
-            icon={<FilePlus size={16} />}
-          >
-            New Entry
-          </ActionButton>
-          <Link to="/journal-history" className="text-jess-primary text-sm">View All</Link>
-        </div>
+        <Link to="/journal-history" className="text-jess-primary text-sm">View All</Link>
       </div>
       
       <div className="flex flex-col items-center justify-center h-[220px]">
