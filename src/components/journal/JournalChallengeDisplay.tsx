@@ -44,7 +44,7 @@ export const JournalChallengeDisplay = ({
         <h2 className="text-xl font-medium">Journal Challenge</h2>
       </div>
       
-      <div className="flex-1 p-3">
+      <div className="flex-1 p-3 overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -53,7 +53,7 @@ export const JournalChallengeDisplay = ({
             </div>
           </div>
         ) : (
-          <div>
+          <div className="h-full">
             {hasEnoughEntries && onTogglePersonalized && (
               <div className="flex items-center justify-end mb-2 gap-2">
                 <span className="text-xs text-gray-500">Personal Prompts</span>
