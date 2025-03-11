@@ -33,18 +33,19 @@ const JournalHistory = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Always refresh entries when component mounts
+    // Load entries only once when component mounts
     const loadEntries = async () => {
       setIsLoading(true);
       if (user) {
-        console.log("JournalHistory - Refreshing journal entries");
+        console.log("JournalHistory - Loading journal entries");
         await fetchJournalEntries();
       }
       setIsLoading(false);
     };
     
     loadEntries();
-  }, [user, fetchJournalEntries]);
+    // Empty dependency array to prevent infinite loop
+  }, []);
 
   useEffect(() => {
     // Sort entries by date (newest first)
