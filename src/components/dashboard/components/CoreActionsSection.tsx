@@ -30,7 +30,7 @@ export const CoreActionsSection = () => {
             <div className="text-jess-primary mb-3">
               <FilePlus size={24} />
             </div>
-            <h3 className="text-center">New Journal</h3>
+            <h3 className="text-center">New Journal Entry</h3>
           </div>
         </Link>
         
