@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { JournalEntry } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
 import { useUserData } from '../hooks/useUserData';
-import { useJournalActions } from '../hooks/useJournalActions';
+import { useJournalEntries } from '../hooks/journal';
 import { useConversationData } from '../hooks/useConversationData';
 import { useSubscription } from '../hooks/useSubscription';
 import { useToast } from '@/components/ui/use-toast';
@@ -27,12 +27,12 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const [isJournalLoading, setIsJournalLoading] = useState(false);
   const isFetchingJournalRef = useRef(false);
   
-  const journalActions = useJournalActions();
+  const { fetchJournalEntries: fetchEntries, loading: journalActionsLoading } = useJournalEntries();
   const { loading: conversationLoading, startConversation, addMessageToConversation } = useConversationData(user?.id);
   const { subscription, loading: subscriptionLoading, checkSubscriptionStatus, applyCoupon } = useSubscription(user?.id);
   const { toast } = useToast();
   
-  const loading = userLoading || isJournalLoading || conversationLoading || subscriptionLoading;
+  const loading = userLoading || isJournalLoading || conversationLoading || subscriptionLoading || journalActionsLoading;
 
   // Only fetch journal entries once when the user is loaded and not already fetched
   useEffect(() => {
@@ -55,7 +55,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     
     try {
       console.log("Fetching journal entries for user:", user.id);
-      const entries = await journalActions.fetchJournalEntries(user.id);
+      const entries = await fetchEntries(user.id);
       setJournalEntries(entries);
       setIsJournalFetched(true);
       console.log("Successfully fetched", entries.length, "journal entries");
