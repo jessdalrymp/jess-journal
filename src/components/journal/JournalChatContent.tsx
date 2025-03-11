@@ -23,6 +23,25 @@ export const JournalChatContent = () => {
     }
   }, []);
   
+  // Generate a welcome message with initial questions based on the prompt
+  const generateWelcomeMessage = (prompt: JournalPrompt | null) => {
+    if (!prompt) return "";
+    
+    const welcomeMessage = [
+      "Welcome to your Journal Reflection space. I'm here to help you explore your thoughts on today's prompt:",
+      `"${prompt.title}: ${prompt.prompt}"`,
+      "",
+      "Let's break this down into manageable parts. You could start by considering:",
+      `• What was your initial reaction to this prompt?`,
+      `• Can you recall a specific experience related to this topic?`,
+      `• What emotions come up when you think about this?`,
+      "",
+      "Feel free to start wherever feels most comfortable for you. What aspect would you like to explore first?"
+    ].join("\n");
+    
+    return welcomeMessage;
+  };
+  
   const handleBack = () => {
     navigate('/journal-challenge');
   };
@@ -41,6 +60,7 @@ export const JournalChatContent = () => {
       onBack={handleBack}
       onAcceptChallenge={handleAcceptChallenge}
       onRestart={handleRestartJournalChallenge}
+      initialMessage={currentPrompt ? generateWelcomeMessage(currentPrompt) : undefined}
     />
   );
 };

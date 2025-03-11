@@ -1,14 +1,11 @@
 
-import { useLocation, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { JournalChallengeContent } from "../components/journal/JournalChallengeContent";
 import { JournalChatContent } from "../components/journal/JournalChatContent";
 
 const JournalChallenge = () => {
-  const location = useLocation();
-  const isChatView = location.pathname.includes('/chat');
-  
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
@@ -16,7 +13,7 @@ const JournalChallenge = () => {
         <div className="bg-white rounded-lg shadow-sm">
           <Routes>
             <Route index element={<JournalChallengeContent />} />
-            <Route path="/chat" element={<JournalChatContent />} />
+            <Route path="chat" element={<JournalChatContent />} />
           </Routes>
         </div>
       </main>

@@ -19,11 +19,18 @@ interface ChatInterfaceProps {
   onBack: () => void;
   onAcceptChallenge?: () => void;
   onRestart?: () => void;
+  initialMessage?: string;
 }
 
-export const ChatInterface = ({ type, onBack, onAcceptChallenge, onRestart }: ChatInterfaceProps) => {
+export const ChatInterface = ({ 
+  type, 
+  onBack, 
+  onAcceptChallenge, 
+  onRestart,
+  initialMessage 
+}: ChatInterfaceProps) => {
   const { user, loading: authLoading } = useAuth();
-  const { session, loading: chatLoading, error, sendMessage, generateSummary } = useChat(type);
+  const { session, loading: chatLoading, error, sendMessage, generateSummary } = useChat(type, initialMessage);
   const [showEndDialog, setShowEndDialog] = useState(false);
   const hasInitialized = useRef(false);
   const { toast } = useToast();
@@ -35,24 +42,10 @@ export const ChatInterface = ({ type, onBack, onAcceptChallenge, onRestart }: Ch
       console.log('Authentication error detected in ChatInterface:', error);
     }
     
-    // If this is a journal chat, see if there's a current prompt to use for context
-    if (type === 'journal' && !loading && session && session.messages.length === 1) {
-      const savedPrompt = localStorage.getItem('currentJournalPrompt');
-      if (savedPrompt) {
-        try {
-          const promptData = JSON.parse(savedPrompt);
-          const contextMessage = `I'm working on a journaling prompt titled "${promptData.title}" with the main question: "${promptData.prompt}". I'd like some guidance on reflecting deeper on this topic.`;
-          sendMessage(contextMessage);
-        } catch (e) {
-          console.error('Error parsing saved journal prompt:', e);
-        }
-      }
-    }
-    
     return () => {
       console.log(`ChatInterface unmounting for ${type}`);
     };
-  }, [error, type, session, loading]);
+  }, [error, type]);
 
   // Prevent repeated re-renders while loading
   useEffect(() => {

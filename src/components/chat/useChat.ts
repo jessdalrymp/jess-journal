@@ -6,10 +6,11 @@ import { useInitializeChat } from './hooks/useInitializeChat';
 import { useSendMessage } from './hooks/useSendMessage';
 import { useGenerateSummary } from './hooks/useGenerateSummary';
 
-export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
+export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal', initialMessage?: string) => {
   const [session, setSession] = useState<ConversationSession | null>(null);
   const isInitializing = useRef(false);
   const hasInitialized = useRef(false);
+  const initialMessageRef = useRef(initialMessage);
   
   const { user } = useAuth();
   const { initializeChat, loading: initLoading, error: initError } = useInitializeChat(type);
@@ -18,6 +19,11 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   
   const loading = initLoading || sendLoading || summaryLoading;
   const error = initError;
+  
+  useEffect(() => {
+    // Store initialMessage in ref to avoid dependency issues
+    initialMessageRef.current = initialMessage;
+  }, [initialMessage]);
   
   useEffect(() => {
     // Only load chat if user exists and we haven't started initializing yet
@@ -30,7 +36,25 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
           const chatSession = await initializeChat();
           if (chatSession) {
             console.log(`Successfully loaded ${type} chat session`);
-            setSession(chatSession);
+            
+            // If we have an initial message and this is a new conversation (only has 1 message)
+            if (initialMessageRef.current && chatSession.messages.length === 1) {
+              console.log(`Setting custom initial message for ${type} chat`);
+              // Replace the default initial message with our custom one
+              const updatedSession = {
+                ...chatSession,
+                messages: [
+                  {
+                    ...chatSession.messages[0],
+                    content: initialMessageRef.current
+                  }
+                ]
+              };
+              setSession(updatedSession);
+            } else {
+              setSession(chatSession);
+            }
+            
             hasInitialized.current = true;
           }
         } catch (err) {
