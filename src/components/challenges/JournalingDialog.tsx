@@ -134,12 +134,13 @@ export const JournalingDialog = ({
           </div>
         </div>
         
-        <div className="flex-1 overflow-auto mb-4 min-h-[200px] max-h-[400px]">
+        <div className="flex-1 overflow-auto mb-4 min-h-[200px]" style={{ maxHeight: 'calc(60vh - 200px)' }}>
           <Textarea
             placeholder="Write about your thoughts, feelings, and insights related to this prompt. Let your ideas flow freely."
             className="min-h-[200px] h-full p-4 text-base resize-none border-jess-subtle focus-visible:ring-jess-primary"
             value={journalContent}
             onChange={(e) => setJournalContent(e.target.value)}
+            style={{ height: '100%', overflow: 'auto' }}
           />
         </div>
         
