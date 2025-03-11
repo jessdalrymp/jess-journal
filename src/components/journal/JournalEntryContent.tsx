@@ -1,3 +1,4 @@
+
 import { JournalEntry } from "@/lib/types";
 
 interface JournalEntryContentProps {
@@ -29,6 +30,14 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
 
   return (
     <div className="prose max-w-none">
+      <div className="bg-jess-subtle rounded-lg p-4 mb-6">
+        {entry.prompt && (
+          <>
+            <h4 className="text-lg font-medium mb-2">Journal Prompt:</h4>
+            <p>{entry.prompt}</p>
+          </>
+        )}
+      </div>
       {renderContent()}
     </div>
   );
