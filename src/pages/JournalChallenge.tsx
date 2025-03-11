@@ -16,7 +16,7 @@ const JournalChallenge = () => {
         <div className="bg-white rounded-lg shadow-sm">
           <Routes>
             <Route index element={<JournalChallengeContent />} />
-            <Route path="chat" element={<JournalChatContent />} />
+            <Route path="/chat" element={<JournalChatContent />} />
           </Routes>
         </div>
       </main>
