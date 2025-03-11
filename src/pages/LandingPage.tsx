@@ -9,7 +9,7 @@ import { CallToAction } from '../components/landing/CallToAction';
 import { Pricing } from '../components/landing/Pricing';
 import { Footer } from '../components/landing/Footer';
 
-const LandingPage = () => {
+const Landing = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-jess-subtle/30">
       <Header />
@@ -26,4 +26,4 @@ const LandingPage = () => {
   );
 };
 
-export default LandingPage;
+export default Landing;
