@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { formatMessagesForAI } from '../chatUtils';
 import { generateDeepseekResponse } from '../../../utils/deepseekApi';
 import { saveCurrentConversationToStorage } from '@/lib/storageUtils';
+import { saveJournalEntryFromConversation } from '@/services/conversation/journalIntegration';
 
 export const useSendMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const [loading, setLoading] = useState(false);
@@ -39,9 +40,9 @@ export const useSendMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal
       
       const updatedMessages = [...(session.messages || []), newUserMessage];
       
-      // For journal type, include context from the current journal prompt if available
       let aiMessages = formatMessagesForAI(updatedMessages, type);
       
+      // For journal type, include context from the current journal prompt
       if (type === 'journal' && localStorage.getItem('currentJournalPrompt')) {
         try {
           const promptData = JSON.parse(localStorage.getItem('currentJournalPrompt') || '{}');
@@ -49,7 +50,6 @@ export const useSendMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal
           The instructions for this journaling exercise were: ${promptData.instructions.join('; ')}. 
           Keep this context in mind when responding, but don't repeat it back to the user unless relevant to their question.`;
           
-          // Add context to the system prompt
           aiMessages[0].content = aiMessages[0].content + "\n\n" + contextMessage;
         } catch (e) {
           console.error('Error adding journal context to AI messages:', e);
@@ -80,6 +80,34 @@ export const useSendMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal
       saveCurrentConversationToStorage(finalUpdatedSession);
       
       await addMessageToConversation(session.id, aiResponseText, 'assistant');
+      
+      // For journal entries, save important insights to the journal
+      if (type === 'journal' && session.messages.length > 4) {
+        try {
+          const summaryMessages = [
+            {
+              role: 'system' as const,
+              content: `Review the conversation about the journaling prompt and create a concise summary of key insights and reflections. Format as JSON with "title" and "summary" fields.`
+            },
+            ...finalUpdatedSession.messages.map(m => ({
+              role: m.role as 'user' | 'assistant',
+              content: m.content
+            }))
+          ];
+          
+          const summaryResponse = await generateDeepseekResponse(summaryMessages);
+          const summaryText = summaryResponse.choices[0].message.content;
+          
+          try {
+            const { title, summary } = JSON.parse(summaryText);
+            await saveJournalEntryFromConversation(session.userId, title, summary, 'journal');
+          } catch (e) {
+            console.error('Error parsing summary JSON:', e);
+          }
+        } catch (e) {
+          console.error('Error generating journal summary:', e);
+        }
+      }
       
       return finalUpdatedSession;
     } catch (error) {
