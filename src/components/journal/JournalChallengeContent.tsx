@@ -41,7 +41,7 @@ export const JournalChallengeContent = () => {
   };
 
   return (
-    <>
+    <div className="p-6">
       <JournalChallengeDisplay
         journalPrompt={journalPrompt}
         onBack={handleBack}
@@ -64,6 +64,6 @@ export const JournalChallengeContent = () => {
         challengeType="journal"
         promptText={journalPrompt.prompt}
       />
-    </>
+    </div>
   );
 };

@@ -116,9 +116,9 @@ export const JournalingDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[80vh] flex flex-col">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col bg-white rounded-lg border border-jess-subtle">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl mb-4">Write Your Journal Entry</DialogTitle>
+          <DialogTitle className="text-center text-2xl mb-4 font-cormorant">Write Your Journal Entry</DialogTitle>
         </DialogHeader>
         
         {promptText && (
@@ -134,10 +134,10 @@ export const JournalingDialog = ({
           </div>
         </div>
         
-        <div className="flex-1 overflow-auto min-h-[300px] mb-4">
+        <div className="flex-1 overflow-auto mb-4 min-h-[200px] max-h-[400px]">
           <Textarea
             placeholder="Write about your thoughts, feelings, and insights related to this prompt. Let your ideas flow freely."
-            className="min-h-[300px] p-4 text-base"
+            className="min-h-[200px] h-full p-4 text-base resize-none border-jess-subtle focus-visible:ring-jess-primary"
             value={journalContent}
             onChange={(e) => setJournalContent(e.target.value)}
           />
@@ -151,6 +151,7 @@ export const JournalingDialog = ({
           <Button 
             onClick={handleSaveAndClose} 
             disabled={!journalContent.trim() || isSaving}
+            className="bg-jess-primary text-white hover:bg-jess-primary/90"
           >
             <Save className="mr-2 h-4 w-4" />
             Save & View History
