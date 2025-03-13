@@ -1,12 +1,8 @@
 
 import React, { useState } from 'react';
-import { Mail } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { validateEmail } from '../../utils/authValidation';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '../ui/input';
-import { ActionButton } from '../ui/ActionButton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ForgotPasswordForm } from './ForgotPasswordForm';
+import { PasswordResetSuccess } from './PasswordResetSuccess';
 
 interface ForgotPasswordDialogProps {
   isOpen: boolean;
@@ -14,45 +10,12 @@ interface ForgotPasswordDialogProps {
 }
 
 export const ForgotPasswordDialog = ({ isOpen, onClose }: ForgotPasswordDialogProps) => {
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  
-  const { resetPassword } = useAuth();
-  const { toast } = useToast();
+  const [email, setEmail] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateEmail(email)) {
-      toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setLoading(true);
-    
-    try {
-      await resetPassword(email);
-      setIsSubmitted(true);
-    } catch (error: any) {
-      let errorMessage = "Failed to send reset email. Please try again.";
-      
-      if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handleSuccess = (submittedEmail: string) => {
+    setEmail(submittedEmail);
+    setIsSubmitted(true);
   };
 
   const handleClose = () => {
@@ -76,43 +39,9 @@ export const ForgotPasswordDialog = ({ isOpen, onClose }: ForgotPasswordDialogPr
         </DialogHeader>
         
         {!isSubmitted ? (
-          <form onSubmit={handleSubmit} className="space-y-4 py-4">
-            <div className="relative">
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 bg-jess-subtle text-jess-foreground"
-                placeholder="you@example.com"
-                required
-              />
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-jess-muted" />
-            </div>
-            
-            <DialogFooter className="pt-2">
-              <ActionButton 
-                type="primary" 
-                className="w-full py-3"
-                disabled={loading}
-              >
-                {loading ? 'Sending...' : 'Send Reset Link'}
-              </ActionButton>
-            </DialogFooter>
-          </form>
+          <ForgotPasswordForm onSuccess={handleSuccess} />
         ) : (
-          <div className="py-6 text-center">
-            <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
-              <Mail className="h-6 w-6 text-green-600" />
-            </div>
-            <ActionButton 
-              type="secondary" 
-              className="mt-4"
-              onClick={handleClose}
-            >
-              Close
-            </ActionButton>
-          </div>
+          <PasswordResetSuccess email={email} onClose={handleClose} />
         )}
       </DialogContent>
     </Dialog>
