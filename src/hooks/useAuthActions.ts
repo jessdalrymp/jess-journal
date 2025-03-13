@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -47,11 +48,19 @@ export const useAuthActions = () => {
     try {
       console.log("Signing up with:", email, name);
       
+      // Check if site URL and redirect URLs are configured in Supabase
+      console.log("Site URL should be configured in Supabase dashboard");
+      
+      // Get the current origin (domain) to use for redirection
+      const origin = window.location.origin;
+      console.log("Current origin for redirects:", origin);
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { name },
+          emailRedirectTo: `${origin}/auth/callback`
         },
       });
 
@@ -72,8 +81,9 @@ export const useAuthActions = () => {
       } else if (data?.user) {
         console.log("Sign-up requires email verification:", data.user.id);
         toast({
-          title: "Verification required",
-          description: "Please check your email to verify your account.",
+          title: "Almost there!",
+          description: "Please check your email to verify your account. If you don't see it, check your spam folder or try again.",
+          duration: 6000,
         });
         return data;
       } else {
@@ -123,13 +133,14 @@ export const useAuthActions = () => {
     try {
       console.log("Requesting password reset for:", email);
       
-      // Set the redirect URL to the deployed site URL
-      const redirectUrl = 'https://www.jess-journal.com/auth/reset-password';
+      // Get the current origin (domain) to use for redirection
+      const origin = window.location.origin;
+      const redirectTo = `${origin}/auth/reset-password`;
       
-      console.log("Using redirect URL:", redirectUrl);
+      console.log("Using redirect URL:", redirectTo);
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectUrl,
+        redirectTo: redirectTo,
       });
       
       if (error) {
@@ -140,7 +151,8 @@ export const useAuthActions = () => {
       console.log("Password reset email sent successfully");
       toast({
         title: "Email sent",
-        description: "Check your inbox for password reset instructions.",
+        description: "Check your inbox for password reset instructions. If you don't see it, check your spam folder.",
+        duration: 6000,
       });
       
       return true;
