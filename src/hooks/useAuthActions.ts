@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -124,14 +123,13 @@ export const useAuthActions = () => {
     try {
       console.log("Requesting password reset for:", email);
       
-      // Get the current origin (domain) to use for redirection
-      const origin = window.location.origin;
-      const redirectTo = `${origin}/auth/reset-password`;
+      // Set the redirect URL to the deployed site URL
+      const redirectUrl = 'https://www.jess-journal.com/auth/reset-password';
       
-      console.log("Using redirect URL:", redirectTo);
+      console.log("Using redirect URL:", redirectUrl);
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectTo,
+        redirectTo: redirectUrl,
       });
       
       if (error) {
