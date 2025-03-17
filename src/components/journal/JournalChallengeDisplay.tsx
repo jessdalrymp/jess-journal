@@ -34,7 +34,7 @@ export const JournalChallengeDisplay = memo(({
           variant="ghost" 
           size="icon" 
           onClick={onBack}
-          className="mr-2"
+          className="mr-2 interactive-button"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -53,7 +53,7 @@ export const JournalChallengeDisplay = memo(({
           <div>
             {hasEnoughEntries && onTogglePersonalized && (
               <div className="flex items-center justify-end mb-2 gap-2">
-                <span className="text-xs text-gray-500">Personal Prompts</span>
+                <span className="text-xs text-jess-foreground">Personal Prompts</span>
                 <Switch 
                   checked={isPersonalized} 
                   onCheckedChange={onTogglePersonalized} 
@@ -90,7 +90,7 @@ export const JournalChallengeDisplay = memo(({
       <div className="p-2 border-t border-jess-subtle flex flex-row justify-center gap-3">
         <Button 
           onClick={onAcceptChallenge} 
-          className="bg-jess-primary hover:bg-jess-primary/90 text-white shadow-md px-3 py-2 text-sm"
+          className="bg-jess-primary hover:bg-jess-primary/90 text-white shadow-md px-3 py-2 text-sm interactive-button"
           disabled={isLoading}
         >
           <Pen className="mr-2 h-4 w-4" />
@@ -100,7 +100,7 @@ export const JournalChallengeDisplay = memo(({
         <Button 
           variant="outline" 
           onClick={onNewChallenge}
-          className="shadow-md px-3 py-2 text-sm"
+          className="shadow-md px-3 py-2 text-sm interactive-button"
           disabled={isLoading}
         >
           <RefreshCw className="h-4 w-4 mr-2" />

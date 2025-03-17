@@ -126,15 +126,15 @@
   }
   
   .button-primary {
-    @apply button-base bg-jess-secondary text-jess-foreground hover:bg-jess-secondary/90;
+    @apply button-base bg-jess-secondary text-jess-foreground hover:bg-jess-secondary/90 hover:scale-105 active:scale-95;
   }
   
   .button-secondary {
-    @apply button-base bg-jess-subtle text-jess-foreground hover:bg-jess-subtle/90;
+    @apply button-base bg-jess-subtle text-jess-foreground hover:bg-jess-subtle/90 hover:scale-105 active:scale-95;
   }
   
   .button-ghost {
-    @apply button-base bg-transparent hover:bg-jess-subtle/50 text-jess-foreground;
+    @apply button-base bg-transparent hover:bg-jess-subtle/50 text-jess-foreground hover:scale-105 active:scale-95;
   }
   
   .input-base {
@@ -160,5 +160,10 @@
   .sketch-border {
     @apply border-2 border-jess-foreground/10 rounded-2xl;
     box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.05);
+  }
+
+  /* New interactive button styles */
+  .interactive-button {
+    @apply transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-jess-primary/40;
   }
 }

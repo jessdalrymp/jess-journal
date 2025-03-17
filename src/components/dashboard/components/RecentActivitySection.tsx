@@ -1,8 +1,9 @@
 
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { Clock } from 'lucide-react';
+import { Clock, PenSquare } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
+import { Button } from '@/components/ui/button';
 
 interface RecentActivitySectionProps {
   journalEntries: JournalEntry[];
@@ -49,11 +50,15 @@ export const RecentActivitySection = ({
     return entry.title || "Untitled Entry";
   };
 
+  const handleStartJournal = () => {
+    navigate('/journal-challenge');
+  };
+
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
       <div className="flex justify-between items-center mb-5">
         <h2 className="text-xl font-medium">Recent Activity</h2>
-        <Link to="/journal-history" className="text-jess-primary text-sm">View All</Link>
+        <Link to="/journal-history" className="text-jess-primary text-sm hover:underline transition-all duration-200">View All</Link>
       </div>
       
       <div className="flex flex-col items-center justify-center h-[220px]">
@@ -68,7 +73,7 @@ export const RecentActivitySection = ({
               <Link 
                 key={entry.id} 
                 to={`/journal-entry/${entry.id}`}
-                className="block border border-jess-subtle p-3 rounded-lg hover:bg-jess-subtle/30 transition-colors"
+                className="block border border-jess-subtle p-3 rounded-lg hover:bg-jess-subtle/30 transition-all duration-200 hover:border-jess-primary/50 transform hover:-translate-y-0.5"
               >
                 <h3 className="font-medium text-sm line-clamp-1">{getEntryTitle(entry)}</h3>
                 <div className="text-xs text-jess-muted mt-1">
@@ -79,11 +84,18 @@ export const RecentActivitySection = ({
           </div>
         ) : (
           <div className="text-center">
-            <div className="text-jess-muted mb-2">
+            <div className="text-jess-muted mb-4">
               <Clock size={48} className="mx-auto opacity-50" />
             </div>
-            <p className="text-jess-muted mb-1">Your journal entries will appear here</p>
-            <p className="text-sm text-jess-muted">Start a conversation to begin</p>
+            <p className="text-jess-foreground font-medium mb-2">Begin your journaling journey</p>
+            <p className="text-sm text-jess-muted mb-4">Your journal entries will appear here once you start writing</p>
+            <Button 
+              onClick={handleStartJournal} 
+              className="bg-jess-primary text-white hover:bg-jess-primary/90 inline-flex items-center interactive-button"
+            >
+              <PenSquare className="mr-2 h-4 w-4" />
+              Start Journaling
+            </Button>
           </div>
         )}
       </div>

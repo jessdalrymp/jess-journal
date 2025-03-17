@@ -20,12 +20,12 @@ export const ActionButton = ({
   disabled = false,
 }: ActionButtonProps) => {
   const baseClasses = cn(
-    'transition-all duration-300 rounded-full flex items-center justify-center font-medium',
+    'transition-all duration-300 rounded-full flex items-center justify-center font-medium transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-jess-primary/40',
     {
       'bg-jess-secondary text-jess-foreground hover:bg-jess-secondary/90': type === 'primary',
       'bg-jess-subtle text-jess-foreground hover:bg-jess-subtle/80': type === 'secondary',
       'bg-transparent text-jess-foreground hover:bg-jess-subtle/50': type === 'ghost',
-      'opacity-50 cursor-not-allowed': disabled,
+      'opacity-50 cursor-not-allowed hover:scale-100 active:scale-100': disabled,
     },
     className
   );

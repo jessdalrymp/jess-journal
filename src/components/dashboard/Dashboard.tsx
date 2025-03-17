@@ -6,6 +6,7 @@ import { CoreActionsSection } from './components/CoreActionsSection';
 import { RecentActivitySection } from './components/RecentActivitySection';
 import { JournalHistorySection } from './components/JournalHistorySection';
 import { AccountSection } from './components/AccountSection';
+import { DashboardWelcomeModal } from './WelcomeModal';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -31,6 +32,7 @@ export const Dashboard = () => {
         <JournalHistorySection />
         <AccountSection />
       </div>
+      <DashboardWelcomeModal />
     </div>
   );
 };
