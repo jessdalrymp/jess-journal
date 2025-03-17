@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Sparkles, ArrowRight, BookOpen, MessageSquare, PenLine } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const DashboardWelcomeModal = () => {
   const [open, setOpen] = useState(false);
@@ -89,17 +90,35 @@ export const DashboardWelcomeModal = () => {
           <div className="bg-gradient-to-br from-jess-primary/10 to-jess-secondary/20 p-5 rounded-lg border border-jess-subtle/50 text-center">
             <h3 className="text-lg font-medium mb-3 text-jess-foreground">What would you like to try first?</h3>
             <div className="grid grid-cols-1 gap-3 mt-4 sm:grid-cols-3">
-              <Button variant="outline" className="bg-white/70 hover:bg-white border border-jess-subtle/50 flex flex-col py-6 h-auto gap-2 shadow-sm hover:shadow-md transition-all">
-                <BookOpen className="h-6 w-6 text-jess-primary" />
-                <span>My Story</span>
+              <Button
+                variant="outline"
+                className="bg-white/70 hover:bg-white border border-jess-subtle/50 flex flex-col py-6 h-auto gap-2 shadow-sm hover:shadow-md transition-all"
+                asChild
+              >
+                <Link to="/my-story">
+                  <BookOpen className="h-6 w-6 text-jess-primary" />
+                  <span>My Story</span>
+                </Link>
               </Button>
-              <Button variant="outline" className="bg-white/70 hover:bg-white border border-jess-subtle/50 flex flex-col py-6 h-auto gap-2 shadow-sm hover:shadow-md transition-all">
-                <MessageSquare className="h-6 w-6 text-jess-primary" />
-                <span>Side Quest</span>
+              <Button
+                variant="outline"
+                className="bg-white/70 hover:bg-white border border-jess-subtle/50 flex flex-col py-6 h-auto gap-2 shadow-sm hover:shadow-md transition-all"
+                asChild
+              >
+                <Link to="/side-quest">
+                  <MessageSquare className="h-6 w-6 text-jess-primary" />
+                  <span>Side Quest</span>
+                </Link>
               </Button>
-              <Button variant="outline" className="bg-white/70 hover:bg-white border border-jess-subtle/50 flex flex-col py-6 h-auto gap-2 shadow-sm hover:shadow-md transition-all">
-                <PenLine className="h-6 w-6 text-jess-primary" />
-                <span>Journal</span>
+              <Button
+                variant="outline"
+                className="bg-white/70 hover:bg-white border border-jess-subtle/50 flex flex-col py-6 h-auto gap-2 shadow-sm hover:shadow-md transition-all"
+                asChild
+              >
+                <Link to="/journal-challenge">
+                  <PenLine className="h-6 w-6 text-jess-primary" />
+                  <span>Journal</span>
+                </Link>
               </Button>
             </div>
           </div>
