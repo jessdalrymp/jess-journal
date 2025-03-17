@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Pencil } from "lucide-react";
 import { Button } from "../ui/button";
 import { useAuth } from "../../context/AuthContext";
+import { Input } from "../ui/input";
 
 interface PersonalInfoSectionProps {
   onSave: (name: string) => void;
@@ -34,12 +35,13 @@ export const PersonalInfoSection = ({ onSave }: PersonalInfoSectionProps) => {
         <div className="space-y-3">
           <div>
             <label htmlFor="name" className="block text-sm font-medium mb-1">Name</label>
-            <input
+            <Input
               type="text"
               id="name"
               value={editedName}
               onChange={(e) => setEditedName(e.target.value)}
-              className="w-full px-3 py-2 border border-jess-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-jess-primary"
+              className="w-full bg-jess-subtle text-jess-foreground"
+              placeholder="Enter your name"
             />
           </div>
           <div className="flex space-x-2">
