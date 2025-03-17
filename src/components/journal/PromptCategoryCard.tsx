@@ -3,7 +3,7 @@ import { PromptCategory, Prompt } from './data/promptCategories';
 
 interface PromptCategoryCardProps {
   category: PromptCategory;
-  onPromptClick: (category: PromptCategory, prompt: Prompt) => void;
+  onPromptClick: (prompt: Prompt) => void;
 }
 
 export const PromptCategoryCard = ({ category, onPromptClick }: PromptCategoryCardProps) => {
@@ -22,7 +22,7 @@ export const PromptCategoryCard = ({ category, onPromptClick }: PromptCategoryCa
         {category.prompts.map((prompt, index) => (
           <button
             key={index}
-            onClick={() => onPromptClick(category, prompt)}
+            onClick={() => onPromptClick(prompt)}
             className="py-2 w-full text-left text-sm hover:text-jess-primary transition-colors cursor-pointer"
           >
             {prompt}

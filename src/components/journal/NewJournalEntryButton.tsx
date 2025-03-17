@@ -52,7 +52,7 @@ export const NewJournalEntryButton = () => {
               <PromptCategoryCard 
                 key={category.id}
                 category={category}
-                onPromptClick={handlePromptClick}
+                onPromptClick={(prompt) => handlePromptClick(category, prompt)}
               />
             ))}
           </div>
