@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
@@ -25,6 +26,7 @@ const MyStory = () => {
   useEffect(() => {
     console.log("MyStory - Auth state:", user ? "Authenticated" : "Not authenticated", "Loading:", userLoading);
     
+    // Only proceed if we've determined auth status and haven't attempted initialization yet
     if (userLoading || initializationAttempted.current) {
       return;
     }
@@ -45,6 +47,10 @@ const MyStory = () => {
       setIsLoading(false);
     } else {
       const checkExistingConversations = async () => {
+        if (isCheckingConversations) {
+          return;
+        }
+        
         setIsCheckingConversations(true);
         try {
           console.log("Checking for existing story conversations for user:", user.id);
@@ -81,7 +87,7 @@ const MyStory = () => {
       
       checkExistingConversations();
     }
-  }, [user, toast, userLoading]);
+  }, [user, toast, userLoading, isCheckingConversations]);
   
   const handleCloseWelcomeModal = () => {
     setShowWelcomeModal(false);

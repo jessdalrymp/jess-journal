@@ -1,10 +1,28 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ConversationSession } from '../lib/types';
 import { getConversationsFromStorage, saveConversationsToStorage } from '../lib/storageUtils';
 
 export const useConversations = (userId: string | undefined) => {
   const [conversations, setConversations] = useState<ConversationSession[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const loadingRef = useRef(false);
+
+  // Load conversations when userId changes or component mounts
+  useEffect(() => {
+    if (!userId || isLoaded || loadingRef.current) return;
+    
+    loadingRef.current = true;
+    try {
+      const storedConversations = getConversationsFromStorage();
+      setConversations(storedConversations);
+      setIsLoaded(true);
+    } catch (error) {
+      console.error('Error loading conversations:', error);
+    } finally {
+      loadingRef.current = false;
+    }
+  }, [userId, isLoaded]);
 
   const loadConversations = () => {
     if (!userId) {
@@ -12,11 +30,20 @@ export const useConversations = (userId: string | undefined) => {
       return;
     }
 
+    if (loadingRef.current) {
+      console.log('Already loading conversations, skipping duplicate request');
+      return;
+    }
+
     try {
+      loadingRef.current = true;
       const storedConversations = getConversationsFromStorage();
       setConversations(storedConversations);
+      setIsLoaded(true);
     } catch (error) {
       console.error('Error loading conversations:', error);
+    } finally {
+      loadingRef.current = false;
     }
   };
 
@@ -95,6 +122,7 @@ export const useConversations = (userId: string | undefined) => {
 
   return {
     conversations,
+    isLoaded,
     loadConversations,
     getConversation,
     startConversation,

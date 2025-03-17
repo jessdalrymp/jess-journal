@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useChat } from './useChat';
 import { ChatHeader } from './ChatHeader';
@@ -35,7 +36,7 @@ export const ChatInterface = ({
   const { user, loading: authLoading } = useAuth();
   const { session, loading: chatLoading, error, sendMessage, generateSummary } = useChat(type, initialMessage);
   const [showEndDialog, setShowEndDialog] = useState(false);
-  const hasInitialized = useRef(false);
+  const chatInitialized = useRef(false);
   const { toast } = useToast();
   
   const loading = authLoading || chatLoading;
@@ -45,18 +46,15 @@ export const ChatInterface = ({
       console.log('Authentication error detected in ChatInterface:', error);
     }
     
+    // Set chatInitialized to true once we get a session
+    if (session && !chatInitialized.current) {
+      chatInitialized.current = true;
+    }
+    
     return () => {
       console.log(`ChatInterface unmounting for ${type}`);
     };
-  }, [error, type]);
-
-  useEffect(() => {
-    hasInitialized.current = true;
-    
-    return () => {
-      hasInitialized.current = false;
-    };
-  }, []);
+  }, [error, type, session]);
 
   const openEndDialog = () => {
     if (saveChat && onEndChat) {

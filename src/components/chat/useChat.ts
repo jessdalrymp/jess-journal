@@ -8,8 +8,7 @@ import { useGenerateSummary } from './hooks/useGenerateSummary';
 
 export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal', initialMessage?: string) => {
   const [session, setSession] = useState<ConversationSession | null>(null);
-  const isInitializing = useRef(false);
-  const hasInitialized = useRef(false);
+  const initializationAttempted = useRef(false);
   const initialMessageRef = useRef(initialMessage);
   
   const { user } = useAuth();
@@ -26,18 +25,18 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal', init
   }, [initialMessage]);
   
   useEffect(() => {
-    // Only load chat if user exists and we haven't started initializing yet
-    // and we haven't already successfully initialized
-    if (user && !isInitializing.current && !session && !hasInitialized.current) {
+    // Only load chat if user exists and we haven't attempted initialization
+    if (user && !initializationAttempted.current && !session) {
+      console.log(`Attempting to initialize ${type} chat, user:`, user.id);
+      
       const loadChat = async () => {
-        isInitializing.current = true;
+        initializationAttempted.current = true;
         try {
-          console.log(`Loading ${type} chat for user:`, user.id);
           const chatSession = await initializeChat();
           if (chatSession) {
             console.log(`Successfully loaded ${type} chat session`);
             
-            // If we have an initial message and this is a new conversation (only has 1 message)
+            // If we have a custom initial message and this is a new conversation (only has 1 message)
             if (initialMessageRef.current && chatSession.messages.length === 1) {
               console.log(`Setting custom initial message for ${type} chat`);
               // Replace the default initial message with our custom one
@@ -54,23 +53,20 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal', init
             } else {
               setSession(chatSession);
             }
-            
-            hasInitialized.current = true;
           }
         } catch (err) {
           console.error(`Error loading ${type} chat:`, err);
-        } finally {
-          isInitializing.current = false;
+          // We still consider initialization attempted even if it fails
         }
       };
       
       loadChat();
     }
-  }, [initializeChat, user, type, session]);
+  }, [initializeChat, user, type]);
   
-  // Reset hasInitialized when user or type changes
+  // Reset initialization flag when user or type changes
   useEffect(() => {
-    hasInitialized.current = false;
+    initializationAttempted.current = false;
   }, [user, type]);
   
   const handleSendMessage = async (message: string) => {

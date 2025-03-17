@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useUserData } from '../../../context/UserDataContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -15,6 +15,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const initializationInProgress = useRef(false);
 
   const { startConversation, addMessageToConversation } = useUserData();
   const { user: authUser } = useAuth();
@@ -41,13 +42,14 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       return null;
     }
 
-    // Prevent re-initialization while loading
-    if (loading) {
+    // Prevent concurrent initialization attempts
+    if (initializationInProgress.current) {
       console.log(`${type} chat initialization already in progress`);
       return null;
     }
 
     try {
+      initializationInProgress.current = true;
       setLoading(true);
       console.log(`Initializing chat for type: ${type}`);
       console.log("User authentication state:", authUser ? "Authenticated" : "Not authenticated");
@@ -170,8 +172,9 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       return null;
     } finally {
       setLoading(false);
+      initializationInProgress.current = false;
     }
-  }, [type, authUser, addMessageToConversation, startConversation, toast, isInitialized, authChecked, loading]);
+  }, [type, authUser, addMessageToConversation, startConversation, toast, isInitialized, loading, authChecked]);
 
   return {
     initializeChat,
