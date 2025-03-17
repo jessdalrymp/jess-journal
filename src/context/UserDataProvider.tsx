@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { JournalEntry, UserProfile, User } from '../lib/types';
+import { JournalEntry, UserProfile } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
 import { useUserActions } from '../hooks/useUserActions';
 import { useJournalEntries } from '../hooks/journal';
@@ -14,8 +14,8 @@ interface UserDataProviderProps {
 
 export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
   // User data
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const userActions = useUserActions();
@@ -35,7 +35,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const loading = isLoadingUser || isLoadingProfile || isJournalLoading || conversationLoading || subscriptionLoading || journalActionsLoading;
 
   // Fetch user data
-  const fetchUser = async (): Promise<User | null> => {
+  const fetchUser = async () => {
     try {
       setIsLoadingUser(true);
       const userData = await userActions.fetchUser();
@@ -55,7 +55,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   };
 
   // Fetch user profile
-  const fetchProfile = async (): Promise<UserProfile | null> => {
+  const fetchProfile = async () => {
     if (!user) {
       setProfile(null);
       return null;
@@ -76,7 +76,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   };
 
   // Save user profile
-  const saveProfile = async (profileData: Partial<UserProfile>): Promise<void> => {
+  const saveProfile = async (profileData) => {
     if (!user) {
       return;
     }
@@ -107,7 +107,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   }, [user]);
 
-  const fetchJournalEntries = async (): Promise<JournalEntry[]> => {
+  const fetchJournalEntries = async () => {
     if (!user) return [];
     
     if (isFetchingJournalRef.current) {
@@ -148,7 +148,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   }, [user, isJournalFetched]);
 
-  const handleAddMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<void> => {
+  const handleAddMessageToConversation = async (conversationId, content, role) => {
     try {
       await addMessageToConversation(conversationId, content, role);
       
