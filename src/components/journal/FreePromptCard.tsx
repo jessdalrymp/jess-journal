@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Copy, Check } from 'lucide-react';
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
 interface FreePromptCardProps {
   prompt: string;
@@ -19,32 +20,36 @@ export const FreePromptCard = ({ prompt, icon, category }: FreePromptCardProps) 
   };
   
   return (
-    <div className="bg-white border border-jess-subtle/50 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-center gap-2 mb-2 text-jess-primary">
-        {icon}
-        <span className="text-sm font-medium">{category}</span>
-      </div>
+    <Card className="h-full flex flex-col">
+      <CardContent className="pt-6 flex flex-col flex-grow">
+        <div className="flex items-center gap-2 mb-2 text-jess-primary">
+          {icon}
+          <span className="text-sm font-medium">{category}</span>
+        </div>
+        
+        <p className="text-jess-foreground flex-grow">{prompt}</p>
+      </CardContent>
       
-      <p className="text-jess-foreground mb-4">{prompt}</p>
-      
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        onClick={handleCopy}
-        className="flex items-center gap-1 text-xs"
-      >
-        {copied ? (
-          <>
-            <Check className="h-3 w-3" />
-            <span>Copied to clipboard</span>
-          </>
-        ) : (
-          <>
-            <Copy className="h-3 w-3" />
-            <span>Copy prompt</span>
-          </>
-        )}
-      </Button>
-    </div>
+      <CardFooter className="pt-0">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleCopy}
+          className="flex items-center gap-1 text-xs w-full justify-center"
+        >
+          {copied ? (
+            <>
+              <Check className="h-3 w-3" />
+              <span>Copied to clipboard</span>
+            </>
+          ) : (
+            <>
+              <Copy className="h-3 w-3" />
+              <span>Copy prompt</span>
+            </>
+          )}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };

@@ -1,81 +1,78 @@
 
-import React, { useState, useEffect } from 'react';
-import { promptCategories, PromptCategory } from './data/promptCategories';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React, { useState } from 'react';
+import { promptCategories, PromptCategory, Prompt } from './data/promptCategories';
+import { Card, CardContent } from "@/components/ui/card";
 import { FreePromptCard } from './FreePromptCard';
 import { DailyFeaturedPrompt } from './DailyFeaturedPrompt';
+import { Button } from '@/components/ui/button';
 
 export const FreeJournalPromptsContent = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string>("featured");
+  const [selectedCategory, setSelectedCategory] = useState<PromptCategory | null>(null);
+  
+  const handleCategorySelect = (category: PromptCategory) => {
+    setSelectedCategory(category);
+  };
+  
+  const handleBackToCategories = () => {
+    setSelectedCategory(null);
+  };
 
   return (
     <div className="space-y-6">
       {/* Daily featured prompt section */}
-      {selectedCategory === "featured" && (
-        <DailyFeaturedPrompt />
-      )}
+      <DailyFeaturedPrompt />
       
-      <Tabs defaultValue="featured" onValueChange={setSelectedCategory}>
-        <TabsList className="w-full overflow-x-auto flex justify-start sm:justify-center flex-nowrap pb-1">
-          <TabsTrigger value="featured" className="text-sm">
-            Featured
-          </TabsTrigger>
-          {promptCategories.map((category) => (
-            <TabsTrigger 
-              key={category.id} 
-              value={category.id}
-              className="text-sm whitespace-nowrap"
-            >
-              {category.name}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        
-        <TabsContent value="featured" className="mt-6">
-          <div className="space-y-2 mb-4">
-            <h2 className="text-xl font-medium">Featured Prompts</h2>
-            <p className="text-sm text-jess-foreground/70">
-              A selection of our favorite prompts across different categories.
-            </p>
-          </div>
-          
-          <div className="grid gap-4 sm:grid-cols-2">
-            {promptCategories.slice(0, 6).map((category) => (
-              <FreePromptCard 
-                key={`featured-${category.id}`}
-                prompt={category.prompts[0]} 
-                icon={category.icon}
-                category={category.name}
-              />
-            ))}
-          </div>
-        </TabsContent>
-        
-        {promptCategories.map((category) => (
-          <TabsContent key={category.id} value={category.id} className="mt-6">
-            <div className="space-y-2 mb-4">
-              <h2 className="text-xl font-medium flex items-center gap-2">
-                {category.icon}
-                {category.name}
-              </h2>
-              <p className="text-sm text-jess-foreground/70">
-                Explore all prompts in this category.
-              </p>
+      {selectedCategory ? (
+        // Show prompts from the selected category
+        <Card>
+          <CardContent className="pt-6">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {selectedCategory.icon}
+                <h2 className="text-xl font-medium">{selectedCategory.name}</h2>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleBackToCategories}
+              >
+                Back to Categories
+              </Button>
             </div>
             
             <div className="grid gap-4 sm:grid-cols-2">
-              {category.prompts.map((prompt, index) => (
+              {selectedCategory.prompts.map((prompt, index) => (
                 <FreePromptCard 
-                  key={`${category.id}-${index}`}
+                  key={`${selectedCategory.id}-${index}`}
                   prompt={prompt} 
-                  icon={category.icon}
-                  category={category.name}
+                  icon={selectedCategory.icon}
+                  category={selectedCategory.name}
                 />
               ))}
             </div>
-          </TabsContent>
-        ))}
-      </Tabs>
+          </CardContent>
+        </Card>
+      ) : (
+        // Show category selection
+        <Card>
+          <CardContent className="pt-6">
+            <h2 className="text-xl font-medium mb-4">Choose a Prompt Category</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {promptCategories.map((category) => (
+                <Button
+                  key={category.id}
+                  variant="outline"
+                  className="h-auto py-6 flex flex-col items-center justify-center gap-3 text-center"
+                  onClick={() => handleCategorySelect(category)}
+                >
+                  <div className="text-2xl">{category.icon}</div>
+                  <span className="font-medium">{category.name}</span>
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
