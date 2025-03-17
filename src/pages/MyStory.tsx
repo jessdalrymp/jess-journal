@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
@@ -26,29 +25,25 @@ const MyStory = () => {
   useEffect(() => {
     console.log("MyStory - Auth state:", user ? "Authenticated" : "Not authenticated", "Loading:", userLoading);
     
-    // Only proceed if we have a definitive authentication state and haven't attempted initialization
     if (userLoading || initializationAttempted.current) {
-      return; // Wait until user authentication state is resolved or skip if already attempted
+      return;
     }
     
     initializationAttempted.current = true;
     
     if (!user) {
       setIsLoading(false);
-      return; // Not authenticated, don't try to load conversations
+      return;
     }
     
-    // Check if this is the first visit to the story page
     const hasVisitedStoryPage = localStorage.getItem('hasVisitedStoryPage');
     
     if (!hasVisitedStoryPage) {
       console.log("First visit to story page, showing welcome modal");
       setShowWelcomeModal(true);
-      // Mark that user has visited the page
       localStorage.setItem('hasVisitedStoryPage', 'true');
       setIsLoading(false);
     } else {
-      // Check if there are existing story conversations for this user
       const checkExistingConversations = async () => {
         setIsCheckingConversations(true);
         try {
@@ -146,9 +141,9 @@ const MyStory = () => {
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
-      <main className="flex-1 py-6 container mx-auto">
-        <h1 className="text-2xl font-medium mb-6">Let's Get to Know You</h1>
-        <div className="bg-white rounded-lg shadow-sm h-[calc(100vh-260px)]">
+      <main className="flex-1 container mx-auto flex flex-col">
+        <h1 className="text-2xl font-medium my-4">Let's Get to Know You</h1>
+        <div className="bg-white rounded-lg shadow-sm flex-1 flex flex-col overflow-hidden">
           <ChatInterface 
             type="story" 
             onBack={handleBack} 

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useChat } from './useChat';
 import { ChatHeader } from './ChatHeader';
@@ -51,7 +50,6 @@ export const ChatInterface = ({
     };
   }, [error, type]);
 
-  // Prevent repeated re-renders while loading
   useEffect(() => {
     hasInitialized.current = true;
     
@@ -62,7 +60,6 @@ export const ChatInterface = ({
 
   const openEndDialog = () => {
     if (saveChat && onEndChat) {
-      // If we're using the save chat feature and have a handler
       onEndChat();
     } else if (type === 'sideQuest') {
       handleEndConversation();
@@ -140,9 +137,9 @@ export const ChatInterface = ({
   }
   
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white overflow-hidden">
       <ChatHeader type={type} onBack={onBack} />
-      <div className="flex-1 relative">
+      <div className="flex-1 relative overflow-hidden">
         <ChatMessageList messages={session.messages || []} />
         {loading && (
           <div className="px-4 py-2 bg-gray-100 border-t border-jess-subtle flex items-center">
