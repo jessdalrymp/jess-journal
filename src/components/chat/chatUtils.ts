@@ -1,3 +1,4 @@
+
 import { ChatMessage } from '@/lib/types';
 import { DeepseekMessage } from '@/utils/deepseekApi';
 
@@ -13,6 +14,8 @@ export const formatMessagesForAI = (messages: ChatMessage[], type: 'story' | 'si
   You communicate in a conversational, engaging style using clear language without jargon. You use metaphors, occasional self-deprecating humor, and personal anecdotes to be relatable.
   You're supportive and encouraging but never preachy, empowering users to find their own answers rather than telling them what to do.
   Your goal is to create lightbulb moments where users discover insights for themselves.`;
+  
+  let systemPrompt = '';
   
   if (type === 'story') {
     systemPrompt = `${personalityBase}
