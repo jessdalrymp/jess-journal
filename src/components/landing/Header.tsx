@@ -13,10 +13,10 @@ export const Header = () => {
         </Link>
         <div className="hidden md:flex space-x-4">
           <Link to="/dashboard">
-            <Button variant="ghost" className="text-[#8B5CF6] hover:text-[#8B5CF6]/90 hover:bg-[#F2FCE2]/50">Login</Button>
+            <Button variant="ghost">Login</Button>
           </Link>
           <Link to="/dashboard">
-            <Button className="bg-[#8B5CF6] hover:bg-[#8B5CF6]/90 text-white">Get Started</Button>
+            <Button>Get Started</Button>
           </Link>
         </div>
       </div>
