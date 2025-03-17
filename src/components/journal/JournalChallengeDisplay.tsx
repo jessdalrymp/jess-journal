@@ -1,9 +1,9 @@
 
+import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, RefreshCw, Pen, Sparkles } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { JournalPrompt } from "@/hooks/useJournalPrompt";
 import { Switch } from "@/components/ui/switch";
+import { JournalPrompt } from "@/hooks/useJournalPrompt";
 
 interface JournalChallengeDisplayProps {
   journalPrompt: JournalPrompt;
@@ -16,7 +16,8 @@ interface JournalChallengeDisplayProps {
   isLoading: boolean;
 }
 
-export const JournalChallengeDisplay = ({
+// Use memo to prevent unnecessary re-renders
+export const JournalChallengeDisplay = memo(({
   journalPrompt,
   onBack,
   onAcceptChallenge,
@@ -108,4 +109,7 @@ export const JournalChallengeDisplay = ({
       </div>
     </div>
   );
-};
+});
+
+// Add display name for debugging
+JournalChallengeDisplay.displayName = 'JournalChallengeDisplay';

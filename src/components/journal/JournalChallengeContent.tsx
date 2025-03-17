@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { JournalingDialog } from "../challenges/JournalingDialog";
 import { JournalChallengeDisplay } from "./JournalChallengeDisplay";
@@ -22,23 +22,24 @@ export const JournalChallengeContent = () => {
     acceptChallenge
   } = useJournalPrompt();
 
+  // Use useCallback to memoize handler functions
+  const handleBack = useCallback(() => {
+    navigate('/');
+  }, [navigate]);
+
+  const handleAcceptChallenge = useCallback(() => {
+    acceptChallenge();
+    setShowJournaling(true);
+  }, [acceptChallenge]);
+
+  // Load welcome modal check once on component mount
   useEffect(() => {
-    // Show welcome modal only first time user visits this page
     const hasVisitedJournalChallenge = localStorage.getItem("hasVisitedJournalChallengePage");
     if (!hasVisitedJournalChallenge) {
       setShowWelcome(true);
       localStorage.setItem("hasVisitedJournalChallengePage", "true");
     }
   }, []); 
-
-  const handleBack = () => {
-    navigate('/');
-  };
-
-  const handleAcceptChallenge = () => {
-    acceptChallenge();
-    setShowJournaling(true);
-  };
 
   return (
     <div className="p-6">
@@ -53,17 +54,22 @@ export const JournalChallengeContent = () => {
         isLoading={isLoading}
       />
       
-      <JournalWelcomeModal 
-        showWelcome={showWelcome}
-        setShowWelcome={setShowWelcome}
-      />
+      {/* Only render modals when needed */}
+      {showWelcome && (
+        <JournalWelcomeModal 
+          showWelcome={showWelcome}
+          setShowWelcome={setShowWelcome}
+        />
+      )}
 
-      <JournalingDialog
-        open={showJournaling}
-        onOpenChange={setShowJournaling}
-        challengeType="journal"
-        promptText={journalPrompt.prompt}
-      />
+      {showJournaling && (
+        <JournalingDialog
+          open={showJournaling}
+          onOpenChange={setShowJournaling}
+          challengeType="journal"
+          promptText={journalPrompt.prompt}
+        />
+      )}
     </div>
   );
 };

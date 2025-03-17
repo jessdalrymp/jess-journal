@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useUserData } from "@/context/UserDataContext";
@@ -11,25 +11,26 @@ export const useJournalPrompt = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [challengeAccepted, setChallengeAccepted] = useState(false);
   const [usePersonalized, setUsePersonalized] = useState(false);
+  const generationInProgress = useRef(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const { journalEntries } = useUserData();
 
+  // Set usePersonalized when entries are available - only once
   useEffect(() => {
-    // If user has journal entries, use personalized prompts
-    if (journalEntries && journalEntries.length > 2) {
+    if (journalEntries && journalEntries.length > 2 && !usePersonalized) {
       setUsePersonalized(true);
     }
-  }, [journalEntries]);
+  }, [journalEntries, usePersonalized]);
 
+  // Generate prompt only once on initial load
   useEffect(() => {
-    // Generate a journal prompt when the component mounts if the user is authenticated and no challenge is accepted
-    if (user && !challengeAccepted) {
+    if (user && !challengeAccepted && !isLoading && !generationInProgress.current) {
       generateNewPrompt();
     }
   }, [user, challengeAccepted]);
 
-  const generateNewPrompt = async () => {
+  const generateNewPrompt = useCallback(async () => {
     if (!user) {
       toast({
         title: "Authentication required",
@@ -39,17 +40,25 @@ export const useJournalPrompt = () => {
       return;
     }
 
+    // Prevent multiple simultaneous generations
+    if (generationInProgress.current) {
+      console.log('Prompt generation already in progress, skipping duplicate request');
+      return;
+    }
+
     setChallengeAccepted(false);
     setIsLoading(true);
+    generationInProgress.current = true;
+    
     try {
       let newPrompt: JournalPrompt | null = null;
       
-      // Use personalized prompt if user has enough entries and we're set to use personalized
+      // Use personalized prompt if applicable
       if (usePersonalized && journalEntries && journalEntries.length > 2) {
         newPrompt = await generatePersonalizedPrompt(user.id);
       }
       
-      // If personalized prompt failed or not applicable, use regular generation
+      // Fallback to standard prompt
       if (!newPrompt) {
         newPrompt = await generateStandardJournalPrompt();
       }
@@ -73,20 +82,24 @@ export const useJournalPrompt = () => {
       });
     } finally {
       setIsLoading(false);
+      generationInProgress.current = false;
     }
-  };
+  }, [user, usePersonalized, journalEntries, toast]);
 
-  const togglePersonalizedPrompts = () => {
-    setUsePersonalized(!usePersonalized);
-    // If turning on personalized prompts, generate a new one
-    if (!usePersonalized) {
-      generateNewPrompt();
-    }
-  };
+  const togglePersonalizedPrompts = useCallback(() => {
+    setUsePersonalized(prev => {
+      const newValue = !prev;
+      // Only generate new prompt when turning personalization on
+      if (newValue && !generationInProgress.current) {
+        generateNewPrompt();
+      }
+      return newValue;
+    });
+  }, [generateNewPrompt]);
 
-  const acceptChallenge = () => {
+  const acceptChallenge = useCallback(() => {
     setChallengeAccepted(true);
-  };
+  }, []);
 
   return {
     journalPrompt,
