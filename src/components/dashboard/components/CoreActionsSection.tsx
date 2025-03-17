@@ -17,6 +17,7 @@ export const CoreActionsSection = () => {
                 <Book size={24} className="transition-transform duration-300 hover:scale-110" />
               </div>
               <h3 className="text-center font-medium">My Story</h3>
+              <p className="text-xs text-center text-jess-muted mt-1">Chat about your journey</p>
             </div>
           </Link>
           
@@ -26,6 +27,7 @@ export const CoreActionsSection = () => {
                 <MessageSquare size={24} className="transition-transform duration-300 hover:scale-110" />
               </div>
               <h3 className="text-center font-medium">Side Quest</h3>
+              <p className="text-xs text-center text-jess-muted mt-1">Explore a new topic</p>
             </div>
           </Link>
           
@@ -35,6 +37,7 @@ export const CoreActionsSection = () => {
                 <FilePlus size={24} className="transition-transform duration-300 hover:scale-110" />
               </div>
               <h3 className="text-center font-medium">New Journal Entry</h3>
+              <p className="text-xs text-center text-jess-muted mt-1">Write freely</p>
             </div>
           </Link>
           
@@ -44,6 +47,7 @@ export const CoreActionsSection = () => {
                 <PenLine size={24} className="transition-transform duration-300 hover:scale-110" />
               </div>
               <h3 className="text-center font-medium">Journal Challenge</h3>
+              <p className="text-xs text-center text-jess-muted mt-1">Guided reflection prompt</p>
             </div>
           </Link>
         </div>
