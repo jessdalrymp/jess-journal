@@ -19,7 +19,9 @@ interface ChatInterfaceProps {
   onBack: () => void;
   onAcceptChallenge?: () => void;
   onRestart?: () => void;
+  onEndChat?: () => void;
   initialMessage?: string;
+  saveChat?: boolean;
 }
 
 export const ChatInterface = ({ 
@@ -27,7 +29,9 @@ export const ChatInterface = ({
   onBack, 
   onAcceptChallenge, 
   onRestart,
-  initialMessage 
+  onEndChat,
+  initialMessage,
+  saveChat = false
 }: ChatInterfaceProps) => {
   const { user, loading: authLoading } = useAuth();
   const { session, loading: chatLoading, error, sendMessage, generateSummary } = useChat(type, initialMessage);
@@ -57,7 +61,10 @@ export const ChatInterface = ({
   }, []);
 
   const openEndDialog = () => {
-    if (type === 'sideQuest') {
+    if (saveChat && onEndChat) {
+      // If we're using the save chat feature and have a handler
+      onEndChat();
+    } else if (type === 'sideQuest') {
       handleEndConversation();
     } else {
       setShowEndDialog(true);
@@ -150,12 +157,15 @@ export const ChatInterface = ({
         type={type} 
         onAcceptChallenge={onAcceptChallenge}
         onNewChallenge={type === 'action' || type === 'journal' ? handleNewChallenge : undefined} 
+        saveChat={saveChat}
       />
-      <ChatEndDialog 
-        open={showEndDialog} 
-        onOpenChange={setShowEndDialog} 
-        onEndConversation={handleEndConversation} 
-      />
+      {!saveChat && (
+        <ChatEndDialog 
+          open={showEndDialog} 
+          onOpenChange={setShowEndDialog} 
+          onEndConversation={handleEndConversation} 
+        />
+      )}
     </div>
   );
 };

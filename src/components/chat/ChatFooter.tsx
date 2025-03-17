@@ -1,55 +1,62 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { X, RefreshCw, Check, MessageSquare } from 'lucide-react';
+import { CheckCheck, Save, Sparkles } from 'lucide-react';
 
 interface ChatFooterProps {
   onEndChat: () => void;
+  type: 'story' | 'sideQuest' | 'action' | 'journal';
   onAcceptChallenge?: () => void;
   onNewChallenge?: () => void;
-  type: 'story' | 'sideQuest' | 'action' | 'journal';
+  saveChat?: boolean;
 }
 
-export const ChatFooter = ({ onEndChat, onAcceptChallenge, onNewChallenge, type }: ChatFooterProps) => {
-  const getNewChallengeText = () => {
-    return type === 'action' ? 'New Challenge' : 'New Prompt';
-  };
-  
+export const ChatFooter = ({ 
+  onEndChat, 
+  type, 
+  onAcceptChallenge, 
+  onNewChallenge,
+  saveChat = false
+}: ChatFooterProps) => {
   return (
-    <div className="p-3 border-t border-jess-subtle">
-      <div className="flex justify-between items-center">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={onEndChat}
-          className="text-xs px-2 py-1 h-auto"
+    <div className="p-3 bg-white border-t border-jess-subtle flex justify-between">
+      {(type === 'action') && onAcceptChallenge && (
+        <Button
+          onClick={onAcceptChallenge}
+          variant="default"
+          className="text-sm"
         >
-          <X className="h-3.5 w-3.5 mr-1" />
-          End Chat
+          <CheckCheck size={16} className="mr-1" />
+          Accept Challenge
         </Button>
-        
-        {type === 'action' && onAcceptChallenge && (
-          <Button 
-            size="sm" 
-            onClick={onAcceptChallenge}
-            className="text-xs px-2 py-1 h-auto bg-jess-primary hover:bg-jess-primary/90 text-white"
-          >
-            <Check className="h-3.5 w-3.5 mr-1" />
-            Accept Challenge
-          </Button>
-        )}
-        
-        {(type === 'action' || type === 'journal') && onNewChallenge && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={onNewChallenge}
-            className="text-xs px-2 py-1 h-auto"
-          >
-            <RefreshCw className="h-3.5 w-3.5 mr-1" />
-            {getNewChallengeText()}
-          </Button>
-        )}
+      )}
+      
+      {onNewChallenge && (
+        <Button
+          onClick={onNewChallenge}
+          variant="outline"
+          className="text-sm"
+        >
+          <Sparkles size={16} className="mr-1" />
+          New Challenge
+        </Button>
+      )}
+      
+      <div className="ml-auto">
+        <Button 
+          onClick={onEndChat} 
+          variant="outline"
+          className="text-sm"
+        >
+          {saveChat ? (
+            <>
+              <Save size={16} className="mr-1" />
+              Save Chat
+            </>
+          ) : (
+            <>End Chat</>
+          )}
+        </Button>
       </div>
     </div>
   );

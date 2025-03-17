@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
@@ -10,9 +11,11 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { getInitialMessage } from "@/components/chat/chatUtils";
+import { SaveChatDialog } from "@/components/chat/SaveChatDialog";
 
 const MyStory = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [showSaveChatDialog, setShowSaveChatDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingConversations, setIsCheckingConversations] = useState(false);
   const initializationAttempted = useRef(false);
@@ -98,6 +101,10 @@ const MyStory = () => {
     navigate('/', { state: { openAuth: true } });
   };
 
+  const handleSaveChat = () => {
+    setShowSaveChatDialog(true);
+  };
+
   if (userLoading || isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-jess-background">
@@ -142,7 +149,13 @@ const MyStory = () => {
       <main className="flex-1 py-6 container mx-auto">
         <h1 className="text-2xl font-medium mb-6">Let's Get to Know You</h1>
         <div className="bg-white rounded-lg shadow-sm h-[calc(100vh-260px)]">
-          <ChatInterface type="story" onBack={handleBack} initialMessage={getInitialMessage('story')} />
+          <ChatInterface 
+            type="story" 
+            onBack={handleBack} 
+            initialMessage={getInitialMessage('story')} 
+            onEndChat={handleSaveChat}
+            saveChat
+          />
         </div>
       </main>
       <DisclaimerBanner />
@@ -154,6 +167,11 @@ const MyStory = () => {
         description="Let's get to know you better"
         buttonText="Let's Begin"
         type="story"
+      />
+
+      <SaveChatDialog
+        open={showSaveChatDialog}
+        onOpenChange={setShowSaveChatDialog}
       />
     </div>
   );
