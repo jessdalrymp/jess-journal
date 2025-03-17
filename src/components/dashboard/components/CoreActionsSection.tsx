@@ -19,8 +19,8 @@ export const CoreActionsSection = () => {
               <div className="text-jess-primary mb-2">
                 <Book size={isMobile ? 20 : 18} className="transition-transform duration-300 hover:scale-110" />
               </div>
-              <h3 className={`text-center font-medium ${isMobile ? 'text-base md:text-lg' : 'text-lg'}`}>My Story</h3>
-              <p className={`${isMobile ? 'text-sm md:text-base' : 'text-base'} text-center text-jess-muted mt-1 max-w-full break-words`}>Chat about your journey</p>
+              <h3 className={`text-center font-medium ${isMobile ? 'text-xl md:text-2xl' : 'text-2xl'}`}>My Story</h3>
+              <p className={`${isMobile ? 'text-base md:text-lg' : 'text-lg'} text-center text-jess-muted mt-1 max-w-full break-words`}>Chat about your journey</p>
             </div>
           </Link>
           
@@ -29,8 +29,8 @@ export const CoreActionsSection = () => {
               <div className="text-jess-primary mb-2">
                 <MessageSquare size={isMobile ? 20 : 18} className="transition-transform duration-300 hover:scale-110" />
               </div>
-              <h3 className={`text-center font-medium ${isMobile ? 'text-base md:text-lg' : 'text-lg'}`}>Side Quest</h3>
-              <p className={`${isMobile ? 'text-sm md:text-base' : 'text-base'} text-center text-jess-muted mt-1 max-w-full break-words`}>Explore a new topic</p>
+              <h3 className={`text-center font-medium ${isMobile ? 'text-xl md:text-2xl' : 'text-2xl'}`}>Side Quest</h3>
+              <p className={`${isMobile ? 'text-base md:text-lg' : 'text-lg'} text-center text-jess-muted mt-1 max-w-full break-words`}>Explore a new topic</p>
             </div>
           </Link>
           
@@ -39,8 +39,8 @@ export const CoreActionsSection = () => {
               <div className="text-jess-primary mb-2">
                 <FilePlus size={isMobile ? 20 : 18} className="transition-transform duration-300 hover:scale-110" />
               </div>
-              <h3 className={`text-center font-medium ${isMobile ? 'text-base md:text-lg' : 'text-lg'}`}>New Entry</h3>
-              <p className={`${isMobile ? 'text-sm md:text-base' : 'text-base'} text-center text-jess-muted mt-1 max-w-full break-words`}>Write freely</p>
+              <h3 className={`text-center font-medium ${isMobile ? 'text-xl md:text-2xl' : 'text-2xl'}`}>New Entry</h3>
+              <p className={`${isMobile ? 'text-base md:text-lg' : 'text-lg'} text-center text-jess-muted mt-1 max-w-full break-words`}>Write freely</p>
             </div>
           </Link>
           
@@ -49,8 +49,8 @@ export const CoreActionsSection = () => {
               <div className="text-jess-primary mb-2">
                 <PenLine size={isMobile ? 20 : 18} className="transition-transform duration-300 hover:scale-110" />
               </div>
-              <h3 className={`text-center font-medium ${isMobile ? 'text-base md:text-lg' : 'text-lg'}`}>Journal</h3>
-              <p className={`${isMobile ? 'text-sm md:text-base' : 'text-base'} text-center text-jess-muted mt-1 max-w-full break-words`}>Guided prompt</p>
+              <h3 className={`text-center font-medium ${isMobile ? 'text-xl md:text-2xl' : 'text-2xl'}`}>Journal</h3>
+              <p className={`${isMobile ? 'text-base md:text-lg' : 'text-lg'} text-center text-jess-muted mt-1 max-w-full break-words`}>Guided prompt</p>
             </div>
           </Link>
         </div>
