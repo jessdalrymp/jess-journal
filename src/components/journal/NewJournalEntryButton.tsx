@@ -17,7 +17,8 @@ export const NewJournalEntryButton = () => {
     setShowPrompts(true);
   };
 
-  const handlePromptClick = (category: PromptCategory, prompt: Prompt) => {
+  // Create a handler function for each category
+  const handlePromptClick = (category: PromptCategory) => (prompt: Prompt) => {
     setSelectedCategory(category);
     setSelectedPrompt(prompt);
     setShowPrompts(false);
@@ -52,7 +53,7 @@ export const NewJournalEntryButton = () => {
               <PromptCategoryCard 
                 key={category.id}
                 category={category}
-                onPromptClick={(prompt) => handlePromptClick(category, prompt)}
+                onPromptClick={handlePromptClick(category)}
               />
             ))}
           </div>
