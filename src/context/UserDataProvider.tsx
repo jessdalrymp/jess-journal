@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { JournalEntry } from '../lib/types';
+import { JournalEntry, UserProfile } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
 import { useUserData } from '../hooks/useUserData';
 import { useJournalEntries } from '../hooks/journal';
@@ -33,7 +33,6 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   
   const loading = userLoading || isJournalLoading || conversationLoading || subscriptionLoading || journalActionsLoading;
 
-  // Only fetch journal entries once when the user is loaded and not already fetched
   useEffect(() => {
     if (user && !isJournalFetched && !isFetchingJournalRef.current) {
       fetchJournalEntries();
@@ -77,9 +76,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     try {
       await addMessageToConversation(conversationId, content, role);
       
-      // Only refetch journal entries when an assistant message is added
       if (role === 'assistant') {
-        // Using a ref to prevent duplicate fetches
         if (!isFetchingJournalRef.current && user) {
           setIsJournalFetched(false);
           await fetchJournalEntries();
@@ -96,7 +93,6 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   };
 
-  // Wrap saveProfile to match the expected type that returns void
   const handleSaveProfile = async (profileData: Partial<UserProfile>) => {
     await saveProfile(profileData);
   };
