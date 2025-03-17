@@ -6,15 +6,15 @@ import { Sparkles } from 'lucide-react';
 import { generateDeepseekResponse, extractDeepseekResponseText } from '../../utils/deepseekApi';
 
 export const GrowthInsights = () => {
-  const { user, profile, loading } = useUserData();
+  const { user, profile, loading, journalEntries } = useUserData();
   const [insight, setInsight] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!loading && user && profile) {
+    if (!loading && user && profile && journalEntries) {
       generateInsight();
     }
-  }, [loading, user, profile]);
+  }, [loading, user, profile, journalEntries]);
 
   const generateInsight = async () => {
     if (!user || !profile) return;
@@ -23,17 +23,43 @@ export const GrowthInsights = () => {
       setIsLoading(true);
       
       // Extract relevant user data for the prompt
+      const userName = user.name || 'there';
       const growthStage = profile.growthStage || 'exploring';
       const challenges = profile.challenges?.join(', ') || 'personal growth';
       const learningStyle = profile.learningStyle || 'reflective';
       
+      // Get recent journal entries for analysis
+      const recentEntries = journalEntries?.slice(0, 5).map(entry => ({
+        date: new Date(entry.createdAt).toLocaleDateString(),
+        title: entry.title,
+        content: entry.content.substring(0, 300) + (entry.content.length > 300 ? '...' : ''),
+        type: entry.type
+      })) || [];
+      
+      // Create journal entries text for the prompt
+      const entriesText = recentEntries.length > 0 
+        ? `Recent journal entries:\n${recentEntries.map(entry => 
+            `Date: ${entry.date}\nTitle: ${entry.title}\nExcerpt: ${entry.content}\n`
+          ).join('\n')}`
+        : 'No recent journal entries.';
+      
       // Create prompt for the AI
       const systemPrompt = `You are Jess, an insightful AI journal coach. You craft brief, personalized observations about growth and potential.
+      Analyze the user's journal entries to identify themes, progress, or areas of focus.
       Keep your message encouraging, concise (max 2 sentences), and specific to the user's current growth journey.
-      Focus on ONE aspect of their profile that seems most relevant. Be warm and supportive.`;
+      Always address the user by name at the beginning of your message.
+      Be warm, supportive, and focus on their recent journal content.`;
       
-      const userPrompt = `Based on my profile (Growth stage: ${growthStage}, Challenges: ${challenges}, Learning style: ${learningStyle}), 
-      share a brief insight about my growth journey or potential.`;
+      const userPrompt = `Here's my profile and journal information:
+      
+      Name: ${userName}
+      Growth stage: ${growthStage}
+      Challenges: ${challenges}
+      Learning style: ${learningStyle}
+      
+      ${entriesText}
+      
+      Based on my journal entries and profile, share a personalized insight about my growth journey.`;
       
       // Generate response
       const response = await generateDeepseekResponse([
@@ -45,7 +71,8 @@ export const GrowthInsights = () => {
       setInsight(insightText);
     } catch (error) {
       console.error("Error generating insight:", error);
-      setInsight("I notice your commitment to growth through journaling. What patterns are you curious to explore today?");
+      const userName = user.name || 'there';
+      setInsight(`Welcome back, ${userName}! I notice your commitment to growth through journaling. What patterns are you curious to explore today?`);
     } finally {
       setIsLoading(false);
     }
