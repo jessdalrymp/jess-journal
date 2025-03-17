@@ -37,9 +37,6 @@ const FreeJournalPrompts = () => {
               <Link to="/dashboard">
                 <Button>Try Jess for Free</Button>
               </Link>
-              <p className="text-xs mt-3 text-jess-foreground/60">
-                Use code <span className="font-mono font-bold">BETA30</span> for 30 days free!
-              </p>
             </div>
           </div>
         </div>
