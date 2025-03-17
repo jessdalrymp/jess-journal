@@ -63,12 +63,14 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
     }
   };
 
+  const IconComponent = category?.icon.icon;
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
-            {category?.icon}
+            {IconComponent && <IconComponent className={`h-5 w-5 ${category?.icon.color}`} />}
             <span>{category?.name}</span>
           </DialogTitle>
           <p className="text-sm text-muted-foreground mt-2">{prompt}</p>

@@ -5,7 +5,10 @@ import { ReactNode } from 'react';
 export interface PromptCategory {
   id: string;
   name: string;
-  icon: ReactNode;
+  icon: {
+    icon: typeof Sun | typeof Moon | typeof Heart | typeof Lightbulb | typeof Leaf | typeof Rocket | typeof ListChecks;
+    color: string;
+  };
   prompts: string[];
 }
 
@@ -16,7 +19,10 @@ export const promptCategories: PromptCategory[] = [
   {
     id: 'morning',
     name: 'Morning Reflections',
-    icon: <Sun className="h-5 w-5 text-amber-500" />,
+    icon: {
+      icon: Sun,
+      color: 'text-amber-500'
+    },
     prompts: [
       "What is my intention for today?",
       "What's one small step I can take today to honor my values?",
@@ -28,7 +34,10 @@ export const promptCategories: PromptCategory[] = [
   {
     id: 'evening',
     name: 'Evening Reflections',
-    icon: <Moon className="h-5 w-5 text-indigo-500" />,
+    icon: {
+      icon: Moon,
+      color: 'text-indigo-500'
+    },
     prompts: [
       "What moment today made me feel most alive?",
       "What challenges did I encounter today, and how did I grow from them?",
@@ -40,7 +49,10 @@ export const promptCategories: PromptCategory[] = [
   {
     id: 'gratitude',
     name: 'Daily Gratitude',
-    icon: <Heart className="h-5 w-5 text-rose-500" />,
+    icon: {
+      icon: Heart, 
+      color: 'text-rose-500'
+    },
     prompts: [
       "List three specific things I'm grateful for right now.",
       "Who positively impacted my life today?",
@@ -52,7 +64,10 @@ export const promptCategories: PromptCategory[] = [
   {
     id: 'insights',
     name: 'Daily Insights & Growth',
-    icon: <Lightbulb className="h-5 w-5 text-yellow-500" />,
+    icon: {
+      icon: Lightbulb,
+      color: 'text-yellow-500'
+    },
     prompts: [
       "What's a belief I've held recently that's limiting me?",
       "What's a recent realization or breakthrough I've experienced?",
@@ -64,7 +79,10 @@ export const promptCategories: PromptCategory[] = [
   {
     id: 'selfcare',
     name: 'Self-Care & Mindfulness',
-    icon: <Leaf className="h-5 w-5 text-green-500" />,
+    icon: {
+      icon: Leaf,
+      color: 'text-green-500'
+    },
     prompts: [
       "How will I nurture my mental and emotional well-being today?",
       "What boundaries do I need to reinforce today?",
@@ -76,7 +94,10 @@ export const promptCategories: PromptCategory[] = [
   {
     id: 'action',
     name: 'Action & Purpose',
-    icon: <Rocket className="h-5 w-5 text-cyan-500" />,
+    icon: {
+      icon: Rocket,
+      color: 'text-cyan-500'
+    },
     prompts: [
       "What's a meaningful action step I can take towards my goals today?",
       "Who can I support or inspire today?",
@@ -88,7 +109,10 @@ export const promptCategories: PromptCategory[] = [
   {
     id: 'weekly',
     name: 'Weekly Themes',
-    icon: <ListChecks className="h-5 w-5 text-violet-500" />,
+    icon: {
+      icon: ListChecks,
+      color: 'text-violet-500'
+    },
     prompts: [
       "Week of Courage: What's one courageous act I'll commit to today?",
       "Week of Simplicity: How can I simplify my day today?",

@@ -7,12 +7,14 @@ interface PromptCategoryCardProps {
 }
 
 export const PromptCategoryCard = ({ category, onPromptClick }: PromptCategoryCardProps) => {
+  const IconComponent = category.icon.icon;
+  
   return (
     <div 
       className="bg-white shadow rounded-lg overflow-hidden border border-jess-subtle/50 hover:shadow-md transition-all"
     >
       <div className="p-4 bg-gradient-to-r from-jess-subtle/30 to-transparent flex items-center space-x-2">
-        {category.icon}
+        <IconComponent className={`h-5 w-5 ${category.icon.color}`} />
         <h3 className="font-medium text-jess-foreground">{category.name}</h3>
       </div>
       
