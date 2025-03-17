@@ -67,12 +67,6 @@ export const JournalChallengeDisplay = memo(({
             <div className="mb-2 bg-jess-subtle p-3 rounded-lg">
               <p className="text-sm leading-tight">{journalPrompt.prompt}</p>
             </div>
-            <h3 className="text-base font-medium mb-1.5">Instructions:</h3>
-            <ol className="list-decimal pl-5 space-y-1">
-              {journalPrompt.instructions.map((instruction, index) => (
-                <li key={index} className="text-sm leading-tight">{instruction}</li>
-              ))}
-            </ol>
             
             <div className="mt-4 pt-3 border-t border-jess-subtle">
               <h3 className="text-base font-medium mb-1.5">Guiding Questions:</h3>

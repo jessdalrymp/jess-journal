@@ -17,12 +17,13 @@ export const NewJournalEntryButton = () => {
     setShowPrompts(true);
   };
 
-  // Create a handler function for each category
-  const handlePromptClick = (category: PromptCategory) => (prompt: Prompt) => {
-    setSelectedCategory(category);
-    setSelectedPrompt(prompt);
-    setShowPrompts(false);
-    setIsJournalDialogOpen(true);
+  const handlePromptClickFactory = (category: PromptCategory) => {
+    return (prompt: Prompt) => {
+      setSelectedCategory(category);
+      setSelectedPrompt(prompt);
+      setShowPrompts(false);
+      setIsJournalDialogOpen(true);
+    };
   };
 
   const handleCloseJournalDialog = () => {
@@ -53,7 +54,7 @@ export const NewJournalEntryButton = () => {
               <PromptCategoryCard 
                 key={category.id}
                 category={category}
-                onPromptClick={handlePromptClick(category)}
+                onPromptClick={handlePromptClickFactory(category)}
               />
             ))}
           </div>
