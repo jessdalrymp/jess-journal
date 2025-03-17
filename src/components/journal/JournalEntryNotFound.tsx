@@ -1,20 +1,42 @@
 
 import { Header } from "../../components/Header";
 import { DisclaimerBanner } from "../../components/ui/DisclaimerBanner";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { ArrowLeft, Book } from "lucide-react";
 
 export const JournalEntryNotFound = () => {
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
-      <main className="flex-1 py-6 container mx-auto">
-        <div className="text-center py-8">
-          <p className="text-jess-muted mb-2">Entry not found</p>
-          <button 
-            className="mt-4 px-4 py-2 bg-jess-primary text-white rounded-lg"
-            onClick={() => window.history.back()}
-          >
-            Back to Journal History
-          </button>
+      <main className="flex-1 py-6">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <div className="bg-white rounded-xl p-8 shadow-md text-center">
+            <div className="w-16 h-16 bg-jess-subtle/50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Book className="h-8 w-8 text-jess-primary" />
+            </div>
+            <h1 className="text-2xl font-semibold text-jess-foreground mb-3">
+              Journal Entry Not Found
+            </h1>
+            <p className="text-jess-muted mb-6">
+              The journal entry you're looking for could not be found. It may have been deleted or the URL might be incorrect.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button 
+                variant="outline"
+                onClick={() => window.history.back()}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft size={16} />
+                Go Back
+              </Button>
+              <Link to="/journal-history">
+                <Button className="w-full sm:w-auto">
+                  View Journal History
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </main>
       <DisclaimerBanner />

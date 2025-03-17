@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from "./components/ui/theme-provider";
@@ -36,13 +35,14 @@ const App = () => {
               <Route path="/my-story" element={<MyStory />} />
               <Route path="/side-quest" element={<SideQuest />} />
               <Route path="/journal" element={<BlankJournal />} />
+              <Route path="/journal-challenge" element={<JournalChallenge />} />
               <Route path="/journal-challenge/*" element={<JournalChallenge />} />
               <Route path="/journal-entry/:id" element={<JournalEntry />} />
               <Route path="/journal-history" element={<JournalHistory />} />
               <Route path="/legal" element={<Legal />} />
               <Route path="/admin" element={<AdminPage />} />
-              {/* Fallback route if no other route matches */}
-              <Route path="*" element={<NotFound />} />
+              <Route path="/404" element={<NotFound />} />
+              <Route path="*" element={<Navigate to="/404" replace />} />
             </Routes>
             <Toaster />
           </UserDataProvider>

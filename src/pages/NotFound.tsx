@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Header } from "../components/Header";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
+import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 
 const NotFound = () => {
   const location = useLocation();
@@ -27,14 +28,23 @@ const NotFound = () => {
           <p className="text-jess-muted mb-8">
             The page you're looking for doesn't exist or has been moved.
           </p>
-          <Link to="/dashboard">
-            <Button className="flex items-center gap-2">
-              <Home size={18} />
-              Back to Dashboard
+          <div className="flex space-x-4 justify-center">
+            <Link to="/dashboard">
+              <Button className="flex items-center gap-2">
+                <Home size={18} />
+                Back to Dashboard
+              </Button>
+            </Link>
+            <Button 
+              variant="outline" 
+              onClick={() => window.history.back()}
+            >
+              Go Back
             </Button>
-          </Link>
+          </div>
         </div>
       </div>
+      <DisclaimerBanner />
     </div>
   );
 };
