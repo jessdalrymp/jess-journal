@@ -1,13 +1,34 @@
 
-import React, { useState, useEffect } from 'react';
-import { promptCategories, PromptCategory } from './data/promptCategories';
+import React, { useState } from 'react';
+import { promptCategories } from './data/promptCategories';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FreePromptCard } from './FreePromptCard';
 import { DailyFeaturedPrompt } from './DailyFeaturedPrompt';
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export const FreeJournalPromptsContent = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("featured");
+  const [scrollPosition, setScrollPosition] = useState(0);
+  
+  const handleScrollLeft = () => {
+    const tabsList = document.querySelector('[role="tabslist"]');
+    if (tabsList) {
+      const newPosition = Math.max(scrollPosition - 200, 0);
+      tabsList.scrollTo({ left: newPosition, behavior: 'smooth' });
+      setScrollPosition(newPosition);
+    }
+  };
+
+  const handleScrollRight = () => {
+    const tabsList = document.querySelector('[role="tabslist"]');
+    if (tabsList) {
+      const maxScroll = tabsList.scrollWidth - tabsList.clientWidth;
+      const newPosition = Math.min(scrollPosition + 200, maxScroll);
+      tabsList.scrollTo({ left: newPosition, behavior: 'smooth' });
+      setScrollPosition(newPosition);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -17,8 +38,18 @@ export const FreeJournalPromptsContent = () => {
       )}
       
       <Tabs defaultValue="featured" onValueChange={setSelectedCategory}>
-        <div className="relative">
-          <ScrollArea className="w-full pb-2">
+        <div className="relative flex items-center">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="absolute left-0 z-10 bg-white/80 backdrop-blur-sm hover:bg-white/90"
+            onClick={handleScrollLeft}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="sr-only">Scroll left</span>
+          </Button>
+          
+          <div className="w-full overflow-x-auto scrollbar-hide px-8">
             <TabsList className="w-full flex justify-start sm:justify-center flex-nowrap">
               <TabsTrigger value="featured" className="text-sm">
                 Featured
@@ -33,7 +64,17 @@ export const FreeJournalPromptsContent = () => {
                 </TabsTrigger>
               ))}
             </TabsList>
-          </ScrollArea>
+          </div>
+          
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="absolute right-0 z-10 bg-white/80 backdrop-blur-sm hover:bg-white/90"
+            onClick={handleScrollRight}
+          >
+            <ChevronRight className="h-4 w-4" />
+            <span className="sr-only">Scroll right</span>
+          </Button>
         </div>
         
         <TabsContent value="featured" className="mt-6">
@@ -68,7 +109,7 @@ export const FreeJournalPromptsContent = () => {
               </p>
             </div>
             
-            <ScrollArea className="h-[500px] pr-4">
+            <div className="max-h-[500px] overflow-y-auto pr-4 custom-scrollbar">
               <div className="grid gap-4 sm:grid-cols-2">
                 {category.prompts.map((prompt, index) => (
                   <FreePromptCard 
@@ -79,7 +120,7 @@ export const FreeJournalPromptsContent = () => {
                   />
                 ))}
               </div>
-            </ScrollArea>
+            </div>
           </TabsContent>
         ))}
       </Tabs>

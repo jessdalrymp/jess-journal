@@ -6,6 +6,7 @@ import { FreeJournalPromptsContent } from '../components/journal/FreeJournalProm
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
+import { ChevronLeft } from 'lucide-react';
 
 const FreeJournalPrompts = () => {
   return (
@@ -16,11 +17,14 @@ const FreeJournalPrompts = () => {
           <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h1 className="text-2xl sm:text-3xl font-bold text-jess-foreground">Free Journal Prompts</h1>
             <Link to="/">
-              <Button variant="outline">Back to Home</Button>
+              <Button variant="outline" className="gap-2">
+                <ChevronLeft className="h-4 w-4" />
+                Back to Home
+              </Button>
             </Link>
           </div>
           
-          <Card className="shadow-sm p-6">
+          <Card className="shadow-sm p-6 relative">
             <div className="mb-6 text-center">
               <p className="text-jess-foreground/80 mb-2">
                 Browse and use these daily journaling prompts completely free.
