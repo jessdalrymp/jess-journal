@@ -116,7 +116,7 @@ export const getChatTitle = (type: 'story' | 'sideQuest' | 'action' | 'journal')
 export const getInitialMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal'): string => {
   switch (type) {
     case 'story':
-      return "Welcome to 'My Story.' I'm here to help you explore and reflect on your life journey. You can talk about past experiences, current situations, or future aspirations. What would you like to discuss today?";
+      return "Welcome to 'My Story.' I'm here to help you explore and reflect on your life journey. Let's explore some key aspects of your story:\n\n1️⃣ Defining Moments & Transformations\n- What pivotal experiences have shaped how you see the world?\n- Have there been moments of deep insight, radical change, or personal rebellion that define you?\n- If you had to tell your life story in 3 major turning points, what would they be?\n\n2️⃣ Core Conflicts & Tensions\n- Where do you feel tension between the world as it is and the world as you want it to be?\n- Have you faced resistance when advocating for your ideas or values?\n- What are the biggest struggles you've had to navigate, and how did they shape you?\n\n3️⃣ Personal Values & Moral Compass\n- What values have remained constant in your life, even as you've grown?\n- How do you decide when to comply and when to defy?\n- Who or what has had the biggest influence on your philosophy of life?\n\nWould you like to start with one of these areas, or do you already have a story in mind that captures the essence of who you are?";
     case 'sideQuest':
       return "Welcome to Side Quest! This is a focused session where we can work on specific challenges or goals. What specific area of your life would you like to improve or explore?";
     case 'action':

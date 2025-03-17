@@ -10,6 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { getInitialMessage } from "@/components/chat/chatUtils";
 
 const MyStory = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -142,7 +143,7 @@ const MyStory = () => {
       <main className="flex-1 py-6 container mx-auto">
         <h1 className="text-2xl font-medium mb-6">Let's Get to Know You</h1>
         <div className="bg-white rounded-lg shadow-sm h-[calc(100vh-260px)]">
-          <ChatInterface type="story" onBack={handleBack} />
+          <ChatInterface type="story" onBack={handleBack} initialMessage={getInitialMessage('story')} />
         </div>
       </main>
       <DisclaimerBanner />
