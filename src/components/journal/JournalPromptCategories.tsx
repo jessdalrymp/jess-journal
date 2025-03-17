@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { useJournalCreate } from '@/hooks/journal/useJournalCreate';
 
 // Define prompt categories and their prompts
 const promptCategories = [
@@ -112,6 +113,7 @@ const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJournalD
   const { user } = useAuth();
   const { fetchJournalEntries } = useUserData();
   const { toast } = useToast();
+  const { saveJournalEntry } = useJournalCreate();
 
   const handleSave = async () => {
     if (!user || !content.trim() || !prompt || !category) return;
@@ -126,11 +128,8 @@ const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJournalD
         type: category.id
       });
       
-      // Save the entry using the journalService
-      const { saveJournalEntry } = await import('@/hooks/journal/useJournalCreate');
-      const { saveJournalEntry: saveEntry } = saveJournalEntry();
-      
-      await saveEntry(user.id, prompt, journalContent);
+      // Save the entry using the journal hook
+      await saveJournalEntry(user.id, prompt, journalContent);
       
       // Refresh journal entries
       fetchJournalEntries();
