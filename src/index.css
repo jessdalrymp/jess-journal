@@ -166,4 +166,35 @@
   .interactive-button {
     @apply transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-jess-primary/40;
   }
+
+  /* New glassmorphism card style */
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg transition-all duration-300 hover:shadow-xl;
+  }
+  
+  /* New gradient text style */
+  .gradient-text {
+    @apply bg-gradient-to-r from-jess-primary to-jess-foreground bg-clip-text text-transparent;
+  }
+  
+  /* Hover lift effect */
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1;
+  }
+  
+  /* Subtle card gradient */
+  .card-gradient {
+    @apply bg-gradient-to-br from-jess-subtle to-white;
+  }
+  
+  /* Animation for icons */
+  .animate-icon {
+    @apply transform transition-transform duration-300;
+  }
+  
+  .group:hover .animate-icon {
+    @apply scale-110;
+  }
 }
+
+/* ... keep existing code (animation keyframes and other CSS declarations) */

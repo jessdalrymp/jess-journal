@@ -47,21 +47,21 @@ export const AccountSection = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm">
-      <h2 className="text-xl font-medium mb-5">Account</h2>
+    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-jess-subtle/50 transition-all duration-300 hover:shadow-xl">
+      <h2 className="text-xl font-medium mb-5 bg-gradient-to-r from-jess-primary to-jess-foreground bg-clip-text text-transparent">Account</h2>
       
       <Link to="/account">
-        <div className="bg-jess-subtle rounded-lg p-4 flex items-center justify-between cursor-pointer hover:shadow-md transition-all">
+        <div className="bg-gradient-to-r from-jess-subtle/80 to-white rounded-lg p-4 flex items-center justify-between cursor-pointer shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-gradient-to-r hover:from-jess-secondary/60 hover:to-white">
           <div className="flex items-center">
             <User size={20} className="text-jess-primary mr-3" />
             <span>Manage your account</span>
           </div>
-          <ArrowRight size={18} />
+          <ArrowRight size={18} className="transform transition-transform duration-300 group-hover:translate-x-1" />
         </div>
       </Link>
 
       <Link to="/subscription" className="block mt-4">
-        <div className="bg-jess-subtle rounded-lg p-4 flex items-center justify-between cursor-pointer hover:shadow-md transition-all">
+        <div className="bg-gradient-to-r from-jess-subtle/80 to-white rounded-lg p-4 flex items-center justify-between cursor-pointer shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-gradient-to-r hover:from-jess-secondary/60 hover:to-white">
           <div className="flex items-center">
             <CreditCard size={20} className="text-jess-primary mr-3" />
             <div>
@@ -69,7 +69,7 @@ export const AccountSection = () => {
               {renderSubscriptionStatus()}
             </div>
           </div>
-          <ArrowRight size={18} />
+          <ArrowRight size={18} className="transform transition-transform duration-300 group-hover:translate-x-1" />
         </div>
       </Link>
     </div>
