@@ -2,6 +2,7 @@
 import { ArrowLeft, Home } from 'lucide-react';
 import { getChatTitle } from './chatUtils';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface ChatHeaderProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
@@ -9,13 +10,15 @@ interface ChatHeaderProps {
 }
 
 export const ChatHeader = ({ type, onBack }: ChatHeaderProps) => {
+  const navigate = useNavigate();
+  
   return (
     <div className="sticky top-0 z-10 bg-white border-b border-jess-subtle py-3 px-4 flex items-center justify-between">
       <div className="flex items-center">
         <button
-          onClick={onBack}
+          onClick={() => navigate('/dashboard')}
           className="p-1 mr-3 rounded-full hover:bg-jess-subtle transition-colors"
-          aria-label="Go back"
+          aria-label="Go back to dashboard"
         >
           <ArrowLeft size={20} />
         </button>

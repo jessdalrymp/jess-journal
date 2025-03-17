@@ -14,7 +14,7 @@ export const PageHeader = () => {
         onClick={() => navigate('/dashboard')}
       >
         <ArrowLeft size={18} className="mr-2" />
-        Back
+        Back to Dashboard
       </Button>
       <h1 className="text-2xl font-medium">Subscription</h1>
     </div>
