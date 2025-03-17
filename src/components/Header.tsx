@@ -10,9 +10,11 @@ export const Header = () => {
   return (
     <header className="w-full py-4 px-6 flex items-center justify-between sticky top-0 z-10 bg-white border-b border-jess-subtle/30">
       <div className="flex items-center">
-        <h1 className="text-2xl font-cormorant font-medium tracking-tight text-jess-foreground">
-          JESS
-        </h1>
+        <Link to="/dashboard">
+          <h1 className="text-2xl font-cormorant font-medium tracking-tight text-jess-foreground cursor-pointer">
+            JESS
+          </h1>
+        </Link>
       </div>
 
       <div className="flex items-center space-x-6">

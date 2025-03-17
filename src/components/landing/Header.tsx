@@ -8,7 +8,9 @@ export const Header = () => {
   return (
     <header className="container mx-auto pt-10 px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center">
-        <AuthFormHeader />
+        <Link to="/dashboard">
+          <AuthFormHeader />
+        </Link>
         <div className="hidden md:flex space-x-4">
           <Link to="/dashboard">
             <Button variant="ghost">Login</Button>
