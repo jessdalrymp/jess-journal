@@ -70,7 +70,7 @@ export default {
 				jess: {
 					primary: '#8E6D5C',         // Warm brown
 					secondary: '#FDE1D3',       // Soft Peach
-					accent: '#D5E8B9',          // Darker Soft Green (updated from #F2FCE2)
+					accent: '#F2FCE2',          // Soft Green
 					background: '#FEF8F3',      // Light cream
 					foreground: '#584A41',      // Warm dark brown
 					muted: '#A39891',           // Muted warm gray

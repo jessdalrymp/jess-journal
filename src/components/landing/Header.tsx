@@ -44,6 +44,9 @@ export const Header = () => {
                       Free Journal Prompts
                     </Button>
                   </Link>
+                  <span className="text-sm font-medium text-jess-accent bg-black/5 px-2 py-1 rounded text-center">
+                    Use code <span className="font-mono font-bold">BETA30</span> for 30 days free!
+                  </span>
                   <Link to="/dashboard" className="w-full">
                     <Button variant="ghost" className="w-full text-jess-foreground font-semibold">Login</Button>
                   </Link>
@@ -61,6 +64,9 @@ export const Header = () => {
                 Free Journal Prompts
               </Button>
             </Link>
+            <span className="text-sm font-medium text-jess-accent">
+              Use code <span className="font-mono font-bold bg-black/5 px-1.5 py-0.5 rounded">BETA30</span> for 30 days free!
+            </span>
             <Link to="/dashboard">
               <Button variant="ghost" className="text-jess-foreground font-semibold">Login</Button>
             </Link>

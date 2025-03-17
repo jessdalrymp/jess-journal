@@ -5,8 +5,6 @@ import { Footer } from '../components/landing/Footer';
 import { FreeJournalPromptsContent } from '../components/journal/FreeJournalPromptsContent';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
-import { ChevronLeft } from 'lucide-react';
 
 const FreeJournalPrompts = () => {
   return (
@@ -17,14 +15,11 @@ const FreeJournalPrompts = () => {
           <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h1 className="text-2xl sm:text-3xl font-bold text-jess-foreground">Free Journal Prompts</h1>
             <Link to="/">
-              <Button variant="outline" className="gap-2">
-                <ChevronLeft className="h-4 w-4" />
-                Back to Home
-              </Button>
+              <Button variant="outline">Back to Home</Button>
             </Link>
           </div>
           
-          <Card className="shadow-sm p-6 relative">
+          <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="mb-6 text-center">
               <p className="text-jess-foreground/80 mb-2">
                 Browse and use these daily journaling prompts completely free.
@@ -42,8 +37,11 @@ const FreeJournalPrompts = () => {
               <Link to="/dashboard">
                 <Button>Try Jess for Free</Button>
               </Link>
+              <p className="text-xs mt-3 text-jess-foreground/60">
+                Use code <span className="font-mono font-bold">BETA30</span> for 30 days free!
+              </p>
             </div>
-          </Card>
+          </div>
         </div>
       </main>
       <Footer />
