@@ -15,7 +15,7 @@ export const CoreActionsSection = () => {
         <h2 className="text-lg md:text-xl font-medium mb-2 bg-gradient-to-r from-jess-primary to-jess-foreground bg-clip-text text-transparent">Dashboard</h2>
         <div className="grid grid-cols-2 gap-2">
           <Link to="/my-story" className="block">
-            <div className="bg-gradient-to-br from-jess-subtle/80 to-white rounded-lg h-full p-2 flex flex-col items-center justify-center cursor-pointer shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 hover:bg-gradient-to-br hover:from-jess-secondary/60 hover:to-white border border-jess-subtle/30 hover:border-jess-secondary/50">
+            <div className={`bg-gradient-to-br from-jess-subtle/80 to-white rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 hover:bg-gradient-to-br hover:from-jess-secondary/60 hover:to-white border border-jess-subtle/30 hover:border-jess-secondary/50 ${!isMobile ? 'aspect-square' : 'h-full'}`}>
               <div className="text-jess-primary mb-0.5">
                 <Book size={isMobile ? 14 : 12} className="transition-transform duration-300 hover:scale-110" />
               </div>
@@ -25,7 +25,7 @@ export const CoreActionsSection = () => {
           </Link>
           
           <Link to="/side-quest" className="block">
-            <div className="bg-gradient-to-br from-jess-subtle/80 to-white rounded-lg h-full p-2 flex flex-col items-center justify-center cursor-pointer shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 hover:bg-gradient-to-br hover:from-jess-secondary/60 hover:to-white border border-jess-subtle/30 hover:border-jess-secondary/50">
+            <div className={`bg-gradient-to-br from-jess-subtle/80 to-white rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 hover:bg-gradient-to-br hover:from-jess-secondary/60 hover:to-white border border-jess-subtle/30 hover:border-jess-secondary/50 ${!isMobile ? 'aspect-square' : 'h-full'}`}>
               <div className="text-jess-primary mb-0.5">
                 <MessageSquare size={isMobile ? 14 : 12} className="transition-transform duration-300 hover:scale-110" />
               </div>
@@ -35,7 +35,7 @@ export const CoreActionsSection = () => {
           </Link>
           
           <Link to="/journal" className="block">
-            <div className="bg-gradient-to-br from-jess-subtle/80 to-white rounded-lg h-full p-2 flex flex-col items-center justify-center cursor-pointer shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 hover:bg-gradient-to-br hover:from-jess-secondary/60 hover:to-white border border-jess-subtle/30 hover:border-jess-secondary/50">
+            <div className={`bg-gradient-to-br from-jess-subtle/80 to-white rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 hover:bg-gradient-to-br hover:from-jess-secondary/60 hover:to-white border border-jess-subtle/30 hover:border-jess-secondary/50 ${!isMobile ? 'aspect-square' : 'h-full'}`}>
               <div className="text-jess-primary mb-0.5">
                 <FilePlus size={isMobile ? 14 : 12} className="transition-transform duration-300 hover:scale-110" />
               </div>
@@ -45,7 +45,7 @@ export const CoreActionsSection = () => {
           </Link>
           
           <Link to="/journal-challenge" className="block">
-            <div className="bg-gradient-to-br from-jess-subtle/80 to-white rounded-lg h-full p-2 flex flex-col items-center justify-center cursor-pointer shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 hover:bg-gradient-to-br hover:from-jess-secondary/60 hover:to-white border border-jess-subtle/30 hover:border-jess-secondary/50">
+            <div className={`bg-gradient-to-br from-jess-subtle/80 to-white rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 hover:bg-gradient-to-br hover:from-jess-secondary/60 hover:to-white border border-jess-subtle/30 hover:border-jess-secondary/50 ${!isMobile ? 'aspect-square' : 'h-full'}`}>
               <div className="text-jess-primary mb-0.5">
                 <PenLine size={isMobile ? 14 : 12} className="transition-transform duration-300 hover:scale-110" />
               </div>
