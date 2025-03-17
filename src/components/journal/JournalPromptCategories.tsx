@@ -1,8 +1,7 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useUserData } from '@/context/UserDataContext';
-import { Sun, Moon, Heart, Lightbulb, Leaf, Rocket, ListChecks } from 'lucide-react';
+import { Sun, Moon, Heart, Lightbulb, Leaf, Rocket, ListChecks, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -56,6 +55,18 @@ const promptCategories = [
       "What emotions am I currently experiencing, and what are they telling me?",
       "How am I resisting change, and what step can I take to embrace it?",
       "What's something uncomfortable I might need to face to grow?"
+    ]
+  },
+  {
+    id: 'affirmations',
+    name: 'Daily Affirmations & Encouragement',
+    icon: <Sparkles className="h-5 w-5 text-purple-500" />,
+    prompts: [
+      "What's an empowering truth I need to remind myself of today?",
+      "How will I celebrate my progress, no matter how small?",
+      "What quality of mine deserves recognition today?",
+      "What's an affirmation I can repeat today to feel centered?",
+      "What past accomplishment can inspire my confidence today?"
     ]
   },
   {
@@ -119,20 +130,17 @@ const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJournalD
     setIsSaving(true);
     
     try {
-      // Create a journal entry with JSON format for better structure
       const journalContent = JSON.stringify({
         title: `${category.name}: ${prompt.substring(0, 40)}...`,
         summary: content,
         type: category.id
       });
       
-      // Save the entry using the journalService
       const { saveJournalEntry } = await import('@/hooks/journal/useJournalCreate');
       const { saveJournalEntry: saveEntry } = saveJournalEntry();
       
       await saveEntry(user.id, prompt, journalContent);
       
-      // Refresh journal entries
       fetchJournalEntries();
       
       toast({
@@ -140,7 +148,6 @@ const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJournalD
         description: `Your ${category.name.toLowerCase()} has been saved successfully.`,
       });
       
-      // Close the dialog and reset content
       setContent('');
       onClose();
     } catch (error) {
