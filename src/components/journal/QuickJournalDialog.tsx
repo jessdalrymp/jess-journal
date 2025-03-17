@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useUserData } from '@/context/UserDataContext';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -71,7 +71,7 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
             {category?.icon}
             <span>{category?.name}</span>
           </DialogTitle>
-          <p className="text-sm text-muted-foreground mt-2">{prompt}</p>
+          <DialogDescription className="text-sm mt-2">{prompt}</DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4 py-4">

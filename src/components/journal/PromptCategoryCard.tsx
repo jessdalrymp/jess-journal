@@ -22,6 +22,7 @@ export const PromptCategoryCard = ({ category, onPromptClick }: PromptCategoryCa
             key={index}
             onClick={() => onPromptClick(category, prompt)}
             className="py-2 w-full text-left text-sm hover:text-jess-primary transition-colors cursor-pointer"
+            type="button"
           >
             {prompt}
           </button>
