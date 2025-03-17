@@ -5,6 +5,7 @@ import { Footer } from '../components/landing/Footer';
 import { FreeJournalPromptsContent } from '../components/journal/FreeJournalPromptsContent';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { Card } from '@/components/ui/card';
 
 const FreeJournalPrompts = () => {
   return (
@@ -19,7 +20,7 @@ const FreeJournalPrompts = () => {
             </Link>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <Card className="shadow-sm p-6">
             <div className="mb-6 text-center">
               <p className="text-jess-foreground/80 mb-2">
                 Browse and use these daily journaling prompts completely free.
@@ -37,11 +38,8 @@ const FreeJournalPrompts = () => {
               <Link to="/dashboard">
                 <Button>Try Jess for Free</Button>
               </Link>
-              <p className="text-xs mt-3 text-jess-foreground/60">
-                Use code <span className="font-mono font-bold">BETA30</span> for 30 days free!
-              </p>
             </div>
-          </div>
+          </Card>
         </div>
       </main>
       <Footer />

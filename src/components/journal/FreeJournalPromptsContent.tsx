@@ -4,6 +4,7 @@ import { promptCategories, PromptCategory } from './data/promptCategories';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FreePromptCard } from './FreePromptCard';
 import { DailyFeaturedPrompt } from './DailyFeaturedPrompt';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const FreeJournalPromptsContent = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("featured");
@@ -16,20 +17,24 @@ export const FreeJournalPromptsContent = () => {
       )}
       
       <Tabs defaultValue="featured" onValueChange={setSelectedCategory}>
-        <TabsList className="w-full overflow-x-auto flex justify-start sm:justify-center flex-nowrap pb-1">
-          <TabsTrigger value="featured" className="text-sm">
-            Featured
-          </TabsTrigger>
-          {promptCategories.map((category) => (
-            <TabsTrigger 
-              key={category.id} 
-              value={category.id}
-              className="text-sm whitespace-nowrap"
-            >
-              {category.name}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="relative">
+          <ScrollArea className="w-full pb-2">
+            <TabsList className="w-full flex justify-start sm:justify-center flex-nowrap">
+              <TabsTrigger value="featured" className="text-sm">
+                Featured
+              </TabsTrigger>
+              {promptCategories.map((category) => (
+                <TabsTrigger 
+                  key={category.id} 
+                  value={category.id}
+                  className="text-sm whitespace-nowrap"
+                >
+                  {category.name}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </ScrollArea>
+        </div>
         
         <TabsContent value="featured" className="mt-6">
           <div className="space-y-2 mb-4">
@@ -63,16 +68,18 @@ export const FreeJournalPromptsContent = () => {
               </p>
             </div>
             
-            <div className="grid gap-4 sm:grid-cols-2">
-              {category.prompts.map((prompt, index) => (
-                <FreePromptCard 
-                  key={`${category.id}-${index}`}
-                  prompt={prompt} 
-                  icon={category.icon}
-                  category={category.name}
-                />
-              ))}
-            </div>
+            <ScrollArea className="h-[500px] pr-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {category.prompts.map((prompt, index) => (
+                  <FreePromptCard 
+                    key={`${category.id}-${index}`}
+                    prompt={prompt} 
+                    icon={category.icon}
+                    category={category.name}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
           </TabsContent>
         ))}
       </Tabs>
