@@ -33,7 +33,7 @@ export const Pricing = () => {
               </ul>
               
               <Link to="/dashboard">
-                <Button size="lg" className="w-full">
+                <Button size="lg" className="w-full bg-jess-primary hover:bg-jess-primary/90">
                   Start 7-Day Free Trial
                 </Button>
               </Link>
@@ -45,8 +45,8 @@ export const Pricing = () => {
           </div>
           
           {/* Annual Plan */}
-          <div className="bg-white border-2 border-[#c0bfaa] rounded-xl p-8 shadow-md relative">
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-[#c0bfaa] text-white px-4 py-1 rounded-full text-sm font-medium">
+          <div className="bg-white border-2 border-jess-primary rounded-xl p-8 shadow-md relative">
+            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-jess-primary text-white px-4 py-1 rounded-full text-sm font-medium">
               Best Value
             </div>
             <div className="text-center">
@@ -56,7 +56,7 @@ export const Pricing = () => {
                 <span className="text-jess-muted">/year</span>
               </div>
               
-              <p className="text-sm text-[#c0bfaa] mb-4">
+              <p className="text-sm text-jess-primary mb-4">
                 That's just $8.25/month - Save over $80 a year!
               </p>
               
@@ -73,7 +73,7 @@ export const Pricing = () => {
               </ul>
               
               <Link to="/dashboard">
-                <Button size="lg" variant="default" className="w-full bg-[#c0bfaa] hover:bg-[#c0bfaa]/90">
+                <Button size="lg" variant="default" className="w-full bg-jess-primary hover:bg-jess-primary/90">
                   Get Annual Plan
                 </Button>
               </Link>
@@ -91,7 +91,7 @@ export const Pricing = () => {
 
 const PricingFeature = ({ text }: { text: string }) => (
   <li className="flex items-start gap-3">
-    <Check className="h-5 w-5 text-[#c0bfaa] flex-shrink-0 mt-0.5" />
+    <Check className="h-5 w-5 text-jess-primary flex-shrink-0 mt-0.5" />
     <span>{text}</span>
   </li>
 );

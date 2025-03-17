@@ -28,26 +28,26 @@ export const PricingPlan = ({
         
         <ul className="space-y-2 mb-6">
           <li className="flex items-start">
-            <Check size={18} className="mr-2 text-[#c0bfaa] mt-0.5 flex-shrink-0" />
+            <Check size={18} className="mr-2 text-jess-primary mt-0.5 flex-shrink-0" />
             <span>Unlimited conversations with Jess</span>
           </li>
           <li className="flex items-start">
-            <Check size={18} className="mr-2 text-[#c0bfaa] mt-0.5 flex-shrink-0" />
+            <Check size={18} className="mr-2 text-jess-primary mt-0.5 flex-shrink-0" />
             <span>Exclusive journal insight reports</span>
           </li>
           <li className="flex items-start">
-            <Check size={18} className="mr-2 text-[#c0bfaa] mt-0.5 flex-shrink-0" />
+            <Check size={18} className="mr-2 text-jess-primary mt-0.5 flex-shrink-0" />
             <span>Priority access to new features</span>
           </li>
           <li className="flex items-start">
-            <Check size={18} className="mr-2 text-[#c0bfaa] mt-0.5 flex-shrink-0" />
+            <Check size={18} className="mr-2 text-jess-primary mt-0.5 flex-shrink-0" />
             <span>7-day free trial</span>
           </li>
         </ul>
         
         {!subscription ? (
           <Button 
-            className="w-full" 
+            className="w-full bg-jess-primary hover:bg-jess-primary/90" 
             onClick={handleStartTrial}
             disabled={isProcessing}
           >
@@ -55,7 +55,7 @@ export const PricingPlan = ({
           </Button>
         ) : subscription.is_trial ? (
           <Button 
-            className="w-full" 
+            className="w-full bg-jess-primary hover:bg-jess-primary/90" 
             onClick={() => handleInitiatePayment(false)}
             disabled={isProcessing}
           >
@@ -71,7 +71,7 @@ export const PricingPlan = ({
           </Button>
         ) : (
           <Button 
-            className="w-full" 
+            className="w-full bg-jess-primary hover:bg-jess-primary/90" 
             onClick={() => handleInitiatePayment(false)}
             disabled={isProcessing}
           >
@@ -81,8 +81,8 @@ export const PricingPlan = ({
       </div>
       
       {/* Annual Plan */}
-      <div className="bg-white border-2 border-[#c0bfaa] rounded-lg p-6 shadow-md relative">
-        <div className="absolute -top-3 right-4 bg-[#c0bfaa] text-white px-3 py-1 rounded-full text-xs font-medium">
+      <div className="bg-white border-2 border-jess-primary rounded-lg p-6 shadow-md relative">
+        <div className="absolute -top-3 right-4 bg-jess-primary text-white px-3 py-1 rounded-full text-xs font-medium">
           Best Value
         </div>
         
@@ -91,30 +91,30 @@ export const PricingPlan = ({
         </h3>
         
         <p className="text-3xl font-bold mb-1">$99<span className="text-sm font-normal text-jess-muted">/year</span></p>
-        <p className="text-sm text-[#c0bfaa] mb-4">That's just $8.25/month - Save over $80 a year!</p>
+        <p className="text-sm text-jess-primary mb-4">That's just $8.25/month - Save over $80 a year!</p>
         
         <ul className="space-y-2 mb-6">
           <li className="flex items-start">
-            <Check size={18} className="mr-2 text-[#c0bfaa] mt-0.5 flex-shrink-0" />
+            <Check size={18} className="mr-2 text-jess-primary mt-0.5 flex-shrink-0" />
             <span>Unlimited conversations with Jess</span>
           </li>
           <li className="flex items-start">
-            <Check size={18} className="mr-2 text-[#c0bfaa] mt-0.5 flex-shrink-0" />
+            <Check size={18} className="mr-2 text-jess-primary mt-0.5 flex-shrink-0" />
             <span>Exclusive journal insight reports</span>
           </li>
           <li className="flex items-start">
-            <Check size={18} className="mr-2 text-[#c0bfaa] mt-0.5 flex-shrink-0" />
+            <Check size={18} className="mr-2 text-jess-primary mt-0.5 flex-shrink-0" />
             <span>Priority access to new features</span>
           </li>
           <li className="flex items-start">
-            <Check size={18} className="mr-2 text-[#c0bfaa] mt-0.5 flex-shrink-0" />
+            <Check size={18} className="mr-2 text-jess-primary mt-0.5 flex-shrink-0" />
             <span>Priority support access</span>
           </li>
         </ul>
         
         {!subscription ? (
           <Button 
-            className="w-full bg-[#c0bfaa] hover:bg-[#c0bfaa]/90" 
+            className="w-full bg-jess-primary hover:bg-jess-primary/90" 
             onClick={() => handleInitiatePayment(true)}
             disabled={isProcessing}
           >
@@ -122,7 +122,7 @@ export const PricingPlan = ({
           </Button>
         ) : subscription.is_trial ? (
           <Button 
-            className="w-full bg-[#c0bfaa] hover:bg-[#c0bfaa]/90" 
+            className="w-full bg-jess-primary hover:bg-jess-primary/90" 
             onClick={() => handleInitiatePayment(true)}
             disabled={isProcessing}
           >
@@ -138,7 +138,7 @@ export const PricingPlan = ({
           </Button>
         ) : (
           <Button 
-            className="w-full bg-[#c0bfaa] hover:bg-[#c0bfaa]/90" 
+            className="w-full bg-jess-primary hover:bg-jess-primary/90" 
             onClick={() => handleInitiatePayment(true)}
             disabled={isProcessing}
           >
