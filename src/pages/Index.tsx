@@ -8,6 +8,26 @@ import { Dashboard } from '../components/dashboard/Dashboard';
 import { Header } from '../components/Header';
 import { DisclaimerBanner } from '../components/ui/DisclaimerBanner';
 
+// Add styles for tour highlight
+const tourStyles = `
+  .tour-highlight {
+    position: relative;
+    z-index: 45;
+    box-shadow: 0 0 0 4px rgba(130, 71, 229, 0.2), 0 0 0 8px rgba(130, 71, 229, 0.1);
+    border-radius: 0.75rem;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 4px rgba(130, 71, 229, 0.2), 0 0 0 8px rgba(130, 71, 229, 0.1);
+    }
+    50% {
+      box-shadow: 0 0 0 4px rgba(130, 71, 229, 0.3), 0 0 0 8px rgba(130, 71, 229, 0.2);
+    }
+  }
+`;
+
 const AppContent = () => {
   const { user, isNewUser, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useUserData();
@@ -54,6 +74,7 @@ const AppContent = () => {
         <Dashboard />
       </main>
       <DisclaimerBanner />
+      <style>{tourStyles}</style>
     </div>
   );
 };
