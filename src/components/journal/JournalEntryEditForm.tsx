@@ -1,6 +1,7 @@
 
 import { JournalEntry } from "@/lib/types";
 import { JournalEntryEditor } from "./JournalEntryEditor";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface JournalEntryEditFormProps {
   entry: JournalEntry;
@@ -16,13 +17,15 @@ export const JournalEntryEditForm: React.FC<JournalEntryEditFormProps> = ({
   setEditableContent,
   setEditableTitle,
 }) => {
+  const isMobile = useIsMobile();
+
   return (
     <>
       <input 
         type="text"
         value={editableTitle}
         onChange={(e) => setEditableTitle(e.target.value)}
-        className="text-2xl font-semibold border-none px-0 py-0 mb-4 w-full focus-visible:outline-none bg-jess-subtle rounded-md px-2"
+        className="text-2xl font-semibold border-none mb-4 w-full focus-visible:outline-none bg-jess-subtle rounded-md px-2 py-1"
         placeholder="Enter title..."
       />
       <JournalEntryEditor 

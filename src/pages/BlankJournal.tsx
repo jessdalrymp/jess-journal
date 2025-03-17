@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
@@ -11,6 +10,7 @@ import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { JournalEntryEditor } from "@/components/journal/JournalEntryEditor";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const BlankJournal = () => {
   const navigate = useNavigate();
@@ -19,8 +19,8 @@ const BlankJournal = () => {
   const [content, setContent] = useState('```json\n{\n  "title": "Untitled Entry",\n  "summary": ""\n}\n```');
   const [title, setTitle] = useState("Untitled Entry");
   const [isSaving, setIsSaving] = useState(false);
+  const isMobile = useIsMobile();
 
-  // Initialize the title from the JSON content
   useEffect(() => {
     try {
       const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
@@ -44,7 +44,6 @@ const BlankJournal = () => {
     setIsSaving(true);
     
     try {
-      // Update the content with the current title before saving
       const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
       let contentToSave = content;
       
@@ -69,10 +68,8 @@ const BlankJournal = () => {
         return;
       }
       
-      // Refresh entries list
       fetchJournalEntries();
       
-      // Navigate to the journal entry page to view the saved entry
       toast.success("Journal entry saved successfully");
       navigate(`/journal-entry/${newEntry.id}`);
     } catch (error) {
@@ -113,10 +110,10 @@ const BlankJournal = () => {
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="text-2xl font-semibold border-none px-0 py-0 h-auto text-gray-900 focus-visible:outline-none w-full"
+              className="text-2xl font-semibold px-2 py-1 h-auto text-gray-900 focus-visible:outline-none w-full bg-jess-subtle rounded-md"
               placeholder="Enter title..."
             />
-            <p className="text-sm text-jess-muted">
+            <p className="text-sm text-jess-muted mt-2">
               {new Date().toLocaleDateString('en-US', { 
                 weekday: 'long',
                 year: 'numeric', 
