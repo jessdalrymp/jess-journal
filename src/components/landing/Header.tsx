@@ -11,7 +11,8 @@ export const Header = () => {
         <Link to="/dashboard">
           <AuthFormHeader />
         </Link>
-        <div className="hidden md:flex space-x-4">
+        <div className="hidden md:flex space-x-4 items-center">
+          <span className="text-sm font-medium text-jess-accent">Use code <span className="font-mono bg-black/5 px-1.5 py-0.5 rounded">BETA30</span> for 30 days free!</span>
           <Link to="/dashboard">
             <Button variant="ghost">Login</Button>
           </Link>

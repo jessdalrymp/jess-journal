@@ -81,8 +81,8 @@ serve(async (req) => {
         coupon_code: couponCode,
         updated_at: new Date().toISOString()
       }
-    } else if (couponCode === 'FreeTrial') {
-      // Set trial end date to 30 days from now for FreeTrial coupon
+    } else if (couponCode === 'FreeTrial' || couponCode === 'BETA30') {
+      // Set trial end date to 30 days from now for FreeTrial and BETA30 coupons
       const trialEndDate = new Date()
       trialEndDate.setDate(trialEndDate.getDate() + 30)
       
