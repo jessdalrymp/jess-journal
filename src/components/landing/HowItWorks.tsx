@@ -12,25 +12,25 @@ export const HowItWorks = () => {
           <FeatureCard
             icon={<Book className="text-jess-primary" size={28} />}
             title="Journaling"
-            description="Express your thoughts freely in guided or open journal sessions that help you process your experiences."
+            description="Express your thoughts freely with guided prompts or open journal sessions that help you process your experiences."
           />
           
           <FeatureCard
             icon={<Compass className="text-jess-primary" size={28} />}
             title="Exploration"
-            description="Dive deeper into your patterns, beliefs, and behaviors through targeted side quests and challenges."
+            description="Dive deeper into your patterns and behaviors through targeted side quests and challenges that spark reflection."
           />
           
           <FeatureCard
             icon={<MessageSquare className="text-jess-primary" size={28} />}
             title="Storytelling"
-            description="Reshape your personal narrative with AI-guided reflections that help you see yourself in a new light."
+            description="Reshape your personal narrative with AI-guided reflections that help you see your experiences from new perspectives."
           />
           
           <FeatureCard
             icon={<User className="text-jess-primary" size={28} />}
             title="Self-Discovery"
-            description="Gain clarity on your values, strengths, and growth areas through personalized insights."
+            description="Gain clarity on your values, strengths, and growth areas through personalized insights and tailored prompts."
           />
         </div>
       </div>

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { BookText } from 'lucide-react';
 
 export const GettingStarted = () => {
   return (
@@ -12,25 +13,25 @@ export const GettingStarted = () => {
             <Step
               number={1}
               title="Create Your Account"
-              description="Sign up and complete a brief onboarding questionnaire to help JESS understand your needs."
+              description="Sign up and complete a brief onboarding questionnaire to help JESS understand your goals."
             />
             
             <Step
               number={2}
-              title="Explore Core Features"
-              description="Navigate to My Story, Side Quest, Journal Entry, or Journal Challenge depending on your goals."
+              title="Browse Free Journal Prompts"
+              description="Explore our library of free journal prompts organized by categories to inspire your writing."
             />
             
             <Step
               number={3}
-              title="Journal Consistently"
-              description="Build a practice of regular reflection through guided and free-form writing sessions."
+              title="Choose Your Journey"
+              description="Navigate to My Story, Side Quest, Journal Entry, or Journal Challenge based on your needs."
             />
             
             <Step
               number={4}
-              title="Review Your Progress"
-              description="Visit Journal History to see your growth over time and identify recurring themes."
+              title="Journal Consistently"
+              description="Build a practice of regular reflection through guided prompts and AI-assisted journaling."
             />
           </div>
         </div>

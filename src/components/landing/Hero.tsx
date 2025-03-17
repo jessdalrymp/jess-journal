@@ -22,9 +22,9 @@ export const Hero = () => {
               <ChevronRight className="ml-2" size={18} />
             </Button>
           </Link>
-          <Link to="/dashboard">
+          <Link to="/free-journal-prompts">
             <Button size="lg" variant="outline" className="w-full sm:w-auto">
-              Login to Continue
+              Browse Free Prompts
             </Button>
           </Link>
         </div>

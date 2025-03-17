@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Lightbulb, Heart } from 'lucide-react';
 
 export const Benefits = () => {
   return (
@@ -10,18 +10,21 @@ export const Benefits = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <BenefitCard
+            icon={<Lightbulb className="text-jess-primary" size={28} />}
             title="Deeper Self-Understanding"
-            description="Gain insights into your thought patterns, emotional responses, and personal narratives."
+            description="Gain insights into your thought patterns, emotional responses, and personal narratives through guided reflection."
           />
           
           <BenefitCard
+            icon={<Sparkles className="text-jess-primary" size={28} />}
             title="Personalized Growth"
-            description="Receive tailored guidance based on your unique journey, challenges, and goals."
+            description="Receive tailored guidance based on your unique journey, challenges, and goals with AI-powered journaling."
           />
           
           <BenefitCard
+            icon={<Heart className="text-jess-primary" size={28} />}
             title="Emotional Clarity"
-            description="Process complex feelings and situations with an AI companion that helps you see things clearly."
+            description="Process complex feelings with journal prompts designed to help you explore and understand your emotional landscape."
           />
         </div>
       </div>
@@ -30,13 +33,14 @@ export const Benefits = () => {
 };
 
 interface BenefitCardProps {
+  icon: React.ReactNode;
   title: string;
   description: string;
 }
 
-const BenefitCard = ({ title, description }: BenefitCardProps) => (
+const BenefitCard = ({ icon, title, description }: BenefitCardProps) => (
   <div className="card-base">
-    <Sparkles className="text-jess-primary mb-4" size={28} />
+    {icon}
     <h3 className="text-xl font-bold mb-2">{title}</h3>
     <p className="text-jess-muted">{description}</p>
   </div>

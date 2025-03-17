@@ -11,11 +11,18 @@ export const CallToAction = () => {
         <p className="text-xl text-jess-muted max-w-2xl mx-auto mb-8">
           Join thousands who are using JESS to better understand themselves and shape their futures.
         </p>
-        <Link to="/dashboard">
-          <Button size="lg" className="px-8">
-            Begin Your Story
-          </Button>
-        </Link>
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <Link to="/dashboard">
+            <Button size="lg" className="px-8 w-full sm:w-auto">
+              Begin Your Story
+            </Button>
+          </Link>
+          <Link to="/free-journal-prompts">
+            <Button size="lg" variant="outline" className="px-8 w-full sm:w-auto">
+              Try Free Prompts
+            </Button>
+          </Link>
+        </div>
       </div>
     </section>
   );
