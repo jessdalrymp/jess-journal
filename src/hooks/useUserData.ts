@@ -45,7 +45,7 @@ export function useUserData() {
   const fetchProfile = useCallback(async () => {
     if (!user) {
       setProfile(null);
-      return;
+      return null;
     }
 
     try {
@@ -74,6 +74,8 @@ export function useUserData() {
       return profileData;
     } catch (error) {
       console.error("Error fetching profile:", error);
+      setIsLoadingProfile(false);
+      return null;
     } finally {
       setIsLoadingProfile(false);
     }

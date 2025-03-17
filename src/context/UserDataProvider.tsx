@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { JournalEntry } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
@@ -97,13 +96,18 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   };
 
+  // Wrap saveProfile to match the expected type that returns void
+  const handleSaveProfile = async (profileData: Partial<UserProfile>) => {
+    await saveProfile(profileData);
+  };
+
   const value = {
     user,
     profile,
     loading,
     fetchUser,
     fetchProfile,
-    saveProfile,
+    saveProfile: handleSaveProfile,
     startConversation,
     addMessageToConversation: handleAddMessageToConversation,
     journalEntries,
@@ -118,4 +122,4 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
       {children}
     </UserDataContext.Provider>
   );
-};
+}

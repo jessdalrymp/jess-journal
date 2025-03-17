@@ -16,7 +16,7 @@ export interface UserData {
   profile: UserProfile | null | undefined;
   loading: boolean;
   fetchUser: () => Promise<void>;
-  fetchProfile: () => Promise<void>;
+  fetchProfile: () => Promise<UserProfile | null>; // Changed from Promise<void> to Promise<UserProfile | null>
   saveProfile: (profileData: Partial<UserProfile>) => Promise<void>;
   startConversation: (type: 'story' | 'sideQuest' | 'action' | 'journal') => Promise<ConversationSession>;
   addMessageToConversation: (conversationId: string, content: string, role: 'user' | 'assistant') => Promise<void>;
