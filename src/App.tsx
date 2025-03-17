@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from "./components/ui/theme-provider";
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from './context/AuthContext';
@@ -41,6 +41,7 @@ const App = () => {
               <Route path="/journal-history" element={<JournalHistory />} />
               <Route path="/legal" element={<Legal />} />
               <Route path="/admin" element={<AdminPage />} />
+              {/* Fallback route if no other route matches */}
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />
