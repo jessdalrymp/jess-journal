@@ -57,12 +57,18 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         ? parsedContent.title 
         : entry.prompt.substring(0, 50) + (entry.prompt.length > 50 ? '...' : '');
 
+      // Determine the entry type
+      let entryType = entry.type || 'journal';
+      if (parsedContent && parsedContent.type) {
+        entryType = parsedContent.type;
+      }
+
       return {
         id: entry.id,
         userId: entry.user_id,
         title: title,
         content: entry.content,
-        type: (entry.type as 'journal' | 'story' | 'sideQuest' | 'action') || 'journal',
+        type: entryType as 'journal' | 'story' | 'sideQuest' | 'action',
         createdAt: new Date(entry.created_at)
       };
     });
@@ -74,7 +80,12 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
   }
 };
 
-export const saveJournalEntry = async (userId: string | undefined, prompt: string, content: string): Promise<JournalEntry | null> => {
+export const saveJournalEntry = async (
+  userId: string | undefined, 
+  prompt: string, 
+  content: string,
+  type = 'journal'
+): Promise<JournalEntry | null> => {
   if (!userId) return null;
 
   try {
@@ -84,7 +95,7 @@ export const saveJournalEntry = async (userId: string | undefined, prompt: strin
         user_id: userId,
         prompt,
         content,
-        type: 'journal'
+        type
       })
       .select()
       .single();
@@ -100,12 +111,18 @@ export const saveJournalEntry = async (userId: string | undefined, prompt: strin
       ? parsedContent.title 
       : data.prompt.substring(0, 50) + (data.prompt.length > 50 ? '...' : '');
 
+    // Determine the entry type
+    let entryType = data.type || 'journal';
+    if (parsedContent && parsedContent.type) {
+      entryType = parsedContent.type;
+    }
+
     const newEntry: JournalEntry = {
       id: data.id,
       userId: data.user_id,
       title: title,
       content: data.content,
-      type: (data.type as 'journal' | 'story' | 'sideQuest' | 'action') || 'journal',
+      type: entryType as 'journal' | 'story' | 'sideQuest' | 'action',
       createdAt: new Date(data.created_at)
     };
 

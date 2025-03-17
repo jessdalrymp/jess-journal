@@ -8,6 +8,7 @@ import { JournalHistorySection } from './components/JournalHistorySection';
 import { AccountSection } from './components/AccountSection';
 import { DashboardWelcomeModal } from './WelcomeModal';
 import { FeatureTour } from './FeatureTour';
+import { JournalPromptCategories } from '../journal/JournalPromptCategories';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -23,7 +24,8 @@ export const Dashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 relative">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
+      {/* First row - 2 columns on lg screens */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 relative z-10">
         <div className="core-actions-section">
           <CoreActionsSection />
         </div>
@@ -34,6 +36,15 @@ export const Dashboard = () => {
             loading={loading} 
           />
         </div>
+      </div>
+      
+      {/* Daily Journaling Prompts - Full width */}
+      <div className="mb-6 bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-jess-subtle/50">
+        <JournalPromptCategories />
+      </div>
+      
+      {/* Second row - 2 columns on lg screens */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
         <div className="journal-history-section">
           <JournalHistorySection />
         </div>

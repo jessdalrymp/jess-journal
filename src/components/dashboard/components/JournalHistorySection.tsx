@@ -1,8 +1,79 @@
 
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { History, ArrowRight, Calendar, Clock } from 'lucide-react';
+import { useUserData } from '@/context/UserDataContext';
+import { History, ArrowRight, Calendar, Clock, PenLine, BookOpen, MessageSquare, Zap } from 'lucide-react';
+import { JournalEntry } from '@/lib/types';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+// Helper function to get the appropriate icon for each journal type
+const getEntryIcon = (type: string) => {
+  switch (type) {
+    case 'story':
+      return <BookOpen size={16} className="text-blue-500" />;
+    case 'sideQuest':
+      return <MessageSquare size={16} className="text-purple-500" />;
+    case 'action':
+      return <Zap size={16} className="text-amber-500" />;
+    case 'morning':
+      return <Clock size={16} className="text-amber-500" />;
+    case 'evening':
+      return <Clock size={16} className="text-indigo-500" />;
+    case 'journal':
+    default:
+      return <PenLine size={16} className="text-green-500" />;
+  }
+};
+
+// Format the date in a readable way
+const formatDate = (date: Date) => {
+  const now = new Date();
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  if (date.toDateString() === now.toDateString()) {
+    return 'Today';
+  } else if (date.toDateString() === yesterday.toDateString()) {
+    return 'Yesterday';
+  } else {
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+};
+
+// Format time from date object
+const formatTime = (date: Date) => {
+  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+};
+
+// Attempt to get journal entry type from content
+const getEntryType = (entry: JournalEntry): string => {
+  try {
+    // Check if the content contains JSON
+    if (entry.content.includes('"type":')) {
+      const match = entry.content.match(/"type"\s*:\s*"([^"]+)"/);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    
+    // Default to the entry's type field or "journal"
+    return entry.type || 'journal';
+  } catch (e) {
+    return entry.type || 'journal';
+  }
+};
 
 export const JournalHistorySection = () => {
+  const { journalEntries, loading } = useUserData();
+  const isMobile = useIsMobile();
+  
+  // Filter and sort recent entries
+  const recentEntries = journalEntries 
+    ? [...journalEntries]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 5)
+    : [];
+  
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-jess-subtle/50 transition-all duration-300 hover:shadow-xl relative overflow-hidden group">
       {/* Subtle gradient background that moves on hover */}
@@ -33,29 +104,59 @@ export const JournalHistorySection = () => {
             </div>
           </Link>
           
-          {/* Recent Timeline Examples - These show sample entries for new users */}
+          {/* Recent Entries - Show actual entries or placeholder */}
           <div className="mt-5 space-y-3 pl-2">
-            <div className="relative border-l-2 border-jess-subtle pl-4 pb-5">
-              <div className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-jess-secondary"></div>
-              <div className="flex items-center text-xs text-jess-muted mb-1">
-                <Calendar size={12} className="mr-1" />
-                <span>Today</span>
-                <Clock size={12} className="ml-2 mr-1" />
-                <span>9:30 AM</span>
+            {loading ? (
+              // Loading state
+              Array(3).fill(0).map((_, i) => (
+                <div key={i} className="relative border-l-2 border-jess-subtle pl-4 pb-5">
+                  <div className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-jess-subtle animate-pulse"></div>
+                  <div className="flex items-center text-xs text-jess-muted mb-1 space-x-1">
+                    <div className="h-3 w-16 bg-jess-subtle/50 rounded animate-pulse"></div>
+                    <div className="h-3 w-12 bg-jess-subtle/50 rounded animate-pulse"></div>
+                  </div>
+                  <div className="h-4 w-36 bg-jess-subtle/50 rounded animate-pulse"></div>
+                </div>
+              ))
+            ) : recentEntries.length > 0 ? (
+              // Show actual entries
+              recentEntries.map((entry) => {
+                const entryType = getEntryType(entry);
+                return (
+                  <Link 
+                    key={entry.id} 
+                    to={`/journal-entry/${entry.id}`}
+                    className="relative border-l-2 border-jess-subtle pl-4 pb-5 block group"
+                  >
+                    <div className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-jess-secondary group-hover:bg-jess-primary transition-colors"></div>
+                    <div className="flex items-center text-xs text-jess-muted mb-1">
+                      <Calendar size={12} className="mr-1" />
+                      <span>{formatDate(new Date(entry.createdAt))}</span>
+                      <Clock size={12} className="ml-2 mr-1" />
+                      <span>{formatTime(new Date(entry.createdAt))}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="mr-2">{getEntryIcon(entryType)}</span>
+                      <p className="text-sm font-medium text-jess-foreground group-hover:text-jess-primary transition-colors">
+                        {entry.title}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })
+            ) : (
+              // Show empty state with suggestion
+              <div className="text-center py-4">
+                <p className="text-sm text-jess-muted mb-2">No journal entries yet</p>
+                <Link 
+                  to="/journal-challenge" 
+                  className="inline-flex items-center text-xs text-jess-primary hover:text-jess-foreground"
+                >
+                  Start journaling
+                  <ArrowRight size={12} className="ml-1" />
+                </Link>
               </div>
-              <p className="text-sm font-medium text-jess-foreground">Morning Reflection</p>
-            </div>
-            
-            <div className="relative border-l-2 border-jess-subtle pl-4 pb-5">
-              <div className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-jess-subtle"></div>
-              <div className="flex items-center text-xs text-jess-muted mb-1">
-                <Calendar size={12} className="mr-1" />
-                <span>Yesterday</span>
-                <Clock size={12} className="ml-2 mr-1" />
-                <span>8:15 PM</span>
-              </div>
-              <p className="text-sm font-medium text-jess-foreground">Evening Thoughts</p>
-            </div>
+            )}
           </div>
         </div>
       </div>
