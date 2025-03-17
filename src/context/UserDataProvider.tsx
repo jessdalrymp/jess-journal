@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { JournalEntry, UserProfile, User } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
@@ -34,7 +35,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const loading = isLoadingUser || isLoadingProfile || isJournalLoading || conversationLoading || subscriptionLoading || journalActionsLoading;
 
   // Fetch user data
-  const fetchUser = async () => {
+  const fetchUser = async (): Promise<User | null> => {
     try {
       setIsLoadingUser(true);
       const userData = await userActions.fetchUser();
@@ -54,7 +55,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   };
 
   // Fetch user profile
-  const fetchProfile = async () => {
+  const fetchProfile = async (): Promise<UserProfile | null> => {
     if (!user) {
       setProfile(null);
       return null;
@@ -75,7 +76,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   };
 
   // Save user profile
-  const saveProfile = async (profileData) => {
+  const saveProfile = async (profileData: Partial<UserProfile>): Promise<void> => {
     if (!user) {
       return;
     }
@@ -106,7 +107,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   }, [user]);
 
-  const fetchJournalEntries = async () => {
+  const fetchJournalEntries = async (): Promise<JournalEntry[]> => {
     if (!user) return [];
     
     if (isFetchingJournalRef.current) {
@@ -147,7 +148,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   }, [user, isJournalFetched]);
 
-  const handleAddMessageToConversation = async (conversationId, content, role) => {
+  const handleAddMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<void> => {
     try {
       await addMessageToConversation(conversationId, content, role);
       
