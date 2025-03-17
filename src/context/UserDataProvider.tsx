@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { JournalEntry, UserProfile } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
@@ -34,6 +35,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const loading = userLoading || isJournalLoading || conversationLoading || subscriptionLoading || journalActionsLoading;
 
   useEffect(() => {
+    // Only fetch journal entries when the user is loaded and entries haven't been fetched yet
     if (user && !isJournalFetched && !isFetchingJournalRef.current) {
       fetchJournalEntries();
       checkSubscriptionStatus();
