@@ -39,6 +39,11 @@ export const Header = () => {
             {mobileMenuOpen && (
               <div className="absolute top-20 right-4 z-50 bg-white shadow-lg rounded-lg p-4 border border-jess-subtle w-64">
                 <nav className="flex flex-col space-y-3">
+                  <Link to="/free-journal-prompts" className="w-full">
+                    <Button variant="ghost" className="w-full text-jess-foreground/90 font-medium">
+                      Free Journal Prompts
+                    </Button>
+                  </Link>
                   <span className="text-sm font-medium text-jess-accent bg-black/5 px-2 py-1 rounded text-center">
                     Use code <span className="font-mono font-bold">BETA30</span> for 30 days free!
                   </span>
@@ -54,6 +59,11 @@ export const Header = () => {
           </div>
         ) : (
           <div className="hidden md:flex space-x-4 items-center">
+            <Link to="/free-journal-prompts">
+              <Button variant="ghost" className="text-jess-foreground/90 font-medium">
+                Free Journal Prompts
+              </Button>
+            </Link>
             <span className="text-sm font-medium text-jess-accent">
               Use code <span className="font-mono font-bold bg-black/5 px-1.5 py-0.5 rounded">BETA30</span> for 30 days free!
             </span>
