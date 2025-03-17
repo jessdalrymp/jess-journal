@@ -1,7 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Book, MessageSquare, PenLine } from 'lucide-react';
-import { NewJournalEntryButton } from '@/components/journal/NewJournalEntryButton';
+import { Book, MessageSquare, PenLine, FilePlus } from 'lucide-react';
 
 export const CoreActionsSection = () => {
   return (
@@ -30,9 +29,14 @@ export const CoreActionsSection = () => {
             </div>
           </Link>
           
-          <div className="block aspect-square">
-            <NewJournalEntryButton />
-          </div>
+          <Link to="/journal" className="block aspect-square">
+            <div className="bg-gradient-to-br from-jess-subtle/80 to-white rounded-lg h-full p-5 flex flex-col items-center justify-center cursor-pointer shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-gradient-to-br hover:from-jess-secondary/60 hover:to-white border border-jess-subtle/30 hover:border-jess-secondary/50">
+              <div className="text-jess-primary mb-3">
+                <FilePlus size={24} className="transition-transform duration-300 hover:scale-110" />
+              </div>
+              <h3 className="text-center font-medium">New Journal Entry</h3>
+            </div>
+          </Link>
           
           <Link to="/journal-challenge" className="block aspect-square">
             <div className="bg-gradient-to-br from-jess-subtle/80 to-white rounded-lg h-full p-5 flex flex-col items-center justify-center cursor-pointer shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-gradient-to-br hover:from-jess-secondary/60 hover:to-white border border-jess-subtle/30 hover:border-jess-secondary/50">

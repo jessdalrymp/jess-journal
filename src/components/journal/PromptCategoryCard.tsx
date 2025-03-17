@@ -3,18 +3,11 @@ import { PromptCategory, Prompt } from './data/promptCategories';
 
 interface PromptCategoryCardProps {
   category: PromptCategory;
-  onPromptClick: (prompt: Prompt) => void;
+  onPromptClick: (category: PromptCategory, prompt: Prompt) => void;
 }
 
 export const PromptCategoryCard = ({ category, onPromptClick }: PromptCategoryCardProps) => {
   const IconComponent = category.icon.icon;
-  
-  const handlePromptClick = (prompt: Prompt) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Prompt clicked:', prompt);
-    onPromptClick(prompt);
-  };
   
   return (
     <div 
@@ -29,8 +22,7 @@ export const PromptCategoryCard = ({ category, onPromptClick }: PromptCategoryCa
         {category.prompts.map((prompt, index) => (
           <button
             key={index}
-            onClick={handlePromptClick(prompt)}
-            type="button"
+            onClick={() => onPromptClick(category, prompt)}
             className="py-2 w-full text-left text-sm hover:text-jess-primary transition-colors cursor-pointer"
           >
             {prompt}

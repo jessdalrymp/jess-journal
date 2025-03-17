@@ -9,13 +9,10 @@ export const JournalPromptCategories = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handlePromptClickFactory = (category: PromptCategory) => {
-    return (prompt: Prompt) => {
-      console.log('Journal category prompt clicked:', { category: category.name, prompt });
-      setSelectedCategory(category);
-      setSelectedPrompt(prompt);
-      setIsDialogOpen(true);
-    };
+  const handlePromptClick = (category: PromptCategory, prompt: Prompt) => {
+    setSelectedCategory(category);
+    setSelectedPrompt(prompt);
+    setIsDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
@@ -34,7 +31,7 @@ export const JournalPromptCategories = () => {
           <PromptCategoryCard 
             key={category.id}
             category={category}
-            onPromptClick={handlePromptClickFactory(category)}
+            onPromptClick={handlePromptClick}
           />
         ))}
       </div>

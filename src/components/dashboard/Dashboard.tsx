@@ -8,6 +8,7 @@ import { JournalHistorySection } from './components/JournalHistorySection';
 import { AccountSection } from './components/AccountSection';
 import { DashboardWelcomeModal } from './WelcomeModal';
 import { FeatureTour } from './FeatureTour';
+import { JournalPromptCategories } from '../journal/JournalPromptCategories';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -35,6 +36,11 @@ export const Dashboard = () => {
             loading={loading} 
           />
         </div>
+      </div>
+      
+      {/* Daily Journaling Prompts - Full width */}
+      <div className="mb-6 bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-jess-subtle/50">
+        <JournalPromptCategories />
       </div>
       
       {/* Second row - 2 columns on lg screens */}
