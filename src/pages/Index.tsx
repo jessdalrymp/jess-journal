@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../context/UserDataContext';
@@ -8,16 +9,20 @@ import { Header } from '../components/Header';
 import { DisclaimerBanner } from '../components/ui/DisclaimerBanner';
 
 const AppContent = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, isNewUser, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useUserData();
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !profileLoading && user && profile) {
-      // Only show onboarding if the user hasn't completed it before
-      setShowOnboarding(!profile.completedOnboarding);
+    if (!authLoading && !profileLoading && user) {
+      if (isNewUser || (profile && !profile.completedOnboarding)) {
+        // Show onboarding if user is new or hasn't completed onboarding
+        setShowOnboarding(true);
+      } else {
+        setShowOnboarding(false);
+      }
     }
-  }, [user, profile, authLoading, profileLoading]);
+  }, [user, profile, authLoading, profileLoading, isNewUser]);
 
   if (authLoading || profileLoading) {
     return (
@@ -36,7 +41,7 @@ const AppContent = () => {
     return <AuthForm />;
   }
 
-  // Only show onboarding if the user hasn't completed it yet
+  // Show onboarding if the user is new or hasn't completed it yet
   if (showOnboarding) {
     return <SelfDiscoveryQuiz onComplete={() => setShowOnboarding(false)} />;
   }

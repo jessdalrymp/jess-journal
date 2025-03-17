@@ -59,7 +59,10 @@ export const useAuthActions = () => {
         email,
         password,
         options: {
-          data: { name },
+          data: { 
+            name,
+            isNewUser: true // Add flag to identify new users
+          },
           emailRedirectTo: `${origin}/auth/callback`
         },
       });

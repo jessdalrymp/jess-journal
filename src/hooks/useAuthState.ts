@@ -5,6 +5,7 @@ import { supabase } from '../integrations/supabase/client';
 
 export const useAuthState = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [isNewUser, setIsNewUser] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,6 +25,19 @@ export const useAuthState = () => {
         
         if (session?.user) {
           console.log("User found in session:", session.user.id);
+          
+          // Check if user is a new user from metadata
+          const isNewUserFlag = session.user.user_metadata?.isNewUser;
+          setIsNewUser(!!isNewUserFlag);
+          
+          if (isNewUserFlag) {
+            // Clear the new user flag once we've detected it
+            await supabase.auth.updateUser({
+              data: { isNewUser: false }
+            });
+            console.log("Cleared new user flag");
+          }
+          
           setUser({
             id: session.user.id,
             email: session.user.email || '',
@@ -52,6 +66,19 @@ export const useAuthState = () => {
         if (session?.user) {
           if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
             console.log('User authenticated:', session.user.email);
+            
+            // Check if user is a new user from metadata
+            const isNewUserFlag = session.user.user_metadata?.isNewUser;
+            setIsNewUser(!!isNewUserFlag);
+            
+            if (isNewUserFlag && event === 'SIGNED_IN') {
+              // Clear the new user flag once we've detected it
+              await supabase.auth.updateUser({
+                data: { isNewUser: false }
+              });
+              console.log("Cleared new user flag after sign in");
+            }
+            
             setUser({
               id: session.user.id,
               email: session.user.email || '',
@@ -62,6 +89,7 @@ export const useAuthState = () => {
         } else if (event === 'SIGNED_OUT') {
           console.log('User signed out');
           setUser(null);
+          setIsNewUser(false);
         }
         
         setLoading(false);
@@ -73,5 +101,5 @@ export const useAuthState = () => {
     };
   }, []);
 
-  return { user, setUser, loading };
+  return { user, isNewUser, setUser, loading };
 };
