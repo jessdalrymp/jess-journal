@@ -14,7 +14,7 @@ export const Header = () => {
     <header className="w-full py-3 px-4 flex items-center justify-between sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-jess-subtle/30 shadow-sm">
       <div className="flex items-center">
         <Link to="/dashboard" className="group">
-          <h1 className="text-3xl md:text-5xl font-cormorant font-medium tracking-tight bg-gradient-to-r from-jess-primary to-jess-foreground bg-clip-text text-transparent cursor-pointer transition-all duration-300 hover:scale-105">
+          <h1 className="text-xl font-cormorant font-medium tracking-tight bg-gradient-to-r from-jess-primary to-jess-foreground bg-clip-text text-transparent cursor-pointer transition-all duration-300 hover:scale-105">
             JESS
           </h1>
           <div className="h-0.5 w-0 bg-jess-primary rounded-full transition-all duration-300 group-hover:w-full"></div>

@@ -12,7 +12,7 @@ export const CoreActionsSection = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-jess-subtle/10 via-white to-jess-secondary/10 opacity-70 group-hover:opacity-100 transition-opacity duration-500"></div>
       
       <div className="relative z-10">
-        <h2 className="text-3xl md:text-4xl font-medium mb-3 bg-gradient-to-r from-jess-primary to-jess-foreground bg-clip-text text-transparent">Dashboard</h2>
+        <h2 className="text-lg md:text-xl font-medium mb-2 bg-gradient-to-r from-jess-primary to-jess-foreground bg-clip-text text-transparent">Dashboard</h2>
         <div className="grid grid-cols-2 gap-2">
           <Link to="/my-story" className="block">
             <div className="bg-gradient-to-br from-jess-subtle/80 to-white rounded-lg h-full p-2 flex flex-col items-center justify-center cursor-pointer shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 hover:bg-gradient-to-br hover:from-jess-secondary/60 hover:to-white border border-jess-subtle/30 hover:border-jess-secondary/50">
