@@ -24,11 +24,6 @@ export const Dashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 relative">
-      {/* Growth Insights - New AI-powered component */}
-      {user && profile && !isLoading && (
-        <GrowthInsights />
-      )}
-      
       {/* First row - 2 columns on lg screens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 relative z-10">
         <div className="core-actions-section">
@@ -42,6 +37,13 @@ export const Dashboard = () => {
           />
         </div>
       </div>
+      
+      {/* Growth Insights - Moved here to appear before Journal History */}
+      {user && profile && !isLoading && (
+        <div className="mb-6">
+          <GrowthInsights />
+        </div>
+      )}
       
       {/* Second row - 2 columns on lg screens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
