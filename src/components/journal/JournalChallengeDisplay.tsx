@@ -64,25 +64,11 @@ export const JournalChallengeDisplay = memo(({
             )}
             
             <h1 className="text-xl font-bold mb-2">{journalPrompt.title}</h1>
-            <div className="mb-2 bg-jess-subtle p-3 rounded-lg">
+            <div className="mb-4 bg-jess-subtle p-3 rounded-lg">
               <p className="text-sm leading-tight">{journalPrompt.prompt}</p>
             </div>
-            <h3 className="text-base font-medium mb-1.5">Instructions:</h3>
-            <ol className="list-decimal pl-5 space-y-1">
-              {journalPrompt.instructions.map((instruction, index) => (
-                <li key={index} className="text-sm leading-tight">{instruction}</li>
-              ))}
-            </ol>
             
-            <div className="mt-4 pt-3 border-t border-jess-subtle">
-              <h3 className="text-base font-medium mb-1.5">Guiding Questions:</h3>
-              <ul className="list-disc pl-5 space-y-1">
-                <li className="text-sm leading-tight">What emotions came up as you reflected on this prompt?</li>
-                <li className="text-sm leading-tight">What patterns or insights did you discover about yourself?</li>
-                <li className="text-sm leading-tight">How might this reflection change your perspective going forward?</li>
-                <li className="text-sm leading-tight">What specific actions could you take based on these insights?</li>
-              </ul>
-            </div>
+            {/* Instructions section removed as requested */}
           </div>
         )}
       </div>
