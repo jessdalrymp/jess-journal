@@ -148,7 +148,7 @@ const MyStory = () => {
       <Header />
       <main className="flex-1 py-6 container mx-auto">
         <h1 className="text-2xl font-medium mb-6">Let's Get to Know You</h1>
-        <div className="bg-white rounded-lg shadow-sm h-[calc(100vh-260px)]">
+        <div className="bg-white rounded-lg shadow-sm h-[calc(100vh-260px)] flex flex-col">
           <ChatInterface 
             type="story" 
             onBack={handleBack} 

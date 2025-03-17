@@ -140,9 +140,9 @@ export const ChatInterface = ({
   }
   
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white">
       <ChatHeader type={type} onBack={onBack} />
-      <div className="flex-1 relative">
+      <div className="flex-1 relative overflow-hidden">
         <ChatMessageList messages={session.messages || []} />
         {loading && (
           <div className="px-4 py-2 bg-gray-100 border-t border-jess-subtle flex items-center">
