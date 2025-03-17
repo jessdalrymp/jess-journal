@@ -5,14 +5,34 @@ import {
   saveCurrentConversationToStorage 
 } from '../../lib/storageUtils';
 
+// Cache object to store conversations in memory 
+const conversationMemoryCache: Record<string, {
+  data: ConversationSession;
+  timestamp: number;
+}> = {};
+
+// Cache expiration time (30 minutes)
+const CACHE_EXPIRATION = 30 * 60 * 1000;
+
 /**
  * Retrieves a cached conversation for a specific user
+ * Uses a two-level cache strategy: memory first, then localStorage
  */
 export const getCachedConversation = (
   type: 'story' | 'sideQuest' | 'action' | 'journal',
   userId: string
 ): ConversationSession | null => {
   try {
+    const cacheKey = `${type}_${userId}`;
+    
+    // First check memory cache for faster access
+    const memoryCached = conversationMemoryCache[cacheKey];
+    if (memoryCached && (Date.now() - memoryCached.timestamp) < CACHE_EXPIRATION) {
+      console.log(`Retrieved ${type} conversation from memory cache`);
+      return memoryCached.data;
+    }
+    
+    // If not in memory or expired, check localStorage
     const cachedConversation = getCurrentConversationFromStorage(type);
     
     // Check if we have a valid conversation object
@@ -23,6 +43,12 @@ export const getCachedConversation = (
     
     // Validate the cached conversation belongs to the current user
     if (cachedConversation.userId === userId) {
+      // Update memory cache for faster future access
+      conversationMemoryCache[cacheKey] = {
+        data: cachedConversation,
+        timestamp: Date.now()
+      };
+      
       console.log(`Retrieved valid cached conversation for ${type}`);
       return cachedConversation;
     }
@@ -35,6 +61,8 @@ export const getCachedConversation = (
     console.error(`Error retrieving cached conversation for ${type}:`, error);
     // If there's an error, clear the potentially corrupted cache
     try {
+      const cacheKey = `${type}_${userId}`;
+      delete conversationMemoryCache[cacheKey];
       localStorage.removeItem(`current_${type}_conversation`);
     } catch (e) {
       console.error('Error clearing corrupted cache:', e);
@@ -44,7 +72,7 @@ export const getCachedConversation = (
 };
 
 /**
- * Caches a conversation to localStorage
+ * Caches a conversation to both memory and localStorage
  */
 export const cacheConversation = (conversation: ConversationSession): void => {
   try {
@@ -53,8 +81,17 @@ export const cacheConversation = (conversation: ConversationSession): void => {
       return;
     }
     
+    // Cache to localStorage
     saveCurrentConversationToStorage(conversation);
-    console.log(`Cached ${conversation.type} conversation to localStorage`);
+    
+    // Cache to memory for faster access
+    const cacheKey = `${conversation.type}_${conversation.userId}`;
+    conversationMemoryCache[cacheKey] = {
+      data: conversation,
+      timestamp: Date.now()
+    };
+    
+    console.log(`Cached ${conversation.type} conversation to memory and localStorage`);
   } catch (error) {
     console.error("Error caching conversation:", error);
   }
@@ -77,7 +114,19 @@ export const updateCachedConversation = (
         ...cachedConversation,
         ...updates
       };
+      
+      // Update localStorage
       saveCurrentConversationToStorage(updatedConversation);
+      
+      // Update memory cache
+      if (cachedConversation.userId) {
+        const cacheKey = `${type}_${cachedConversation.userId}`;
+        conversationMemoryCache[cacheKey] = {
+          data: updatedConversation,
+          timestamp: Date.now()
+        };
+      }
+      
       console.log(`Updated cached ${type} conversation`);
       break;
     }
@@ -91,9 +140,16 @@ export const clearAllCachedConversations = (): void => {
   try {
     const types: Array<'story' | 'sideQuest' | 'action' | 'journal'> = ['story', 'sideQuest', 'action', 'journal'];
     
+    // Clear localStorage caches
     for (const type of types) {
       localStorage.removeItem(`current_${type}_conversation`);
     }
+    
+    // Clear memory cache
+    Object.keys(conversationMemoryCache).forEach(key => {
+      delete conversationMemoryCache[key];
+    });
+    
     console.log('Cleared all cached conversations');
   } catch (error) {
     console.error('Error clearing cached conversations:', error);

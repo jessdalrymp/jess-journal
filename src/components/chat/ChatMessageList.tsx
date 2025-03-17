@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, memo } from 'react';
 import { ChatMessage } from '@/lib/types';
 import ReactMarkdown from 'react-markdown';
 import { ScrollArea } from '../ui/scroll-area';
@@ -8,7 +8,8 @@ interface ChatMessageListProps {
   messages: ChatMessage[];
 }
 
-export const ChatMessageList = ({ messages }: ChatMessageListProps) => {
+// Memoize the component to prevent unnecessary re-renders
+export const ChatMessageList = memo(({ messages }: ChatMessageListProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -55,4 +56,7 @@ export const ChatMessageList = ({ messages }: ChatMessageListProps) => {
       </div>
     </ScrollArea>
   );
-};
+});
+
+// Add display name for debugging purposes
+ChatMessageList.displayName = 'ChatMessageList';
