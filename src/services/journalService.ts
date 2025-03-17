@@ -1,6 +1,26 @@
 
 import { JournalEntry } from '../lib/types';
 import { supabase } from '../integrations/supabase/client';
+import * as CryptoJS from 'crypto-js';
+
+// Helper function to encrypt content using AES
+const encryptContent = (content: string, userId: string): string => {
+  // Use the userId as part of the encryption key for user-specific encryption
+  const encryptionKey = `jess_journal_${userId}`;
+  return CryptoJS.AES.encrypt(content, encryptionKey).toString();
+};
+
+// Helper function to decrypt content
+const decryptContent = (encryptedContent: string, userId: string): string => {
+  try {
+    const encryptionKey = `jess_journal_${userId}`;
+    const bytes = CryptoJS.AES.decrypt(encryptedContent, encryptionKey);
+    return bytes.toString(CryptoJS.enc.Utf8);
+  } catch (error) {
+    console.error('Error decrypting content:', error);
+    return encryptedContent; // Return original content if decryption fails
+  }
+};
 
 // Helper function to parse content that might be JSON in a code block
 const parseContentWithJsonCodeBlock = (content: string) => {
@@ -49,8 +69,11 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     console.log(`Found ${data.length} journal entries`);
 
     const entries: JournalEntry[] = data.map(entry => {
+      // Decrypt the content before processing
+      const decryptedContent = decryptContent(entry.content, userId);
+      
       // Try to parse the content as JSON
-      const parsedContent = parseContentWithJsonCodeBlock(entry.content);
+      const parsedContent = parseContentWithJsonCodeBlock(decryptedContent);
       
       // Use the parsed title if available, otherwise use the prompt
       const title = parsedContent && parsedContent.title 
@@ -67,7 +90,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         id: entry.id,
         userId: entry.user_id,
         title: title,
-        content: entry.content,
+        content: decryptedContent,
         type: entryType as 'journal' | 'story' | 'sideQuest' | 'action',
         createdAt: new Date(entry.created_at)
       };
@@ -89,12 +112,15 @@ export const saveJournalEntry = async (
   if (!userId) return null;
 
   try {
+    // Encrypt the content before saving
+    const encryptedContent = encryptContent(content, userId);
+    
     const { data, error } = await supabase
       .from('journal_entries')
       .insert({
         user_id: userId,
         prompt,
-        content,
+        content: encryptedContent,
         type
       })
       .select()
@@ -105,8 +131,11 @@ export const saveJournalEntry = async (
       return null;
     }
 
+    // Use the decrypted content for the returned entry
+    const decryptedContent = decryptContent(data.content, userId);
+
     // Try to parse content to get title
-    const parsedContent = parseContentWithJsonCodeBlock(data.content);
+    const parsedContent = parseContentWithJsonCodeBlock(decryptedContent);
     const title = parsedContent && parsedContent.title 
       ? parsedContent.title 
       : data.prompt.substring(0, 50) + (data.prompt.length > 50 ? '...' : '');
@@ -121,7 +150,7 @@ export const saveJournalEntry = async (
       id: data.id,
       userId: data.user_id,
       title: title,
-      content: data.content,
+      content: decryptedContent,
       type: entryType as 'journal' | 'story' | 'sideQuest' | 'action',
       createdAt: new Date(data.created_at)
     };
@@ -133,11 +162,16 @@ export const saveJournalEntry = async (
   }
 };
 
-export const updateJournalEntry = async (entryId: string, content: string): Promise<boolean> => {
+export const updateJournalEntry = async (entryId: string, content: string, userId: string): Promise<boolean> => {
+  if (!userId) return false;
+  
   try {
+    // Encrypt the content before updating
+    const encryptedContent = encryptContent(content, userId);
+    
     const { error } = await supabase
       .from('journal_entries')
-      .update({ content })
+      .update({ content: encryptedContent })
       .eq('id', entryId);
 
     if (error) {

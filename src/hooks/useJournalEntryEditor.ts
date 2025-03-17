@@ -5,6 +5,7 @@ import { useUserData } from "@/context/UserDataContext";
 import { updateJournalEntry } from "@/services/journalService";
 import { useToast } from "@/hooks/use-toast";
 import { parseEntryContent, formatContentForEditing } from "@/utils/contentParser";
+import { useAuth } from "@/context/AuthContext";
 
 export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
   const [entry, setEntry] = useState<JournalEntry | null>(initialEntry);
@@ -13,6 +14,7 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
   const [editableContent, setEditableContent] = useState("");
   const [editableTitle, setEditableTitle] = useState("");
   const { fetchJournalEntries } = useUserData();
+  const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
   }, [isEditing, entry]);
 
   const handleSave = async () => {
-    if (!entry || !entry.id) return;
+    if (!entry || !entry.id || !user) return;
     
     // Process content before saving - we want to maintain the format
     // Update the JSON content with the current title
@@ -52,7 +54,7 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
       console.error("Error updating title in JSON content", e);
     }
     
-    const success = await updateJournalEntry(entry.id, contentToSave);
+    const success = await updateJournalEntry(entry.id, contentToSave, user.id);
     if (success) {
       toast({
         title: "Entry updated",

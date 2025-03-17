@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import * as journalService from '@/services/journalService';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/context/AuthContext';
 
 /**
  * Hook for updating existing journal entries
@@ -9,11 +10,21 @@ import { useToast } from '@/components/ui/use-toast';
 export function useJournalUpdate() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const updateJournalEntry = async (entryId: string, content: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "You need to be logged in to update journal entries",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
     try {
       setLoading(true);
-      const success = await journalService.updateJournalEntry(entryId, content);
+      const success = await journalService.updateJournalEntry(entryId, content, user.id);
       if (success) {
         toast({
           title: "Journal entry updated",
