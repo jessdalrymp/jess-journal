@@ -11,9 +11,9 @@ import { Footer } from '../components/landing/Footer';
 
 const Landing = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-jess-subtle/30">
+    <div className="min-h-screen bg-gradient-to-b from-white via-white to-jess-subtle/30">
       <Header />
-      <main>
+      <main className="text-jess-foreground">
         <Hero />
         <HowItWorks />
         <GettingStarted />
