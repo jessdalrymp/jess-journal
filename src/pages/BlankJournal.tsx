@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
@@ -11,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { JournalEntryEditor } from "@/components/journal/JournalEntryEditor";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { JournalPromptSelector } from "@/components/journal/JournalPromptSelector";
+import { Prompt, PromptCategory } from "@/components/journal/data/promptCategories";
 
 const BlankJournal = () => {
   const navigate = useNavigate();
@@ -20,6 +23,9 @@ const BlankJournal = () => {
   const [title, setTitle] = useState("Untitled Entry");
   const [isSaving, setIsSaving] = useState(false);
   const isMobile = useIsMobile();
+  const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<PromptCategory | null>(null);
+  const [showPromptSelector, setShowPromptSelector] = useState(true);
 
   useEffect(() => {
     try {
@@ -51,15 +57,21 @@ const BlankJournal = () => {
         try {
           const parsedJson = JSON.parse(jsonMatch[1].trim());
           parsedJson.title = title;
+          // Add type if selected from a prompt category
+          if (selectedCategory) {
+            parsedJson.type = selectedCategory.id;
+          }
           contentToSave = `\`\`\`json\n${JSON.stringify(parsedJson, null, 2)}\n\`\`\``;
         } catch (e) {
           console.error("Error updating title in JSON content", e);
         }
       }
       
+      const promptText = selectedPrompt || title;
+      
       const newEntry = await saveJournalEntry(
         user.id,
-        title,
+        promptText,
         contentToSave
       );
       
@@ -78,6 +90,13 @@ const BlankJournal = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handlePromptSelect = (category: PromptCategory, prompt: Prompt) => {
+    setSelectedCategory(category);
+    setSelectedPrompt(prompt);
+    setTitle(`${category.name}: ${prompt.substring(0, 40)}...`);
+    setShowPromptSelector(false);
   };
 
   return (
@@ -105,31 +124,38 @@ const BlankJournal = () => {
           </Button>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="mb-6">
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="text-2xl font-semibold px-2 py-1 h-auto text-gray-900 focus-visible:outline-none w-full bg-jess-subtle rounded-md"
-              placeholder="Enter title..."
-            />
-            <p className="text-sm text-jess-muted mt-2">
-              {new Date().toLocaleDateString('en-US', { 
-                weekday: 'long',
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
-            </p>
+        {showPromptSelector ? (
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <JournalPromptSelector onPromptSelect={handlePromptSelect} onSkip={() => setShowPromptSelector(false)} />
           </div>
-          
-          <JournalEntryEditor 
-            content={content} 
-            onChange={setContent}
-            title={title}
-            onTitleChange={setTitle} 
-          />
-        </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="mb-6">
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="text-2xl font-semibold px-2 py-1 h-auto text-gray-900 focus-visible:outline-none w-full bg-jess-subtle rounded-md"
+                placeholder="Enter title..."
+              />
+              <p className="text-sm text-jess-muted mt-2">
+                {new Date().toLocaleDateString('en-US', { 
+                  weekday: 'long',
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </p>
+            </div>
+            
+            <JournalEntryEditor 
+              content={content} 
+              onChange={setContent}
+              title={title}
+              onTitleChange={setTitle} 
+              promptText={selectedPrompt || undefined}
+            />
+          </div>
+        )}
       </main>
       <DisclaimerBanner />
     </div>
