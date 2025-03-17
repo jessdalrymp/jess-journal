@@ -14,5 +14,4 @@ export const useUserData = () => {
   return context;
 };
 
-// Re-export the UserDataProvider from its dedicated file
-export { UserDataProvider } from './UserDataProvider';
+// Note: We don't re-export UserDataProvider here to avoid circular dependencies
