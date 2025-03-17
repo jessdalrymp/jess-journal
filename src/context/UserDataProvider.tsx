@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { JournalEntry, UserProfile } from '../lib/types';
+import { JournalEntry, UserProfile, User } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
 import { useUserActions } from '../hooks/useUserActions';
 import { useJournalEntries } from '../hooks/journal';
@@ -14,8 +13,8 @@ interface UserDataProviderProps {
 
 export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
   // User data
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const userActions = useUserActions();
