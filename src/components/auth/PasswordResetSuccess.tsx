@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Mail } from 'lucide-react';
+import { Mail, AlertTriangle } from 'lucide-react';
 import { ActionButton } from '../ui/ActionButton';
 
 interface PasswordResetSuccessProps {
@@ -16,15 +16,22 @@ export const PasswordResetSuccess = ({ email, onClose }: PasswordResetSuccessPro
       </div>
       
       {email && (
-        <p className="text-sm text-jess-muted mb-4">
-          We've sent instructions to <strong>{email}</strong>. 
-          Check your inbox (and spam folder) to reset your password.
-        </p>
+        <>
+          <p className="text-sm text-jess-muted mb-2">
+            We've sent instructions to <strong>{email}</strong>.
+          </p>
+          <div className="mb-4 p-3 bg-amber-50 rounded-md flex items-start gap-2 text-left">
+            <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-amber-700">
+              <strong>Important:</strong> Please check both your inbox and spam/junk folder, as authentication emails often get filtered.
+            </p>
+          </div>
+        </>
       )}
       
       <ActionButton 
         type="secondary" 
-        className="mt-4"
+        className="mt-2"
         onClick={onClose}
       >
         Close

@@ -133,8 +133,18 @@ export const useAuthActions = () => {
     try {
       console.log("Requesting password reset for:", email);
       
-      // Get the current origin (domain) to use for redirection
-      const origin = window.location.origin;
+      // Get the current domain for redirect
+      // First try to use the current window location (for production)
+      let origin = '';
+      try {
+        origin = window.location.origin;
+      } catch (e) {
+        // Fallback if window is not available
+        console.log("Using fallback domain for password reset");
+        origin = 'https://www.jess-journal.com';
+      }
+      
+      // Build the full redirect URL
       const redirectTo = `${origin}/auth/reset-password`;
       
       console.log("Using redirect URL:", redirectTo);

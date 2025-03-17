@@ -33,9 +33,12 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
     setLoading(true);
     
     try {
+      console.log("Attempting to send reset email to:", email);
       await resetPassword(email);
+      console.log("Reset email sent successfully");
       onSuccess(email);
     } catch (error: any) {
+      console.error("Password reset error:", error);
       let errorMessage = "Failed to send reset email. Please try again.";
       
       if (error.message) {
