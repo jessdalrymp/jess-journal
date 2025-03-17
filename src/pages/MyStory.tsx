@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
@@ -20,7 +21,7 @@ const MyStory = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    console.log("MyStory - Auth state:", user ? "Authenticated" : "Not authenticated");
+    console.log("MyStory - Auth state:", user ? "Authenticated" : "Not authenticated", "Loading:", userLoading);
     
     // Only proceed if we have a definitive authentication state and haven't attempted initialization
     if (userLoading || initializationAttempted.current) {
