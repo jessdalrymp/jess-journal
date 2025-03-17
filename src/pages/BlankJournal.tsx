@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
@@ -16,8 +17,8 @@ const BlankJournal = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { fetchJournalEntries } = useUserData();
-  const [content, setContent] = useState('```json\n{\n  "title": "Untitled Entry",\n  "summary": ""\n}\n```');
-  const [title, setTitle] = useState("Untitled Entry");
+  const [content, setContent] = useState('```json\n{\n  "title": "Add your title here:",\n  "summary": ""\n}\n```');
+  const [title, setTitle] = useState("Add your title here:");
   const [isSaving, setIsSaving] = useState(false);
   const isMobile = useIsMobile();
 
@@ -111,7 +112,7 @@ const BlankJournal = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="text-2xl font-semibold px-2 py-1 h-auto text-gray-900 focus-visible:outline-none w-full bg-jess-subtle rounded-md"
-              placeholder="Enter title..."
+              placeholder="Add your title here:"
             />
             <p className="text-sm text-jess-muted mt-2">
               {new Date().toLocaleDateString('en-US', { 
