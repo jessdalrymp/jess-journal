@@ -23,9 +23,9 @@ export const Dashboard = () => {
   }, [loading]);
 
   return (
-    <div className="max-w-5xl mx-auto p-2 md:p-3 relative">
+    <div className="max-w-7xl mx-auto p-4 md:p-6 relative">
       {/* First row - 2 columns on lg screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3 relative z-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 relative z-10">
         <div className="core-actions-section">
           <CoreActionsSection />
         </div>
@@ -40,13 +40,13 @@ export const Dashboard = () => {
       
       {/* Growth Insights - Moved here to appear before Journal History */}
       {user && profile && !isLoading && (
-        <div className="mb-3">
+        <div className="mb-6">
           <GrowthInsights />
         </div>
       )}
       
       {/* Second row - 2 columns on lg screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 relative z-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
         <div className="journal-history-section">
           <JournalHistorySection />
         </div>
@@ -56,8 +56,8 @@ export const Dashboard = () => {
       </div>
       
       {/* Decorative background elements for depth */}
-      <div className="absolute top-10 right-5 w-32 h-32 bg-jess-primary/5 rounded-full blur-2xl -z-10"></div>
-      <div className="absolute bottom-10 left-5 w-36 h-36 bg-jess-secondary/5 rounded-full blur-2xl -z-10"></div>
+      <div className="absolute top-20 right-10 w-64 h-64 bg-jess-primary/5 rounded-full blur-3xl -z-10"></div>
+      <div className="absolute bottom-20 left-10 w-72 h-72 bg-jess-secondary/5 rounded-full blur-3xl -z-10"></div>
       
       <DashboardWelcomeModal />
       <FeatureTour />

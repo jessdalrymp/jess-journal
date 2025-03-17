@@ -11,10 +11,10 @@ export const Header = () => {
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
 
   return (
-    <header className="w-full py-2 px-2 flex items-center justify-between sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-jess-subtle/30 shadow-sm">
+    <header className="w-full py-3 px-4 flex items-center justify-between sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-jess-subtle/30 shadow-sm">
       <div className="flex items-center">
         <Link to="/dashboard" className="group">
-          <h1 className="text-2xl md:text-3xl font-cormorant font-medium tracking-tight bg-gradient-to-r from-jess-primary to-jess-foreground bg-clip-text text-transparent cursor-pointer transition-all duration-300 hover:scale-105">
+          <h1 className="text-xl font-cormorant font-medium tracking-tight bg-gradient-to-r from-jess-primary to-jess-foreground bg-clip-text text-transparent cursor-pointer transition-all duration-300 hover:scale-105">
             JESS
           </h1>
           <div className="h-0.5 w-0 bg-jess-primary rounded-full transition-all duration-300 group-hover:w-full"></div>
@@ -22,10 +22,10 @@ export const Header = () => {
       </div>
 
       {/* Desktop menu */}
-      <div className="hidden md:flex items-center space-x-3">
+      <div className="hidden md:flex items-center space-x-4">
         <Link 
           to="/dashboard"
-          className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors duration-300 hover:scale-105 relative group text-base"
+          className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors duration-300 hover:scale-105 relative group text-sm"
         >
           <Home size={16} className="mr-1" />
           <span className="font-medium">Home</span>
@@ -36,7 +36,7 @@ export const Header = () => {
           <>
             <Link
               to="/account"
-              className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors duration-300 hover:scale-105 relative group text-base"
+              className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors duration-300 hover:scale-105 relative group text-sm"
             >
               <Pencil size={16} className="mr-1" />
               <span className="font-medium">Edit Profile</span>
@@ -45,7 +45,7 @@ export const Header = () => {
             
             <button
               onClick={() => signOut()}
-              className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors duration-300 hover:scale-105 text-base"
+              className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors duration-300 hover:scale-105 text-sm"
             >
               <LogOut size={16} className="mr-1" />
               <span className="font-medium">Sign Out</span>
@@ -64,8 +64,8 @@ export const Header = () => {
       
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="absolute top-full left-0 right-0 bg-white shadow-md py-2 px-3 border-b border-jess-subtle/30 md:hidden animate-fade-in z-30">
-          <nav className="flex flex-col space-y-2">
+        <div className="absolute top-full left-0 right-0 bg-white shadow-md py-3 px-4 border-b border-jess-subtle/30 md:hidden animate-fade-in z-30">
+          <nav className="flex flex-col space-y-3">
             <Link 
               to="/dashboard"
               className="flex items-center text-jess-foreground hover:text-jess-primary transition-colors duration-300 py-1 text-sm"
