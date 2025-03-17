@@ -22,7 +22,7 @@ export const JournalEntryEditForm: React.FC<JournalEntryEditFormProps> = ({
         type="text"
         value={editableTitle}
         onChange={(e) => setEditableTitle(e.target.value)}
-        className="text-2xl font-semibold border-none px-0 py-0 mb-4 w-full focus-visible:outline-none"
+        className="text-2xl font-semibold border-none px-0 py-0 mb-4 w-full focus-visible:outline-none bg-jess-subtle rounded-md px-2"
         placeholder="Enter title..."
       />
       <JournalEntryEditor 
