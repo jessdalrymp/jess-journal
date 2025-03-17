@@ -11,6 +11,7 @@ export const JournalPromptCategories = () => {
 
   const handlePromptClickFactory = (category: PromptCategory) => {
     return (prompt: Prompt) => {
+      console.log('Journal category prompt clicked:', { category: category.name, prompt });
       setSelectedCategory(category);
       setSelectedPrompt(prompt);
       setIsDialogOpen(true);

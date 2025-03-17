@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { FilePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { PromptCategoryCard } from './PromptCategoryCard';
 import { QuickJournalDialog } from './QuickJournalDialog';
 import { promptCategories, PromptCategory, Prompt } from './data/promptCategories';
@@ -19,6 +19,7 @@ export const NewJournalEntryButton = () => {
 
   const handlePromptClickFactory = (category: PromptCategory) => {
     return (prompt: Prompt) => {
+      console.log('New entry prompt clicked:', { category: category.name, prompt });
       setSelectedCategory(category);
       setSelectedPrompt(prompt);
       setShowPrompts(false);
@@ -48,6 +49,7 @@ export const NewJournalEntryButton = () => {
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Choose a Journaling Prompt</DialogTitle>
+            <DialogDescription>Select a prompt to begin your journal entry</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 sm:grid-cols-2 max-h-[60vh] overflow-y-auto p-1">
             {promptCategories.map((category) => (
