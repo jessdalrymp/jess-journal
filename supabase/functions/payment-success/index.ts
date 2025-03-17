@@ -15,6 +15,7 @@ serve(async (req) => {
   try {
     const url = new URL(req.url)
     const userId = url.searchParams.get('user_id')
+    const isAnnual = url.searchParams.get('is_annual') === 'true'
 
     if (!userId) {
       return new Response(
@@ -41,7 +42,13 @@ serve(async (req) => {
     // Update or create subscription
     const currentDate = new Date()
     const nextBillingDate = new Date()
-    nextBillingDate.setMonth(currentDate.getMonth() + 1) // 1 month subscription
+    
+    // Set next billing date based on subscription type
+    if (isAnnual) {
+      nextBillingDate.setFullYear(currentDate.getFullYear() + 1) // 1 year subscription
+    } else {
+      nextBillingDate.setMonth(currentDate.getMonth() + 1) // 1 month subscription
+    }
 
     // Get existing subscription
     const { data: existingSub } = await supabase
@@ -54,6 +61,7 @@ serve(async (req) => {
       user_id: userId,
       status: 'active',
       is_trial: false,
+      is_annual: isAnnual,
       current_period_ends_at: nextBillingDate.toISOString(),
       updated_at: currentDate.toISOString()
     }

@@ -50,7 +50,7 @@ export const useSubscriptionActions = (
     }
   };
 
-  const handleInitiatePayment = async () => {
+  const handleInitiatePayment = async (isAnnual = false) => {
     if (!user) {
       toast({
         title: "Please sign in",
@@ -62,8 +62,18 @@ export const useSubscriptionActions = (
 
     setIsProcessing(true);
     try {
+      // Use different amounts based on the subscription type
+      const amount = isAnnual ? 9900 : 1499; // $99.00 for annual, $14.99 for monthly
+      const description = isAnnual ? "Annual subscription" : "Monthly subscription";
+      
       const { data, error } = await supabase.functions.invoke("create-payment", {
-        body: { userId: user.id, amount: 1499, currency: "USD", description: "Monthly subscription" }
+        body: { 
+          userId: user.id, 
+          amount: amount, 
+          currency: "USD", 
+          description: description,
+          isAnnual: isAnnual
+        }
       });
 
       if (error) throw error;

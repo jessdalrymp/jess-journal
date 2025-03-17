@@ -18,7 +18,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
     
-    const { userId, amount, currency, description } = await req.json()
+    const { userId, amount, currency, description, isAnnual } = await req.json()
 
     if (!userId || !amount || !currency) {
       return new Response(
@@ -58,7 +58,7 @@ serve(async (req) => {
       body: JSON.stringify({
         idempotency_key: idempotencyKey,
         quick_pay: {
-          name: description || 'Jess AI Premium Subscription',
+          name: description || `Jess AI ${isAnnual ? 'Annual' : 'Monthly'} Subscription`,
           price_money: {
             amount: amount,
             currency: currency
@@ -66,7 +66,7 @@ serve(async (req) => {
           location_id: SQUARE_LOCATION_ID
         },
         checkout_options: {
-          redirect_url: `${Deno.env.get('APP_URL')}/payment-success?user_id=${userId}`,
+          redirect_url: `${Deno.env.get('APP_URL')}/payment-success?user_id=${userId}&is_annual=${isAnnual ? 'true' : 'false'}`,
           ask_for_shipping_address: false
         },
         pre_populated_data: {
@@ -91,8 +91,9 @@ serve(async (req) => {
         user_id: userId,
         amount: amount,
         currency: currency,
-        description: description || 'Monthly subscription',
+        description: description || `${isAnnual ? 'Annual' : 'Monthly'} subscription`,
         status: 'pending',
+        is_annual: isAnnual || false,
         square_payment_id: squareData.payment_link?.id || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
