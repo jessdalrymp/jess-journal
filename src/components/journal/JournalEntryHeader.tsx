@@ -1,5 +1,5 @@
 
-import { ArrowLeft, Edit, Save, X } from "lucide-react";
+import { ArrowLeft, Edit, X } from "lucide-react";
 import { ActionButton } from "../ui/ActionButton";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -7,14 +7,12 @@ import { useNavigate } from "react-router-dom";
 interface JournalEntryHeaderProps {
   isEditing: boolean;
   onEditClick: () => void;
-  onSaveClick: () => void;
   onCancelEdit: () => void;
 }
 
 export const JournalEntryHeader = ({
   isEditing,
   onEditClick,
-  onSaveClick,
   onCancelEdit,
 }: JournalEntryHeaderProps) => {
   const navigate = useNavigate();
@@ -38,16 +36,10 @@ export const JournalEntryHeader = ({
           Edit
         </Button>
       ) : (
-        <div className="flex space-x-2">
-          <Button onClick={onCancelEdit} variant="outline" className="flex items-center gap-2">
-            <X size={16} />
-            Cancel
-          </Button>
-          <Button onClick={onSaveClick} variant="default" className="flex items-center gap-2">
-            <Save size={16} />
-            Save
-          </Button>
-        </div>
+        <Button onClick={onCancelEdit} variant="outline" className="flex items-center gap-2">
+          <X size={16} />
+          Cancel
+        </Button>
       )}
     </div>
   );

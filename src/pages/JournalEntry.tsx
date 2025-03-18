@@ -12,6 +12,8 @@ import { JournalEntryMeta } from "@/components/journal/JournalEntryMeta";
 import { JournalEntryEditForm } from "@/components/journal/JournalEntryEditForm";
 import { useJournalEntryEditor } from "@/hooks/useJournalEntryEditor";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Save } from "lucide-react";
 
 const JournalEntry = () => {
   const location = useLocation();
@@ -35,6 +37,7 @@ const JournalEntry = () => {
     handleSave,
     handleCancelEdit,
     startEditing,
+    isSaving,
   } = useJournalEntryEditor(initialEntry);
 
   // This function retries fetching journal entries
@@ -143,7 +146,6 @@ const JournalEntry = () => {
       <JournalEntryHeader 
         isEditing={isEditing}
         onEditClick={startEditing}
-        onSaveClick={handleSaveClick}
         onCancelEdit={handleCancelEdit}
       />
       
@@ -154,13 +156,26 @@ const JournalEntry = () => {
         />
         
         {isEditing ? (
-          <JournalEntryEditForm
-            entry={entry}
-            editableContent={editableContent}
-            editableTitle={editableTitle}
-            setEditableContent={setEditableContent}
-            setEditableTitle={setEditableTitle}
-          />
+          <>
+            <JournalEntryEditForm
+              entry={entry}
+              editableContent={editableContent}
+              editableTitle={editableTitle}
+              setEditableContent={setEditableContent}
+              setEditableTitle={setEditableTitle}
+            />
+            
+            <div className="mt-6 flex justify-end">
+              <Button 
+                onClick={handleSaveClick} 
+                disabled={isSaving}
+                className="flex items-center gap-2 bg-jess-primary hover:bg-jess-primary/90"
+              >
+                <Save size={16} />
+                {isSaving ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </>
         ) : (
           <JournalEntryContent 
             entry={entry} 
