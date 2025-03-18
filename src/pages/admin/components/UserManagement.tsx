@@ -37,7 +37,8 @@ export const UserManagement = () => {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.rpc('get_users_with_details');
+      // Use type assertion to bypass TypeScript checking for RPC functions
+      const { data, error } = await supabase.rpc('get_users_with_details') as any;
       
       if (error) {
         console.error('Error fetching users:', error);
@@ -49,8 +50,10 @@ export const UserManagement = () => {
         return;
       }
       
-      setUsers(data as User[]);
-      applyFilters(data as User[], searchTerm, currentTab);
+      // Cast the data to the User[] type
+      const userData = data as User[];
+      setUsers(userData);
+      applyFilters(userData, searchTerm, currentTab);
     } catch (error) {
       console.error('Error in user management:', error);
       toast({
@@ -102,10 +105,11 @@ export const UserManagement = () => {
 
   const toggleAdminStatus = async (userId: string, currentStatus: boolean) => {
     try {
+      // Use type assertion to bypass TypeScript checking for RPC functions
       const { data, error } = await supabase.rpc(
         'toggle_user_admin_status',
         { p_user_id: userId, p_admin_status: !currentStatus }
-      );
+      ) as any;
       
       if (error) {
         console.error('Error updating admin status:', error);
@@ -149,10 +153,11 @@ export const UserManagement = () => {
     }
     
     try {
+      // Use type assertion to bypass TypeScript checking for RPC functions
       const { data, error } = await supabase.rpc(
         'apply_coupon_to_user',
         { p_user_id: userId, p_coupon_code: couponCode.trim() }
-      );
+      ) as any;
       
       if (error) {
         console.error('Error applying coupon:', error);
