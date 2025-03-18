@@ -21,7 +21,19 @@ export const deleteCoupon = async (id: string) => {
   if (error) throw error;
 };
 
-export const saveCoupon = async (couponData: Partial<CouponType>, id?: string) => {
+// Define a type for the coupon data that ensures code is required
+interface CouponData {
+  code: string;
+  description?: string | null;
+  discount_percent?: number | null;
+  discount_amount?: number | null;
+  expires_at?: string | null;
+  max_uses?: number | null;
+  is_active?: boolean | null;
+  is_unlimited?: boolean | null;
+}
+
+export const saveCoupon = async (couponData: CouponData, id?: string) => {
   if (id) {
     // Update existing coupon
     const { error } = await supabase
@@ -40,7 +52,7 @@ export const saveCoupon = async (couponData: Partial<CouponType>, id?: string) =
   }
 };
 
-export const formatCouponFormData = (formData: CouponFormData) => {
+export const formatCouponFormData = (formData: CouponFormData): CouponData => {
   return {
     code: formData.code,
     description: formData.description,
