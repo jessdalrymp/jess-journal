@@ -1,4 +1,3 @@
-
 import { Dispatch, SetStateAction } from "react";
 import { WelcomeModal } from "../chat/WelcomeModal";
 
@@ -11,6 +10,9 @@ export const JournalWelcomeModal = ({
   showWelcome, 
   setShowWelcome 
 }: JournalWelcomeModalProps) => {
+  // We're keeping the component as is because it's controlled by its parent
+  // This welcome modal is different from the dashboard welcome popup -
+  // it's only shown when explicitly triggered by its parent component
   return (
     <WelcomeModal
       open={showWelcome}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ChevronRight, ChevronLeft, ArrowRight } from 'lucide-react';
@@ -42,32 +41,8 @@ export const FeatureTour = () => {
     },
   ];
 
-  useEffect(() => {
-    const hasSeenTour = localStorage.getItem('hasSeenFeatureTour');
-    
-    // Only start the tour if the welcome modal has been viewed but the tour hasn't
-    const hasSeenWelcome = localStorage.getItem('hasSeenDashboardWelcome');
-    
-    if (hasSeenWelcome && !hasSeenTour) {
-      // Small delay to ensure dashboard is rendered
-      const timer = setTimeout(() => {
-        setActiveTour(true);
-        positionTooltip();
-      }, 1000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (activeTour) {
-      positionTooltip();
-      
-      // Add resize listener to reposition tooltip if window size changes
-      window.addEventListener('resize', positionTooltip);
-      return () => window.removeEventListener('resize', positionTooltip);
-    }
-  }, [activeTour, currentStep]);
+  // The useEffect hooks that triggered the tour have been removed
+  // The tour now stays inactive by default
 
   const positionTooltip = () => {
     if (!activeTour) return;

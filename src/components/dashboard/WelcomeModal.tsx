@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Sparkles, ArrowRight, BookOpen, MessageSquare, PenLine } from 'lucide-react';
@@ -8,13 +7,6 @@ import { Link } from 'react-router-dom';
 export const DashboardWelcomeModal = () => {
   const [open, setOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-
-  useEffect(() => {
-    const hasSeenWelcome = localStorage.getItem('hasSeenDashboardWelcome');
-    if (!hasSeenWelcome) {
-      setOpen(true);
-    }
-  }, []);
 
   const handleClose = () => {
     localStorage.setItem('hasSeenDashboardWelcome', 'true');
