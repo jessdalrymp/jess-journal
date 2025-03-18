@@ -19,7 +19,6 @@ import NotFound from './pages/NotFound';
 import Subscription from './pages/subscription';
 import PaymentSuccess from './pages/PaymentSuccess';
 import Legal from './pages/Legal';
-import AdminPage from "./pages/admin";
 
 const App = () => {
   console.log("App component initialized");
@@ -43,7 +42,6 @@ const App = () => {
               <Route path="/journal-entry/:id" element={<JournalEntry />} />
               <Route path="/journal-history" element={<JournalHistory />} />
               <Route path="/legal" element={<Legal />} />
-              <Route path="/admin" element={<AdminPage />} />
               <Route path="/404" element={<NotFound />} />
               <Route path="*" element={<Navigate to="/404" replace />} />
             </Routes>
