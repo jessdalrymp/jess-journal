@@ -5,6 +5,7 @@ import { useUserData } from '@/context/UserDataContext';
 import { History, ArrowRight, Calendar, Clock, PenLine, BookOpen, MessageSquare, Zap } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { parseContentWithJsonCodeBlock } from '@/services/journal';
 
 // Helper function to get the appropriate icon for each journal type
 const getEntryIcon = (type: string) => {
@@ -74,6 +75,34 @@ export const JournalHistorySection = () => {
       .slice(0, 5)
     : [];
   
+  // Function to parse the entry content for potential JSON with a title or summary
+  const getEntryTitle = (entry: JournalEntry) => {
+    try {
+      // Parse the content to get the user's answer instead of the question
+      const parsedContent = parseContentWithJsonCodeBlock(entry.content);
+      
+      if (parsedContent) {
+        // If we have a summary field (user's answer), use that for the display
+        if (parsedContent.summary) {
+          // Use the first line or first 50 characters of the summary
+          const summaryText = parsedContent.summary.split('\n')[0];
+          return summaryText.length > 50 
+            ? summaryText.substring(0, 50) + '...' 
+            : summaryText;
+        }
+        
+        // Fallback to title if present
+        if (parsedContent.title) {
+          return parsedContent.title;
+        }
+      }
+    } catch (e) {
+      // Not valid JSON or doesn't have the expected fields
+    }
+    
+    return entry.title;
+  };
+  
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-jess-subtle/50 transition-all duration-300 hover:shadow-xl relative overflow-hidden group">
       {/* Subtle gradient background that moves on hover */}
@@ -138,7 +167,7 @@ export const JournalHistorySection = () => {
                     <div className="flex items-center">
                       <span className="mr-2">{getEntryIcon(entryType)}</span>
                       <p className="text-sm font-medium text-jess-foreground group-hover:text-jess-primary transition-colors">
-                        {entry.title}
+                        {getEntryTitle(entry)}
                       </p>
                     </div>
                   </Link>
