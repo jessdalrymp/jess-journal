@@ -80,9 +80,67 @@ export const useUserManagement = () => {
     }
   };
 
+  const toggleAdminStatus = async (userId: string, currentAdminStatus: boolean) => {
+    try {
+      setLoading(true);
+      const newAdminStatus = !currentAdminStatus;
+      
+      // Call the RPC function to toggle admin status
+      const { data, error } = await supabase.rpc('toggle_user_admin_status', {
+        p_user_id: userId,
+        p_admin_status: newAdminStatus
+      });
+      
+      if (error) {
+        console.error('Error toggling admin status:', error);
+        toast({
+          title: "Error updating role",
+          description: error.message || "Could not update user role",
+          variant: "destructive"
+        });
+        return false;
+      }
+      
+      if (data) {
+        // Update the local state
+        setUsers(prevUsers => 
+          prevUsers.map(user => 
+            user.id === userId 
+              ? { ...user, is_admin: newAdminStatus } 
+              : user
+          )
+        );
+        
+        toast({
+          title: "Role updated",
+          description: `User is now ${newAdminStatus ? 'an admin' : 'a regular user'}`,
+        });
+        return true;
+      } else {
+        toast({
+          title: "Update failed",
+          description: "Role was not updated. Please try again.",
+          variant: "destructive"
+        });
+        return false;
+      }
+    } catch (error: any) {
+      console.error('Error in toggleAdminStatus:', error);
+      toast({
+        title: "Error updating role",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     users,
     loading,
-    fetchUsers
+    fetchUsers,
+    toggleAdminStatus
   };
 };
