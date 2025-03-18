@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from "../../../../integrations/supabase/client";
 import { useToast } from "../../../../hooks/use-toast";
@@ -97,15 +98,20 @@ export const usePlanManagement = () => {
     setIsDialogOpen(true);
   };
 
+  // Fixed version with simplified typing to avoid deep type instantiation
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this plan?')) return;
     
     try {
-      const { data: paymentData, error: paymentError } = await supabase
+      // Check if any payments reference this plan, with explicit typing
+      const result = await supabase
         .from('payments')
         .select('id')
         .eq('payment_plan_id', id)
         .limit(1);
+      
+      const paymentData = result.data;
+      const paymentError = result.error;
         
       if (paymentError) throw paymentError;
       
@@ -118,12 +124,12 @@ export const usePlanManagement = () => {
         return;
       }
       
-      const { error } = await supabase
+      const deleteResult = await supabase
         .from('payment_plans')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (deleteResult.error) throw deleteResult.error;
       
       toast({
         title: "Plan deleted",
