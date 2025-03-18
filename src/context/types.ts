@@ -21,7 +21,7 @@ export interface UserData {
   startConversation: (type: 'story' | 'sideQuest' | 'action' | 'journal') => Promise<ConversationSession>;
   addMessageToConversation: (conversationId: string, content: string, role: 'user' | 'assistant') => Promise<void>;
   journalEntries: JournalEntry[];
-  fetchJournalEntries: (forceRefresh?: boolean) => Promise<JournalEntry[]>;
+  fetchJournalEntries: () => Promise<JournalEntry[]>;
   subscription: Subscription | null;
   checkSubscriptionStatus: () => Promise<void>;
   applyCoupon: (couponCode: string) => Promise<boolean>;

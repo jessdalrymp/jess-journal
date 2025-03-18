@@ -20,7 +20,6 @@ const JournalEntry = () => {
   const [loading, setLoading] = useState(true);
   const [initialEntry, setInitialEntry] = useState<JournalEntryType | null>(null);
   const [notFound, setNotFound] = useState(false);
-  const [retryAttempts, setRetryAttempts] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -38,30 +37,25 @@ const JournalEntry = () => {
     startEditing,
   } = useJournalEntryEditor(initialEntry);
 
-  // This function retries fetching journal entries with exponential backoff
+  // This function retries fetching journal entries
   const tryFindingEntry = async () => {
     if (!id) return false;
     
     try {
-      // Try to refetch entries with force refresh
-      await fetchJournalEntries(true);
-      
+      // Try to refetch entries
+      await fetchJournalEntries();
       // Look for the entry again
       const foundEntry = journalEntries.find(entry => entry.id === id);
       if (foundEntry) {
         setInitialEntry(foundEntry);
         setEntry(foundEntry);
         setNotFound(false);
-        console.log("Entry found after retry:", foundEntry.id);
         return true;
       }
-      
-      console.log(`Entry still not found after retry ${retryAttempts + 1}`);
-      return false;
     } catch (error) {
       console.error("Error retrying journal entry fetch:", error);
-      return false;
     }
+    return false;
   };
 
   useEffect(() => {
@@ -85,12 +79,11 @@ const JournalEntry = () => {
       if (id) {
         let foundEntry = journalEntries.find(entry => entry.id === id);
         
-        // If we didn't find the entry and we have an ID, try forcing a refresh
-        if (!foundEntry) {
-          // Fetch entries with force refresh
+        // If we didn't find the entry and we have an ID, try fetching again
+        if (!foundEntry && journalEntries.length === 0) {
+          // Fetch entries if needed
           try {
-            console.log(`Entry with ID ${id} not found. Forcing a refresh...`);
-            await fetchJournalEntries(true);
+            await fetchJournalEntries();
             foundEntry = journalEntries.find(entry => entry.id === id);
           } catch (error) {
             console.error("Error fetching journal entries:", error);
@@ -108,26 +101,16 @@ const JournalEntry = () => {
         } else {
           console.log(`Entry with ID ${id} not found in ${journalEntries.length} entries. Retrying...`);
           
-          // Try with multiple retries and increasing delays
-          if (retryAttempts < 3) {
-            const delay = Math.pow(2, retryAttempts) * 1000; // Exponential backoff: 1s, 2s, 4s
-            
-            setRetryAttempts(prev => prev + 1);
-            
-            setTimeout(async () => {
-              const found = await tryFindingEntry();
-              if (!found && retryAttempts >= 2) {
-                setNotFound(true);
-                setLoading(false);
-              } else if (found) {
-                setLoading(false);
-              }
-            }, delay);
-            
-            return; // Don't set loading to false yet
-          } else {
-            setNotFound(true);
-          }
+          // Try one more time with a delay
+          setTimeout(async () => {
+            const found = await tryFindingEntry();
+            if (!found) {
+              setNotFound(true);
+            }
+            setLoading(false);
+          }, 1000);
+          
+          return; // Don't set loading to false yet
         }
       } else {
         setNotFound(true);
@@ -137,7 +120,7 @@ const JournalEntry = () => {
     };
 
     loadEntry();
-  }, [id, location.state, journalEntries.length, retryAttempts]);
+  }, [id, location.state, journalEntries.length]);
 
   const handleSaveClick = async () => {
     const success = await handleSave();
