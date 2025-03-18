@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { JournalEntry as JournalEntryType } from "../lib/types";
@@ -36,6 +37,27 @@ const JournalEntry = () => {
     startEditing,
   } = useJournalEntryEditor(initialEntry);
 
+  // This function retries fetching journal entries
+  const tryFindingEntry = async () => {
+    if (!id) return false;
+    
+    try {
+      // Try to refetch entries
+      await fetchJournalEntries();
+      // Look for the entry again
+      const foundEntry = journalEntries.find(entry => entry.id === id);
+      if (foundEntry) {
+        setInitialEntry(foundEntry);
+        setEntry(foundEntry);
+        setNotFound(false);
+        return true;
+      }
+    } catch (error) {
+      console.error("Error retrying journal entry fetch:", error);
+    }
+    return false;
+  };
+
   useEffect(() => {
     const loadEntry = async () => {
       setLoading(true);
@@ -55,10 +77,14 @@ const JournalEntry = () => {
       
       // Otherwise, find by ID
       if (id) {
-        if (journalEntries.length === 0) {
+        let foundEntry = journalEntries.find(entry => entry.id === id);
+        
+        // If we didn't find the entry and we have an ID, try fetching again
+        if (!foundEntry && journalEntries.length === 0) {
           // Fetch entries if needed
           try {
             await fetchJournalEntries();
+            foundEntry = journalEntries.find(entry => entry.id === id);
           } catch (error) {
             console.error("Error fetching journal entries:", error);
             toast({
@@ -69,13 +95,22 @@ const JournalEntry = () => {
           }
         }
         
-        const foundEntry = journalEntries.find(entry => entry.id === id);
         if (foundEntry) {
           setInitialEntry(foundEntry);
           setEntry(foundEntry);
         } else {
-          console.log(`Entry with ID ${id} not found in ${journalEntries.length} entries`);
-          setNotFound(true);
+          console.log(`Entry with ID ${id} not found in ${journalEntries.length} entries. Retrying...`);
+          
+          // Try one more time with a delay
+          setTimeout(async () => {
+            const found = await tryFindingEntry();
+            if (!found) {
+              setNotFound(true);
+            }
+            setLoading(false);
+          }, 1000);
+          
+          return; // Don't set loading to false yet
         }
       } else {
         setNotFound(true);
@@ -85,7 +120,7 @@ const JournalEntry = () => {
     };
 
     loadEntry();
-  }, [id, location.state, journalEntries, setEntry, startEditing, fetchJournalEntries, toast]);
+  }, [id, location.state, journalEntries.length]);
 
   const handleSaveClick = async () => {
     const success = await handleSave();

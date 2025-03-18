@@ -3,12 +3,50 @@ import { Header } from "../../components/Header";
 import { DisclaimerBanner } from "../../components/ui/DisclaimerBanner";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Book } from "lucide-react";
+import { ArrowLeft, Book, RefreshCw } from "lucide-react";
 import { useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useUserData } from "@/context/UserDataContext";
+import { useToast } from "@/hooks/use-toast";
 
 export const JournalEntryNotFound = () => {
   const location = useLocation();
   const entryId = location.pathname.split('/').pop();
+  const [isRetrying, setIsRetrying] = useState(false);
+  const { fetchJournalEntries, journalEntries } = useUserData();
+  const { toast } = useToast();
+
+  const handleRetry = async () => {
+    if (!entryId) return;
+    
+    setIsRetrying(true);
+    try {
+      await fetchJournalEntries();
+      
+      // Check if entry exists after refresh
+      const foundEntry = journalEntries.find(entry => entry.id === entryId);
+      if (foundEntry) {
+        // Reload the page to try again with fresh data
+        window.location.reload();
+        return;
+      }
+      
+      toast({
+        title: "Still not found",
+        description: "The journal entry could not be found even after refreshing.",
+        variant: "destructive"
+      });
+    } catch (error) {
+      console.error("Error retrying to find journal entry:", error);
+      toast({
+        title: "Error",
+        description: "Could not retry loading journal entry.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRetrying(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
@@ -23,7 +61,7 @@ export const JournalEntryNotFound = () => {
               Journal Entry Not Found
             </h1>
             <p className="text-jess-muted mb-4">
-              The journal entry you're looking for could not be found. It may have been deleted or the URL might be incorrect.
+              The journal entry you're looking for could not be found. It may have been recently created and not yet synchronized.
             </p>
             <p className="text-xs text-jess-muted mb-6 bg-gray-50 p-2 rounded">
               Entry ID: {entryId || 'Unknown'}
@@ -36,6 +74,15 @@ export const JournalEntryNotFound = () => {
               >
                 <ArrowLeft size={16} />
                 Go Back
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleRetry}
+                disabled={isRetrying}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw size={16} className={isRetrying ? "animate-spin" : ""} />
+                {isRetrying ? "Retrying..." : "Retry"}
               </Button>
               <Link to="/journal-history">
                 <Button className="w-full sm:w-auto">

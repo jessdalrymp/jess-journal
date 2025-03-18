@@ -13,6 +13,7 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editableContent, setEditableContent] = useState("");
   const [editableTitle, setEditableTitle] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const { fetchJournalEntries } = useUserData();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -36,6 +37,13 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
     }
   }, [isEditing, entry]);
 
+  // Update local entry when initialEntry changes
+  useEffect(() => {
+    if (initialEntry) {
+      setEntry(initialEntry);
+    }
+  }, [initialEntry]);
+
   const handleSave = async () => {
     if (!entry || !entry.id || !user) {
       toast({
@@ -45,6 +53,12 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
       });
       return false;
     }
+    
+    if (isSaving) {
+      return false; // Prevent multiple save attempts
+    }
+    
+    setIsSaving(true);
     
     // Process content before saving - we want to maintain the format
     // Update the JSON content with the current title
@@ -80,6 +94,7 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
         
         // Exit editing mode
         setIsEditing(false);
+        setIsSaving(false);
         return true;
       } else {
         toast({
@@ -87,6 +102,7 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
           description: "Failed to update journal entry",
           variant: "destructive",
         });
+        setIsSaving(false);
         return false;
       }
     } catch (error) {
@@ -96,6 +112,7 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
         description: "Failed to update journal entry due to an unexpected error",
         variant: "destructive",
       });
+      setIsSaving(false);
       return false;
     }
   };
@@ -124,5 +141,6 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
     handleSave,
     handleCancelEdit,
     startEditing,
+    isSaving,
   };
 };
