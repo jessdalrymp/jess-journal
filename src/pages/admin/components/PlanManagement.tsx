@@ -2,15 +2,17 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, AlertTriangle } from "lucide-react";
 import { PlanTable } from "./plan/PlanTable";
 import { PlanFormDialog } from "./plan/PlanFormDialog";
 import { usePlanManagement } from "../hooks/usePlanManagement";
+import { Alert, AlertDescription, AlertTitle } from "../../../components/ui/alert";
 
 export const PlanManagement = () => {
   const {
     plans,
     loading,
+    isAdmin,
     isDialogOpen,
     setIsDialogOpen,
     editingPlan,
@@ -37,11 +39,23 @@ export const PlanManagement = () => {
         </div>
       </CardHeader>
       <CardContent>
+        {isAdmin === false && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Admin Access Required</AlertTitle>
+            <AlertDescription>
+              You must be an administrator to create, update, or delete payment plans.
+              You can still view existing plans.
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <PlanTable
           plans={plans}
           loading={loading}
           handleEdit={handleEdit}
           handleDelete={handleDelete}
+          isAdmin={isAdmin}
         />
 
         <PlanFormDialog

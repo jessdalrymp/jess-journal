@@ -24,6 +24,7 @@ export const usePlanManagement = () => {
   const { toast } = useToast();
   const [plans, setPlans] = useState<PlanType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<PlanType | null>(null);
   
@@ -34,6 +35,23 @@ export const usePlanManagement = () => {
     interval: 'month',
     is_active: true
   });
+
+  const checkAdminStatus = async () => {
+    try {
+      const { data, error } = await supabase.rpc('check_is_admin');
+      
+      if (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+        return;
+      }
+      
+      setIsAdmin(data === true);
+    } catch (error: any) {
+      console.error('Error checking admin status:', error);
+      setIsAdmin(false);
+    }
+  };
 
   const fetchPlans = async () => {
     try {
@@ -72,6 +90,7 @@ export const usePlanManagement = () => {
   };
 
   useEffect(() => {
+    checkAdminStatus();
     fetchPlans();
   }, []);
 
@@ -89,6 +108,15 @@ export const usePlanManagement = () => {
   };
 
   const handleEdit = (plan: PlanType) => {
+    if (!isAdmin) {
+      toast({
+        title: "Permission denied",
+        description: "Only administrators can edit plans",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setEditingPlan(plan);
     setFormData({
       name: plan.name,
@@ -101,6 +129,15 @@ export const usePlanManagement = () => {
   };
 
   const handleAdd = () => {
+    if (!isAdmin) {
+      toast({
+        title: "Permission denied",
+        description: "Only administrators can add plans",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setEditingPlan(null);
     setFormData({
       name: '',
@@ -113,6 +150,15 @@ export const usePlanManagement = () => {
   };
 
   const handleDelete = async (id: string) => {
+    if (!isAdmin) {
+      toast({
+        title: "Permission denied",
+        description: "Only administrators can delete plans",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (!confirm('Are you sure you want to delete this plan?')) return;
     
     try {
@@ -144,6 +190,15 @@ export const usePlanManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isAdmin) {
+      toast({
+        title: "Permission denied",
+        description: "Only administrators can modify plans",
+        variant: "destructive"
+      });
+      return;
+    }
     
     try {
       if (editingPlan) {
@@ -206,6 +261,7 @@ export const usePlanManagement = () => {
   return {
     plans,
     loading,
+    isAdmin,
     isDialogOpen,
     setIsDialogOpen,
     editingPlan,

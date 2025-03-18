@@ -17,13 +17,15 @@ interface PlanTableProps {
   handleEdit: (plan: PlanType) => void;
   handleDelete: (id: string) => void;
   loading: boolean;
+  isAdmin: boolean | null;
 }
 
 export const PlanTable: React.FC<PlanTableProps> = ({ 
   plans, 
   handleEdit, 
   handleDelete,
-  loading
+  loading,
+  isAdmin
 }) => {
   if (loading) {
     return <div className="text-center py-4">Loading plans...</div>;
@@ -60,10 +62,22 @@ export const PlanTable: React.FC<PlanTableProps> = ({
               </td>
               <td className="px-4 py-3">
                 <div className="flex space-x-2">
-                  <Button variant="ghost" size="sm" onClick={() => handleEdit(plan)}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleEdit(plan)}
+                    disabled={isAdmin === false}
+                    title={isAdmin === false ? "Admin permission required" : "Edit plan"}
+                  >
                     <Pencil size={16} />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(plan.id)}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleDelete(plan.id)}
+                    disabled={isAdmin === false}
+                    title={isAdmin === false ? "Admin permission required" : "Delete plan"}
+                  >
                     <Trash2 size={16} />
                   </Button>
                 </div>
