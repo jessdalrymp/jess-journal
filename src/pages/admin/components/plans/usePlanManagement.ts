@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from "../../../../integrations/supabase/client";
 import { useToast } from "../../../../hooks/use-toast";
@@ -42,10 +43,12 @@ export function usePlanManagement() {
     try {
       setLoading(true);
       console.log("Fetching plans from database...");
+      
+      // Explicitly select all columns and order by name
       const { data, error } = await supabase
         .from('payment_plans')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, name, description, price, interval, is_active, created_at')
+        .order('name', { ascending: true });
 
       if (error) {
         console.error('Error fetching plans:', error);
