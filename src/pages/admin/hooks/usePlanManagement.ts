@@ -27,6 +27,7 @@ export const usePlanManagement = () => {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<PlanType | null>(null);
+  const [connectionError, setConnectionError] = useState(false);
   
   const [formData, setFormData] = useState<PlanFormData>({
     name: '',
@@ -56,6 +57,8 @@ export const usePlanManagement = () => {
   const fetchPlans = async () => {
     try {
       setLoading(true);
+      setConnectionError(false);
+      
       // Check if the table exists first
       const { count, error: countError } = await supabase
         .from('payment_plans')
@@ -63,7 +66,8 @@ export const usePlanManagement = () => {
       
       if (countError) {
         console.error('Error checking payment_plans table:', countError);
-        // If there's an error with the count query, we'll still try the regular query
+        setConnectionError(true);
+        return;
       }
       
       const { data, error } = await supabase
@@ -73,12 +77,14 @@ export const usePlanManagement = () => {
 
       if (error) {
         console.error('Error fetching plans:', error);
-        throw error;
+        setConnectionError(true);
+        return;
       }
       
       setPlans(data || []);
     } catch (error: any) {
       console.error('Error in fetchPlans:', error);
+      setConnectionError(true);
       toast({
         title: "Error fetching plans",
         description: error.message || "Please try again later",
@@ -270,6 +276,7 @@ export const usePlanManagement = () => {
     handleEdit,
     handleAdd,
     handleDelete,
-    handleSubmit
+    handleSubmit,
+    connectionError
   };
 };

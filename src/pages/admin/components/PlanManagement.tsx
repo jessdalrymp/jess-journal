@@ -21,7 +21,8 @@ export const PlanManagement = () => {
     handleEdit,
     handleAdd,
     handleDelete,
-    handleSubmit
+    handleSubmit,
+    connectionError
   } = usePlanManagement();
 
   return (
@@ -32,14 +33,14 @@ export const PlanManagement = () => {
             <CardTitle>Payment Plans</CardTitle>
             <CardDescription>Manage subscription plans</CardDescription>
           </div>
-          <Button onClick={handleAdd} size="sm">
+          <Button onClick={handleAdd} size="sm" disabled={isAdmin === false || connectionError}>
             <Plus size={16} className="mr-2" />
             Add Plan
           </Button>
         </div>
       </CardHeader>
       <CardContent>
-        {isAdmin === false && (
+        {isAdmin === false && !connectionError && (
           <Alert variant="destructive" className="mb-4">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Admin Access Required</AlertTitle>
@@ -56,6 +57,7 @@ export const PlanManagement = () => {
           handleEdit={handleEdit}
           handleDelete={handleDelete}
           isAdmin={isAdmin}
+          connectionError={connectionError}
         />
 
         <PlanFormDialog
