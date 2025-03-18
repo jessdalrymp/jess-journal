@@ -15,7 +15,7 @@ export const AdminDashboard = () => {
       <AdminHeader />
       
       <div className="grid gap-6">
-        <Card>
+        <Card className="shadow-sm">
           <CardHeader>
             <CardTitle>Database Connection Status</CardTitle>
             <CardDescription>
