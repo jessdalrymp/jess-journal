@@ -28,8 +28,7 @@ export const UserManagement = () => {
       setLoading(true);
       setError(null);
       
-      // Use 'any' type to bypass TypeScript checking for the RPC function name
-      const { data, error } = await supabase.rpc('get_users_admin_status' as any);
+      const { data, error } = await supabase.rpc('get_users_admin_status');
       
       if (error) {
         throw error;
@@ -61,8 +60,7 @@ export const UserManagement = () => {
   
   const handleMakeAdmin = async (userId: string) => {
     try {
-      // Use 'any' type to bypass TypeScript checking for the RPC function name
-      const { data, error } = await supabase.rpc('make_user_admin_by_id' as any, {
+      const { data, error } = await supabase.rpc('make_user_admin_by_id', {
         target_user_id: userId
       });
       
@@ -104,8 +102,7 @@ export const UserManagement = () => {
       setLoading(true);
       setError(null);
       
-      // Use 'any' type to bypass TypeScript checking for the RPC function name
-      const { data, error } = await supabase.rpc('find_user_by_email' as any, {
+      const { data, error } = await supabase.rpc('find_user_by_email', {
         email_query: searchEmail.trim()
       });
       
