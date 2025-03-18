@@ -26,15 +26,10 @@ export const usePlanManagement = () => {
   } = useFormHandling();
 
   const loadPlans = useCallback(async () => {
-    try {
-      setLoading(true);
-      const planData = await fetchPlans();
-      setPlans(planData);
-    } catch (error) {
-      console.error('Error loading plans:', error);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    const planData = await fetchPlans();
+    setPlans(planData);
+    setLoading(false);
   }, [fetchPlans]);
 
   useEffect(() => {
