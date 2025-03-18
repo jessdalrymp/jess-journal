@@ -25,31 +25,18 @@ const AdminPage = () => {
   const checkAdminStatus = async () => {
     try {
       setIsLoading(true);
-      console.log("Checking admin status for user:", user?.id);
+      // Call the Postgres function via RPC with proper typing
+      const { data, error } = await supabase.rpc('check_is_admin', {}) as 
+        { data: boolean | null, error: Error | null };
       
-      // Call the Postgres function via RPC
-      const result = await supabase.rpc('check_is_admin');
-      
-      // Handle response properly
-      if (result.error) {
-        console.error("Error checking admin status:", result.error);
-        toast({
-          title: "Error",
-          description: "Failed to check admin status: " + result.error.message,
-          variant: "destructive"
-        });
+      if (error) {
+        console.error("Error checking admin status:", error);
         return;
       }
       
-      console.log("Admin status result:", result.data);
-      setIsAdmin(result.data === true);
+      setIsAdmin(data === true);
     } catch (error) {
       console.error("Error checking admin status:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive"
-      });
     } finally {
       setIsLoading(false);
     }
@@ -59,24 +46,21 @@ const AdminPage = () => {
     if (!user) return;
     
     try {
-      console.log("Attempting to make user admin:", user.id);
-      
-      // Call the Postgres function via RPC
-      const result = await supabase.rpc('make_user_admin');
+      // Call the Postgres function via RPC with proper typing
+      const { data, error } = await supabase.rpc('make_user_admin', {}) as 
+        { data: boolean | null, error: Error | null };
 
-      // Handle response properly 
-      if (result.error) {
-        console.error("Error making admin:", result.error);
+      if (error) {
+        console.error("Error making admin:", error);
         toast({
           title: "Error",
-          description: "Failed to set admin role: " + result.error.message,
+          description: "Failed to set admin role. " + error.message,
           variant: "destructive"
         });
         return;
       }
 
-      console.log("Make admin result:", result.data);
-      if (result.data === true) {
+      if (data === true) {
         setIsAdmin(true);
         toast({
           title: "Success",

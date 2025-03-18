@@ -358,6 +358,47 @@ export type Database = {
         }
         Relationships: []
       }
+      therapy_sessions: {
+        Row: {
+          action_items: Json[] | null
+          content: string
+          created_at: string
+          id: string
+          limiting_beliefs: string[] | null
+          reframed_narrative: string | null
+          themes: string[] | null
+          user_id: string
+        }
+        Insert: {
+          action_items?: Json[] | null
+          content: string
+          created_at?: string
+          id?: string
+          limiting_beliefs?: string[] | null
+          reframed_narrative?: string | null
+          themes?: string[] | null
+          user_id: string
+        }
+        Update: {
+          action_items?: Json[] | null
+          content?: string
+          created_at?: string
+          id?: string
+          limiting_beliefs?: string[] | null
+          reframed_narrative?: string | null
+          themes?: string[] | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "therapy_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_challenges: {
         Row: {
           completed_at: string | null
@@ -387,27 +428,6 @@ export type Database = {
           status?: string
           steps?: string[]
           title?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
         Relationships: []
@@ -479,7 +499,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
