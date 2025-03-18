@@ -8,7 +8,7 @@ import { PageHeader } from "./components/PageHeader";
 import { SubscriptionStatusCard } from "./components/SubscriptionStatusCard";
 import { SubscriptionPlansCard } from "./components/SubscriptionPlansCard";
 import { CouponRedemptionCard } from "./components/CouponRedemptionCard";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useToast } from "../../hooks/use-toast";
 
 const Subscription = () => {
@@ -17,9 +17,11 @@ const Subscription = () => {
   const location = useLocation();
   const { subscription, checkSubscriptionStatus } = useUserData();
   const [isProcessing, setIsProcessing] = useState(false);
+  const hasCheckedStatus = useRef(false);
 
   useEffect(() => {
-    if (user) {
+    if (user && !hasCheckedStatus.current) {
+      hasCheckedStatus.current = true;
       checkSubscriptionStatus();
     }
     

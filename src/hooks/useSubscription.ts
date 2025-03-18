@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { supabase } from "../integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Subscription } from "../context/types";
@@ -9,7 +9,7 @@ export function useSubscription(userId: string | undefined) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const checkSubscriptionStatus = async (): Promise<void> => {
+  const checkSubscriptionStatus = useCallback(async (): Promise<void> => {
     if (!userId) return;
     
     setLoading(true);
@@ -62,7 +62,7 @@ export function useSubscription(userId: string | undefined) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, toast]);
 
   const applyCoupon = async (couponCode: string): Promise<boolean> => {
     if (!userId) {
@@ -106,9 +106,6 @@ export function useSubscription(userId: string | undefined) {
           title: "Success",
           description: "Coupon applied successfully"
         });
-        
-        // Refresh subscription status
-        await checkSubscriptionStatus();
         return true;
       } else {
         toast({

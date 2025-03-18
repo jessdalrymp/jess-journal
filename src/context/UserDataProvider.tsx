@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { JournalEntry, UserProfile, User } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
@@ -24,6 +25,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const [isJournalFetched, setIsJournalFetched] = useState(false);
   const [isJournalLoading, setIsJournalLoading] = useState(false);
   const isFetchingJournalRef = useRef(false);
+  const isCheckingSubscriptionRef = useRef(false);
   
   const { fetchJournalEntries: fetchEntries, loading: journalActionsLoading } = useJournalEntries();
   const { loading: conversationLoading, startConversation, addMessageToConversation } = useConversationData(user?.id);
@@ -143,9 +145,18 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     if (user && !isJournalFetched && !isFetchingJournalRef.current) {
       console.log("Triggering journal entries fetch");
       fetchJournalEntries();
-      checkSubscriptionStatus();
     }
   }, [user, isJournalFetched]);
+
+  // Separate effect for subscription check to prevent loops
+  useEffect(() => {
+    if (user && !isCheckingSubscriptionRef.current) {
+      isCheckingSubscriptionRef.current = true;
+      checkSubscriptionStatus().finally(() => {
+        isCheckingSubscriptionRef.current = false;
+      });
+    }
+  }, [user, checkSubscriptionStatus]);
 
   const handleAddMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<void> => {
     try {
@@ -168,6 +179,23 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   };
 
+  // Modified applyCoupon wrapper to ensure subscription status is checked after
+  const handleApplyCoupon = async (couponCode: string): Promise<boolean> => {
+    try {
+      const result = await applyCoupon(couponCode);
+      if (result) {
+        // Explicitly check subscription status when a coupon is applied successfully
+        isCheckingSubscriptionRef.current = true;
+        await checkSubscriptionStatus();
+        isCheckingSubscriptionRef.current = false;
+      }
+      return result;
+    } catch (error) {
+      console.error("Error in handleApplyCoupon:", error);
+      throw error;
+    }
+  };
+
   const value = {
     user,
     profile,
@@ -181,7 +209,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     fetchJournalEntries,
     subscription,
     checkSubscriptionStatus,
-    applyCoupon
+    applyCoupon: handleApplyCoupon
   };
 
   return (
