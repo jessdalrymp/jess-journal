@@ -12,6 +12,7 @@ import { SubscriptionSection } from "../components/account/SubscriptionSection";
 import { PersonalInfoSection } from "../components/account/PersonalInfoSection";
 import { AssessmentSection } from "../components/account/AssessmentSection";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "../integrations/supabase/client"; // Import the Supabase client
 
 const Account = () => {
   const { user, signOut, setUser } = useAuth();

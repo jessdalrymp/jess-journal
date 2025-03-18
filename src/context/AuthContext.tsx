@@ -13,6 +13,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, name?: string) => Promise<any>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<boolean>;
+  setUser: (user: User) => void; // Add setUser to the context type
 }
 
 const defaultAuthContext: AuthContextType = {
@@ -23,6 +24,7 @@ const defaultAuthContext: AuthContextType = {
   signUp: async () => {},
   signOut: async () => {},
   resetPassword: async () => false,
+  setUser: () => {}, // Add setUser to the default context
 };
 
 const AuthContext = createContext<AuthContextType>(defaultAuthContext);
@@ -30,7 +32,7 @@ const AuthContext = createContext<AuthContextType>(defaultAuthContext);
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const { user, isNewUser, loading: stateLoading } = useAuthState();
+  const { user, isNewUser, loading: stateLoading, setUser } = useAuthState();
   const { signIn, signUp, signOut, resetPassword, loading: actionLoading } = useAuthActions();
 
   const isLoading = stateLoading || actionLoading;
@@ -47,7 +49,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signIn,
         signUp,
         signOut,
-        resetPassword
+        resetPassword,
+        setUser // Expose setUser in the context
       }}
     >
       {children}
