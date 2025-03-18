@@ -64,6 +64,9 @@ export const UserTable: React.FC<UserTableProps> = ({
                 }
               </TableCell>
               <TableCell>
+                {user.is_admin ? 'Yes' : 'No'}
+              </TableCell>
+              <TableCell>
                 <UserActions 
                   userId={user.id}
                   isAdmin={user.is_admin}
