@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { validateEmail } from '../../utils/authValidation';
 import { Input } from '../ui/input';
 import { ActionButton } from '../ui/ActionButton';
+import { AlertCircle } from 'lucide-react';
 
 interface ForgotPasswordFormProps {
   onSuccess: (email: string) => void;
@@ -14,19 +15,17 @@ interface ForgotPasswordFormProps {
 export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const { resetPassword } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
     if (!validateEmail(email)) {
-      toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address.",
-        variant: "destructive",
-      });
+      setError("Please enter a valid email address.");
       return;
     }
     
@@ -39,15 +38,17 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
       onSuccess(email);
     } catch (error: any) {
       console.error("Password reset error:", error);
-      let errorMessage = "Failed to send reset email. Please try again.";
       
-      if (error.message) {
-        errorMessage = error.message;
+      // Check for rate limit errors
+      if (error.message?.includes("rate limit") || error.message?.includes("429")) {
+        setError("Too many requests. Please try again after a few minutes.");
+      } else {
+        setError(error.message || "Failed to send reset email. Please try again.");
       }
       
       toast({
         title: "Error",
-        description: errorMessage,
+        description: error.message || "Failed to send reset email. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -69,6 +70,13 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
         />
         <Mail className="absolute left-3 top-3 h-4 w-4 text-jess-muted" />
       </div>
+      
+      {error && (
+        <div className="flex items-start gap-2 p-3 rounded-md bg-red-50 text-red-700 text-sm">
+          <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
+          <span>{error}</span>
+        </div>
+      )}
       
       <div className="pt-2">
         <ActionButton 

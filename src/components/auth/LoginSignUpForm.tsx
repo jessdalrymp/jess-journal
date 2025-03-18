@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ActionButton } from '../ui/ActionButton';
 import { AuthFormInput } from './AuthFormInput';
 import { validateEmail, validatePassword, validateName } from '../../utils/authValidation';
+import { AlertCircle } from 'lucide-react';
 
 interface LoginSignUpFormProps {
   isLogin: boolean;
@@ -23,44 +24,31 @@ export const LoginSignUpForm = ({
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
 
   const validateForm = (): boolean => {
+    setError(null);
+    
     if (!email || !password) {
-      toast({
-        title: "Missing fields",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
+      setError("Please fill in all required fields.");
       return false;
     }
 
     if (!validateEmail(email)) {
-      toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address.",
-        variant: "destructive",
-      });
+      setError("Please enter a valid email address.");
       return false;
     }
 
     if (!validatePassword(password)) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive",
-      });
+      setError("Password must be at least 6 characters long.");
       return false;
     }
 
     if (!isLogin && !validateName(name)) {
-      toast({
-        title: "Name required",
-        description: "Please enter your name to create an account.",
-        variant: "destructive",
-      });
+      setError("Please enter your name to create an account.");
       return false;
     }
 
@@ -70,6 +58,7 @@ export const LoginSignUpForm = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     
     try {
       if (!validateForm()) {
@@ -103,10 +92,14 @@ export const LoginSignUpForm = ({
           onVerificationSent(email);
         } else if (error.message.includes("User already registered")) {
           errorMessage = "An account with this email already exists. Try signing in instead.";
+        } else if (error.message.includes("rate limit") || error.message.includes("429")) {
+          errorMessage = "Too many attempts. Please try again after a few minutes.";
         } else {
           errorMessage = error.message;
         }
       }
+      
+      setError(errorMessage);
       
       toast({
         title: isLogin ? "Login failed" : "Registration failed",
@@ -153,6 +146,13 @@ export const LoginSignUpForm = ({
           label="Password"
           placeholder="••••••••"
         />
+        
+        {error && (
+          <div className="flex items-start gap-2 p-3 rounded-md bg-red-50 text-red-700 text-sm">
+            <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
+            <span>{error}</span>
+          </div>
+        )}
         
         {isLogin && (
           <div className="text-right">

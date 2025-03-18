@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from "./components/ui/theme-provider";
@@ -20,6 +19,7 @@ import Subscription from './pages/subscription';
 import PaymentSuccess from './pages/PaymentSuccess';
 import Legal from './pages/Legal';
 import AdminPage from "./pages/admin";
+import { AuthCallback } from './components/auth/AuthCallback';
 
 const App = () => {
   console.log("App component initialized");
@@ -29,7 +29,7 @@ const App = () => {
         <AuthProvider>
           <UserDataProvider>
             <Routes>
-              <Route path="/" element={<LandingPage />} />
+              <Route path="/" element={<Index />} />
               <Route path="/free-journal-prompts" element={<FreeJournalPrompts />} />
               <Route path="/dashboard" element={<Index />} />
               <Route path="/account" element={<Account />} />
@@ -46,6 +46,8 @@ const App = () => {
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/404" element={<NotFound />} />
               <Route path="*" element={<Navigate to="/404" replace />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/auth/reset-password" element={<AuthCallback />} />
             </Routes>
             <Toaster />
           </UserDataProvider>

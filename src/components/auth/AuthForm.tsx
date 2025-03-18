@@ -4,6 +4,7 @@ import { AuthFormContainer } from './AuthFormContainer';
 import { LoginSignUpForm } from './LoginSignUpForm';
 import { VerificationScreen } from './VerificationScreen';
 import { ForgotPasswordDialog } from './ForgotPasswordDialog';
+import { SocialLoginButtons } from './SocialLoginButtons';
 
 export const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -48,6 +49,9 @@ export const AuthForm = () => {
           onForgotPassword={handleForgotPassword}
           onVerificationSent={handleVerificationSent}
         />
+        <div className="mt-6 pt-6 border-t border-jess-subtle">
+          <SocialLoginButtons isLogin={isLogin} />
+        </div>
       </AuthFormContainer>
       
       <ForgotPasswordDialog 

@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../context/UserDataContext';
 import { AuthForm } from '../components/auth/AuthForm';
@@ -32,6 +33,18 @@ const AppContent = () => {
   const { user, isNewUser, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useUserData();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Check if auth form should be opened (e.g., from a "Sign In" button click)
+  const shouldOpenAuth = location.state?.openAuth;
+
+  // Clear the openAuth state after it's been used
+  useEffect(() => {
+    if (shouldOpenAuth && user) {
+      navigate(location.pathname, { replace: true });
+    }
+  }, [shouldOpenAuth, user, navigate, location.pathname]);
 
   useEffect(() => {
     if (!authLoading && !profileLoading && user) {

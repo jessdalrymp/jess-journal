@@ -48,9 +48,6 @@ export const useAuthActions = () => {
     try {
       console.log("Signing up with:", email, name);
       
-      // Check if site URL and redirect URLs are configured in Supabase
-      console.log("Site URL should be configured in Supabase dashboard");
-      
       // Get the current origin (domain) to use for redirection
       const origin = window.location.origin;
       console.log("Current origin for redirects:", origin);
@@ -85,7 +82,7 @@ export const useAuthActions = () => {
         console.log("Sign-up requires email verification:", data.user.id);
         toast({
           title: "Almost there!",
-          description: "Please check your email to verify your account. If you don't see it, check your spam folder or try again.",
+          description: "Please check your email to verify your account. If you don't see it, check your spam folder.",
           duration: 6000,
         });
         return data;
@@ -137,17 +134,9 @@ export const useAuthActions = () => {
       console.log("Requesting password reset for:", email);
       
       // Get the current domain for redirect
-      // First try to use the current window location (for production)
-      let origin = '';
-      try {
-        origin = window.location.origin;
-      } catch (e) {
-        // Fallback if window is not available
-        console.log("Using fallback domain for password reset");
-        origin = 'https://www.jess-journal.com';
-      }
+      const origin = window.location.origin;
       
-      // Build the full redirect URL
+      // Build the full redirect URL with path that matches your application router
       const redirectTo = `${origin}/auth/reset-password`;
       
       console.log("Using redirect URL:", redirectTo);
@@ -177,5 +166,37 @@ export const useAuthActions = () => {
     }
   };
 
-  return { signIn, signUp, signOut, resetPassword, loading };
+  // Add a handler for OAuth callbacks
+  const handleAuthCallback = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error("Auth callback error:", error);
+        throw error;
+      }
+      
+      if (data?.session) {
+        console.log("User authenticated from OAuth callback");
+        return data.session;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("Error handling auth callback:", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { 
+    signIn, 
+    signUp, 
+    signOut, 
+    resetPassword, 
+    handleAuthCallback,
+    loading 
+  };
 };
