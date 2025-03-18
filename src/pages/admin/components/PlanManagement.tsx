@@ -7,15 +7,17 @@ import {
   DialogContent, 
   DialogTrigger 
 } from "../../../components/ui/dialog";
-import { Plus } from "lucide-react";
+import { Plus, AlertCircle } from "lucide-react";
 import { PlanTable } from './PlanTable';
 import { PlanForm } from './PlanForm';
 import { usePlanManagement } from '../hooks/usePlanManagement';
+import { Alert, AlertDescription } from "../../../components/ui/alert";
 
 export const PlanManagement = () => {
   const {
     plans,
     loading,
+    error,
     isDialogOpen,
     setIsDialogOpen,
     editingPlan,
@@ -26,8 +28,6 @@ export const PlanManagement = () => {
     handleDelete,
     handleSubmit
   } = usePlanManagement();
-
-  console.log('Plans in PlanManagement:', plans); // Debug log
 
   return (
     <Card>
@@ -44,6 +44,13 @@ export const PlanManagement = () => {
         </div>
       </CardHeader>
       <CardContent>
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
         {loading ? (
           <div className="text-center py-4">Loading plans...</div>
         ) : plans.length === 0 ? (

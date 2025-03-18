@@ -10,23 +10,8 @@ export const usePlanApi = () => {
     try {
       console.log('Fetching payment plans...');
       
-      // Check if the payment_plans table exists
-      const { data: tableInfo, error: tableError } = await supabase
-        .from('payment_plans')
-        .select('*')
-        .limit(1);
-        
-      if (tableError) {
-        console.error('Error fetching plans (may need to create table):', tableError);
-        // If table doesn't exist, we'll create a temporary empty array
-        if (tableError.code === '42P01') { // PostgreSQL code for undefined_table
-          console.log('Table payment_plans does not exist');
-          return [];
-        }
-        throw tableError;
-      }
-      
-      console.log('Payment plans table exists, fetching data...');
+      // Try to fetch plans but don't check table existence first
+      // This avoids triggering multiple RLS policy checks
       const { data, error } = await supabase
         .from('payment_plans')
         .select('*');
