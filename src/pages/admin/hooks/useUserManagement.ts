@@ -9,6 +9,13 @@ export interface UserType {
   created_at: string;
   last_sign_in_at?: string | null;
   is_admin: boolean;
+  subscription?: {
+    status: string;
+    is_trial: boolean | null;
+    is_unlimited: boolean | null;
+    trial_ends_at?: string | null;
+    current_period_ends_at?: string | null;
+  };
 }
 
 export const useUserManagement = () => {
@@ -46,6 +53,16 @@ export const useUserManagement = () => {
         // Don't throw here, just log and continue with what we have
       }
       
+      // Get subscription data
+      const { data: subscriptionData, error: subscriptionError } = await supabase
+        .from('subscriptions')
+        .select('*');
+      
+      if (subscriptionError) {
+        console.error('Subscription query failed:', subscriptionError);
+        // Don't throw here, just log and continue with what we have
+      }
+      
       // Create a map of user_id to admin status
       const adminMap = new Map();
       if (roleData) {
@@ -56,16 +73,31 @@ export const useUserManagement = () => {
         });
       }
       
+      // Create a map of user_id to subscription data
+      const subscriptionMap = new Map();
+      if (subscriptionData) {
+        subscriptionData.forEach((sub: any) => {
+          subscriptionMap.set(sub.user_id, {
+            status: sub.status,
+            is_trial: sub.is_trial,
+            is_unlimited: sub.is_unlimited,
+            trial_ends_at: sub.trial_ends_at,
+            current_period_ends_at: sub.current_period_ends_at
+          });
+        });
+      }
+      
       // Combine the data
       const mappedUsers = userData.map((user: any) => ({
         id: user.id,
         email: user.email || 'Unknown',
         created_at: user.created_at || new Date().toISOString(),
         last_sign_in_at: user.last_session || null,
-        is_admin: adminMap.get(user.id) || false
+        is_admin: adminMap.get(user.id) || false,
+        subscription: subscriptionMap.get(user.id) || null
       }));
       
-      console.log("Users:", mappedUsers);
+      console.log("Users with subscription data:", mappedUsers);
       setUsers(mappedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);

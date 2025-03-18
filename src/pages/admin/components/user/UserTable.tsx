@@ -9,6 +9,13 @@ interface UserType {
   created_at: string;
   last_sign_in_at?: string | null;
   is_admin: boolean;
+  subscription?: {
+    status: string;
+    is_trial: boolean | null;
+    is_unlimited: boolean | null;
+    trial_ends_at?: string | null;
+    current_period_ends_at?: string | null;
+  };
 }
 
 interface UserTableProps {
@@ -31,6 +38,33 @@ export const UserTable = ({ users, loading, onToggleAdminStatus }: UserTableProp
       await onToggleAdminStatus(userId, currentStatus);
     }
   };
+
+  const getSubscriptionBadgeVariant = (status?: string) => {
+    switch (status) {
+      case 'active':
+        return 'default';
+      case 'trial':
+        return 'secondary';
+      case 'expired':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  };
+  
+  const formatSubscriptionStatus = (user: UserType) => {
+    if (!user.subscription) return 'None';
+    
+    if (user.subscription.is_unlimited) {
+      return 'Unlimited';
+    }
+    
+    if (user.subscription.is_trial) {
+      return 'Trial';
+    }
+    
+    return user.subscription.status.charAt(0).toUpperCase() + user.subscription.status.slice(1);
+  };
   
   return (
     <div className="overflow-x-auto">
@@ -41,6 +75,7 @@ export const UserTable = ({ users, loading, onToggleAdminStatus }: UserTableProp
             <th className="px-4 py-2 text-left">Joined</th>
             <th className="px-4 py-2 text-left">Last Login</th>
             <th className="px-4 py-2 text-left">Role</th>
+            <th className="px-4 py-2 text-left">Subscription</th>
             <th className="px-4 py-2 text-left">Actions</th>
           </tr>
         </thead>
@@ -58,6 +93,21 @@ export const UserTable = ({ users, loading, onToggleAdminStatus }: UserTableProp
                 <Badge variant={user.is_admin ? "default" : "outline"}>
                   {user.is_admin ? 'Admin' : 'User'}
                 </Badge>
+              </td>
+              <td className="px-4 py-3">
+                <Badge variant={getSubscriptionBadgeVariant(user.subscription?.status)}>
+                  {formatSubscriptionStatus(user)}
+                </Badge>
+                {user.subscription?.current_period_ends_at && (
+                  <div className="text-xs text-jess-muted mt-1">
+                    Ends: {new Date(user.subscription.current_period_ends_at).toLocaleDateString()}
+                  </div>
+                )}
+                {user.subscription?.trial_ends_at && user.subscription.is_trial && (
+                  <div className="text-xs text-jess-muted mt-1">
+                    Trial ends: {new Date(user.subscription.trial_ends_at).toLocaleDateString()}
+                  </div>
+                )}
               </td>
               <td className="px-4 py-3">
                 <div className="flex items-center space-x-2">
