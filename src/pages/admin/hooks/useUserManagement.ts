@@ -38,8 +38,13 @@ export const useUserManagement = () => {
       const mappedUsers = data.map(user => {
         // Extract last_sign_in_at from the profile_data, carefully handling potential undefined values
         let lastSignIn = null;
-        if (user.profile_data && typeof user.profile_data === 'object') {
-          lastSignIn = user.profile_data.last_session || null;
+        if (user.profile_data) {
+          // Check if profile_data is an object and handle accordingly
+          if (typeof user.profile_data === 'object' && user.profile_data !== null && !Array.isArray(user.profile_data)) {
+            // Type assertion to access the property safely
+            const profileData = user.profile_data as Record<string, any>;
+            lastSignIn = profileData.last_session || null;
+          }
         }
         
         return {
