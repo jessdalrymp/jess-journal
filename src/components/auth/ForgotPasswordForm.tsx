@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { validateEmail } from '../../utils/authValidation';
 import { Input } from '../ui/input';
 import { ActionButton } from '../ui/ActionButton';
-import { AlertCircle } from 'lucide-react';
+import { ErrorMessage } from './ErrorMessage';
 
 interface ForgotPasswordFormProps {
   onSuccess: (email: string) => void;
@@ -39,10 +39,10 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
     } catch (error: any) {
       console.error("Password reset error:", error);
       
-      // Check for rate limit errors
+      // Set error message based on the type of error
       if (error.message?.includes("rate limit") || error.message?.includes("429")) {
         setError("Too many requests. Please try again after a few minutes.");
-      } else if (error.message?.includes("sending email") || error.message?.includes("smtp")) {
+      } else if (error.message?.includes("sending email") || error.message?.includes("smtp") || error.message?.includes("host")) {
         setError("We're having trouble sending emails right now. Please try again later or contact support.");
       } else {
         setError(error.message || "Failed to send reset email. Please try again.");
@@ -73,12 +73,7 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
         <Mail className="absolute left-3 top-3 h-4 w-4 text-jess-muted" />
       </div>
       
-      {error && (
-        <div className="flex items-start gap-2 p-3 rounded-md bg-red-50 text-red-700 text-sm">
-          <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
-          <span>{error}</span>
-        </div>
-      )}
+      <ErrorMessage error={error} />
       
       <div className="pt-2">
         <ActionButton 

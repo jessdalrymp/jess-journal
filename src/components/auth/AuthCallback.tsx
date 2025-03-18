@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -60,3 +59,23 @@ export const AuthCallback = () => {
     </div>
   );
 };
+
+// Example addition to handle password reset callback
+// Note: This is a conceptual example of what might be added to your AuthCallback
+// component. Since I don't have the full existing implementation, you'll need to
+// integrate this with your actual component.
+
+// Inside your AuthCallback component's useEffect or similar callback handling:
+// const handlePasswordReset = () => {
+//   const hash = window.location.hash;
+//   if (hash && hash.includes('type=recovery')) {
+//     // Navigate to reset password page
+//     navigate('/auth/reset-password');
+//     return true;
+//   }
+//   return false;
+// };
+// 
+// if (handlePasswordReset()) {
+//   return;
+// }

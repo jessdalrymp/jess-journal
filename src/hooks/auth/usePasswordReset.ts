@@ -27,9 +27,13 @@ export const usePasswordReset = () => {
       if (error) {
         console.error("Password reset error:", error);
         
-        // Check if it's an email sending error
-        if (error.message?.includes("sending email") || error.message?.includes("smtp")) {
+        // Check for specific types of errors
+        if (error.message?.includes("sending email") || error.message?.includes("smtp") || error.message?.includes("host")) {
           throw new Error("Unable to send email at this time. This may be a temporary issue with our email service. Please try again later or contact support if the problem persists.");
+        }
+        
+        if (error.message?.includes("rate limit") || error.message?.includes("429")) {
+          throw new Error("Too many requests. Please try again after a few minutes.");
         }
         
         throw error;
