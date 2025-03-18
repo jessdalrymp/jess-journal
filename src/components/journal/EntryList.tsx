@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { parseContentWithJsonCodeBlock } from "@/services/journal";
 
 interface EntryListProps {
   entries: JournalEntry[];
@@ -22,23 +23,29 @@ export const EntryList = ({
 }: EntryListProps) => {
   const getEntryTitle = (entry: JournalEntry) => {
     try {
-      // First check if it's JSON content inside code blocks
-      let contentToProcess = entry.content;
-      const jsonRegex = /```(?:json)?\s*([\s\S]*?)```/;
-      const match = entry.content.match(jsonRegex);
-      if (match && match[1]) {
-        contentToProcess = match[1].trim();
-      }
+      // Parse the content to get the user's answer instead of the question
+      const parsedContent = parseContentWithJsonCodeBlock(entry.content);
       
-      // Try to parse as JSON
-      const parsed = JSON.parse(contentToProcess);
-      if (parsed && parsed.title) {
-        return parsed.title;
+      if (parsedContent) {
+        // If we have a summary field (user's answer), use that for the display
+        if (parsedContent.summary) {
+          // Use the first line or first 50 characters of the summary
+          const summaryText = parsedContent.summary.split('\n')[0];
+          return summaryText.length > 50 
+            ? summaryText.substring(0, 50) + '...' 
+            : summaryText;
+        }
+        
+        // Fallback to title if present
+        if (parsedContent.title) {
+          return parsedContent.title;
+        }
       }
     } catch (e) {
-      // Not valid JSON or doesn't have a title, just use the original title
+      // Not valid JSON or doesn't have the expected fields
     }
     
+    // Fallback to the original title
     return entry.title;
   };
 
