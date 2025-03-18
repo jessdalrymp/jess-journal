@@ -25,20 +25,11 @@ export const useUserManagement = () => {
       setLoading(true);
       console.log("Fetching users...");
       
-      // Try with explicit SQL query instead of the RPC function
-      const { data, error } = await supabase
-        .from('auth.users')
-        .select(`
-          id,
-          email,
-          created_at,
-          profile:users(last_session),
-          is_admin:user_roles(role)
-        `)
-        .order('created_at', { ascending: false });
+      // Try to use the RPC function for getting user details
+      const { data, error } = await supabase.rpc('get_users_with_details');
       
       if (error) {
-        console.error('Error details:', error);
+        console.error('Error fetching users with RPC:', error);
         throw error;
       }
       
@@ -50,14 +41,14 @@ export const useUserManagement = () => {
       }
       
       // Map the returned data to the UserType format
-      const mappedUsers = data.map(user => {
-        // Check if user has admin role
-        const isAdmin = user.is_admin && user.is_admin.some((role: any) => role.role === 'admin');
+      const mappedUsers = data.map((user: any) => {
+        // Check for admin status
+        const isAdmin = user.is_admin || false;
         
-        // Extract last sign in time if available
+        // Get last sign in time if available
         let lastSignIn = null;
-        if (user.profile && user.profile.length > 0) {
-          lastSignIn = user.profile[0].last_session;
+        if (user.profile_data && typeof user.profile_data === 'object') {
+          lastSignIn = user.profile_data.last_session || null;
         }
         
         return {
@@ -65,7 +56,7 @@ export const useUserManagement = () => {
           email: user.email,
           created_at: user.created_at,
           last_sign_in_at: lastSignIn,
-          is_admin: isAdmin || false
+          is_admin: isAdmin
         };
       });
       
@@ -79,27 +70,53 @@ export const useUserManagement = () => {
         variant: "destructive"
       });
       
-      // Fallback to direct SQL query if RPC function fails
+      // Fallback to a simpler query if the RPC function fails
       try {
         console.log("Attempting fallback query...");
-        const { data: users, error: usersError } = await supabase
-          .from('auth.users')
-          .select('id, email, created_at');
-          
-        if (usersError) throw usersError;
         
-        const simpleMappedUsers = users.map(user => ({
+        // Query the users table which should be accessible
+        const { data: profileData, error: profileError } = await supabase
+          .from('users')
+          .select('id, email, created_at, last_session');
+          
+        if (profileError) {
+          console.error('Fallback profile query failed:', profileError);
+          throw profileError;
+        }
+        
+        // Query user roles to determine admin status
+        const { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('user_id, role');
+          
+        if (roleError) {
+          console.error('Fallback role query failed:', roleError);
+        }
+        
+        // Create a map of user_id to admin status
+        const adminMap = new Map();
+        if (roleData) {
+          roleData.forEach((role: any) => {
+            if (role.role === 'admin') {
+              adminMap.set(role.user_id, true);
+            }
+          });
+        }
+        
+        // Map the user data
+        const fallbackUsers = profileData.map((user: any) => ({
           id: user.id,
-          email: user.email,
-          created_at: user.created_at,
-          last_sign_in_at: null,
-          is_admin: false
+          email: user.email || 'Unknown',
+          created_at: user.created_at || new Date().toISOString(),
+          last_sign_in_at: user.last_session || null,
+          is_admin: adminMap.get(user.id) || false
         }));
         
-        console.log("Fallback users:", simpleMappedUsers);
-        setUsers(simpleMappedUsers);
+        console.log("Fallback users:", fallbackUsers);
+        setUsers(fallbackUsers);
       } catch (fallbackError) {
-        console.error('Fallback query also failed:', fallbackError);
+        console.error('All fallback queries failed:', fallbackError);
+        setUsers([]);
       }
     } finally {
       setLoading(false);
