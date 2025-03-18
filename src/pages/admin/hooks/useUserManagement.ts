@@ -29,16 +29,27 @@ export const useUserManagement = () => {
       
       if (error) throw error;
       
+      if (!data) {
+        setUsers([]);
+        return;
+      }
+      
       // Map the returned data to the UserType format
-      // Using type assertion to safely access nested properties
-      const mappedUsers = (data || []).map(user => ({
-        id: user.id,
-        email: user.email,
-        created_at: user.created_at,
-        last_sign_in_at: user.profile_data && typeof user.profile_data === 'object' ? 
-          (user.profile_data as Record<string, any>).last_session || null : null,
-        is_admin: user.is_admin
-      }));
+      const mappedUsers = data.map(user => {
+        // Extract last_sign_in_at from the profile_data, carefully handling potential undefined values
+        let lastSignIn = null;
+        if (user.profile_data && typeof user.profile_data === 'object') {
+          lastSignIn = user.profile_data.last_session || null;
+        }
+        
+        return {
+          id: user.id,
+          email: user.email,
+          created_at: user.created_at,
+          last_sign_in_at: lastSignIn,
+          is_admin: user.is_admin || false
+        };
+      });
       
       setUsers(mappedUsers);
     } catch (error) {
