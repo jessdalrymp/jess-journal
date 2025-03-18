@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from "../../../integrations/supabase/client";
 import { useToast } from "../../../hooks/use-toast";
 import { PlanType } from "../types/plans";
+import { fetchPlansFromDB } from "../services/planService";
+import { showErrorNotification } from "../utils/notificationUtils";
 
 export const usePlanFetching = () => {
   const { toast } = useToast();
@@ -15,25 +16,19 @@ export const usePlanFetching = () => {
       setLoading(true);
       setConnectionError(false);
       
-      // Check if the table exists first
-      const { count, error: countError } = await supabase
-        .from('payment_plans')
-        .select('*', { count: 'exact', head: true });
+      const { data, error, connectionError } = await fetchPlansFromDB();
       
-      if (countError) {
-        console.error('Error checking payment_plans table:', countError);
+      if (connectionError) {
         setConnectionError(true);
         return;
       }
       
-      const { data, error } = await supabase
-        .from('payment_plans')
-        .select('*')
-        .order('created_at', { ascending: false });
-
       if (error) {
-        console.error('Error fetching plans:', error);
-        setConnectionError(true);
+        showErrorNotification(
+          toast, 
+          "Error fetching plans", 
+          error.message || "Please try again later"
+        );
         return;
       }
       
@@ -41,11 +36,11 @@ export const usePlanFetching = () => {
     } catch (error: any) {
       console.error('Error in fetchPlans:', error);
       setConnectionError(true);
-      toast({
-        title: "Error fetching plans",
-        description: error.message || "Please try again later",
-        variant: "destructive"
-      });
+      showErrorNotification(
+        toast, 
+        "Error fetching plans", 
+        error.message || "Please try again later"
+      );
     } finally {
       setLoading(false);
     }
