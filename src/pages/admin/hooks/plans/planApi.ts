@@ -126,10 +126,60 @@ export const usePlanApi = () => {
     }
   };
 
+  const createSamplePlans = async (): Promise<boolean> => {
+    try {
+      const samplePlans = [
+        {
+          name: "Monthly Plan",
+          description: "Access to all features on a monthly billing cycle",
+          price: 999, // $9.99
+          interval: "month",
+          is_active: true
+        },
+        {
+          name: "Annual Plan",
+          description: "Save 16% with yearly billing",
+          price: 9999, // $99.99
+          interval: "year",
+          is_active: true
+        },
+        {
+          name: "Weekly Plan",
+          description: "Try out all features for a short period",
+          price: 299, // $2.99
+          interval: "week",
+          is_active: false
+        }
+      ];
+
+      const { error } = await supabase
+        .from('payment_plans')
+        .insert(samplePlans);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Sample plans created",
+        description: "Sample payment plans have been successfully added",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error creating sample plans:', error);
+      toast({
+        title: "Error creating sample plans",
+        description: "Please try again later",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   return {
     fetchPlans,
     deletePlan,
     updatePlan,
-    createPlan
+    createPlan,
+    createSamplePlans
   };
 };

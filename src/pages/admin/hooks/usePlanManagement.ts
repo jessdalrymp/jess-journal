@@ -12,7 +12,8 @@ export const usePlanManagement = () => {
     fetchPlans,
     deletePlan,
     updatePlan,
-    createPlan
+    createPlan,
+    createSamplePlans: apiCreateSamplePlans
   } = usePlanApi();
   
   const {
@@ -75,6 +76,15 @@ export const usePlanManagement = () => {
     }
   };
 
+  const createSamplePlans = async () => {
+    setLoading(true);
+    const success = await apiCreateSamplePlans();
+    if (success) {
+      loadPlans();
+    }
+    setLoading(false);
+  };
+
   return {
     plans,
     loading,
@@ -86,7 +96,8 @@ export const usePlanManagement = () => {
     handleEdit,
     handleAdd,
     handleDelete,
-    handleSubmit
+    handleSubmit,
+    createSamplePlans
   };
 };
 
