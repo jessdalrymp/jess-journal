@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, AlertTriangle } from "lucide-react";
@@ -37,9 +38,8 @@ export const PlanTable: React.FC<PlanTableProps> = ({
   isAdmin,
   connectionError = false
 }) => {
-  const formatPrice = (cents: number): string => {
-    const dollars = cents / 100;
-    return dollars.toLocaleString('en-US', {
+  const formatPrice = (price: number): string => {
+    return price.toLocaleString('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 3
     });

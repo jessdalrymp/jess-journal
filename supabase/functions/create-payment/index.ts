@@ -47,6 +47,9 @@ serve(async (req) => {
     // Generate a unique idempotency key for this payment
     const idempotencyKey = crypto.randomUUID()
     
+    // Convert amount to cents for Square API (if needed)
+    const squareAmount = Math.round(amount * 100)
+    
     // Create payment with Square API
     const squareResponse = await fetch(`${SQUARE_API_URL}/online-checkout/payment-links`, {
       method: 'POST',
@@ -60,7 +63,7 @@ serve(async (req) => {
         quick_pay: {
           name: description || `Jess AI ${isAnnual ? 'Annual' : 'Monthly'} Subscription`,
           price_money: {
-            amount: amount,
+            amount: squareAmount,
             currency: currency
           },
           location_id: SQUARE_LOCATION_ID
