@@ -24,7 +24,7 @@ export const useUserManagement = () => {
     try {
       setLoading(true);
       
-      // Use the get_users_with_details function to fetch user data
+      // Use the updated get_users_with_details function
       const { data, error } = await supabase.rpc('get_users_with_details');
       
       if (error) throw error;
@@ -36,15 +36,14 @@ export const useUserManagement = () => {
       
       // Map the returned data to the UserType format
       const mappedUsers = data.map(user => {
-        // Extract last_sign_in_at from the profile_data, carefully handling potential undefined values
+        // Extract last_sign_in_at from the profile_data
         let lastSignIn = null;
-        if (user.profile_data) {
-          // Check if profile_data is an object and handle accordingly
-          if (typeof user.profile_data === 'object' && user.profile_data !== null && !Array.isArray(user.profile_data)) {
-            // Type assertion to access the property safely
-            const profileData = user.profile_data as Record<string, any>;
-            lastSignIn = profileData.last_session || null;
-          }
+        
+        if (user.profile_data && 
+            typeof user.profile_data === 'object' && 
+            !Array.isArray(user.profile_data)) {
+          // Since we're now using the users table with the last_session field
+          lastSignIn = user.profile_data.last_session || null;
         }
         
         return {
