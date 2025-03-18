@@ -9,7 +9,7 @@ interface ConnectionTest {
   error: string | null;
 }
 
-type ValidTableName = 'profiles' | 'subscriptions' | 'payment_plans' | 'coupons';
+type ValidTableName = 'users' | 'subscriptions' | 'payment_plans' | 'coupons';
 
 /**
  * Tests connection to various tables in the database
@@ -17,7 +17,7 @@ type ValidTableName = 'profiles' | 'subscriptions' | 'payment_plans' | 'coupons'
  */
 export const testDatabaseConnections = async (): Promise<ConnectionTest[]> => {
   const tables: ValidTableName[] = [
-    'profiles', // For user data
+    'users', // For user data
     'subscriptions',
     'payment_plans',
     'coupons'

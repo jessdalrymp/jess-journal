@@ -35,8 +35,8 @@ export const fetchProfile = async (userId: string | undefined): Promise<UserProf
       return storedProfile;
     }
 
-    const { data: profileData, error } = await supabase
-      .from('profiles')
+    const { data: userData, error } = await supabase
+      .from('users')
       .select('*')
       .eq('id', userId)
       .single();
@@ -50,17 +50,17 @@ export const fetchProfile = async (userId: string | undefined): Promise<UserProf
     }
 
     const userProfile: UserProfile = {
-      id: profileData.id,
+      id: userData.id,
       userId: userId,
-      email: profileData.email || undefined,
-      growthStage: profileData.growth_stage || undefined,
-      challenges: profileData.goals || undefined,
+      email: userData.email || undefined,
+      growthStage: userData.growth_stage || undefined,
+      challenges: userData.goals || undefined,
       mindsetPatterns: undefined,
-      learningStyle: profileData.learning_style || undefined,
+      learningStyle: userData.learning_style || undefined,
       supportNeeds: undefined,
-      communicationPreference: profileData.communication_style || undefined,
+      communicationPreference: userData.communication_style || undefined,
       engagementMode: undefined,
-      completedOnboarding: profileData.assessment_completed || false
+      completedOnboarding: userData.assessment_completed || false
     };
     
     saveProfileToStorage(userProfile);
@@ -97,7 +97,7 @@ export const saveProfile = async (userId: string | undefined, profileData: Parti
     };
 
     const { error } = await supabase
-      .from('profiles')
+      .from('users')
       .upsert(supabaseProfileData, { onConflict: 'id' });
 
     if (error) {
