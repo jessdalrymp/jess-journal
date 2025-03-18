@@ -98,9 +98,13 @@ export const UserManagement = () => {
         }
       } else {
         // Fallback approach - just mark the current user as admin if we got to this page
+        // Fix: Get the current user data using await
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        const currentUserId = currentUser?.id;
+        
         const usersWithRoles = profilesData.map(profile => {
           // Current user is admin if they got to this page
-          const isAdmin = profile.id === (supabase.auth.getUser()).data.user?.id;
+          const isAdmin = profile.id === currentUserId;
           
           return {
             id: profile.id,
