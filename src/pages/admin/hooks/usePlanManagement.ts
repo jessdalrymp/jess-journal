@@ -38,18 +38,32 @@ export const usePlanManagement = () => {
   const fetchPlans = async () => {
     try {
       setLoading(true);
+      // Check if the table exists first
+      const { count, error: countError } = await supabase
+        .from('payment_plans')
+        .select('*', { count: 'exact', head: true });
+      
+      if (countError) {
+        console.error('Error checking payment_plans table:', countError);
+        // If there's an error with the count query, we'll still try the regular query
+      }
+      
       const { data, error } = await supabase
         .from('payment_plans')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching plans:', error);
+        throw error;
+      }
+      
       setPlans(data || []);
-    } catch (error) {
-      console.error('Error fetching plans:', error);
+    } catch (error: any) {
+      console.error('Error in fetchPlans:', error);
       toast({
         title: "Error fetching plans",
-        description: "Please try again later",
+        description: error.message || "Please try again later",
         variant: "destructive"
       });
     } finally {
@@ -107,7 +121,10 @@ export const usePlanManagement = () => {
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Delete operation error:', error);
+        throw error;
+      }
       
       toast({
         title: "Plan deleted",
@@ -115,11 +132,11 @@ export const usePlanManagement = () => {
       });
       
       fetchPlans();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting plan:', error);
       toast({
         title: "Error deleting plan",
-        description: "Please try again later",
+        description: error.message || "Please try again later",
         variant: "destructive"
       });
     }
@@ -142,7 +159,10 @@ export const usePlanManagement = () => {
           })
           .eq('id', editingPlan.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Update operation error:', error);
+          throw error;
+        }
         
         toast({
           title: "Plan updated",
@@ -160,7 +180,10 @@ export const usePlanManagement = () => {
             is_active: formData.is_active
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Insert operation error:', error);
+          throw error;
+        }
         
         toast({
           title: "Plan added",
@@ -170,11 +193,11 @@ export const usePlanManagement = () => {
       
       setIsDialogOpen(false);
       fetchPlans();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving plan:', error);
       toast({
         title: "Error saving plan",
-        description: "Please try again later",
+        description: error.message || "Please try again later",
         variant: "destructive"
       });
     }

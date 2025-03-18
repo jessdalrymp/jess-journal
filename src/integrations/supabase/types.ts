@@ -246,6 +246,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          ADMIN: Database["public"]["Enums"]["app_role"] | null
           assessment_answers: Json | null
           assessment_completed: boolean | null
           assessment_data: Json | null
@@ -262,6 +263,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          ADMIN?: Database["public"]["Enums"]["app_role"] | null
           assessment_answers?: Json | null
           assessment_completed?: boolean | null
           assessment_data?: Json | null
@@ -278,6 +280,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          ADMIN?: Database["public"]["Enums"]["app_role"] | null
           assessment_answers?: Json | null
           assessment_completed?: boolean | null
           assessment_data?: Json | null
