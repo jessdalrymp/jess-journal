@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -27,9 +28,9 @@ export const Hero = () => {
           our AI builds a uniquely personalized journaling journey, free from biases or external agendas.
         </p>
         
-        <div className="flex justify-center mb-10">
+        <div className="flex flex-col sm:flex-row justify-center items-center mb-10">
           <div className="text-2xl font-bold text-jess-primary">
-            ⭐⭐⭐⭐⭐ Empowering Personal Growth for Thousands
+            ⭐⭐⭐⭐⭐ {isMobile && <br />}Empowering Personal Growth for Thousands
           </div>
         </div>
         
