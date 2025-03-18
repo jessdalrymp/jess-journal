@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { JournalEntry as JournalEntryType } from "../lib/types";
@@ -23,7 +22,6 @@ const JournalEntry = () => {
   const [initialEntry, setInitialEntry] = useState<JournalEntryType | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [retryAttempts, setRetryAttempts] = useState(0);
-  const [forceReload, setForceReload] = useState(0); // Added to force reload after saving
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -42,16 +40,13 @@ const JournalEntry = () => {
     isSaving,
   } = useJournalEntryEditor(initialEntry);
 
-  // This function retries fetching journal entries with exponential backoff
   const tryFindingEntry = async () => {
     if (!id) return false;
     
     try {
-      // Force a fresh fetch from the database
       console.log(`Retry attempt ${retryAttempts + 1}: Fetching journal entries for entry ${id}`);
       await fetchJournalEntries();
       
-      // Look for the entry again
       const foundEntry = journalEntries.find(entry => entry.id === id);
       if (foundEntry) {
         console.log(`Entry found on retry attempt ${retryAttempts + 1}`);
@@ -70,12 +65,10 @@ const JournalEntry = () => {
     const loadEntry = async () => {
       setLoading(true);
       
-      // Check if editing mode was passed via state
       if (location.state?.isEditing) {
         startEditing();
       }
 
-      // First check if entry was passed via location state
       if (location.state?.entry) {
         setInitialEntry(location.state.entry);
         setEntry(location.state.entry);
@@ -83,27 +76,21 @@ const JournalEntry = () => {
         return;
       }
       
-      // Otherwise, find by ID
       if (id) {
-        // First, check if we can find it in the current entries
         let foundEntry = journalEntries.find(entry => entry.id === id);
         
-        // If not found but we have the ID, trigger a fresh fetch
         if (!foundEntry) {
           console.log(`Entry with ID ${id} not found in ${journalEntries.length} current entries.`);
           
           try {
-            // Forcefully fetch entries
             await fetchJournalEntries();
-            // Try again after fetch
             foundEntry = journalEntries.find(entry => entry.id === id);
           } catch (error) {
             console.error("Error fetching journal entries:", error);
           }
           
-          // If still not found, try again with increasing delay
           if (!foundEntry && retryAttempts < 3) {
-            const delayMs = Math.min(1000 * Math.pow(2, retryAttempts), 5000); // Exponential backoff
+            const delayMs = Math.min(1000 * Math.pow(2, retryAttempts), 5000);
             console.log(`Entry still not found. Retrying in ${delayMs}ms...`);
             
             setTimeout(async () => {
@@ -115,7 +102,7 @@ const JournalEntry = () => {
               }
             }, delayMs);
             
-            return; // Don't set loading to false yet
+            return;
           }
         }
         
@@ -135,24 +122,17 @@ const JournalEntry = () => {
     };
 
     loadEntry();
-  }, [id, location.state, journalEntries, retryAttempts, forceReload]);
+  }, [id, location.state, journalEntries, retryAttempts]);
 
   const handleSaveClick = async () => {
     const success = await handleSave();
     if (success) {
-      // First update local state
-      setNotFound(false); // Ensure we don't show the not found state
-      
-      // Force a refetch with the database to get the updated entry
-      await fetchJournalEntries();
-      
-      // Force the useEffect to run again to reload the entry
-      setForceReload(prev => prev + 1);
-      
       toast({
         title: "Journal entry saved",
         description: "Your journal entry has been saved successfully.",
       });
+      
+      navigate('/dashboard');
     }
   };
 

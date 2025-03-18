@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { JournalEntry } from "@/lib/types";
 import { useUserData } from "@/context/UserDataContext";
@@ -29,7 +28,6 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
 
   useEffect(() => {
     if (isEditing && entry) {
-      // Format the content for editing when entering edit mode
       const formattedContent = formatContentForEditing(entry.content);
       setEditableContent(formattedContent);
       const parsed = parseEntryContent(entry.content);
@@ -37,7 +35,6 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
     }
   }, [isEditing, entry]);
 
-  // Update local entry when initialEntry changes
   useEffect(() => {
     if (initialEntry) {
       setEntry(initialEntry);
@@ -60,8 +57,6 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
     
     setIsSaving(true);
     
-    // Process content before saving - we want to maintain the format
-    // Update the JSON content with the current title
     let contentToSave = editableContent;
     
     try {
@@ -78,22 +73,6 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
     try {
       const success = await updateJournalEntry(entry.id, contentToSave, user.id);
       if (success) {
-        // Update local state immediately to prevent "not found" flash
-        const updatedEntry = {
-          ...entry,
-          content: contentToSave,
-          title: editableTitle
-        };
-        
-        setEntry(updatedEntry);
-        setParsedContent(parseEntryContent(contentToSave));
-        
-        // Refresh entries list but don't wait for it
-        fetchJournalEntries().catch(err => {
-          console.error("Error refreshing entries after save:", err);
-        });
-        
-        // Exit editing mode
         setIsEditing(false);
         setIsSaving(false);
         return true;
@@ -120,7 +99,6 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
 
   const handleCancelEdit = () => {
     if (entry) {
-      // Ensure we format the content correctly when canceling edit
       setEditableContent(formatContentForEditing(entry.content));
       const parsed = parseEntryContent(entry.content);
       setEditableTitle(parsed?.title || entry.title);
