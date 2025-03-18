@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { JournalEntry } from "@/lib/types";
 import { useUserData } from "@/context/UserDataContext";
-import { updateJournalEntry } from "@/services/journalService";
+import { updateJournalEntry } from "@/services/journal";
 import { useToast } from "@/hooks/use-toast";
 import { parseEntryContent, formatContentForEditing } from "@/utils/contentParser";
 import { useAuth } from "@/context/AuthContext";

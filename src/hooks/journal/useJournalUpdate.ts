@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import * as journalService from '@/services/journalService';
+import * as journalService from '@/services/journal';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
 

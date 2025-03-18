@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { useUserData } from "../context/UserDataContext";
-import { saveJournalEntry } from "../services/journalService";
+import { saveJournalEntry } from "@/services/journal";
 import { useAuth } from "../context/AuthContext";
 import { ActionButton } from "../components/ui/ActionButton";
 import { ArrowLeft, Save } from "lucide-react";

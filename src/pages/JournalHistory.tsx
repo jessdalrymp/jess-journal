@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
@@ -6,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useUserData } from "../context/UserDataContext";
 import { JournalEntry } from "../lib/types";
 import { useNavigate } from "react-router-dom";
-import { deleteJournalEntry } from "../services/journalService";
+import { deleteJournalEntry } from "@/services/journal";
 import { useToast } from "@/hooks/use-toast";
 import { EntryList } from "@/components/journal/EntryList";
 import { DeleteEntryDialog } from "@/components/journal/DeleteEntryDialog";
