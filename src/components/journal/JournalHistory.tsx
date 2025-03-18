@@ -55,7 +55,16 @@ export const JournalHistory = () => {
         // If we have a summary field (user's answer), use that for the display
         if (parsedContent.summary) {
           // Use the first line or first 50 characters of the summary
-          const summaryText = parsedContent.summary.split('\n')[0];
+          let summaryText = parsedContent.summary.split('\n')[0];
+          
+          // Replace third-person pronouns with second-person
+          summaryText = summaryText
+            .replace(/\bthe user\b/gi, "you")
+            .replace(/\bthey (are|were|have|had|will|would|can|could|should|might|must)\b/gi, "you $1")
+            .replace(/\btheir\b/gi, "your")
+            .replace(/\bthem\b/gi, "you")
+            .replace(/\bthemselves\b/gi, "yourself");
+          
           return summaryText.length > 50 
             ? summaryText.substring(0, 50) + '...' 
             : summaryText;
@@ -63,7 +72,15 @@ export const JournalHistory = () => {
         
         // Fallback to title if present
         if (parsedContent.title) {
-          return parsedContent.title;
+          // Also personalize the title if possible
+          let title = parsedContent.title
+            .replace(/\bthe user\b/gi, "you")
+            .replace(/\bthey (are|were|have|had|will|would|can|could|should|might|must)\b/gi, "you $1")
+            .replace(/\btheir\b/gi, "your")
+            .replace(/\bthem\b/gi, "you")
+            .replace(/\bthemselves\b/gi, "yourself");
+            
+          return title;
         }
       }
     } catch (e) {

@@ -1,3 +1,4 @@
+
 import { ChatMessage } from '@/lib/types';
 import { DeepseekMessage } from '@/utils/deepseekApi';
 
@@ -91,6 +92,8 @@ export const formatMessagesForSummary = (messages: ChatMessage[]): DeepseekMessa
     Format your response as a JSON object with two fields:
     1. "title": A brief, descriptive title for this conversation (max 60 chars)
     2. "summary": A 2-3 paragraph summary highlighting the most important points discussed.
+    IMPORTANT: Use second-person perspective ("you", "your") instead of third-person ("the user", "they", "their") 
+    to make it sound like you're speaking directly to the user as a friend.
     Only respond with valid JSON.`
   };
   

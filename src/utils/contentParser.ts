@@ -49,3 +49,18 @@ export const formatContentForEditing = (content: string): string => {
   
   return content;
 };
+
+/**
+ * Converts third-person references to second-person for a more personal tone
+ */
+export const convertToSecondPerson = (text: string): string => {
+  if (!text) return text;
+  
+  return text
+    .replace(/\bthe user\b/gi, "you")
+    .replace(/\bthey (are|were|have|had|will|would|can|could|should|might|must)\b/gi, "you $1")
+    .replace(/\btheir\b/gi, "your")
+    .replace(/\bthem\b/gi, "you")
+    .replace(/\bthemselves\b/gi, "yourself");
+};
+
