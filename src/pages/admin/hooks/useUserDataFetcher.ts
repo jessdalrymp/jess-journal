@@ -20,8 +20,9 @@ export const useUserDataFetcher = () => {
   const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
-      // Use type assertion to bypass TypeScript checking for RPC functions
-      const { data, error } = await supabase.rpc('get_users_with_details') as any;
+      
+      // Instead of using type assertion, let's explicitly handle the response data
+      const { data, error } = await supabase.rpc('get_users_with_details');
       
       if (error) {
         console.error('Error fetching users:', error);
@@ -33,9 +34,17 @@ export const useUserDataFetcher = () => {
         return;
       }
       
-      // Cast the data to the User[] type
-      const userData = data as User[];
-      setUsers(userData);
+      // Make sure data is an array before setting it
+      if (Array.isArray(data)) {
+        setUsers(data as User[]);
+      } else {
+        console.error('Unexpected data format:', data);
+        toast({
+          title: "Error fetching users",
+          description: "Received unexpected data format",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       console.error('Error in user management:', error);
       toast({
