@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, AlertTriangle } from "lucide-react";
@@ -38,6 +37,14 @@ export const PlanTable: React.FC<PlanTableProps> = ({
   isAdmin,
   connectionError = false
 }) => {
+  const formatPrice = (cents: number): string => {
+    const dollars = cents / 100;
+    return dollars.toLocaleString('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 3
+    });
+  };
+
   if (connectionError) {
     return (
       <Alert variant="destructive" className="my-4">
@@ -90,7 +97,7 @@ export const PlanTable: React.FC<PlanTableProps> = ({
             <TableRow key={plan.id}>
               <TableCell className="font-medium">{plan.name}</TableCell>
               <TableCell>{plan.description || '-'}</TableCell>
-              <TableCell>${plan.price / 100}</TableCell>
+              <TableCell>${formatPrice(plan.price)}</TableCell>
               <TableCell className="capitalize">{plan.interval}</TableCell>
               <TableCell>
                 <span className={`px-2 py-1 text-xs rounded-full ${plan.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
