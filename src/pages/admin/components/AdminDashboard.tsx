@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { PlanManagement } from "./PlanManagement";
 import { CouponManagement } from "./CouponManagement";
 import { UserManagement } from "./UserManagement";
+import { PaymentManagement } from "./PaymentManagement";
 import DatabaseConnectionTest from "@/components/DatabaseConnectionTest";
 import { AdminHeader } from "./AdminHeader";
 
@@ -17,10 +18,11 @@ export const AdminDashboard = () => {
       
       <div className="grid gap-6">
         <Tabs defaultValue="plans" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full md:w-auto grid-cols-3">
+          <TabsList className="grid w-full md:w-auto grid-cols-4">
             <TabsTrigger value="plans">Payment Plans</TabsTrigger>
             <TabsTrigger value="coupons">Coupons</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="payments">Payments</TabsTrigger>
           </TabsList>
           
           <TabsContent value="plans" className="mt-6">
@@ -33,6 +35,10 @@ export const AdminDashboard = () => {
           
           <TabsContent value="users" className="mt-6">
             <UserManagement />
+          </TabsContent>
+          
+          <TabsContent value="payments" className="mt-6">
+            <PaymentManagement />
           </TabsContent>
         </Tabs>
         
