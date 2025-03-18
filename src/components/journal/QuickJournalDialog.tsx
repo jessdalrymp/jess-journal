@@ -39,7 +39,7 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
       
       const journalContent = JSON.stringify({
         title: entryTitle,
-        prompt: prompt.text, // Store the original prompt for reference
+        prompt: prompt, // Store the original prompt for reference
         summary: content,
         type: category.id
       });
@@ -48,7 +48,7 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
       const journalCreateModule = await import('@/hooks/journal/useJournalCreate');
       const { saveJournalEntry } = journalCreateModule.useJournalCreate();
       
-      const savedEntry = await saveJournalEntry(user.id, prompt.text, journalContent);
+      const savedEntry = await saveJournalEntry(user.id, prompt, journalContent);
       
       if (savedEntry) {
         setSavedEntryId(savedEntry.id);
@@ -96,7 +96,7 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
             {category?.icon}
             <span>{category?.name}</span>
           </DialogTitle>
-          <DialogDescription>{prompt?.text}</DialogDescription>
+          <DialogDescription>{prompt}</DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
