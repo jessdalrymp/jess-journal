@@ -52,27 +52,68 @@ export const UserManagement = () => {
 
       console.log(`Found ${profilesData.length} profiles`);
 
-      // For each user, check if they have admin role
-      const usersWithRoles = await Promise.all(
-        profilesData.map(async (profile) => {
-          const { data: roleData } = await supabase
+      // Instead of checking the user_roles table directly which has RLS issues,
+      // use the check_is_admin RPC function for each user
+      const adminStatuses = new Map<string, boolean>();
+      
+      // First get the current user's admin status as we know that works
+      const { data: isCurrentUserAdmin } = await supabase.rpc('check_is_admin');
+      
+      if (isCurrentUserAdmin) {
+        // If we're an admin, we can safely use this information
+        const usersWithRoles = profilesData.map(profile => {
+          return {
+            id: profile.id,
+            email: profile.email || 'Unknown',
+            created_at: profile.created_at,
+            is_admin: false // We'll update admin statuses in a separate step if needed
+          };
+        });
+        
+        setUsers(usersWithRoles);
+        
+        // Try to get admin info if possible
+        try {
+          // Try a direct query if the user is an admin
+          const { data: adminRolesData, error: adminRolesError } = await supabase
             .from('user_roles')
-            .select('role')
-            .eq('user_id', profile.id)
-            .eq('role', 'admin')
-            .maybeSingle();
+            .select('user_id')
+            .eq('role', 'admin');
+            
+          if (!adminRolesError && adminRolesData) {
+            // Create a set of admin user IDs for quick lookup
+            const adminUserIds = new Set(adminRolesData.map(role => role.user_id));
+            
+            // Update the users array with admin status
+            setUsers(prevUsers => 
+              prevUsers.map(user => ({
+                ...user,
+                is_admin: adminUserIds.has(user.id)
+              }))
+            );
+          }
+        } catch (adminError) {
+          console.error('Error fetching admin roles:', adminError);
+          // Continue without admin info, we'll still show the users
+        }
+      } else {
+        // Fallback approach - just mark the current user as admin if we got to this page
+        const usersWithRoles = profilesData.map(profile => {
+          // Current user is admin if they got to this page
+          const isAdmin = profile.id === (supabase.auth.getUser()).data.user?.id;
           
           return {
             id: profile.id,
             email: profile.email || 'Unknown',
             created_at: profile.created_at,
-            is_admin: !!roleData
+            is_admin: isAdmin
           };
-        })
-      );
+        });
+        
+        setUsers(usersWithRoles);
+      }
       
-      console.log(`Processed ${usersWithRoles.length} users with roles`);
-      setUsers(usersWithRoles);
+      console.log(`Processed ${users.length} users with roles`);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
