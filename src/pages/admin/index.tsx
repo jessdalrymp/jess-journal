@@ -6,6 +6,7 @@ import { AdminHeader } from "./components/AdminHeader";
 import { supabase } from "../../integrations/supabase/client";
 import { PlanManagement } from "./components/PlanManagement";
 import { CouponManagement } from "./components/CouponManagement";
+import { UserManagement } from "./components/UserManagement";
 import { useToast } from "../../hooks/use-toast";
 import { Button } from "../../components/ui/button";
 import { DisclaimerBanner } from "../../components/ui/DisclaimerBanner";
@@ -96,13 +97,14 @@ const AdminPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
-      <main className="flex-1 py-6 container mx-auto max-w-5xl">
+      <main className="flex-1 py-6 container mx-auto max-w-7xl">
         <AdminHeader />
         
         {isLoading ? (
           <div className="text-center py-10">Loading...</div>
         ) : isAdmin ? (
           <div className="grid gap-6 mt-6">
+            <UserManagement />
             <PlanManagement />
             <CouponManagement />
           </div>
