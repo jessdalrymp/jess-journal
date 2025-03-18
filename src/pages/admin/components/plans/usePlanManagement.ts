@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from "../../../../integrations/supabase/client";
 import { useToast } from "../../../../hooks/use-toast";
@@ -111,15 +110,14 @@ export function usePlanManagement() {
     if (!confirm('Are you sure you want to delete this plan?')) return;
     
     try {
-      // Store the response in a variable to avoid type recursion
-      const response = await supabase
+      const { error } = await supabase
         .from('payment_plans')
         .delete()
         .eq('id', id);
       
-      if (response.error) {
-        console.error('Error deleting plan:', response.error);
-        throw response.error;
+      if (error) {
+        console.error('Error deleting plan:', error);
+        throw error;
       }
       
       toast({
@@ -144,7 +142,7 @@ export function usePlanManagement() {
     try {
       if (editingPlan) {
         // Update existing plan
-        const response = await supabase
+        const { error } = await supabase
           .from('payment_plans')
           .update({
             name: formData.name,
@@ -155,9 +153,9 @@ export function usePlanManagement() {
           })
           .eq('id', editingPlan.id);
 
-        if (response.error) {
-          console.error('Error updating plan:', response.error);
-          throw response.error;
+        if (error) {
+          console.error('Error updating plan:', error);
+          throw error;
         }
         
         toast({
@@ -166,7 +164,7 @@ export function usePlanManagement() {
         });
       } else {
         // Add new plan
-        const response = await supabase
+        const { error } = await supabase
           .from('payment_plans')
           .insert({
             name: formData.name,
@@ -176,9 +174,9 @@ export function usePlanManagement() {
             is_active: formData.is_active
           });
 
-        if (response.error) {
-          console.error('Error creating plan:', response.error);
-          throw response.error;
+        if (error) {
+          console.error('Error creating plan:', error);
+          throw error;
         }
         
         toast({
