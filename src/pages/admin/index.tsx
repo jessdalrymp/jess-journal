@@ -6,15 +6,20 @@ import { AdminHeader } from "./components/AdminHeader";
 import { supabase } from "../../integrations/supabase/client";
 import { PlanManagement } from "./components/PlanManagement";
 import { CouponManagement } from "./components/CouponManagement";
+import { UserManagement } from "./components/UserManagement";
+import { SubscriptionManagement } from "./components/SubscriptionManagement";
+import { PaymentManagement } from "./components/PaymentManagement";
 import { useToast } from "../../hooks/use-toast";
 import { Button } from "../../components/ui/button";
 import { DisclaimerBanner } from "../../components/ui/DisclaimerBanner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 
 const AdminPage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("users");
 
   useEffect(() => {
     if (user) {
@@ -99,9 +104,36 @@ const AdminPage = () => {
         {isLoading ? (
           <div className="text-center py-10">Loading...</div>
         ) : isAdmin ? (
-          <div className="grid gap-6 mt-6">
-            <PlanManagement />
-            <CouponManagement />
+          <div className="mt-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid grid-cols-5 mb-6">
+                <TabsTrigger value="users">Users</TabsTrigger>
+                <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
+                <TabsTrigger value="payments">Payments</TabsTrigger>
+                <TabsTrigger value="plans">Plans</TabsTrigger>
+                <TabsTrigger value="coupons">Coupons</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="users" className="mt-0">
+                <UserManagement />
+              </TabsContent>
+              
+              <TabsContent value="subscriptions" className="mt-0">
+                <SubscriptionManagement />
+              </TabsContent>
+              
+              <TabsContent value="payments" className="mt-0">
+                <PaymentManagement />
+              </TabsContent>
+              
+              <TabsContent value="plans" className="mt-0">
+                <PlanManagement />
+              </TabsContent>
+              
+              <TabsContent value="coupons" className="mt-0">
+                <CouponManagement />
+              </TabsContent>
+            </Tabs>
           </div>
         ) : (
           <div className="bg-white p-6 rounded-lg shadow-sm mt-6">
