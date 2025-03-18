@@ -78,19 +78,20 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
     try {
       const success = await updateJournalEntry(entry.id, contentToSave, user.id);
       if (success) {
-        toast({
-          title: "Entry updated",
-          description: "Journal entry has been updated successfully",
+        // Update local state immediately to prevent "not found" flash
+        const updatedEntry = {
+          ...entry,
+          content: contentToSave,
+          title: editableTitle
+        };
+        
+        setEntry(updatedEntry);
+        setParsedContent(parseEntryContent(contentToSave));
+        
+        // Refresh entries list but don't wait for it
+        fetchJournalEntries().catch(err => {
+          console.error("Error refreshing entries after save:", err);
         });
-        
-        // Update local state
-        if (entry) {
-          setEntry({...entry, content: contentToSave, title: editableTitle});
-          setParsedContent(parseEntryContent(contentToSave));
-        }
-        
-        // Refresh entries list
-        await fetchJournalEntries();
         
         // Exit editing mode
         setIsEditing(false);

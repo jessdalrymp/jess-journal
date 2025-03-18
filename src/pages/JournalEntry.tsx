@@ -23,6 +23,7 @@ const JournalEntry = () => {
   const [initialEntry, setInitialEntry] = useState<JournalEntryType | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [retryAttempts, setRetryAttempts] = useState(0);
+  const [forceReload, setForceReload] = useState(0); // Added to force reload after saving
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -134,13 +135,24 @@ const JournalEntry = () => {
     };
 
     loadEntry();
-  }, [id, location.state, journalEntries, retryAttempts]);
+  }, [id, location.state, journalEntries, retryAttempts, forceReload]);
 
   const handleSaveClick = async () => {
     const success = await handleSave();
     if (success) {
-      // Don't navigate away, stay on the same page
-      // Just update the local state and UI
+      // First update local state
+      setNotFound(false); // Ensure we don't show the not found state
+      
+      // Force a refetch with the database to get the updated entry
+      await fetchJournalEntries();
+      
+      // Force the useEffect to run again to reload the entry
+      setForceReload(prev => prev + 1);
+      
+      toast({
+        title: "Journal entry saved",
+        description: "Your journal entry has been saved successfully.",
+      });
     }
   };
 
