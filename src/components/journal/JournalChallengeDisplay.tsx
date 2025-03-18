@@ -46,7 +46,8 @@ export const JournalChallengeDisplay = memo(({
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-3"></div>
-              <p className="text-lg">Generating your journal prompt...</p>
+              <p className="text-lg mb-2">Generating your journal prompt...</p>
+              <p className="text-sm text-jess-muted">This may take a moment. We're creating a thoughtful prompt for you.</p>
             </div>
           </div>
         ) : (

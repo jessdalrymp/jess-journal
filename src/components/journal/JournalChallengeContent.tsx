@@ -9,6 +9,7 @@ import { useJournalPrompt } from "@/hooks/journal";
 export const JournalChallengeContent = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showJournaling, setShowJournaling] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const navigate = useNavigate();
   
   const {
@@ -24,13 +25,20 @@ export const JournalChallengeContent = () => {
 
   // Use useCallback to memoize handler functions
   const handleBack = useCallback(() => {
-    navigate('/');
+    navigate('/dashboard');
   }, [navigate]);
 
   const handleAcceptChallenge = useCallback(() => {
     acceptChallenge();
     setShowJournaling(true);
   }, [acceptChallenge]);
+
+  // Mark initial load as complete after the first prompt load
+  useEffect(() => {
+    if (!isLoading && !initialLoadDone) {
+      setInitialLoadDone(true);
+    }
+  }, [isLoading, initialLoadDone]);
 
   // Load welcome modal check once on component mount
   useEffect(() => {
@@ -51,7 +59,7 @@ export const JournalChallengeContent = () => {
         onTogglePersonalized={togglePersonalizedPrompts}
         isPersonalized={usePersonalized}
         hasEnoughEntries={hasEnoughEntries}
-        isLoading={isLoading}
+        isLoading={isLoading && !initialLoadDone} // Only show loading on initial load
       />
       
       {/* Only render modals when needed */}
