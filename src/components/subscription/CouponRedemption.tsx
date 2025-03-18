@@ -27,13 +27,6 @@ export const CouponRedemption = ({
         </CardTitle>
         <CardDescription>
           Enter a coupon code to get special offers
-          <div className="mt-2 text-sm text-muted-foreground">
-            <p>Available coupons:</p>
-            <ul className="list-disc pl-5 mt-1">
-              <li><span className="font-medium">FreeTrial</span> - Get a 30-day free trial</li>
-              <li><span className="font-medium">UNLIMITED2024</span> - Unlimited access</li>
-            </ul>
-          </div>
         </CardDescription>
       </CardHeader>
       <CardContent>
