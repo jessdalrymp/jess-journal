@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from "../../../../integrations/supabase/client";
 import { useToast } from "../../../../hooks/use-toast";
@@ -44,17 +43,11 @@ export function usePlanManagement() {
       setLoading(true);
       console.log("Fetching plans from database...");
       
-      // Simple query first to check if we get any data at all
-      const { data: testData, error: testError } = await supabase
-        .from('payment_plans')
-        .select('count(*)');
-      
-      console.log("Plans count check:", testData, testError);
-      
-      // Main query with detailed debugging
+      // Main query with proper column selection
       const { data, error } = await supabase
         .from('payment_plans')
-        .select('*');
+        .select('id, name, description, price, interval, is_active')
+        .order('name');
       
       if (error) {
         console.error('Error fetching plans:', error);
@@ -64,20 +57,11 @@ export function usePlanManagement() {
       // Log raw data for debugging
       console.log("Plans fetched (raw):", data);
       
-      if (data) {
-        // Explicitly format and map the data to ensure proper typing
-        const formattedPlans = data.map(plan => ({
-          id: plan.id,
-          name: plan.name,
-          description: plan.description,
-          price: plan.price,
-          interval: plan.interval,
-          is_active: plan.is_active
-        }));
-        console.log("Formatted plans:", formattedPlans);
-        setPlans(formattedPlans);
+      if (data && data.length > 0) {
+        setPlans(data);
+        console.log("Plans loaded successfully:", data);
       } else {
-        console.log("No plans data returned");
+        console.log("No plans data returned or empty array");
         setPlans([]);
       }
     } catch (error) {
