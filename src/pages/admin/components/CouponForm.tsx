@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { CouponFormHeader } from './CouponFormHeader';
 import { CouponFormFields } from './CouponFormFields';
 import { CouponFormActions } from './CouponFormActions';
-import type { CouponFormData, CouponType } from '../hooks/useCouponManagement';
+import type { CouponFormData, CouponType } from '../hooks/coupons/types';
 
 interface CouponFormProps {
   formData: CouponFormData;

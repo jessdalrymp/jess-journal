@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Button } from "../../../components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
-import type { CouponType } from '../hooks/useCouponManagement';
+import type { CouponType } from '../hooks/coupons/types';
 
 interface CouponTableProps {
   coupons: CouponType[];

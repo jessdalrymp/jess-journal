@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 import { Switch } from "../../../components/ui/switch";
-import type { CouponFormData } from '../hooks/useCouponManagement';
+import type { CouponFormData } from '../hooks/coupons/types';
 
 interface CouponFormFieldsProps {
   formData: CouponFormData;

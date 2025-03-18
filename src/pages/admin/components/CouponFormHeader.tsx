@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { 
   DialogHeader,
   DialogTitle,
   DialogDescription 
 } from "../../../components/ui/dialog";
-import type { CouponType } from '../hooks/useCouponManagement';
+import type { CouponType } from '../hooks/coupons/types';
 
 interface CouponFormHeaderProps {
   editingCoupon: CouponType | null;

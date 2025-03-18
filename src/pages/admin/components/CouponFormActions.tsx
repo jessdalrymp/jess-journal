@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Button } from "../../../components/ui/button";
 import { DialogFooter } from "../../../components/ui/dialog";
-import type { CouponType } from '../hooks/useCouponManagement';
+import type { CouponType } from '../hooks/coupons/types';
 
 interface CouponFormActionsProps {
   editingCoupon: CouponType | null;
