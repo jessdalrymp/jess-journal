@@ -7,12 +7,13 @@ import { useUserData } from "../context/UserDataContext";
 import { saveJournalEntry } from "@/services/journal";
 import { useAuth } from "../context/AuthContext";
 import { ActionButton } from "../components/ui/ActionButton";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
 import { JournalEntryEditor } from "@/components/journal/JournalEntryEditor";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { JournalPromptSelector } from "@/components/journal/JournalPromptSelector";
 import { Prompt, PromptCategory } from "@/components/journal/data/promptCategories";
+import { Button } from "@/components/ui/button";
 
 const BlankJournal = () => {
   const navigate = useNavigate();
@@ -143,6 +144,17 @@ const BlankJournal = () => {
               onTitleChange={setTitle} 
               promptText={selectedPrompt || undefined}
             />
+
+            <div className="mt-6 flex justify-end">
+              <Button 
+                onClick={handleSave} 
+                disabled={isSaving}
+                className="flex items-center gap-2 bg-jess-primary hover:bg-jess-primary/90"
+              >
+                <Save size={16} />
+                {isSaving ? "Saving..." : "Save Entry"}
+              </Button>
+            </div>
           </div>
         )}
       </main>
