@@ -45,12 +45,14 @@ export const usePlanManagement = () => {
     }
   };
 
+  // Fix: Explicitly type the event parameter to avoid deep instantiation
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target as HTMLInputElement;
+    const target = e.target;
+    const name = target.name;
+    const value = target.value;
     
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
+    if (target instanceof HTMLInputElement && target.type === 'checkbox') {
+      setFormData(prev => ({ ...prev, [name]: target.checked }));
     } else if (name === 'price') {
       setFormData(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
     } else {
