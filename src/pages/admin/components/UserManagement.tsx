@@ -2,19 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../integrations/supabase/client';
 import { useToast } from '../../../hooks/use-toast';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '../../../components/ui/table';
 import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
-import { Switch } from '../../../components/ui/switch';
-import { Search, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
+import { UserFilters } from './UserFilters';
+import { UserTable } from './UserTable';
 
 interface User {
   id: string;
@@ -194,17 +185,6 @@ export const UserManagement = () => {
     }
   };
 
-  const handleCouponSubmit = (event: React.FormEvent<HTMLFormElement>, userId: string) => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const couponInput = form.elements.namedItem('coupon') as HTMLInputElement;
-    
-    if (couponInput && couponInput.value) {
-      applyCouponToUser(userId, couponInput.value);
-      couponInput.value = ''; // Clear the input after submission
-    }
-  };
-
   const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -255,102 +235,28 @@ export const UserManagement = () => {
         </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="text"
-            placeholder={`Search by ${searchField}...`}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant={searchField === 'email' ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSearchField('email')}
-          >
-            Email
-          </Button>
-          <Button
-            variant={searchField === 'id' ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSearchField('id')}
-          >
-            ID
-          </Button>
-        </div>
-      </div>
-
-      <Tabs value={currentTab} onValueChange={setCurrentTab} className="mb-6">
-        <TabsList>
-          <TabsTrigger value="all">All Users</TabsTrigger>
-          <TabsTrigger value="admin">Admins</TabsTrigger>
-          <TabsTrigger value="subscribed">Subscribed</TabsTrigger>
-          <TabsTrigger value="trial">Trial</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <UserFilters 
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        searchField={searchField}
+        setSearchField={setSearchField}
+        currentTab={currentTab}
+        setCurrentTab={setCurrentTab}
+      />
 
       {loading ? (
         <div className="text-center py-10">Loading users...</div>
       ) : filteredUsers.length === 0 ? (
         <div className="text-center py-10">No users found</div>
       ) : (
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Email</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Subscription</TableHead>
-                <TableHead>Expires</TableHead>
-                <TableHead>Coupon</TableHead>
-                <TableHead>Admin</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.email}</TableCell>
-                  <TableCell>{formatDate(user.created_at)}</TableCell>
-                  <TableCell>{getSubscriptionStatus(user)}</TableCell>
-                  <TableCell>{getSubscriptionExpiry(user)}</TableCell>
-                  <TableCell>
-                    {user.subscription_data && user.subscription_data.coupon_code ? 
-                      user.subscription_data.coupon_code : 
-                      'None'
-                    }
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <Switch 
-                        checked={user.is_admin} 
-                        onCheckedChange={() => toggleAdminStatus(user.id, user.is_admin)}
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <form 
-                      onSubmit={(e) => handleCouponSubmit(e, user.id)} 
-                      className="flex gap-2"
-                    >
-                      <Input 
-                        type="text" 
-                        name="coupon" 
-                        placeholder="Coupon code" 
-                        className="w-28"
-                      />
-                      <Button type="submit" size="sm">Apply</Button>
-                    </form>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <UserTable 
+          users={filteredUsers}
+          toggleAdminStatus={toggleAdminStatus}
+          applyCouponToUser={applyCouponToUser}
+          formatDate={formatDate}
+          getSubscriptionStatus={getSubscriptionStatus}
+          getSubscriptionExpiry={getSubscriptionExpiry}
+        />
       )}
     </div>
   );
