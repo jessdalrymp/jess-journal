@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { BookText, FileSparkles, PenLine, RefreshCw } from 'lucide-react';
+import { BookText, Sparkles, PenLine, RefreshCw } from 'lucide-react';
 
 export const GettingStarted = () => {
   return (
@@ -21,7 +20,7 @@ export const GettingStarted = () => {
             
             <Step
               number={2}
-              icon={<FileSparkles className="text-white" size={20} />}
+              icon={<Sparkles className="text-white" size={20} />}
               title="Receive Personalized Reflections"
               description="JESS analyzes your words and offers insights that genuinely resonate with your experiences."
             />
