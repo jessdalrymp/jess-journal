@@ -22,6 +22,7 @@ export const LoginSignUpForm = ({
 }: LoginSignUpFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,9 +48,16 @@ export const LoginSignUpForm = ({
       return false;
     }
 
-    if (!isLogin && !validateName(name)) {
-      setError("Please enter your name to create an account.");
-      return false;
+    if (!isLogin) {
+      if (!validateName(name)) {
+        setError("Please enter your name to create an account.");
+        return false;
+      }
+      
+      if (password !== confirmPassword) {
+        setError("Passwords do not match.");
+        return false;
+      }
     }
 
     return true;
@@ -146,6 +154,17 @@ export const LoginSignUpForm = ({
           label="Password"
           placeholder="••••••••"
         />
+        
+        {!isLogin && (
+          <AuthFormInput
+            id="confirmPassword"
+            type="password"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            label="Confirm Password"
+            placeholder="••••••••"
+          />
+        )}
         
         {error && (
           <div className="flex items-start gap-2 p-3 rounded-md bg-red-50 text-red-700 text-sm">

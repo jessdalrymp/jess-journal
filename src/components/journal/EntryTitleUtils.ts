@@ -1,51 +1,42 @@
+import { JournalEntry } from '@/lib/types';
 
-import { JournalEntry } from "@/lib/types";
-import { parseContentWithJsonCodeBlock } from "@/services/journal";
-
-/**
- * Extracts a user-friendly title from journal entry content
- */
 export const getEntryTitle = (entry: JournalEntry): string => {
-  try {
-    // Parse the content to get the user's answer instead of the question
-    const parsedContent = parseContentWithJsonCodeBlock(entry.content);
-    
-    if (parsedContent) {
-      // If we have a summary field (user's answer), use that for the display
-      if (parsedContent.summary) {
-        // Use the first line or first 50 characters of the summary
-        let summaryText = parsedContent.summary.split('\n')[0];
-        
-        // Replace third-person pronouns with second-person
-        summaryText = summaryText
-          .replace(/\bthe user\b/gi, "you")
-          .replace(/\bthey (are|were|have|had|will|would|can|could|should|might|must)\b/gi, "you $1")
-          .replace(/\btheir\b/gi, "your")
-          .replace(/\bthem\b/gi, "you")
-          .replace(/\bthemselves\b/gi, "yourself");
-        
-        return summaryText.length > 50 
-          ? summaryText.substring(0, 50) + '...' 
-          : summaryText;
-      }
-      
-      // Fallback to title if present
-      if (parsedContent.title) {
-        // Also personalize the title if possible
-        let title = parsedContent.title
-          .replace(/\bthe user\b/gi, "you")
-          .replace(/\bthey (are|were|have|had|will|would|can|could|should|might|must)\b/gi, "you $1")
-          .replace(/\btheir\b/gi, "your")
-          .replace(/\bthem\b/gi, "you")
-          .replace(/\bthemselves\b/gi, "yourself");
-          
-        return title;
-      }
-    }
-  } catch (e) {
-    // Not valid JSON or doesn't have the expected fields
+  // If there's a title field, use it
+  if (entry.title) {
+    return entry.title;
   }
   
-  // Fallback to the original title
-  return entry.title;
+  // Otherwise, try to extract title from content or use a fallback
+  if (entry.content) {
+    // Check if content is JSON
+    try {
+      if (typeof entry.content === 'string' && entry.content.trim().startsWith('{')) {
+        const contentObj = JSON.parse(entry.content);
+        if (contentObj.title) {
+          return contentObj.title;
+        }
+      }
+    } catch (e) {
+      // Not JSON, continue with text processing
+    }
+    
+    // If not JSON or no title in JSON, extract first line/sentence
+    const content = typeof entry.content === 'string' ? entry.content : '';
+    const firstLine = content.split('\n')[0];
+    
+    // If first line is too long, truncate it
+    if (firstLine && firstLine.length > 0) {
+      return firstLine.length > 60 ? firstLine.substring(0, 57) + '...' : firstLine;
+    }
+  }
+  
+  // Fallback based on entry type
+  const typeNames = {
+    story: 'My Story',
+    sideQuest: 'Side Quest',
+    action: 'Action Challenge',
+    journal: 'Journal Entry',
+  };
+  
+  return typeNames[entry.type as keyof typeof typeNames] || 'Entry';
 };
