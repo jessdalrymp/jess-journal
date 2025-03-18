@@ -44,19 +44,42 @@ export function usePlanManagement() {
       setLoading(true);
       console.log("Fetching plans from database...");
       
-      // Explicitly select all columns and order by name
+      // Simple query first to check if we get any data at all
+      const { data: testData, error: testError } = await supabase
+        .from('payment_plans')
+        .select('count(*)');
+      
+      console.log("Plans count check:", testData, testError);
+      
+      // Main query with detailed debugging
       const { data, error } = await supabase
         .from('payment_plans')
-        .select('id, name, description, price, interval, is_active, created_at')
-        .order('name', { ascending: true });
-
+        .select('*');
+      
       if (error) {
         console.error('Error fetching plans:', error);
         throw error;
       }
       
-      console.log("Plans fetched:", data);
-      setPlans(data || []);
+      // Log raw data for debugging
+      console.log("Plans fetched (raw):", data);
+      
+      if (data) {
+        // Explicitly format and map the data to ensure proper typing
+        const formattedPlans = data.map(plan => ({
+          id: plan.id,
+          name: plan.name,
+          description: plan.description,
+          price: plan.price,
+          interval: plan.interval,
+          is_active: plan.is_active
+        }));
+        console.log("Formatted plans:", formattedPlans);
+        setPlans(formattedPlans);
+      } else {
+        console.log("No plans data returned");
+        setPlans([]);
+      }
     } catch (error) {
       console.error('Error fetching plans:', error);
       toast({
