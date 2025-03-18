@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Header } from "../../components/Header";
 import { useAuth } from "../../context/AuthContext";
@@ -9,6 +8,7 @@ import { CouponManagement } from "./components/CouponManagement";
 import { useToast } from "../../hooks/use-toast";
 import { Button } from "../../components/ui/button";
 import { DisclaimerBanner } from "../../components/ui/DisclaimerBanner";
+import { AdminDashboard } from "./components/AdminDashboard";
 
 const AdminPage = () => {
   const { user } = useAuth();
@@ -25,7 +25,6 @@ const AdminPage = () => {
   const checkAdminStatus = async () => {
     try {
       setIsLoading(true);
-      // Call the Postgres function via RPC with proper typing
       const { data, error } = await supabase.rpc('check_is_admin', {}) as 
         { data: boolean | null, error: Error | null };
       
@@ -46,7 +45,6 @@ const AdminPage = () => {
     if (!user) return;
     
     try {
-      // Call the Postgres function via RPC with proper typing
       const { data, error } = await supabase.rpc('make_user_admin', {}) as 
         { data: boolean | null, error: Error | null };
 
@@ -90,32 +88,7 @@ const AdminPage = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen flex flex-col bg-jess-background">
-      <Header />
-      <main className="flex-1 py-6 container mx-auto max-w-5xl">
-        <AdminHeader />
-        
-        {isLoading ? (
-          <div className="text-center py-10">Loading...</div>
-        ) : isAdmin ? (
-          <div className="grid gap-6 mt-6">
-            <PlanManagement />
-            <CouponManagement />
-          </div>
-        ) : (
-          <div className="bg-white p-6 rounded-lg shadow-sm mt-6">
-            <h2 className="text-xl font-medium mb-4">Admin Access</h2>
-            <p className="mb-4">You need admin privileges to access this page.</p>
-            <Button onClick={makeAdmin}>
-              Make Me Admin
-            </Button>
-          </div>
-        )}
-      </main>
-      <DisclaimerBanner />
-    </div>
-  );
+  return <AdminDashboard />;
 };
 
 export default AdminPage;

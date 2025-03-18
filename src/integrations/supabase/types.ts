@@ -358,47 +358,6 @@ export type Database = {
         }
         Relationships: []
       }
-      therapy_sessions: {
-        Row: {
-          action_items: Json[] | null
-          content: string
-          created_at: string
-          id: string
-          limiting_beliefs: string[] | null
-          reframed_narrative: string | null
-          themes: string[] | null
-          user_id: string
-        }
-        Insert: {
-          action_items?: Json[] | null
-          content: string
-          created_at?: string
-          id?: string
-          limiting_beliefs?: string[] | null
-          reframed_narrative?: string | null
-          themes?: string[] | null
-          user_id: string
-        }
-        Update: {
-          action_items?: Json[] | null
-          content?: string
-          created_at?: string
-          id?: string
-          limiting_beliefs?: string[] | null
-          reframed_narrative?: string | null
-          themes?: string[] | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "therapy_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_challenges: {
         Row: {
           completed_at: string | null
@@ -432,11 +391,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      apply_coupon_to_user: {
+        Args: {
+          p_user_id: string
+          p_coupon_code: string
+        }
+        Returns: boolean
+      }
       apply_unlimited_access: {
         Args: {
           p_user_id: string
@@ -472,6 +459,23 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_teams_for_user: {
+        Args: {
+          user_id: string
+        }
+        Returns: string[]
+      }
+      get_users_with_details: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          email: string
+          created_at: string
+          profile_data: Json
+          subscription_data: Json
+          is_admin: boolean
+        }[]
+      }
       insert_journal_entry: {
         Args: {
           p_user_id: string
@@ -484,6 +488,13 @@ export type Database = {
       }
       make_user_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      toggle_user_admin_status: {
+        Args: {
+          p_user_id: string
+          p_admin_status: boolean
+        }
         Returns: boolean
       }
       update_journal_entry: {
@@ -499,7 +510,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
