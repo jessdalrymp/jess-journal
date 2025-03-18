@@ -8,7 +8,6 @@ export const useAdminStatus = () => {
 
   const checkAdminStatus = async () => {
     try {
-      setLoading(true);
       const { data, error } = await supabase.rpc('check_is_admin');
       
       if (error) {
