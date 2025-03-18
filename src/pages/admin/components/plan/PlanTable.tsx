@@ -90,7 +90,7 @@ export const PlanTable: React.FC<PlanTableProps> = ({
             <TableRow key={plan.id}>
               <TableCell className="font-medium">{plan.name}</TableCell>
               <TableCell>{plan.description || '-'}</TableCell>
-              <TableCell>${(plan.price / 100).toFixed(2)}</TableCell>
+              <TableCell>${plan.price / 100}</TableCell>
               <TableCell className="capitalize">{plan.interval}</TableCell>
               <TableCell>
                 <span className={`px-2 py-1 text-xs rounded-full ${plan.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>

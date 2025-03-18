@@ -37,6 +37,28 @@ export const PlanFormDialog: React.FC<PlanFormDialogProps> = ({
   handleSubmit,
   isEditing
 }) => {
+  // Function to convert cents to dollars for display
+  const centsToDollars = (cents: number) => {
+    return (cents / 100).toFixed(2);
+  };
+
+  // Function to handle price input change (convert dollars to cents)
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const dollarValue = parseFloat(e.target.value) || 0;
+    const centValue = Math.round(dollarValue * 100);
+    
+    const syntheticEvent = {
+      ...e,
+      target: {
+        ...e.target,
+        name: 'price',
+        value: centValue.toString()
+      }
+    } as React.ChangeEvent<HTMLInputElement>;
+    
+    handleInputChange(syntheticEvent);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent>
@@ -73,16 +95,17 @@ export const PlanFormDialog: React.FC<PlanFormDialogProps> = ({
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="price">Price (in cents)</Label>
+              <Label htmlFor="displayPrice">Price (in dollars)</Label>
               <Input
-                id="price"
-                name="price"
+                id="displayPrice"
+                name="displayPrice"
                 type="number"
-                value={formData.price}
-                onChange={handleInputChange}
+                step="0.01"
+                value={centsToDollars(formData.price)}
+                onChange={handlePriceChange}
                 required
               />
-              <p className="text-xs text-jess-muted">Enter price in cents (e.g., 1499 for $14.99)</p>
+              <p className="text-xs text-jess-muted">Enter price in dollars (e.g., 14.99 for $14.99)</p>
             </div>
             
             <div className="grid gap-2">
