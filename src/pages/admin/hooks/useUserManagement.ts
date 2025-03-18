@@ -24,26 +24,18 @@ export const useUserManagement = () => {
     try {
       setLoading(true);
       
-      // Fetch all users from auth.users
-      const { data: authUsers, error: authError } = await supabase.from('users').select('*');
+      // Use the get_users_with_details function to fetch user data
+      const { data, error } = await supabase.rpc('get_users_with_details');
       
-      if (authError) throw authError;
+      if (error) throw error;
       
-      // Fetch admin users
-      const { data: adminUsers, error: adminError } = await supabase.from('user_roles').select('user_id').eq('role', 'admin');
-      
-      if (adminError) throw adminError;
-      
-      // Create a set of admin user IDs for quick lookup
-      const adminUserIds = new Set(adminUsers.map(admin => admin.user_id));
-      
-      // Map users with admin status
-      const mappedUsers = (authUsers || []).map(user => ({
+      // Map the returned data to the UserType format
+      const mappedUsers = (data || []).map(user => ({
         id: user.id,
         email: user.email,
         created_at: user.created_at,
-        last_sign_in_at: user.last_sign_in_at,
-        is_admin: adminUserIds.has(user.id)
+        last_sign_in_at: user.profile_data?.last_login || null,
+        is_admin: user.is_admin
       }));
       
       setUsers(mappedUsers);
