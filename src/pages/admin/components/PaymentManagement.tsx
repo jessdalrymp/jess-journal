@@ -37,26 +37,36 @@ export const PaymentManagement = () => {
     try {
       setLoading(true);
       
-      // Fetch payments with user email
-      const { data, error } = await supabase
+      // First, fetch all payments
+      const { data: paymentsData, error: paymentsError } = await supabase
         .from('payments')
-        .select(`
-          *,
-          profiles:user_id (
-            email
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (paymentsError) throw paymentsError;
 
-      // Transform the data to include the email
-      const formattedData = data?.map(item => ({
-        ...item,
-        user_email: item.profiles?.email || 'Unknown'
-      }));
+      if (!paymentsData) {
+        setPayments([]);
+        return;
+      }
+
+      // For each payment, get the user's email from the profiles table
+      const enhancedPayments = await Promise.all(
+        paymentsData.map(async (payment) => {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', payment.user_id)
+            .single();
+          
+          return {
+            ...payment,
+            user_email: profileData?.email || 'Unknown'
+          };
+        })
+      );
       
-      setPayments(formattedData || []);
+      setPayments(enhancedPayments);
     } catch (error) {
       console.error('Error fetching payments:', error);
       toast({

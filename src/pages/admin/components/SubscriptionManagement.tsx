@@ -44,26 +44,36 @@ export const SubscriptionManagement = () => {
     try {
       setLoading(true);
       
-      // Fetch subscriptions with user email
-      const { data, error } = await supabase
+      // First, fetch all subscriptions
+      const { data: subscriptionsData, error: subscriptionsError } = await supabase
         .from('subscriptions')
-        .select(`
-          *,
-          profiles:user_id (
-            email
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (subscriptionsError) throw subscriptionsError;
 
-      // Transform the data to include the email
-      const formattedData = data?.map(item => ({
-        ...item,
-        user_email: item.profiles?.email || 'Unknown'
-      }));
+      if (!subscriptionsData) {
+        setSubscriptions([]);
+        return;
+      }
+
+      // For each subscription, get the user's email from the profiles table
+      const enhancedSubscriptions = await Promise.all(
+        subscriptionsData.map(async (subscription) => {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', subscription.user_id)
+            .single();
+          
+          return {
+            ...subscription,
+            user_email: profileData?.email || 'Unknown'
+          };
+        })
+      );
       
-      setSubscriptions(formattedData || []);
+      setSubscriptions(enhancedSubscriptions);
     } catch (error) {
       console.error('Error fetching subscriptions:', error);
       toast({

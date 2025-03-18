@@ -34,24 +34,32 @@ export const UserManagement = () => {
     try {
       setLoading(true);
       
-      // Fetch users from auth.users through admin RPC
-      const { data: userData, error: userError } = await supabase
-        .rpc('get_all_users');
+      // Fetch users from profiles table
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, email, created_at');
 
-      if (userError) throw userError;
+      if (profilesError) throw profilesError;
+
+      if (!profilesData) {
+        setUsers([]);
+        return;
+      }
 
       // For each user, check if they have admin role
       const usersWithRoles = await Promise.all(
-        (userData || []).map(async (user: any) => {
+        profilesData.map(async (profile) => {
           const { data: roleData } = await supabase
             .from('user_roles')
             .select('role')
-            .eq('user_id', user.id)
+            .eq('user_id', profile.id)
             .eq('role', 'admin')
             .maybeSingle();
           
           return {
-            ...user,
+            id: profile.id,
+            email: profile.email || 'Unknown',
+            created_at: profile.created_at,
             is_admin: !!roleData
           };
         })
