@@ -1,10 +1,12 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ChevronRight, Sparkles, BookOpen } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const Hero = () => {
+  const isMobile = useIsMobile();
+  
   return (
     <section className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
       <div className="text-center mb-12">
@@ -14,7 +16,11 @@ export const Hero = () => {
         </div>
         
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-jess-primary to-jess-foreground bg-clip-text text-transparent">
-          Rewrite Your Life Story with<br />Journaling That Truly Understands You
+          {isMobile ? (
+            <>Rewrite Your Life Story<br />with Journaling That<br />Truly Understands You</>
+          ) : (
+            <>Rewrite Your Life Story with<br />Journaling That Truly Understands You</>
+          )}
         </h1>
         <p className="text-xl text-jess-muted max-w-3xl mx-auto mb-8">
           JESS transforms your thoughts into powerful self-discovery. Using your own words, 
