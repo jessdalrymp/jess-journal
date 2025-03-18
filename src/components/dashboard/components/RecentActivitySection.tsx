@@ -1,9 +1,9 @@
-
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { Clock, PenSquare } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { Button } from '@/components/ui/button';
+import { parseContentWithJsonCodeBlock } from '@/services/journal';
 
 interface RecentActivitySectionProps {
   journalEntries: JournalEntry[];
@@ -30,21 +30,13 @@ export const RecentActivitySection = ({
     if (!entry) return "Untitled Entry";
     
     try {
-      // First check if it's JSON content inside code blocks
-      let contentToProcess = entry.content;
-      const jsonRegex = /```(?:json)?\s*([\s\S]*?)```/;
-      const match = entry.content.match(jsonRegex);
-      if (match && match[1]) {
-        contentToProcess = match[1].trim();
-      }
-      
-      // Try to parse as JSON
-      const parsed = JSON.parse(contentToProcess);
+      // Try to parse the content
+      const parsed = parseContentWithJsonCodeBlock(entry.content);
       if (parsed && parsed.title) {
         return parsed.title;
       }
     } catch (e) {
-      // Not valid JSON or doesn't have a title, just use the original title
+      // Not valid JSON or doesn't have a title
     }
     
     return entry.title || "Untitled Entry";

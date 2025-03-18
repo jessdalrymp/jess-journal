@@ -28,8 +28,13 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
     setIsSaving(true);
     
     try {
+      // Generate a title based on the user's response, not the prompt
+      const contentPreview = content.trim().substring(0, 40) + (content.length > 40 ? '...' : '');
+      const entryTitle = `${category.name}: ${contentPreview}`;
+      
       const journalContent = JSON.stringify({
-        title: `${category.name}: ${prompt.substring(0, 40)}...`,
+        title: entryTitle,
+        prompt: prompt, // Store the original prompt for reference
         summary: content,
         type: category.id
       });
@@ -38,7 +43,7 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
       const journalCreateModule = await import('@/hooks/journal/useJournalCreate');
       const { saveJournalEntry } = journalCreateModule.useJournalCreate();
       
-      await saveJournalEntry(user.id, prompt, journalContent);
+      await saveJournalEntry(user.id, entryTitle, journalContent);
       
       fetchJournalEntries();
       

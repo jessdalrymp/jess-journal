@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -30,7 +29,6 @@ export const JournalingDialog = ({
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Start the timer when the dialog opens
   useEffect(() => {
     let interval: number;
     
@@ -66,9 +64,12 @@ export const JournalingDialog = ({
     try {
       setIsSaving(true);
       
-      // Format the journal content as JSON
+      const contentPreview = journalContent.trim().substring(0, 40) + (journalContent.length > 40 ? '...' : '');
+      const titlePrefix = challengeType === 'action' ? 'Action' : 'Journal';
+      const entryTitle = `${titlePrefix} Challenge: ${contentPreview}`;
+      
       const jsonContent = JSON.stringify({
-        title: `${challengeType === 'action' ? 'Action' : 'Journal'} Challenge Reflection`,
+        title: entryTitle,
         summary: journalContent.trim(),
         timeSpent: timeSpent,
         prompt: promptText || ""
@@ -76,10 +77,9 @@ export const JournalingDialog = ({
       
       const formattedContent = `\`\`\`json\n${jsonContent}\n\`\`\``;
       
-      // Save to journal entries
       await saveJournalEntryFromConversation(
         user.id, 
-        promptText || `${challengeType === 'action' ? 'Action' : 'Journal'} Challenge Reflection`, 
+        entryTitle, 
         formattedContent,
         challengeType
       );
@@ -89,7 +89,6 @@ export const JournalingDialog = ({
         description: "Your reflection has been saved to your journal history.",
       });
       
-      // Close dialog and redirect
       onOpenChange(false);
       navigate('/journal-history');
     } catch (error) {
