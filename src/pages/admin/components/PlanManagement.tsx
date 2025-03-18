@@ -48,12 +48,18 @@ export const PlanManagement = () => {
   const fetchPlans = async () => {
     try {
       setLoading(true);
+      console.log("Fetching plans from database...");
       const { data, error } = await supabase
         .from('payment_plans')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching plans:', error);
+        throw error;
+      }
+      
+      console.log("Plans fetched:", data);
       setPlans(data || []);
     } catch (error) {
       console.error('Error fetching plans:', error);
@@ -108,12 +114,18 @@ export const PlanManagement = () => {
     if (!confirm('Are you sure you want to delete this plan?')) return;
     
     try {
-      const { error } = await supabase
+      // Use intermediate variables to avoid type recursion issues
+      const response = await supabase
         .from('payment_plans')
         .delete()
         .eq('id', id);
-
-      if (error) throw error;
+      
+      const error = response.error;
+      
+      if (error) {
+        console.error('Error deleting plan:', error);
+        throw error;
+      }
       
       toast({
         title: "Plan deleted",
@@ -137,7 +149,7 @@ export const PlanManagement = () => {
     try {
       if (editingPlan) {
         // Update existing plan
-        const { error } = await supabase
+        const response = await supabase
           .from('payment_plans')
           .update({
             name: formData.name,
@@ -148,7 +160,12 @@ export const PlanManagement = () => {
           })
           .eq('id', editingPlan.id);
 
-        if (error) throw error;
+        const error = response.error;
+        
+        if (error) {
+          console.error('Error updating plan:', error);
+          throw error;
+        }
         
         toast({
           title: "Plan updated",
@@ -156,7 +173,7 @@ export const PlanManagement = () => {
         });
       } else {
         // Add new plan
-        const { error } = await supabase
+        const response = await supabase
           .from('payment_plans')
           .insert({
             name: formData.name,
@@ -166,7 +183,12 @@ export const PlanManagement = () => {
             is_active: formData.is_active
           });
 
-        if (error) throw error;
+        const error = response.error;
+        
+        if (error) {
+          console.error('Error creating plan:', error);
+          throw error;
+        }
         
         toast({
           title: "Plan added",
