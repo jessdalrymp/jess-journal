@@ -25,7 +25,17 @@ export const useUserManagement = () => {
       setLoading(true);
       console.log("Fetching users...");
       
-      const { data, error } = await supabase.rpc('get_users_with_details');
+      // Try with explicit SQL query instead of the RPC function
+      const { data, error } = await supabase
+        .from('auth.users')
+        .select(`
+          id,
+          email,
+          created_at,
+          profile:users(last_session),
+          is_admin:user_roles(role)
+        `)
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error details:', error);
@@ -41,16 +51,13 @@ export const useUserManagement = () => {
       
       // Map the returned data to the UserType format
       const mappedUsers = data.map(user => {
-        // Extract last_sign_in_at from the profile_data
-        let lastSignIn = null;
+        // Check if user has admin role
+        const isAdmin = user.is_admin && user.is_admin.some((role: any) => role.role === 'admin');
         
-        if (user.profile_data && 
-            typeof user.profile_data === 'object' && 
-            !Array.isArray(user.profile_data)) {
-          
-          // Access last_session safely with optional chaining
-          lastSignIn = user.profile_data.last_session || null;
-          console.log(`User ${user.email} last session:`, lastSignIn);
+        // Extract last sign in time if available
+        let lastSignIn = null;
+        if (user.profile && user.profile.length > 0) {
+          lastSignIn = user.profile[0].last_session;
         }
         
         return {
@@ -58,7 +65,7 @@ export const useUserManagement = () => {
           email: user.email,
           created_at: user.created_at,
           last_sign_in_at: lastSignIn,
-          is_admin: user.is_admin || false
+          is_admin: isAdmin || false
         };
       });
       
@@ -71,6 +78,29 @@ export const useUserManagement = () => {
         description: "Please try again later",
         variant: "destructive"
       });
+      
+      // Fallback to direct SQL query if RPC function fails
+      try {
+        console.log("Attempting fallback query...");
+        const { data: users, error: usersError } = await supabase
+          .from('auth.users')
+          .select('id, email, created_at');
+          
+        if (usersError) throw usersError;
+        
+        const simpleMappedUsers = users.map(user => ({
+          id: user.id,
+          email: user.email,
+          created_at: user.created_at,
+          last_sign_in_at: null,
+          is_admin: false
+        }));
+        
+        console.log("Fallback users:", simpleMappedUsers);
+        setUsers(simpleMappedUsers);
+      } catch (fallbackError) {
+        console.error('Fallback query also failed:', fallbackError);
+      }
     } finally {
       setLoading(false);
     }
