@@ -2,13 +2,18 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Sparkles, BookOpen } from 'lucide-react';
 
 export const Hero = () => {
   return (
     <section className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
       <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+        <div className="inline-flex items-center gap-2 bg-jess-primary/10 text-jess-primary px-4 py-2 rounded-full mb-6">
+          <Sparkles size={16} />
+          <span className="text-sm font-medium">AI-Powered Self-Discovery</span>
+        </div>
+        
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-jess-primary to-jess-foreground bg-clip-text text-transparent">
           Rewrite Your Life Story with Journaling That Truly Understands You
         </h1>
         <p className="text-xl text-jess-muted max-w-3xl mx-auto mb-8">
@@ -36,13 +41,14 @@ export const Hero = () => {
         
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link to="/dashboard">
-            <Button size="lg" className="w-full sm:w-auto text-lg px-8">
+            <Button size="lg" className="w-full sm:w-auto text-lg px-8 bg-gradient-to-r from-jess-primary to-jess-primary/80 hover:from-jess-primary/90 hover:to-jess-primary animate-pulse-soft">
               Begin Your Personal Journey
               <ChevronRight className="ml-2" size={18} />
             </Button>
           </Link>
           <Link to="/free-journal-prompts">
             <Button size="lg" variant="outline" className="w-full sm:w-auto">
+              <BookOpen className="mr-2" size={18} />
               Browse Free Prompts
             </Button>
           </Link>
