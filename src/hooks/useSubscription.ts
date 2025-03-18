@@ -17,40 +17,36 @@ export function useSubscription(userId: string | undefined) {
       // Add more detailed logging for debugging
       console.log("Fetching subscription for user:", userId);
       
+      // Change request to not use .single() which requires exactly one row
       const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
-        .eq('user_id', userId)
-        .single();
+        .eq('user_id', userId);
         
       if (error) {
-        // Don't throw here, just log it and continue
         console.error("Error fetching subscription:", error);
-        
-        // Only display a toast for non-404 errors
-        if (error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
-          toast({
-            title: "Subscription data unavailable",
-            description: "We couldn't load your subscription information. You may have limited access.",
-            variant: "destructive"
-          });
-        }
+        toast({
+          title: "Subscription data unavailable",
+          description: "We couldn't load your subscription information. You may have limited access.",
+          variant: "destructive"
+        });
         return;
       }
       
-      if (data) {
+      if (data && data.length > 0) {
+        const subscriptionData = data[0];
         const subscription: Subscription = {
-          id: data.id,
-          status: data.status,
-          is_trial: data.is_trial,
-          is_unlimited: data.is_unlimited,
-          trial_ends_at: data.trial_ends_at,
-          current_period_ends_at: data.current_period_ends_at,
-          coupon_code: data.coupon_code
+          id: subscriptionData.id,
+          status: subscriptionData.status,
+          is_trial: subscriptionData.is_trial,
+          is_unlimited: subscriptionData.is_unlimited,
+          trial_ends_at: subscriptionData.trial_ends_at,
+          current_period_ends_at: subscriptionData.current_period_ends_at,
+          coupon_code: subscriptionData.coupon_code
         };
         
         setSubscription(subscription);
-        console.log("Subscription loaded successfully:", data.status);
+        console.log("Subscription loaded successfully:", subscriptionData.status);
       } else {
         // User has no subscription yet
         setSubscription(null);

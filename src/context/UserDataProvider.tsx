@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { JournalEntry, UserProfile, User } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
@@ -148,13 +147,21 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   }, [user, isJournalFetched]);
 
-  // Separate effect for subscription check to prevent loops
+  // Modified effect for subscription check to prevent loops
   useEffect(() => {
     if (user && !isCheckingSubscriptionRef.current) {
+      console.log("Initial subscription check for user:", user.id);
       isCheckingSubscriptionRef.current = true;
-      checkSubscriptionStatus().finally(() => {
-        isCheckingSubscriptionRef.current = false;
-      });
+      checkSubscriptionStatus()
+        .then(() => {
+          console.log("Subscription check completed");
+        })
+        .catch(error => {
+          console.error("Error in subscription check:", error);
+        })
+        .finally(() => {
+          isCheckingSubscriptionRef.current = false;
+        });
     }
   }, [user, checkSubscriptionStatus]);
 
@@ -184,7 +191,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     try {
       const result = await applyCoupon(couponCode);
       if (result) {
-        // Explicitly check subscription status when a coupon is applied successfully
+        console.log("Coupon applied, checking updated subscription status");
         isCheckingSubscriptionRef.current = true;
         await checkSubscriptionStatus();
         isCheckingSubscriptionRef.current = false;

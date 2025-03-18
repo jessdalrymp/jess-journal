@@ -8,8 +8,10 @@ import { PageHeader } from "./components/PageHeader";
 import { SubscriptionStatusCard } from "./components/SubscriptionStatusCard";
 import { SubscriptionPlansCard } from "./components/SubscriptionPlansCard";
 import { CouponRedemptionCard } from "./components/CouponRedemptionCard";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "../../hooks/use-toast";
+import { Alert, AlertDescription } from "../../components/ui/alert";
+import { InfoCircledIcon } from "@radix-ui/react-icons";
 
 const Subscription = () => {
   const { user } = useAuth();
@@ -17,12 +19,20 @@ const Subscription = () => {
   const location = useLocation();
   const { subscription, checkSubscriptionStatus } = useUserData();
   const [isProcessing, setIsProcessing] = useState(false);
-  const hasCheckedStatus = useRef(false);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    if (user && !hasCheckedStatus.current) {
-      hasCheckedStatus.current = true;
-      checkSubscriptionStatus();
+    if (user) {
+      const fetchData = async () => {
+        try {
+          await checkSubscriptionStatus();
+        } catch (error) {
+          console.error("Error checking subscription:", error);
+          setHasError(true);
+        }
+      };
+      
+      fetchData();
     }
     
     // Check for success parameter in URL
@@ -33,13 +43,22 @@ const Subscription = () => {
         description: "Your subscription has been activated",
       });
     }
-  }, [user, checkSubscriptionStatus, location, toast]);
+  }, [user, location, toast, checkSubscriptionStatus]);
 
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
       <main className="flex-1 py-6 container mx-auto max-w-4xl">
         <PageHeader />
+        
+        {hasError && (
+          <Alert variant="destructive" className="mb-6">
+            <InfoCircledIcon className="h-4 w-4 mr-2" />
+            <AlertDescription>
+              There was an issue loading your subscription data. Please refresh the page or try again later.
+            </AlertDescription>
+          </Alert>
+        )}
         
         <div className="grid gap-6">
           <SubscriptionStatusCard 
