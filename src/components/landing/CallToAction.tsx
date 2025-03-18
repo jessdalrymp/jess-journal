@@ -21,7 +21,7 @@ export const CallToAction = () => {
         <div className="flex flex-col sm:flex-row justify-center gap-4 mb-10">
           <Link to="/dashboard">
             <Button size="lg" className="px-8 w-full sm:w-auto text-lg bg-gradient-to-r from-jess-primary to-jess-primary/80 hover:from-jess-primary/90 hover:to-jess-primary group transition-all duration-300">
-              Start Your Free Personalized Journey Now
+              Start Your Free Journey Now
               <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={18} />
             </Button>
           </Link>
