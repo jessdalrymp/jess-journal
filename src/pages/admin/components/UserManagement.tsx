@@ -34,17 +34,23 @@ export const UserManagement = () => {
     try {
       setLoading(true);
       
-      // Fetch users from profiles table
+      // Fetch all users from profiles table
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('id, email, created_at');
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw profilesError;
+      }
 
-      if (!profilesData) {
+      if (!profilesData || profilesData.length === 0) {
+        console.log('No profiles found');
         setUsers([]);
         return;
       }
+
+      console.log(`Found ${profilesData.length} profiles`);
 
       // For each user, check if they have admin role
       const usersWithRoles = await Promise.all(
@@ -65,6 +71,7 @@ export const UserManagement = () => {
         })
       );
       
+      console.log(`Processed ${usersWithRoles.length} users with roles`);
       setUsers(usersWithRoles);
     } catch (error) {
       console.error('Error fetching users:', error);
