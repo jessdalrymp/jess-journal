@@ -37,11 +37,17 @@ export const JournalChallengeContent = () => {
   useEffect(() => {
     if (!isLoading && !initialLoadDone) {
       setInitialLoadDone(true);
+      
+      // Store the current prompt in localStorage to speed up future loads
+      if (journalPrompt && journalPrompt.title) {
+        localStorage.setItem('currentJournalPrompt', JSON.stringify(journalPrompt));
+      }
     }
-  }, [isLoading, initialLoadDone]);
+  }, [isLoading, initialLoadDone, journalPrompt]);
 
   // Load welcome modal check once on component mount
   useEffect(() => {
+    // Check if we should show the welcome modal
     const hasVisitedJournalChallenge = localStorage.getItem("hasVisitedJournalChallengePage");
     if (!hasVisitedJournalChallenge) {
       setShowWelcome(true);

@@ -17,7 +17,19 @@ const promptCache = {
 const CACHE_EXPIRY = 60 * 60 * 1000;
 
 export const useJournalPrompt = () => {
-  const [journalPrompt, setJournalPrompt] = useState<JournalPrompt>(DEFAULT_PROMPT);
+  const [journalPrompt, setJournalPrompt] = useState<JournalPrompt>(() => {
+    // Try to get the prompt from localStorage on initialization for quick initial render
+    try {
+      const storedPrompt = localStorage.getItem('currentJournalPrompt');
+      if (storedPrompt) {
+        return JSON.parse(storedPrompt) as JournalPrompt;
+      }
+    } catch (e) {
+      console.error('Error parsing stored prompt:', e);
+    }
+    return DEFAULT_PROMPT;
+  });
+  
   const [isLoading, setIsLoading] = useState(false);
   const [challengeAccepted, setChallengeAccepted] = useState(false);
   const [usePersonalized, setUsePersonalized] = useState(false);
@@ -40,22 +52,36 @@ export const useJournalPrompt = () => {
 
   // Generate prompt only once on initial load with caching
   useEffect(() => {
-    if (!user || challengeAccepted || isLoading || generationInProgress.current) {
+    if (!user || challengeAccepted || generationInProgress.current) {
       return;
+    }
+
+    // Only set loading if we don't already have a prompt from localStorage
+    if (journalPrompt === DEFAULT_PROMPT) {
+      setIsLoading(true);
     }
 
     // Try to use cached prompts first
     if (isCacheValid()) {
       if (usePersonalized && user.id && promptCache.personalized.has(user.id)) {
-        setJournalPrompt(promptCache.personalized.get(user.id) || DEFAULT_PROMPT);
-        return;
+        const cachedPrompt = promptCache.personalized.get(user.id);
+        if (cachedPrompt) {
+          setJournalPrompt(cachedPrompt);
+          setIsLoading(false);
+          localStorage.setItem('currentJournalPrompt', JSON.stringify(cachedPrompt));
+          return;
+        }
       } else if (!usePersonalized && promptCache.standard) {
         setJournalPrompt(promptCache.standard);
+        setIsLoading(false);
+        localStorage.setItem('currentJournalPrompt', JSON.stringify(promptCache.standard));
         return;
       }
     }
 
-    generateNewPrompt();
+    // If we don't have a cached prompt, generate a new one asynchronously
+    // This will run in parallel to any render, so the UI won't be blocked
+    setTimeout(() => generateNewPrompt(), 0);
   }, [user, challengeAccepted, usePersonalized]);
 
   const generateNewPrompt = useCallback(async () => {
@@ -113,6 +139,8 @@ export const useJournalPrompt = () => {
       
       if (newPrompt) {
         setJournalPrompt(newPrompt);
+        // Update localStorage for quick loading next time
+        localStorage.setItem('currentJournalPrompt', JSON.stringify(newPrompt));
       } else {
         toast({
           title: "Using default prompt",
