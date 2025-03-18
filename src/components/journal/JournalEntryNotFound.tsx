@@ -3,7 +3,7 @@ import { Header } from "../../components/Header";
 import { DisclaimerBanner } from "../../components/ui/DisclaimerBanner";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Book, RefreshCw } from "lucide-react";
+import { ArrowLeft, Book, RefreshCw, Home } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useUserData } from "@/context/UserDataContext";
@@ -13,6 +13,7 @@ export const JournalEntryNotFound = () => {
   const location = useLocation();
   const entryId = location.pathname.split('/').pop();
   const [isRetrying, setIsRetrying] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const { fetchJournalEntries, journalEntries } = useUserData();
   const { toast } = useToast();
 
@@ -20,7 +21,10 @@ export const JournalEntryNotFound = () => {
     if (!entryId) return;
     
     setIsRetrying(true);
+    setRetryCount(prev => prev + 1);
+    
     try {
+      // Force a complete refresh of journal entries
       await fetchJournalEntries();
       
       // Check if entry exists after refresh
@@ -31,11 +35,24 @@ export const JournalEntryNotFound = () => {
         return;
       }
       
-      toast({
-        title: "Still not found",
-        description: "The journal entry could not be found even after refreshing.",
-        variant: "destructive"
-      });
+      // Different messages based on retry count
+      if (retryCount === 0) {
+        toast({
+          title: "Entry not found yet",
+          description: "The journal entry could not be found. It might still be saving. Let's try again.",
+        });
+      } else if (retryCount === 1) {
+        toast({
+          title: "Still waiting for entry",
+          description: "The entry might take a moment to synchronize. We'll try one more time.",
+        });
+      } else {
+        toast({
+          title: "Unable to find entry",
+          description: "The journal entry could not be found even after multiple attempts. You may want to try again later.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       console.error("Error retrying to find journal entry:", error);
       toast({
@@ -78,15 +95,22 @@ export const JournalEntryNotFound = () => {
               <Button
                 variant="outline"
                 onClick={handleRetry}
-                disabled={isRetrying}
+                disabled={isRetrying || retryCount >= 3}
                 className="flex items-center gap-2"
               >
                 <RefreshCw size={16} className={isRetrying ? "animate-spin" : ""} />
-                {isRetrying ? "Retrying..." : "Retry"}
+                {isRetrying ? "Retrying..." : retryCount >= 3 ? "Max Retries Reached" : "Retry"}
               </Button>
               <Link to="/journal-history">
-                <Button className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto flex items-center gap-2">
+                  <Book size={16} />
                   View Journal History
+                </Button>
+              </Link>
+              <Link to="/dashboard">
+                <Button variant="outline" className="w-full sm:w-auto flex items-center gap-2">
+                  <Home size={16} />
+                  Dashboard
                 </Button>
               </Link>
             </div>

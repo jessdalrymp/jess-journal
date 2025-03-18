@@ -27,6 +27,18 @@ export const JournalEntryMeta = ({ entry, title }: JournalEntryMetaProps) => {
     return entry.title;
   };
 
+  // Format the date in a nice way
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString('en-US', { 
+      weekday: 'long',
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-2">
@@ -38,12 +50,7 @@ export const JournalEntryMeta = ({ entry, title }: JournalEntryMetaProps) => {
         </span>
       </div>
       <p className="text-sm text-jess-muted">
-        {new Date(entry.createdAt).toLocaleDateString('en-US', { 
-          weekday: 'long',
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        })}
+        {formatDate(entry.createdAt)}
       </p>
     </div>
   );

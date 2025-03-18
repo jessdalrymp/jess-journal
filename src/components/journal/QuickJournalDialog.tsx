@@ -7,6 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { PromptCategory, Prompt } from './data/promptCategories';
+import { Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface QuickJournalDialogProps {
   isOpen: boolean;
@@ -18,9 +20,11 @@ interface QuickJournalDialogProps {
 export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJournalDialogProps) => {
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [savedEntryId, setSavedEntryId] = useState<string | null>(null);
   const { user } = useAuth();
   const { fetchJournalEntries } = useUserData();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSave = async () => {
     if (!user || !content.trim() || !prompt || !category) return;
@@ -30,6 +34,7 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
     try {
       // Generate a title based on the user's response, not the prompt
       const contentPreview = content.trim().substring(0, 40) + (content.length > 40 ? '...' : '');
+      // Create a title that shows "Category: First words of response..."
       const entryTitle = `${category.name}: ${contentPreview}`;
       
       const journalContent = JSON.stringify({
@@ -43,22 +48,39 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
       const journalCreateModule = await import('@/hooks/journal/useJournalCreate');
       const { saveJournalEntry } = journalCreateModule.useJournalCreate();
       
-      await saveJournalEntry(user.id, entryTitle, journalContent);
+      const savedEntry = await saveJournalEntry(user.id, entryTitle, journalContent);
       
-      fetchJournalEntries();
-      
-      toast({
-        title: "Journal entry saved",
-        description: `Your ${category.name.toLowerCase()} has been saved successfully.`,
-      });
-      
-      setContent('');
-      onClose();
+      if (savedEntry) {
+        setSavedEntryId(savedEntry.id);
+        
+        // Refresh journal entries list to ensure the new entry is available
+        await fetchJournalEntries();
+        
+        toast({
+          title: "Journal entry saved",
+          description: `Your ${category.name.toLowerCase()} has been saved successfully.`,
+        });
+        
+        // Clear the content
+        setContent('');
+        
+        // Close the dialog
+        onClose();
+        
+        // Navigate to the new entry
+        setTimeout(() => {
+          navigate(`/journal-entry/${savedEntry.id}`, {
+            state: { entry: savedEntry }
+          });
+        }, 200);
+      } else {
+        throw new Error("Failed to save entry");
+      }
     } catch (error) {
       console.error('Error saving journal entry:', error);
       toast({
         title: "Error saving entry",
-        description: "Something went wrong. Please try again.",
+        description: "Something went wrong. Please try again or check your network connection.",
         variant: "destructive"
       });
     } finally {
@@ -83,14 +105,26 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
             onChange={(e) => setContent(e.target.value)}
             placeholder="Write your thoughts here..."
             className="min-h-[200px]"
+            disabled={isSaving}
           />
           
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={onClose} disabled={isSaving}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={!content.trim() || isSaving}>
-              {isSaving ? "Saving..." : "Save Entry"}
+            <Button 
+              onClick={handleSave} 
+              disabled={!content.trim() || isSaving}
+              className="relative"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Entry"
+              )}
             </Button>
           </div>
         </div>
