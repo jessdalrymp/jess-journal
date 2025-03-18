@@ -102,10 +102,38 @@ export const useSendMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal
           const summaryText = summaryResponse.choices[0].message.content;
           
           try {
-            const { title, summary } = JSON.parse(summaryText);
-            await saveJournalEntryFromConversation(session.userId, title, summary, 'journal');
+            // Try to parse JSON from the response
+            let summaryContent = summaryText;
+            let title = finalUpdatedSession.messages[0].content.substring(0, 50) + '...';
+            
+            // Try to extract JSON if it exists
+            try {
+              const jsonMatch = summaryText.match(/```json\s*([\s\S]*?)```/) || 
+                               summaryText.match(/\{[\s\S]*?\}/);
+              
+              if (jsonMatch) {
+                const parsedJson = JSON.parse(jsonMatch[0].replace(/```json|```/g, '').trim());
+                if (parsedJson.title) title = parsedJson.title;
+                summaryContent = JSON.stringify(parsedJson, null, 2);
+              }
+            } catch (e) {
+              console.log('Could not parse JSON from summary, using raw text');
+            }
+            
+            const journalContent = JSON.stringify({
+              title: title,
+              summary: summaryContent,
+              type: 'journal'
+            }, null, 2);
+            
+            await saveJournalEntryFromConversation(
+              session.userId, 
+              finalUpdatedSession.messages[0].content, 
+              `\`\`\`json\n${journalContent}\n\`\`\``, 
+              'journal'
+            );
           } catch (e) {
-            console.error('Error parsing summary JSON:', e);
+            console.error('Error saving journal entry from conversation:', e);
           }
         } catch (e) {
           console.error('Error generating journal summary:', e);

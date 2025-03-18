@@ -13,6 +13,7 @@ import { ChatUnauthenticatedState } from './ChatUnauthenticatedState';
 import { ChatEndDialog } from './ChatEndDialog';
 import { ChatFooter } from './ChatFooter';
 import { clearCurrentConversationFromStorage } from '@/lib/storageUtils';
+import { JournalingDialog } from '../challenges/JournalingDialog';
 
 interface ChatInterfaceProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
@@ -34,8 +35,9 @@ export const ChatInterface = ({
   saveChat = false
 }: ChatInterfaceProps) => {
   const { user, loading: authLoading } = useAuth();
-  const { session, loading: chatLoading, error, sendMessage, generateSummary } = useChat(type, initialMessage);
+  const { session, loading: chatLoading, error, sendMessage, generateSummary, saveJournalEntryFromChat } = useChat(type, initialMessage);
   const [showEndDialog, setShowEndDialog] = useState(false);
+  const [showJournalingDialog, setShowJournalingDialog] = useState(false);
   const chatInitialized = useRef(false);
   const { toast } = useToast();
   
@@ -59,6 +61,9 @@ export const ChatInterface = ({
   const openEndDialog = () => {
     if (saveChat && onEndChat) {
       onEndChat();
+    } else if (type === 'journal') {
+      // For journal type, open the journaling dialog instead of the end dialog
+      setShowJournalingDialog(true);
     } else if (type === 'sideQuest') {
       handleEndConversation();
     } else {
@@ -77,6 +82,12 @@ export const ChatInterface = ({
             description: "We're storing your progress to journal history.",
           });
           await generateSummary();
+        } else if (type === 'journal') {
+          toast({
+            title: "Saving journal entry...",
+            description: "We're saving your journal to history.",
+          });
+          await saveJournalEntryFromChat();
         }
       }
       
@@ -90,6 +101,11 @@ export const ChatInterface = ({
       });
       onBack();
     }
+  };
+
+  const handleJournalingComplete = () => {
+    setShowJournalingDialog(false);
+    onBack();
   };
 
   const handleNewChallenge = () => {
@@ -134,6 +150,9 @@ export const ChatInterface = ({
     );
   }
   
+  // Extract the first message content (which is the prompt) for journal entry
+  const promptText = session.messages.length > 0 ? session.messages[0].content : undefined;
+  
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden">
       <ChatHeader type={type} onBack={onBack} />
@@ -159,6 +178,15 @@ export const ChatInterface = ({
           open={showEndDialog} 
           onOpenChange={setShowEndDialog} 
           onEndConversation={handleEndConversation} 
+        />
+      )}
+      
+      {type === 'journal' && (
+        <JournalingDialog
+          open={showJournalingDialog}
+          onOpenChange={setShowJournalingDialog}
+          challengeType="journal"
+          promptText={promptText}
         />
       )}
     </div>

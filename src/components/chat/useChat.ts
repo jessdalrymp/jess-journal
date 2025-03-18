@@ -79,9 +79,17 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal', init
   };
   
   const handleGenerateSummary = async () => {
-    if (!session) return;
+    if (!session) return null;
     
     return await generateSummary(session);
+  };
+  
+  const saveJournalEntryFromChat = async () => {
+    if (!session || session.messages.length < 2 || type !== 'journal') return null;
+    
+    // Generate summary to save as journal entry
+    const summary = await handleGenerateSummary();
+    return summary;
   };
   
   return {
@@ -89,6 +97,7 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal', init
     loading,
     error,
     sendMessage: handleSendMessage,
-    generateSummary: handleGenerateSummary
+    generateSummary: handleGenerateSummary,
+    saveJournalEntryFromChat
   };
 };
