@@ -22,6 +22,7 @@ const JournalEntry = () => {
   const [loading, setLoading] = useState(true);
   const [initialEntry, setInitialEntry] = useState<JournalEntryType | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [retryAttempts, setRetryAttempts] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -40,16 +41,19 @@ const JournalEntry = () => {
     isSaving,
   } = useJournalEntryEditor(initialEntry);
 
-  // This function retries fetching journal entries
+  // This function retries fetching journal entries with exponential backoff
   const tryFindingEntry = async () => {
     if (!id) return false;
     
     try {
-      // Try to refetch entries
+      // Force a fresh fetch from the database
+      console.log(`Retry attempt ${retryAttempts + 1}: Fetching journal entries for entry ${id}`);
       await fetchJournalEntries();
+      
       // Look for the entry again
       const foundEntry = journalEntries.find(entry => entry.id === id);
       if (foundEntry) {
+        console.log(`Entry found on retry attempt ${retryAttempts + 1}`);
         setInitialEntry(foundEntry);
         setEntry(foundEntry);
         setNotFound(false);
@@ -80,40 +84,47 @@ const JournalEntry = () => {
       
       // Otherwise, find by ID
       if (id) {
+        // First, check if we can find it in the current entries
         let foundEntry = journalEntries.find(entry => entry.id === id);
         
-        // If we didn't find the entry and we have an ID, try fetching again
-        if (!foundEntry && journalEntries.length === 0) {
-          // Fetch entries if needed
+        // If not found but we have the ID, trigger a fresh fetch
+        if (!foundEntry) {
+          console.log(`Entry with ID ${id} not found in ${journalEntries.length} current entries.`);
+          
           try {
+            // Forcefully fetch entries
             await fetchJournalEntries();
+            // Try again after fetch
             foundEntry = journalEntries.find(entry => entry.id === id);
           } catch (error) {
             console.error("Error fetching journal entries:", error);
-            toast({
-              title: "Error loading entries",
-              description: "Could not load journal entries. Please try again.",
-              variant: "destructive",
-            });
+          }
+          
+          // If still not found, try again with increasing delay
+          if (!foundEntry && retryAttempts < 3) {
+            const delayMs = Math.min(1000 * Math.pow(2, retryAttempts), 5000); // Exponential backoff
+            console.log(`Entry still not found. Retrying in ${delayMs}ms...`);
+            
+            setTimeout(async () => {
+              setRetryAttempts(prev => prev + 1);
+              const found = await tryFindingEntry();
+              if (!found && retryAttempts >= 2) {
+                setNotFound(true);
+                setLoading(false);
+              }
+            }, delayMs);
+            
+            return; // Don't set loading to false yet
           }
         }
         
         if (foundEntry) {
+          console.log(`Found entry with ID ${id}`);
           setInitialEntry(foundEntry);
           setEntry(foundEntry);
         } else {
-          console.log(`Entry with ID ${id} not found in ${journalEntries.length} entries. Retrying...`);
-          
-          // Try one more time with a delay
-          setTimeout(async () => {
-            const found = await tryFindingEntry();
-            if (!found) {
-              setNotFound(true);
-            }
-            setLoading(false);
-          }, 1000);
-          
-          return; // Don't set loading to false yet
+          console.log(`Entry with ID ${id} not found after ${retryAttempts} retries.`);
+          setNotFound(true);
         }
       } else {
         setNotFound(true);
@@ -123,7 +134,7 @@ const JournalEntry = () => {
     };
 
     loadEntry();
-  }, [id, location.state, journalEntries.length]);
+  }, [id, location.state, journalEntries, retryAttempts]);
 
   const handleSaveClick = async () => {
     const success = await handleSave();

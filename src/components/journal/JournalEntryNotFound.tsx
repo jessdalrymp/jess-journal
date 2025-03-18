@@ -21,13 +21,21 @@ export const JournalEntryNotFound = () => {
     
     setIsRetrying(true);
     try {
+      // Force a fresh fetch with cache clearing
       await fetchJournalEntries();
       
       // Check if entry exists after refresh
       const foundEntry = journalEntries.find(entry => entry.id === entryId);
       if (foundEntry) {
-        // Reload the page to try again with fresh data
-        window.location.reload();
+        toast({
+          title: "Entry found!",
+          description: "Reloading the page with the found entry.",
+        });
+        
+        // Use a short timeout to allow the toast to be seen
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
         return;
       }
       
