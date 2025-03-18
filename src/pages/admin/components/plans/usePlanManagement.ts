@@ -43,11 +43,10 @@ export function usePlanManagement() {
       setLoading(true);
       console.log("Fetching plans from database...");
       
-      // Main query with proper column selection
+      // Fixed query - removing any potential syntax issues
       const { data, error } = await supabase
         .from('payment_plans')
-        .select('id, name, description, price, interval, is_active')
-        .order('name');
+        .select('id, name, description, price, interval, is_active');
       
       if (error) {
         console.error('Error fetching plans:', error);
