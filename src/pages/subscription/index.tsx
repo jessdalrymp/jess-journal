@@ -8,7 +8,7 @@ import { PageHeader } from "./components/PageHeader";
 import { SubscriptionStatusCard } from "./components/SubscriptionStatusCard";
 import { SubscriptionPlansCard } from "./components/SubscriptionPlansCard";
 import { CouponRedemptionCard } from "./components/CouponRedemptionCard";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useToast } from "../../hooks/use-toast";
 import { Alert, AlertDescription } from "../../components/ui/alert";
 import { InfoIcon } from "lucide-react";
@@ -20,9 +20,11 @@ const Subscription = () => {
   const { subscription, checkSubscriptionStatus } = useUserData();
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
-    if (user) {
+    if (user && !hasInitialized.current) {
+      hasInitialized.current = true;
       const fetchData = async () => {
         try {
           await checkSubscriptionStatus();

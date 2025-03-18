@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { supabase } from "../integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Subscription } from "../context/types";
@@ -8,16 +8,22 @@ export function useSubscription(userId: string | undefined) {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  
+  // Add reference to track if a subscription check is in progress
+  const isCheckingRef = useRef(false);
 
   const checkSubscriptionStatus = useCallback(async (): Promise<void> => {
-    if (!userId) return;
+    if (!userId || isCheckingRef.current) return;
     
+    // Set the flag to prevent concurrent calls
+    isCheckingRef.current = true;
     setLoading(true);
+    
     try {
       // Add more detailed logging for debugging
       console.log("Fetching subscription for user:", userId);
       
-      // Change request to not use .single() which requires exactly one row
+      // Use data array format instead of .single()
       const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
@@ -25,11 +31,14 @@ export function useSubscription(userId: string | undefined) {
         
       if (error) {
         console.error("Error fetching subscription:", error);
-        toast({
-          title: "Subscription data unavailable",
-          description: "We couldn't load your subscription information. You may have limited access.",
-          variant: "destructive"
-        });
+        // Only show toast on initial load or serious errors
+        if (!subscription) {
+          toast({
+            title: "Subscription data unavailable",
+            description: "We couldn't load your subscription information. You may have limited access.",
+            variant: "destructive"
+          });
+        }
         return;
       }
       
@@ -57,8 +66,10 @@ export function useSubscription(userId: string | undefined) {
       // Don't show error toast for every failed attempt to reduce user annoyance
     } finally {
       setLoading(false);
+      // Clear the checking flag
+      isCheckingRef.current = false;
     }
-  }, [userId, toast]);
+  }, [userId, toast, subscription]);
 
   const applyCoupon = async (couponCode: string): Promise<boolean> => {
     if (!userId) {

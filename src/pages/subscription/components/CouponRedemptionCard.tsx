@@ -9,10 +9,12 @@ export const CouponRedemptionCard = () => {
   const { applyCoupon } = useUserData();
 
   const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
+    if (!couponCode.trim() || isApplyingCoupon) return;
 
     setIsApplyingCoupon(true);
     try {
+      // Apply the coupon and don't worry about refreshing subscription here
+      // The UserDataProvider will handle that
       await applyCoupon(couponCode.trim());
       setCouponCode("");
     } catch (error) {
