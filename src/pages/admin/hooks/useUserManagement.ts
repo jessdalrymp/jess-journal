@@ -34,7 +34,7 @@ export const useUserManagement = () => {
         id: user.id,
         email: user.email,
         created_at: user.created_at,
-        last_sign_in_at: user.profile_data?.last_login || null,
+        last_sign_in_at: user.profile_data?.last_session || null,
         is_admin: user.is_admin
       }));
       
