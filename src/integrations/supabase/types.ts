@@ -307,39 +307,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_challenges: {
-        Row: {
-          completed_at: string | null
-          created_at: string
-          deadline: string
-          id: string
-          status: string
-          steps: string[]
-          title: string
-          user_id: string
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string
-          deadline: string
-          id?: string
-          status?: string
-          steps: string[]
-          title: string
-          user_id: string
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string
-          deadline?: string
-          id?: string
-          status?: string
-          steps?: string[]
-          title?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_roles: {
         Row: {
           created_at: string

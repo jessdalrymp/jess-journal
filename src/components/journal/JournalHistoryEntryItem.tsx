@@ -1,16 +1,17 @@
 
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon, getEntryTypeName } from './JournalHistoryUtils';
-import { getEntryTitle } from './EntryTitleUtils';
 
 interface JournalHistoryEntryItemProps {
   entry: JournalEntry;
   onSelect: (entry: JournalEntry) => void;
+  getEntryTitle: (entry: JournalEntry) => string;
 }
 
 export const JournalHistoryEntryItem = ({ 
   entry, 
-  onSelect 
+  onSelect,
+  getEntryTitle
 }: JournalHistoryEntryItemProps) => {
   return (
     <div

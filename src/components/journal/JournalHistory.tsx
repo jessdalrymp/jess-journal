@@ -4,7 +4,7 @@ import { useUserData } from '../../context/UserDataContext';
 import { JournalEntry } from '@/lib/types';
 import { JournalHistoryButton } from './JournalHistoryButton';
 import { JournalHistoryModal } from './JournalHistoryModal';
-import { getEntryTitle } from './JournalHistoryUtils';
+import { getEntryTitle } from './EntryTitleUtils';
 
 export const JournalHistory = () => {
   const [isOpen, setIsOpen] = useState(false);
