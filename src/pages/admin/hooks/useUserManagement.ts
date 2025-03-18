@@ -23,11 +23,16 @@ export const useUserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      console.log("Fetching users...");
       
-      // Use the updated get_users_with_details function
       const { data, error } = await supabase.rpc('get_users_with_details');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error details:', error);
+        throw error;
+      }
+      
+      console.log("User data received:", data);
       
       if (!data) {
         setUsers([]);
@@ -42,8 +47,10 @@ export const useUserManagement = () => {
         if (user.profile_data && 
             typeof user.profile_data === 'object' && 
             !Array.isArray(user.profile_data)) {
-          // Since we're now using the users table with the last_session field
+          
+          // Access last_session safely with optional chaining
           lastSignIn = user.profile_data.last_session || null;
+          console.log(`User ${user.email} last session:`, lastSignIn);
         }
         
         return {
@@ -55,6 +62,7 @@ export const useUserManagement = () => {
         };
       });
       
+      console.log("Mapped users:", mappedUsers);
       setUsers(mappedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
