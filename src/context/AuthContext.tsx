@@ -2,7 +2,7 @@
 import { createContext, useContext, ReactNode } from 'react';
 import { User } from '../lib/types';
 import { useAuthState } from '../hooks/useAuthState';
-import { useAuthActions } from '../hooks/useAuthActions';
+import { useAuthActions } from '../hooks/auth'; // Updated import path
 
 // Update the return types of signIn and signUp to match what they actually return
 interface AuthContextType {
