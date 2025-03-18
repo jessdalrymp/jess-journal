@@ -16,6 +16,7 @@ import {
 } from "../../../components/ui/dialog";
 import { useToast } from "../../../hooks/use-toast";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table";
 
 interface PlanType {
   id: string;
@@ -108,6 +109,25 @@ export const PlanManagement = () => {
     if (!confirm('Are you sure you want to delete this plan?')) return;
     
     try {
+      // First check if any payments reference this plan
+      const { data: paymentData, error: paymentError } = await supabase
+        .from('payments')
+        .select('id')
+        .eq('payment_plan_id', id)
+        .limit(1);
+        
+      if (paymentError) throw paymentError;
+      
+      if (paymentData && paymentData.length > 0) {
+        toast({
+          title: "Cannot delete plan",
+          description: "This plan is referenced by existing payments. Consider deactivating it instead.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // If no payments reference this plan, proceed with deletion
       const { error } = await supabase
         .from('payment_plans')
         .delete()
@@ -207,30 +227,30 @@ export const PlanManagement = () => {
           <div className="text-center py-4 text-jess-muted">No plans found. Create your first plan.</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-jess-subtle">
-                  <th className="px-4 py-2 text-left">Name</th>
-                  <th className="px-4 py-2 text-left">Description</th>
-                  <th className="px-4 py-2 text-left">Price</th>
-                  <th className="px-4 py-2 text-left">Interval</th>
-                  <th className="px-4 py-2 text-left">Status</th>
-                  <th className="px-4 py-2 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Interval</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {plans.map(plan => (
-                  <tr key={plan.id} className="border-b border-jess-subtle">
-                    <td className="px-4 py-3">{plan.name}</td>
-                    <td className="px-4 py-3">{plan.description || '-'}</td>
-                    <td className="px-4 py-3">${(plan.price / 100).toFixed(2)}</td>
-                    <td className="px-4 py-3">{plan.interval}</td>
-                    <td className="px-4 py-3">
+                  <TableRow key={plan.id}>
+                    <TableCell>{plan.name}</TableCell>
+                    <TableCell>{plan.description || '-'}</TableCell>
+                    <TableCell>${(plan.price / 100).toFixed(2)}</TableCell>
+                    <TableCell>{plan.interval}</TableCell>
+                    <TableCell>
                       <span className={`px-2 py-1 text-xs rounded-full ${plan.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                         {plan.is_active ? 'Active' : 'Inactive'}
                       </span>
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>
                       <div className="flex space-x-2">
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(plan)}>
                           <Pencil size={16} />
@@ -239,11 +259,11 @@ export const PlanManagement = () => {
                           <Trash2 size={16} />
                         </Button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
 
