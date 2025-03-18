@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from "../../../../integrations/supabase/client";
 import { useToast } from "../../../../hooks/use-toast";
@@ -45,34 +44,32 @@ export const usePlanManagement = () => {
     }
   };
 
-  // Fixed: Split into multiple handlers to avoid type instantiation issues
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.name;
-    setFormData(prev => ({ ...prev, [name]: e.target.checked }));
+  const handleCheckboxChange = (name: string, checked: boolean) => {
+    setFormData(prev => ({ ...prev, [name]: checked }));
   };
 
-  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.name;
-    setFormData(prev => ({ ...prev, [name]: parseFloat(e.target.value) || 0 }));
+  const handleNumberChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
   };
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const name = e.target.name;
-    setFormData(prev => ({ ...prev, [name]: e.target.value }));
+  const handleTextChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Main input handler that routes to specific handlers
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    if (e.target instanceof HTMLInputElement) {
-      if (e.target.type === 'checkbox') {
-        handleCheckboxChange(e as React.ChangeEvent<HTMLInputElement>);
-      } else if (e.target.type === 'number' || e.target.name === 'price') {
-        handleNumberChange(e as React.ChangeEvent<HTMLInputElement>);
+    const target = e.target;
+    const name = target.name;
+    
+    if (target instanceof HTMLInputElement) {
+      if (target.type === 'checkbox') {
+        handleCheckboxChange(name, target.checked);
+      } else if (target.type === 'number' || name === 'price') {
+        handleNumberChange(name, target.value);
       } else {
-        handleTextChange(e);
+        handleTextChange(name, target.value);
       }
     } else {
-      handleTextChange(e);
+      handleTextChange(name, target.value);
     }
   };
 
@@ -104,7 +101,6 @@ export const usePlanManagement = () => {
     if (!confirm('Are you sure you want to delete this plan?')) return;
     
     try {
-      // First check if any payments reference this plan
       const { data: paymentData, error: paymentError } = await supabase
         .from('payments')
         .select('id')
@@ -122,7 +118,6 @@ export const usePlanManagement = () => {
         return;
       }
       
-      // If no payments reference this plan, proceed with deletion
       const { error } = await supabase
         .from('payment_plans')
         .delete()
@@ -151,7 +146,6 @@ export const usePlanManagement = () => {
     
     try {
       if (editingPlan) {
-        // Update existing plan
         const { error } = await supabase
           .from('payment_plans')
           .update({
@@ -170,7 +164,6 @@ export const usePlanManagement = () => {
           description: "The plan has been successfully updated",
         });
       } else {
-        // Add new plan
         const { error } = await supabase
           .from('payment_plans')
           .insert({
