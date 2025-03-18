@@ -19,7 +19,22 @@ export const fetchPlansFromDB = async (): Promise<{
     
     if (countError) {
       console.error('Error checking payment_plans table:', countError);
-      return { data: null, error: countError, connectionError: true };
+      
+      // Check if this is a permission error (common for non-admin users)
+      const isPermissionError = 
+        countError.message.includes('permission denied') || 
+        countError.message.includes('not found') ||
+        countError.message === "";  // Empty error message often indicates permission issue
+      
+      return { 
+        data: null, 
+        error: new Error(
+          isPermissionError 
+            ? "Permission denied. Admin access required to view payment plans." 
+            : countError.message
+        ), 
+        connectionError: true 
+      };
     }
     
     const { data, error } = await supabase
@@ -29,7 +44,11 @@ export const fetchPlansFromDB = async (): Promise<{
 
     if (error) {
       console.error('Error fetching plans:', error);
-      return { data: null, error, connectionError: true };
+      return { 
+        data: null, 
+        error, 
+        connectionError: true 
+      };
     }
     
     return { data, error: null, connectionError: false };

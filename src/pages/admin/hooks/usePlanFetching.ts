@@ -20,6 +20,15 @@ export const usePlanFetching = () => {
       
       if (connectionError) {
         setConnectionError(true);
+        
+        // Show error message only if it's not a permission issue
+        if (error && error.message !== "") {
+          showErrorNotification(
+            toast, 
+            "Error accessing payment plans", 
+            error.message || "Please try again later"
+          );
+        }
         return;
       }
       
