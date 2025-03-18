@@ -11,7 +11,7 @@ import { CouponRedemptionCard } from "./components/CouponRedemptionCard";
 import { useState, useEffect } from "react";
 import { useToast } from "../../hooks/use-toast";
 import { Alert, AlertDescription } from "../../components/ui/alert";
-import { InfoCircledIcon } from "@radix-ui/react-icons";
+import { InfoIcon } from "lucide-react";
 
 const Subscription = () => {
   const { user } = useAuth();
@@ -53,7 +53,7 @@ const Subscription = () => {
         
         {hasError && (
           <Alert variant="destructive" className="mb-6">
-            <InfoCircledIcon className="h-4 w-4 mr-2" />
+            <InfoIcon className="h-4 w-4 mr-2" />
             <AlertDescription>
               There was an issue loading your subscription data. Please refresh the page or try again later.
             </AlertDescription>
