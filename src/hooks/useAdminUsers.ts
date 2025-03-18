@@ -23,16 +23,9 @@ export function useAdminUsers() {
     try {
       setLoading(true);
       
-      // Fetch all users from profiles table
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, email, created_at');
-
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
-        throw profilesError;
-      }
-
+      // Fetch user profiles
+      const profilesData = await fetchUserProfiles();
+      
       if (!profilesData || profilesData.length === 0) {
         console.log('No profiles found');
         setUsers([]);
@@ -41,64 +34,15 @@ export function useAdminUsers() {
 
       console.log(`Found ${profilesData.length} profiles`);
 
-      // Get the current user's admin status
-      const { data: isCurrentUserAdmin } = await supabase.rpc('check_is_admin');
+      // Check if current user is admin
+      const isCurrentUserAdmin = await checkIsCurrentUserAdmin();
       
       if (isCurrentUserAdmin) {
-        // If we're an admin, we can safely use this information
-        const usersWithRoles = profilesData.map(profile => {
-          return {
-            id: profile.id,
-            email: profile.email || 'Unknown',
-            created_at: profile.created_at,
-            is_admin: false // We'll update admin statuses in a separate step if needed
-          };
-        });
-        
-        setUsers(usersWithRoles);
-        
-        // Try to get admin info if possible
-        try {
-          // Try a direct query if the user is an admin
-          const { data: adminRolesData, error: adminRolesError } = await supabase
-            .from('user_roles')
-            .select('user_id')
-            .eq('role', 'admin');
-            
-          if (!adminRolesError && adminRolesData) {
-            // Create a set of admin user IDs for quick lookup
-            const adminUserIds = new Set(adminRolesData.map(role => role.user_id));
-            
-            // Update the users array with admin status
-            setUsers(prevUsers => 
-              prevUsers.map(user => ({
-                ...user,
-                is_admin: adminUserIds.has(user.id)
-              }))
-            );
-          }
-        } catch (adminError) {
-          console.error('Error fetching admin roles:', adminError);
-          // Continue without admin info, we'll still show the users
-        }
+        // Process users if current user is admin
+        await processUsersAsAdmin(profilesData);
       } else {
-        // Fallback approach - just mark the current user as admin if we got to this page
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
-        const currentUserId = currentUser?.id;
-        
-        const usersWithRoles = profilesData.map(profile => {
-          // Current user is admin if they got to this page
-          const isAdmin = profile.id === currentUserId;
-          
-          return {
-            id: profile.id,
-            email: profile.email || 'Unknown',
-            created_at: profile.created_at,
-            is_admin: isAdmin
-          };
-        });
-        
-        setUsers(usersWithRoles);
+        // Process users with limited info
+        await processUsersAsNonAdmin(profilesData);
       }
       
       console.log(`Processed ${users.length} users with roles`);
@@ -114,27 +58,99 @@ export function useAdminUsers() {
     }
   };
 
+  // Helper to fetch user profiles
+  const fetchUserProfiles = async () => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, email, created_at');
+
+    if (error) {
+      console.error('Error fetching profiles:', error);
+      throw error;
+    }
+
+    return data || [];
+  };
+
+  // Helper to check if current user is admin
+  const checkIsCurrentUserAdmin = async () => {
+    const { data: isAdmin } = await supabase.rpc('check_is_admin');
+    return !!isAdmin;
+  };
+
+  // Helper to process users when current user is admin
+  const processUsersAsAdmin = async (profilesData: any[]) => {
+    // Initialize users with basic info
+    const usersWithBasicInfo = mapUsersWithBasicInfo(profilesData);
+    setUsers(usersWithBasicInfo);
+    
+    // Then try to fetch and apply admin roles
+    try {
+      await fetchAndApplyAdminRoles();
+    } catch (adminError) {
+      console.error('Error fetching admin roles:', adminError);
+      // Continue without admin info, we'll still show the users
+    }
+  };
+
+  // Helper to map users with basic info
+  const mapUsersWithBasicInfo = (profilesData: any[]): UserData[] => {
+    return profilesData.map(profile => ({
+      id: profile.id,
+      email: profile.email || 'Unknown',
+      created_at: profile.created_at,
+      is_admin: false // Default to false, will update if needed
+    }));
+  };
+
+  // Helper to fetch and apply admin roles
+  const fetchAndApplyAdminRoles = async () => {
+    const { data: adminRolesData, error: adminRolesError } = await supabase
+      .from('user_roles')
+      .select('user_id')
+      .eq('role', 'admin');
+      
+    if (!adminRolesError && adminRolesData) {
+      // Create a set of admin user IDs for quick lookup
+      const adminUserIds = new Set(adminRolesData.map(role => role.user_id));
+      
+      // Update the users array with admin status
+      setUsers(prevUsers => 
+        prevUsers.map(user => ({
+          ...user,
+          is_admin: adminUserIds.has(user.id)
+        }))
+      );
+    }
+  };
+
+  // Helper to process users when current user is not admin
+  const processUsersAsNonAdmin = async (profilesData: any[]) => {
+    // Get current user to mark as admin (if they got to this page)
+    const { data } = await supabase.auth.getUser();
+    const currentUserId = data.user?.id;
+    
+    const usersWithRoles = profilesData.map(profile => {
+      // Current user is admin if they got to this page
+      const isAdmin = profile.id === currentUserId;
+      
+      return {
+        id: profile.id,
+        email: profile.email || 'Unknown',
+        created_at: profile.created_at,
+        is_admin: isAdmin
+      };
+    });
+    
+    setUsers(usersWithRoles);
+  };
+
   const toggleAdminRole = async (userId: string, isCurrentlyAdmin: boolean) => {
     try {
       if (isCurrentlyAdmin) {
-        // Remove admin role
-        const { error } = await supabase
-          .from('user_roles')
-          .delete()
-          .eq('user_id', userId)
-          .eq('role', 'admin');
-          
-        if (error) throw error;
+        await removeAdminRole(userId);
       } else {
-        // Add admin role
-        const { error } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: userId,
-            role: 'admin'
-          });
-          
-        if (error) throw error;
+        await addAdminRole(userId);
       }
       
       // Refresh users list
@@ -152,6 +168,29 @@ export function useAdminUsers() {
         variant: "destructive"
       });
     }
+  };
+
+  // Helper to remove admin role
+  const removeAdminRole = async (userId: string) => {
+    const { error } = await supabase
+      .from('user_roles')
+      .delete()
+      .eq('user_id', userId)
+      .eq('role', 'admin');
+      
+    if (error) throw error;
+  };
+
+  // Helper to add admin role
+  const addAdminRole = async (userId: string) => {
+    const { error } = await supabase
+      .from('user_roles')
+      .insert({
+        user_id: userId,
+        role: 'admin'
+      });
+      
+    if (error) throw error;
   };
 
   return {
