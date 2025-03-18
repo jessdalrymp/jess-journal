@@ -14,7 +14,7 @@ export const Hero = () => {
         </div>
         
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-jess-primary to-jess-foreground bg-clip-text text-transparent">
-          Rewrite Your Life Story with Journaling That Truly Understands You
+          Rewrite Your Life Story with<br />Journaling That Truly Understands You
         </h1>
         <p className="text-xl text-jess-muted max-w-3xl mx-auto mb-8">
           JESS transforms your thoughts into powerful self-discovery. Using your own words, 
