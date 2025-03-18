@@ -16,18 +16,6 @@ export const AdminDashboard = () => {
       <AdminHeader />
       
       <div className="grid gap-6">
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle>Database Connection Status</CardTitle>
-            <CardDescription>
-              Check connectivity to important database tables
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DatabaseConnectionTest />
-          </CardContent>
-        </Card>
-        
         <Tabs defaultValue="plans" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full md:w-auto grid-cols-3">
             <TabsTrigger value="plans">Payment Plans</TabsTrigger>
@@ -47,6 +35,18 @@ export const AdminDashboard = () => {
             <UserManagement />
           </TabsContent>
         </Tabs>
+        
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle>Database Connection Status</CardTitle>
+            <CardDescription>
+              Check connectivity to important database tables
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DatabaseConnectionTest />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
