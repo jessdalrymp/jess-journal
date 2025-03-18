@@ -27,6 +27,8 @@ export const PlanManagement = () => {
     handleSubmit
   } = usePlanManagement();
 
+  console.log('Plans in PlanManagement:', plans); // Debug log
+
   return (
     <Card>
       <CardHeader>
