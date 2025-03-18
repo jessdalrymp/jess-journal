@@ -33,6 +33,7 @@ export const useJournalPrompt = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [challengeAccepted, setChallengeAccepted] = useState(false);
   const [usePersonalized, setUsePersonalized] = useState(false);
+  const [initialPromptLoaded, setInitialPromptLoaded] = useState(false);
   const generationInProgress = useRef(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -50,13 +51,17 @@ export const useJournalPrompt = () => {
     }
   }, [journalEntries, usePersonalized]);
 
-  // Generate prompt only once on initial load with caching
+  // Load a prompt only on initial load if needed
   useEffect(() => {
-    if (!user || challengeAccepted || generationInProgress.current) {
+    // If we already have a prompt from localStorage or have already loaded one, don't load another
+    if (initialPromptLoaded || !user || challengeAccepted || generationInProgress.current || 
+        (journalPrompt !== DEFAULT_PROMPT)) {
       return;
     }
 
-    // Only set loading if we don't already have a prompt from localStorage
+    setInitialPromptLoaded(true);
+    
+    // Only set loading if we don't already have a valid prompt
     if (journalPrompt === DEFAULT_PROMPT) {
       setIsLoading(true);
     }
@@ -82,7 +87,7 @@ export const useJournalPrompt = () => {
     // If we don't have a cached prompt, generate a new one asynchronously
     // This will run in parallel to any render, so the UI won't be blocked
     setTimeout(() => generateNewPrompt(), 0);
-  }, [user, challengeAccepted, usePersonalized]);
+  }, [user, challengeAccepted, journalPrompt]);
 
   const generateNewPrompt = useCallback(async () => {
     if (!user) {
@@ -166,13 +171,13 @@ export const useJournalPrompt = () => {
   const togglePersonalizedPrompts = useCallback(() => {
     setUsePersonalized(prev => {
       const newValue = !prev;
-      // Only generate new prompt when turning personalization on if we don't have a cached one
-      if (newValue && user && (!isCacheValid() || !promptCache.personalized.has(user.id))) {
-        generateNewPrompt();
+      // Generate new prompt when toggling personalization
+      if (newValue !== prev) {
+        setTimeout(() => generateNewPrompt(), 0);
       }
       return newValue;
     });
-  }, [generateNewPrompt, user]);
+  }, [generateNewPrompt]);
 
   const acceptChallenge = useCallback(() => {
     setChallengeAccepted(true);

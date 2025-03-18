@@ -33,17 +33,17 @@ export const JournalChallengeContent = () => {
     setShowJournaling(true);
   }, [acceptChallenge]);
 
+  const handleNewChallenge = useCallback(() => {
+    // Explicitly call generateNewPrompt when user requests a new prompt
+    generateNewPrompt();
+  }, [generateNewPrompt]);
+
   // Mark initial load as complete after the first prompt load
   useEffect(() => {
     if (!isLoading && !initialLoadDone) {
       setInitialLoadDone(true);
-      
-      // Store the current prompt in localStorage to speed up future loads
-      if (journalPrompt && journalPrompt.title) {
-        localStorage.setItem('currentJournalPrompt', JSON.stringify(journalPrompt));
-      }
     }
-  }, [isLoading, initialLoadDone, journalPrompt]);
+  }, [isLoading, initialLoadDone]);
 
   // Load welcome modal check once on component mount
   useEffect(() => {
@@ -61,7 +61,7 @@ export const JournalChallengeContent = () => {
         journalPrompt={journalPrompt}
         onBack={handleBack}
         onAcceptChallenge={handleAcceptChallenge}
-        onNewChallenge={generateNewPrompt}
+        onNewChallenge={handleNewChallenge}
         onTogglePersonalized={togglePersonalizedPrompts}
         isPersonalized={usePersonalized}
         hasEnoughEntries={hasEnoughEntries}
