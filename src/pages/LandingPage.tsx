@@ -11,8 +11,11 @@ import { Footer } from '../components/landing/Footer';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Landing = () => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-white to-jess-subtle/30">
       <Header />
@@ -25,7 +28,9 @@ const Landing = () => {
         {/* Feature Comparison Section */}
         <section className="py-16 bg-jess-subtle/20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-10">Unique Features Crafted for You</h2>
+            <h2 className="text-3xl font-bold text-center mb-10">
+              Unique Features {isMobile && <br />}Crafted for You
+            </h2>
             
             <div className="max-w-3xl mx-auto overflow-x-auto">
               <table className="w-full border-collapse">
