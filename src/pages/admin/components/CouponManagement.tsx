@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../..
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
+import { Textarea } from "../../../components/ui/textarea";
+import { Switch } from "../../../components/ui/switch";
 import { 
   Dialog, 
   DialogContent, 
@@ -14,7 +16,8 @@ import {
   DialogTitle
 } from "../../../components/ui/dialog";
 import { useToast } from "../../../hooks/use-toast";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Copy } from "lucide-react";
+import { format } from "date-fns";
 
 interface CouponType {
   id: string;
@@ -86,6 +89,10 @@ export const CouponManagement = () => {
     }
   };
 
+  const handleSwitchChange = (name: string, checked: boolean) => {
+    setFormData(prev => ({ ...prev, [name]: checked }));
+  };
+
   const handleEdit = (coupon: CouponType) => {
     setEditingCoupon(coupon);
     setFormData({
@@ -96,6 +103,22 @@ export const CouponManagement = () => {
       expires_at: coupon.expires_at ? new Date(coupon.expires_at).toISOString().split('T')[0] : '',
       max_uses: coupon.max_uses || 0,
       is_active: coupon.is_active || false,
+      is_unlimited: coupon.is_unlimited || false
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleDuplicate = (coupon: CouponType) => {
+    setEditingCoupon(null); // We're creating a new coupon, but based on an existing one
+    const newCode = `${coupon.code}_COPY`;
+    setFormData({
+      code: newCode,
+      description: coupon.description || '',
+      discount_percent: coupon.discount_percent || 0,
+      discount_amount: coupon.discount_amount || 0,
+      expires_at: coupon.expires_at ? new Date(coupon.expires_at).toISOString().split('T')[0] : '',
+      max_uses: coupon.max_uses || 0,
+      is_active: true, // Default to active for the new coupon
       is_unlimited: coupon.is_unlimited || false
     });
     setIsDialogOpen(true);
@@ -114,6 +137,16 @@ export const CouponManagement = () => {
       is_unlimited: false
     });
     setIsDialogOpen(true);
+  };
+
+  const generateRandomCode = () => {
+    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed confusing chars like 0,O,1,I
+    let result = '';
+    const length = 8;
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    setFormData(prev => ({ ...prev, code: result }));
   };
 
   const handleDelete = async (id: string) => {
@@ -241,7 +274,7 @@ export const CouponManagement = () => {
                       {!coupon.discount_percent && !coupon.discount_amount ? 'Special' : ''}
                     </td>
                     <td className="px-4 py-3">
-                      {coupon.expires_at ? new Date(coupon.expires_at).toLocaleDateString() : 'Never'}
+                      {coupon.expires_at ? format(new Date(coupon.expires_at), 'MMM dd, yyyy') : 'Never'}
                     </td>
                     <td className="px-4 py-3">
                       {coupon.is_unlimited 
@@ -258,6 +291,9 @@ export const CouponManagement = () => {
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(coupon)}>
                           <Pencil size={16} />
                         </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDuplicate(coupon)}>
+                          <Copy size={16} />
+                        </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleDelete(coupon.id)}>
                           <Trash2 size={16} />
                         </Button>
@@ -271,7 +307,7 @@ export const CouponManagement = () => {
         )}
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent>
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>{editingCoupon ? 'Edit Coupon' : 'Add New Coupon'}</DialogTitle>
               <DialogDescription>
@@ -284,23 +320,40 @@ export const CouponManagement = () => {
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="code">Coupon Code</Label>
-                  <Input
-                    id="code"
-                    name="code"
-                    value={formData.code}
-                    onChange={handleInputChange}
-                    required
-                  />
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <Label htmlFor="code">Coupon Code</Label>
+                      <Input
+                        id="code"
+                        name="code"
+                        value={formData.code}
+                        onChange={handleInputChange}
+                        required
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="mt-7">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={generateRandomCode}
+                      >
+                        Generate
+                      </Button>
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="grid gap-2">
                   <Label htmlFor="description">Description</Label>
-                  <Input
+                  <Textarea
                     id="description"
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
+                    rows={2}
+                    className="resize-none"
                   />
                 </div>
                 
@@ -343,18 +396,13 @@ export const CouponManagement = () => {
                   <p className="text-xs text-jess-muted">Leave blank for no expiration</p>
                 </div>
                 
-                <div className="grid gap-2">
-                  <div className="flex items-center gap-2">
-                    <input
-                      id="is_unlimited"
-                      name="is_unlimited"
-                      type="checkbox"
-                      checked={formData.is_unlimited}
-                      onChange={handleInputChange}
-                      className="h-4 w-4"
-                    />
-                    <Label htmlFor="is_unlimited">Unlimited Uses</Label>
-                  </div>
+                <div className="flex items-center justify-between space-y-0 py-2">
+                  <Label htmlFor="is_unlimited">Unlimited Uses</Label>
+                  <Switch
+                    id="is_unlimited"
+                    checked={formData.is_unlimited}
+                    onCheckedChange={(checked) => handleSwitchChange('is_unlimited', checked)}
+                  />
                 </div>
                 
                 {!formData.is_unlimited && (
@@ -371,16 +419,13 @@ export const CouponManagement = () => {
                   </div>
                 )}
                 
-                <div className="flex items-center gap-2">
-                  <input
-                    id="is_active"
-                    name="is_active"
-                    type="checkbox"
-                    checked={formData.is_active}
-                    onChange={handleInputChange}
-                    className="h-4 w-4"
-                  />
+                <div className="flex items-center justify-between space-y-0 py-2">
                   <Label htmlFor="is_active">Active</Label>
+                  <Switch
+                    id="is_active"
+                    checked={formData.is_active}
+                    onCheckedChange={(checked) => handleSwitchChange('is_active', checked)}
+                  />
                 </div>
               </div>
               
