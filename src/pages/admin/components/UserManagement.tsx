@@ -35,7 +35,12 @@ export const UserManagement = () => {
       }
       
       console.log('Users data:', data);
-      setUsers(data || []);
+      if (Array.isArray(data)) {
+        setUsers(data as User[]);
+      } else {
+        console.error('Expected array but got:', typeof data);
+        setUsers([]);
+      }
     } catch (error: any) {
       console.error('Error fetching users:', error);
       setError(error.message || 'Failed to load users');
@@ -103,18 +108,21 @@ export const UserManagement = () => {
       
       if (error) throw error;
       
-      if (data && data.length > 0) {
+      if (data && Array.isArray(data) && data.length > 0) {
         // Check if user already exists in our list
-        const userExists = users.some(user => user.id === data[0].id);
+        const foundUsers = data as User[];
+        const newUsers = foundUsers.filter(
+          foundUser => !users.some(user => user.id === foundUser.id)
+        );
         
-        if (!userExists) {
-          setUsers(prevUsers => [...prevUsers, ...data]);
+        if (newUsers.length > 0) {
+          setUsers(prevUsers => [...prevUsers, ...newUsers]);
         }
         
         setSearchEmail('');
         toast({
           title: "User Found",
-          description: `Found user with email ${data[0].email}`,
+          description: `Found ${foundUsers.length} user(s) matching "${searchEmail.trim()}"`,
         });
       } else {
         toast({
