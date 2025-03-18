@@ -18,6 +18,7 @@ export const useSignUp = () => {
       
       // Check if we're running in a development environment
       const isDevelopment = origin.includes('localhost') || origin.includes('127.0.0.1');
+      console.log("Is development environment:", isDevelopment);
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -59,7 +60,7 @@ export const useSignUp = () => {
           const emailVerified = data.user.identities[0].identity_data.email_verified;
           
           if (emailVerified === false) {
-            console.log("Email verification required, email sent");
+            console.log("Email verification required, email should be sent");
             toast({
               title: "Almost there!",
               description: "Please check your email to verify your account. If you don't see it, check your spam folder.",
@@ -76,7 +77,7 @@ export const useSignUp = () => {
         } else {
           // For development environments or when email verification is disabled
           if (isDevelopment) {
-            console.log("Development environment detected - may need to disable email verification in Supabase dashboard");
+            console.log("Development environment detected - email verification might be disabled in Supabase dashboard");
             toast({
               title: "Development notice",
               description: "For local testing, consider disabling email verification in the Supabase dashboard",
@@ -97,6 +98,12 @@ export const useSignUp = () => {
       }
     } catch (error: any) {
       console.error('Registration error:', error);
+      
+      // Add specific handling for email sending errors
+      if (error.message && error.message.includes("sending email")) {
+        console.error("Email sending error detected, might be an SMTP configuration issue");
+      }
+      
       throw error;
     } finally {
       setLoading(false);
