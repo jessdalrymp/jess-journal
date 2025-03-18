@@ -4,8 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../..
 import { Button } from "../../../components/ui/button";
 import { 
   Dialog, 
-  DialogContent, 
-  DialogTrigger 
+  DialogContent
 } from "../../../components/ui/dialog";
 import { Plus, Tag } from "lucide-react";
 import { CouponTable } from './CouponTable';
