@@ -9,12 +9,14 @@ interface ConnectionTest {
   error: string | null;
 }
 
+type ValidTableName = 'profiles' | 'subscriptions' | 'payment_plans' | 'coupons';
+
 /**
  * Tests connection to various tables in the database
  * and returns results of each test
  */
 export const testDatabaseConnections = async (): Promise<ConnectionTest[]> => {
-  const tables = [
+  const tables: ValidTableName[] = [
     'profiles', // For user data
     'subscriptions',
     'payment_plans',
@@ -86,7 +88,6 @@ export const runDatabaseConnectionTests = async (): Promise<void> => {
       }
     });
     
-    return results;
   } catch (error) {
     console.error("Error running database tests:", error);
     
