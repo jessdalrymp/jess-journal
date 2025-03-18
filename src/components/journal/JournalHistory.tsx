@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useUserData } from '../../context/UserDataContext';
 import { X, BookOpen, MessageSquare, Zap, PenLine, ArrowRight, Clock, History } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
+import { parseContentWithJsonCodeBlock } from '@/services/journal';
 
 const getEntryIcon = (type: string) => {
   switch (type) {
@@ -44,6 +45,35 @@ export const JournalHistory = () => {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
+  // Function to parse the entry content for potential JSON with a title or summary
+  const getEntryTitle = (entry: JournalEntry) => {
+    try {
+      // Parse the content to get the user's answer instead of the question
+      const parsedContent = parseContentWithJsonCodeBlock(entry.content);
+      
+      if (parsedContent) {
+        // If we have a summary field (user's answer), use that for the display
+        if (parsedContent.summary) {
+          // Use the first line or first 50 characters of the summary
+          const summaryText = parsedContent.summary.split('\n')[0];
+          return summaryText.length > 50 
+            ? summaryText.substring(0, 50) + '...' 
+            : summaryText;
+        }
+        
+        // Fallback to title if present
+        if (parsedContent.title) {
+          return parsedContent.title;
+        }
+      }
+    } catch (e) {
+      // Not valid JSON or doesn't have the expected fields
+    }
+    
+    // Fallback to the original title
+    return entry.title;
+  };
+
   const handleOpenModal = () => {
     setIsOpen(true);
   };
@@ -78,7 +108,7 @@ export const JournalHistory = () => {
           <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[80vh] flex flex-col shadow-xl animate-scale-in">
             <div className="flex justify-between items-center p-6 border-b border-jess-subtle">
               <h2 className="text-xl font-medium">
-                {selectedEntry ? selectedEntry.title : 'Journal History'}
+                {selectedEntry ? getEntryTitle(selectedEntry) : 'Journal History'}
               </h2>
               <button 
                 onClick={handleCloseModal}
@@ -129,7 +159,7 @@ export const JournalHistory = () => {
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <h3 className="font-medium mb-1">{entry.title}</h3>
+                            <h3 className="font-medium mb-1">{getEntryTitle(entry)}</h3>
                             <div className="flex items-center text-sm text-jess-muted">
                               <span className="flex items-center mr-3">
                                 {getEntryIcon(entry.type)}
