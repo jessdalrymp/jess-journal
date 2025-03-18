@@ -25,7 +25,7 @@ export const useUserManagement = () => {
       setLoading(true);
       console.log("Fetching users...");
       
-      // Try to use the RPC function for getting user details
+      // Using the RPC function which handles access to auth.users
       const { data, error } = await supabase.rpc('get_users_with_details');
       
       if (error) {
@@ -41,24 +41,13 @@ export const useUserManagement = () => {
       }
       
       // Map the returned data to the UserType format
-      const mappedUsers = data.map((user: any) => {
-        // Check for admin status
-        const isAdmin = user.is_admin || false;
-        
-        // Get last sign in time if available
-        let lastSignIn = null;
-        if (user.profile_data && typeof user.profile_data === 'object') {
-          lastSignIn = user.profile_data.last_session || null;
-        }
-        
-        return {
-          id: user.id,
-          email: user.email,
-          created_at: user.created_at,
-          last_sign_in_at: lastSignIn,
-          is_admin: isAdmin
-        };
-      });
+      const mappedUsers = data.map((user: any) => ({
+        id: user.id,
+        email: user.email,
+        created_at: user.created_at,
+        last_sign_in_at: user.profile_data?.last_session || null,
+        is_admin: user.is_admin || false
+      }));
       
       console.log("Mapped users:", mappedUsers);
       setUsers(mappedUsers);
@@ -70,21 +59,21 @@ export const useUserManagement = () => {
         variant: "destructive"
       });
       
-      // Fallback to a simpler query if the RPC function fails
+      // Fallback to querying tables we know we have access to
       try {
         console.log("Attempting fallback query...");
         
-        // Query the users table which should be accessible
-        const { data: profileData, error: profileError } = await supabase
+        // Get basic user data from public.users table
+        const { data: userData, error: userError } = await supabase
           .from('users')
           .select('id, email, created_at, last_session');
           
-        if (profileError) {
-          console.error('Fallback profile query failed:', profileError);
-          throw profileError;
+        if (userError) {
+          console.error('Fallback user query failed:', userError);
+          throw userError;
         }
         
-        // Query user roles to determine admin status
+        // Get admin role data
         const { data: roleData, error: roleError } = await supabase
           .from('user_roles')
           .select('user_id, role');
@@ -103,8 +92,8 @@ export const useUserManagement = () => {
           });
         }
         
-        // Map the user data
-        const fallbackUsers = profileData.map((user: any) => ({
+        // Combine the data
+        const fallbackUsers = userData.map((user: any) => ({
           id: user.id,
           email: user.email || 'Unknown',
           created_at: user.created_at || new Date().toISOString(),
