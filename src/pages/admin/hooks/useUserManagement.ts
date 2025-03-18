@@ -30,11 +30,13 @@ export const useUserManagement = () => {
       if (error) throw error;
       
       // Map the returned data to the UserType format
+      // Using type assertion to safely access nested properties
       const mappedUsers = (data || []).map(user => ({
         id: user.id,
         email: user.email,
         created_at: user.created_at,
-        last_sign_in_at: user.profile_data?.last_session || null,
+        last_sign_in_at: user.profile_data && typeof user.profile_data === 'object' ? 
+          (user.profile_data as Record<string, any>).last_session || null : null,
         is_admin: user.is_admin
       }));
       
