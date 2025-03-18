@@ -44,7 +44,7 @@ const JournalEntry = () => {
     
     try {
       // Try to refetch entries with force refresh
-      await fetchJournalEntries();
+      await fetchJournalEntries(true);
       
       // Look for the entry again
       const foundEntry = journalEntries.find(entry => entry.id === id);
@@ -85,11 +85,12 @@ const JournalEntry = () => {
       if (id) {
         let foundEntry = journalEntries.find(entry => entry.id === id);
         
-        // If we didn't find the entry and we have an ID, try fetching again
+        // If we didn't find the entry and we have an ID, try forcing a refresh
         if (!foundEntry) {
-          // Fetch entries if needed
+          // Fetch entries with force refresh
           try {
-            await fetchJournalEntries();
+            console.log(`Entry with ID ${id} not found. Forcing a refresh...`);
+            await fetchJournalEntries(true);
             foundEntry = journalEntries.find(entry => entry.id === id);
           } catch (error) {
             console.error("Error fetching journal entries:", error);

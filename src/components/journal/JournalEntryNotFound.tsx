@@ -24,8 +24,8 @@ export const JournalEntryNotFound = () => {
     setRetryCount(prev => prev + 1);
     
     try {
-      // Force a complete refresh of journal entries
-      await fetchJournalEntries();
+      // Clear cache by passing a force refresh flag
+      await fetchJournalEntries(true);
       
       // Check if entry exists after refresh
       const foundEntry = journalEntries.find(entry => entry.id === entryId);

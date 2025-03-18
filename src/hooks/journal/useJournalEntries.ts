@@ -21,24 +21,25 @@ export function useJournalEntries() {
   const isFetching = useRef(false);
   const { toast } = useToast();
 
-  const fetchJournalEntries = useCallback(async (userId: string) => {
-    // Prevent multiple simultaneous fetches
-    if (isFetching.current) {
+  const fetchJournalEntries = useCallback(async (userId: string, forceRefresh: boolean = false) => {
+    // Prevent multiple simultaneous fetches unless force refresh is requested
+    if (isFetching.current && !forceRefresh) {
       console.log('Already fetching journal entries, skipping duplicate request');
       return [];
     }
     
     try {
-      // Check if we have a valid cache entry
+      // Check if we have a valid cache entry and not forcing refresh
       const cachedData = journalEntriesCache[userId];
-      if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_EXPIRATION) {
+      if (!forceRefresh && cachedData && (Date.now() - cachedData.timestamp) < CACHE_EXPIRATION) {
         console.log('Using cached journal entries');
         return cachedData.entries;
       }
       
+      // If we're forcing a refresh or no valid cache, do a fresh fetch
       setLoading(true);
       isFetching.current = true;
-      console.log('Fetching journal entries for user:', userId);
+      console.log('Fetching journal entries for user:', userId, forceRefresh ? '(forced refresh)' : '');
       const entries = await journalService.fetchJournalEntries(userId);
       
       // Update cache

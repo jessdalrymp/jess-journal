@@ -32,14 +32,14 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
     setIsSaving(true);
     
     try {
-      // Generate a title based on the user's response, not the prompt
+      // Format content as the title, not the prompt question
       const contentPreview = content.trim().substring(0, 40) + (content.length > 40 ? '...' : '');
-      // Create a title that shows "Category: First words of response..."
+      // Create a title that shows this is a response, not the question
       const entryTitle = `${category.name}: ${contentPreview}`;
       
       const journalContent = JSON.stringify({
         title: entryTitle,
-        prompt: prompt, // Store the original prompt for reference
+        prompt: prompt.text, // Store the original prompt for reference
         summary: content,
         type: category.id
       });
@@ -48,13 +48,13 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
       const journalCreateModule = await import('@/hooks/journal/useJournalCreate');
       const { saveJournalEntry } = journalCreateModule.useJournalCreate();
       
-      const savedEntry = await saveJournalEntry(user.id, entryTitle, journalContent);
+      const savedEntry = await saveJournalEntry(user.id, prompt.text, journalContent);
       
       if (savedEntry) {
         setSavedEntryId(savedEntry.id);
         
         // Refresh journal entries list to ensure the new entry is available
-        await fetchJournalEntries();
+        await fetchJournalEntries(true);
         
         toast({
           title: "Journal entry saved",
@@ -72,7 +72,7 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
           navigate(`/journal-entry/${savedEntry.id}`, {
             state: { entry: savedEntry }
           });
-        }, 200);
+        }, 300);
       } else {
         throw new Error("Failed to save entry");
       }
@@ -96,7 +96,7 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
             {category?.icon}
             <span>{category?.name}</span>
           </DialogTitle>
-          <DialogDescription>{prompt}</DialogDescription>
+          <DialogDescription>{prompt?.text}</DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4 py-4">

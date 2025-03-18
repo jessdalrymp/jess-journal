@@ -35,7 +35,8 @@ export const JournalEntryMeta = ({ entry, title }: JournalEntryMetaProps) => {
       month: 'long', 
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      second: '2-digit'
     });
   };
 
@@ -51,6 +52,9 @@ export const JournalEntryMeta = ({ entry, title }: JournalEntryMetaProps) => {
       </div>
       <p className="text-sm text-jess-muted">
         {formatDate(entry.createdAt)}
+      </p>
+      <p className="text-xs text-jess-muted mt-1">
+        Entry ID: {entry.id}
       </p>
     </div>
   );

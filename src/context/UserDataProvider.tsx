@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { JournalEntry, UserProfile, User } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
@@ -106,10 +107,11 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   }, [user]);
 
-  const fetchJournalEntries = async (): Promise<JournalEntry[]> => {
+  const fetchJournalEntries = async (forceRefresh: boolean = false): Promise<JournalEntry[]> => {
     if (!user) return [];
     
-    if (isFetchingJournalRef.current) {
+    // If already fetching, don't start another fetch unless force refresh is requested
+    if (isFetchingJournalRef.current && !forceRefresh) {
       console.log("Journal entries already being fetched, skipping redundant fetch");
       return journalEntries;
     }
@@ -118,8 +120,8 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     setIsJournalLoading(true);
     
     try {
-      console.log("Fetching journal entries for user:", user.id);
-      const entries = await fetchEntries(user.id);
+      console.log("Fetching journal entries for user:", user.id, forceRefresh ? "(forced refresh)" : "");
+      const entries = await fetchEntries(user.id, forceRefresh);
       setJournalEntries(entries);
       setIsJournalFetched(true);
       console.log("Successfully fetched", entries.length, "journal entries");
@@ -154,7 +156,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
       if (role === 'assistant') {
         if (!isFetchingJournalRef.current && user) {
           setIsJournalFetched(false);
-          await fetchJournalEntries();
+          await fetchJournalEntries(true); // Force refresh after assistant message
         }
       }
     } catch (error) {
