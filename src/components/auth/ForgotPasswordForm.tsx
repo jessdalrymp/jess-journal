@@ -42,6 +42,8 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
       // Check for rate limit errors
       if (error.message?.includes("rate limit") || error.message?.includes("429")) {
         setError("Too many requests. Please try again after a few minutes.");
+      } else if (error.message?.includes("sending email") || error.message?.includes("smtp")) {
+        setError("We're having trouble sending emails right now. Please try again later or contact support.");
       } else {
         setError(error.message || "Failed to send reset email. Please try again.");
       }
