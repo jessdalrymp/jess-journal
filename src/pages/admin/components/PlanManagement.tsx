@@ -24,8 +24,7 @@ export const PlanManagement = () => {
     handleEdit,
     handleAdd,
     handleDelete,
-    handleSubmit,
-    createSamplePlans
+    handleSubmit
   } = usePlanManagement();
 
   console.log('Plans in PlanManagement:', plans); // Debug log
@@ -38,17 +37,10 @@ export const PlanManagement = () => {
             <CardTitle>Payment Plans</CardTitle>
             <CardDescription>Manage subscription plans</CardDescription>
           </div>
-          <div className="flex space-x-2">
-            {plans.length === 0 && (
-              <Button onClick={createSamplePlans} variant="outline" size="sm">
-                Create Sample Plans
-              </Button>
-            )}
-            <Button onClick={handleAdd} size="sm">
-              <Plus size={16} className="mr-2" />
-              Add Plan
-            </Button>
-          </div>
+          <Button onClick={handleAdd} size="sm">
+            <Plus size={16} className="mr-2" />
+            Add Plan
+          </Button>
         </div>
       </CardHeader>
       <CardContent>

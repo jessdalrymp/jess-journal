@@ -12,8 +12,7 @@ export const usePlanManagement = () => {
     fetchPlans,
     deletePlan,
     updatePlan,
-    createPlan,
-    createSamplePlans: apiCreateSamplePlans
+    createPlan
   } = usePlanApi();
   
   const {
@@ -27,10 +26,15 @@ export const usePlanManagement = () => {
   } = useFormHandling();
 
   const loadPlans = useCallback(async () => {
-    setLoading(true);
-    const planData = await fetchPlans();
-    setPlans(planData);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const planData = await fetchPlans();
+      setPlans(planData);
+    } catch (error) {
+      console.error('Error loading plans:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [fetchPlans]);
 
   useEffect(() => {
@@ -76,15 +80,6 @@ export const usePlanManagement = () => {
     }
   };
 
-  const createSamplePlans = async () => {
-    setLoading(true);
-    const success = await apiCreateSamplePlans();
-    if (success) {
-      loadPlans();
-    }
-    setLoading(false);
-  };
-
   return {
     plans,
     loading,
@@ -96,8 +91,7 @@ export const usePlanManagement = () => {
     handleEdit,
     handleAdd,
     handleDelete,
-    handleSubmit,
-    createSamplePlans
+    handleSubmit
   };
 };
 
