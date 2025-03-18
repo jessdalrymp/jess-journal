@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Clock, PenSquare } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { parseContentWithJsonCodeBlock } from '@/services/journal';
+import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
 
 interface RecentActivitySectionProps {
   journalEntries: JournalEntry[];
@@ -25,51 +25,6 @@ export const RecentActivitySection = ({
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, 3)
     : [];
-
-  // Function to parse the entry content for potential JSON with a title or summary
-  const getEntryTitle = (entry: JournalEntry) => {
-    try {
-      // Parse the content to get the user's answer instead of the question
-      const parsedContent = parseContentWithJsonCodeBlock(entry.content);
-      
-      if (parsedContent) {
-        // If we have a summary field (user's answer), use that for the display
-        if (parsedContent.summary) {
-          // Use the first line or first 50 characters of the summary
-          let summaryText = parsedContent.summary.split('\n')[0];
-          
-          // Replace third-person pronouns with second-person
-          summaryText = summaryText
-            .replace(/\bthe user\b/gi, "you")
-            .replace(/\bthey (are|were|have|had|will|would|can|could|should|might|must)\b/gi, "you $1")
-            .replace(/\btheir\b/gi, "your")
-            .replace(/\bthem\b/gi, "you")
-            .replace(/\bthemselves\b/gi, "yourself");
-          
-          return summaryText.length > 50 
-            ? summaryText.substring(0, 50) + '...' 
-            : summaryText;
-        }
-        
-        // Fallback to title if present
-        if (parsedContent.title) {
-          // Also personalize the title if possible
-          let title = parsedContent.title
-            .replace(/\bthe user\b/gi, "you")
-            .replace(/\bthey (are|were|have|had|will|would|can|could|should|might|must)\b/gi, "you $1")
-            .replace(/\btheir\b/gi, "your")
-            .replace(/\bthem\b/gi, "you")
-            .replace(/\bthemselves\b/gi, "yourself");
-            
-          return title;
-        }
-      }
-    } catch (e) {
-      // Not valid JSON or doesn't have the expected fields
-    }
-    
-    return entry.title || "Untitled Entry";
-  };
 
   const handleStartJournal = () => {
     navigate('/journal-challenge');
