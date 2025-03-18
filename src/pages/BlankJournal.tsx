@@ -7,8 +7,7 @@ import { useUserData } from "../context/UserDataContext";
 import { saveJournalEntry } from "@/services/journal";
 import { useAuth } from "../context/AuthContext";
 import { ActionButton } from "../components/ui/ActionButton";
-import { ArrowLeft, Save } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { JournalEntryEditor } from "@/components/journal/JournalEntryEditor";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -83,7 +82,7 @@ const BlankJournal = () => {
       fetchJournalEntries();
       
       toast.success("Journal entry saved successfully");
-      navigate(`/journal-entry/${newEntry.id}`);
+      navigate(`/dashboard`);
     } catch (error) {
       console.error("Error saving journal entry:", error);
       toast.error("Failed to save journal entry");
@@ -112,16 +111,6 @@ const BlankJournal = () => {
             <ArrowLeft size={18} className="mr-2" />
             Back to Dashboard
           </ActionButton>
-          
-          <Button 
-            onClick={handleSave} 
-            disabled={isSaving}
-            variant="default" 
-            className="flex items-center gap-2"
-          >
-            <Save size={16} />
-            {isSaving ? "Saving..." : "Save Entry"}
-          </Button>
         </div>
         
         {showPromptSelector ? (
