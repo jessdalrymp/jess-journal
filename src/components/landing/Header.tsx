@@ -19,7 +19,7 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   return (
-    <header className="container mx-auto pt-4 md:pt-10 px-4 sm:px-6 lg:px-8">
+    <header className="container mx-auto pt-10 px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center">
         <Link to="/dashboard">
           <AuthFormHeader />

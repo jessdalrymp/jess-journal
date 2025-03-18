@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef } from "react";
+import { useState } from "react";
 import { supabase } from "../integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Subscription } from "../context/types";
@@ -8,31 +8,27 @@ export function useSubscription(userId: string | undefined) {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  
-  // Add reference to track if a subscription check is in progress
-  const isCheckingRef = useRef(false);
 
-  const checkSubscriptionStatus = useCallback(async (): Promise<void> => {
-    if (!userId || isCheckingRef.current) return;
+  const checkSubscriptionStatus = async (): Promise<void> => {
+    if (!userId) return;
     
-    // Set the flag to prevent concurrent calls
-    isCheckingRef.current = true;
     setLoading(true);
-    
     try {
       // Add more detailed logging for debugging
       console.log("Fetching subscription for user:", userId);
       
-      // Use data array format instead of .single()
       const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .single();
         
       if (error) {
+        // Don't throw here, just log it and continue
         console.error("Error fetching subscription:", error);
-        // Only show toast on initial load or serious errors
-        if (!subscription) {
+        
+        // Only display a toast for non-404 errors
+        if (error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
           toast({
             title: "Subscription data unavailable",
             description: "We couldn't load your subscription information. You may have limited access.",
@@ -42,20 +38,19 @@ export function useSubscription(userId: string | undefined) {
         return;
       }
       
-      if (data && data.length > 0) {
-        const subscriptionData = data[0];
+      if (data) {
         const subscription: Subscription = {
-          id: subscriptionData.id,
-          status: subscriptionData.status,
-          is_trial: subscriptionData.is_trial,
-          is_unlimited: subscriptionData.is_unlimited,
-          trial_ends_at: subscriptionData.trial_ends_at,
-          current_period_ends_at: subscriptionData.current_period_ends_at,
-          coupon_code: subscriptionData.coupon_code
+          id: data.id,
+          status: data.status,
+          is_trial: data.is_trial,
+          is_unlimited: data.is_unlimited,
+          trial_ends_at: data.trial_ends_at,
+          current_period_ends_at: data.current_period_ends_at,
+          coupon_code: data.coupon_code
         };
         
         setSubscription(subscription);
-        console.log("Subscription loaded successfully:", subscriptionData.status);
+        console.log("Subscription loaded successfully:", data.status);
       } else {
         // User has no subscription yet
         setSubscription(null);
@@ -66,10 +61,8 @@ export function useSubscription(userId: string | undefined) {
       // Don't show error toast for every failed attempt to reduce user annoyance
     } finally {
       setLoading(false);
-      // Clear the checking flag
-      isCheckingRef.current = false;
     }
-  }, [userId, toast, subscription]);
+  };
 
   const applyCoupon = async (couponCode: string): Promise<boolean> => {
     if (!userId) {
@@ -113,6 +106,9 @@ export function useSubscription(userId: string | undefined) {
           title: "Success",
           description: "Coupon applied successfully"
         });
+        
+        // Refresh subscription status
+        await checkSubscriptionStatus();
         return true;
       } else {
         toast({

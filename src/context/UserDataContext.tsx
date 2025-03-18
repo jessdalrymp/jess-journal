@@ -13,3 +13,5 @@ export const useUserData = () => {
   }
   return context;
 };
+
+// Note: We don't re-export UserDataProvider here to avoid circular dependencies

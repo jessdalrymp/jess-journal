@@ -6,17 +6,18 @@ import { useUserData } from "../../../context/UserDataContext";
 export const CouponRedemptionCard = () => {
   const [couponCode, setCouponCode] = useState("");
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
-  const { applyCoupon } = useUserData();
+  const { applyCoupon, checkSubscriptionStatus } = useUserData();
 
   const handleApplyCoupon = async () => {
-    if (!couponCode.trim() || isApplyingCoupon) return;
+    if (!couponCode.trim()) return;
 
     setIsApplyingCoupon(true);
     try {
-      // Apply the coupon and don't worry about refreshing subscription here
-      // The UserDataProvider will handle that
-      await applyCoupon(couponCode.trim());
-      setCouponCode("");
+      const success = await applyCoupon(couponCode.trim());
+      if (success) {
+        setCouponCode("");
+        await checkSubscriptionStatus();
+      }
     } catch (error) {
       console.error("Error applying coupon:", error);
     } finally {
