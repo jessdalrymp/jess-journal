@@ -11,16 +11,43 @@ import { ProfileSection } from "../components/account/ProfileSection";
 import { SubscriptionSection } from "../components/account/SubscriptionSection";
 import { PersonalInfoSection } from "../components/account/PersonalInfoSection";
 import { AssessmentSection } from "../components/account/AssessmentSection";
+import { useToast } from "@/hooks/use-toast";
 
 const Account = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, setUser } = useAuth();
   const { profile, saveProfile, subscription, checkSubscriptionStatus } = useUserData();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSavePersonalInfo = (editedName: string) => {
-    // Here you would update the user's name in your database
-    // For now, we'll just update the UI state
-    console.log("Saving new name:", editedName);
+  const handleSavePersonalInfo = async (editedName: string) => {
+    if (!user) return;
+    
+    try {
+      // Update the user metadata in Supabase Auth
+      const { data, error } = await supabase.auth.updateUser({
+        data: { name: editedName }
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Update the local user state with the new name
+      if (data?.user) {
+        setUser({
+          ...user,
+          name: editedName
+        });
+      }
+      
+    } catch (error) {
+      console.error("Error updating user name:", error);
+      toast({
+        title: "Error updating name",
+        description: "There was a problem updating your name. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleRetakeAssessment = () => {

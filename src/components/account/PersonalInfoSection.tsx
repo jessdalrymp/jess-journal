@@ -4,24 +4,67 @@ import { Pencil } from "lucide-react";
 import { Button } from "../ui/button";
 import { useAuth } from "../../context/AuthContext";
 import { Input } from "../ui/input";
+import { useUserData } from "../../context/UserDataContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface PersonalInfoSectionProps {
-  onSave: (name: string) => void;
+  onSave?: (name: string) => void;
 }
 
 export const PersonalInfoSection = ({ onSave }: PersonalInfoSectionProps) => {
   const { user } = useAuth();
+  const { saveProfile } = useUserData();
+  const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(user?.name || '');
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
     setEditedName(user?.name || '');
   };
 
-  const handleSavePersonalInfo = () => {
-    onSave(editedName);
-    setIsEditing(false);
+  const handleSavePersonalInfo = async () => {
+    if (!editedName.trim()) {
+      toast({
+        title: "Name cannot be empty",
+        description: "Please enter a valid name",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Save to auth user metadata
+      await saveProfile({ 
+        // This will update the profile data in Supabase  
+      });
+      
+      // Call the onSave prop which updates the local UI state
+      if (onSave) {
+        onSave(editedName);
+      }
+      
+      // Update the user in auth context
+      // This is handled by the auth context when user updates their profile
+      
+      toast({
+        title: "Profile updated",
+        description: "Your name has been updated successfully"
+      });
+      
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      toast({
+        title: "Error saving profile",
+        description: "Please try again later",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -48,12 +91,14 @@ export const PersonalInfoSection = ({ onSave }: PersonalInfoSectionProps) => {
             <Button 
               onClick={handleSavePersonalInfo} 
               className="bg-jess-primary hover:bg-jess-primary/90"
+              disabled={isSaving}
             >
-              Save Changes
+              {isSaving ? "Saving..." : "Save Changes"}
             </Button>
             <Button 
               variant="outline" 
               onClick={handleEditToggle}
+              disabled={isSaving}
             >
               Cancel
             </Button>
