@@ -48,12 +48,18 @@ export const PlanManagement = () => {
   const fetchPlans = async () => {
     try {
       setLoading(true);
+      console.log('Fetching payment plans...');
+      
       const { data, error } = await supabase
         .from('payment_plans')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching plans:', error);
+        throw error;
+      }
+      
+      console.log('Payment plans data:', data);
       setPlans(data || []);
     } catch (error) {
       console.error('Error fetching plans:', error);

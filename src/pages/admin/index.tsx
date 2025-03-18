@@ -18,6 +18,7 @@ const AdminPage = () => {
 
   useEffect(() => {
     if (user) {
+      console.log("Checking admin status for user:", user.id);
       checkAdminStatus();
     }
   }, [user]);
@@ -25,15 +26,16 @@ const AdminPage = () => {
   const checkAdminStatus = async () => {
     try {
       setIsLoading(true);
+      console.log("Checking admin status...");
       // Call the Postgres function via RPC with proper typing
-      const { data, error } = await supabase.rpc('check_is_admin', {}) as 
-        { data: boolean | null, error: Error | null };
+      const { data, error } = await supabase.rpc('check_is_admin');
       
       if (error) {
         console.error("Error checking admin status:", error);
         return;
       }
       
+      console.log("Admin status check result:", data);
       setIsAdmin(data === true);
     } catch (error) {
       console.error("Error checking admin status:", error);
@@ -46,9 +48,9 @@ const AdminPage = () => {
     if (!user) return;
     
     try {
+      console.log("Attempting to make user admin...");
       // Call the Postgres function via RPC with proper typing
-      const { data, error } = await supabase.rpc('make_user_admin', {}) as 
-        { data: boolean | null, error: Error | null };
+      const { data, error } = await supabase.rpc('make_user_admin');
 
       if (error) {
         console.error("Error making admin:", error);
@@ -60,6 +62,7 @@ const AdminPage = () => {
         return;
       }
 
+      console.log("Make admin result:", data);
       if (data === true) {
         setIsAdmin(true);
         toast({
