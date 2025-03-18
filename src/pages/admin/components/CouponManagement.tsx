@@ -13,8 +13,16 @@ import {
   DialogHeader, 
   DialogTitle
 } from "../../../components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/ui/select";
 import { useToast } from "../../../hooks/use-toast";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { addDays, addWeeks, addMonths } from "date-fns";
 
 interface CouponType {
   id: string;
@@ -35,6 +43,9 @@ export const CouponManagement = () => {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<CouponType | null>(null);
+  const [expiryType, setExpiryType] = useState<"fixed" | "duration">("fixed");
+  const [durationValue, setDurationValue] = useState<number>(30);
+  const [durationType, setDurationType] = useState<"days" | "weeks" | "months">("days");
   
   const [formData, setFormData] = useState({
     code: '',
@@ -98,6 +109,7 @@ export const CouponManagement = () => {
       is_active: coupon.is_active || false,
       is_unlimited: coupon.is_unlimited || false
     });
+    setExpiryType(coupon.expires_at ? "fixed" : "duration");
     setIsDialogOpen(true);
   };
 
@@ -113,6 +125,9 @@ export const CouponManagement = () => {
       is_active: true,
       is_unlimited: false
     });
+    setExpiryType("fixed");
+    setDurationValue(30);
+    setDurationType("days");
     setIsDialogOpen(true);
   };
 
@@ -143,16 +158,43 @@ export const CouponManagement = () => {
     }
   };
 
+  const calculateExpiryDate = (): string | null => {
+    if (expiryType === "fixed") {
+      return formData.expires_at ? new Date(formData.expires_at).toISOString() : null;
+    } else {
+      const now = new Date();
+      let expiryDate: Date;
+      
+      switch (durationType) {
+        case "days":
+          expiryDate = addDays(now, durationValue);
+          break;
+        case "weeks":
+          expiryDate = addWeeks(now, durationValue);
+          break;
+        case "months":
+          expiryDate = addMonths(now, durationValue);
+          break;
+        default:
+          expiryDate = addDays(now, durationValue);
+      }
+      
+      return expiryDate.toISOString();
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      const expiryDate = calculateExpiryDate();
+      
       const couponData = {
         code: formData.code,
         description: formData.description,
         discount_percent: formData.discount_percent || null,
         discount_amount: formData.discount_amount || null,
-        expires_at: formData.expires_at ? new Date(formData.expires_at).toISOString() : null,
+        expires_at: expiryDate,
         max_uses: formData.is_unlimited ? null : formData.max_uses || null,
         is_active: formData.is_active,
         is_unlimited: formData.is_unlimited
@@ -332,16 +374,75 @@ export const CouponManagement = () => {
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="expires_at">Expiration Date</Label>
-                  <Input
-                    id="expires_at"
-                    name="expires_at"
-                    type="date"
-                    value={formData.expires_at}
-                    onChange={handleInputChange}
-                  />
-                  <p className="text-xs text-jess-muted">Leave blank for no expiration</p>
+                  <Label>Expiration Type</Label>
+                  <div className="flex space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        id="expiry-fixed"
+                        type="radio"
+                        name="expiry-type"
+                        checked={expiryType === "fixed"}
+                        onChange={() => setExpiryType("fixed")}
+                        className="h-4 w-4"
+                      />
+                      <Label htmlFor="expiry-fixed">Fixed Date</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        id="expiry-duration"
+                        type="radio"
+                        name="expiry-type"
+                        checked={expiryType === "duration"}
+                        onChange={() => setExpiryType("duration")}
+                        className="h-4 w-4"
+                      />
+                      <Label htmlFor="expiry-duration">Duration</Label>
+                    </div>
+                  </div>
                 </div>
+                
+                {expiryType === "fixed" ? (
+                  <div className="grid gap-2">
+                    <Label htmlFor="expires_at">Expiration Date</Label>
+                    <Input
+                      id="expires_at"
+                      name="expires_at"
+                      type="date"
+                      value={formData.expires_at}
+                      onChange={handleInputChange}
+                    />
+                    <p className="text-xs text-jess-muted">Leave blank for no expiration</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="duration-value">Duration</Label>
+                      <Input
+                        id="duration-value"
+                        type="number"
+                        min="1"
+                        value={durationValue}
+                        onChange={(e) => setDurationValue(parseInt(e.target.value) || 30)}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="duration-type">Unit</Label>
+                      <Select 
+                        value={durationType} 
+                        onValueChange={(value) => setDurationType(value as "days" | "weeks" | "months")}
+                      >
+                        <SelectTrigger id="duration-type">
+                          <SelectValue placeholder="Select unit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="days">Days</SelectItem>
+                          <SelectItem value="weeks">Weeks</SelectItem>
+                          <SelectItem value="months">Months</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
                 
                 <div className="grid gap-2">
                   <div className="flex items-center gap-2">
@@ -399,3 +500,4 @@ export const CouponManagement = () => {
     </Card>
   );
 };
+
