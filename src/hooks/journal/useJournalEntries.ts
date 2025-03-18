@@ -25,7 +25,7 @@ export function useJournalEntries() {
     // Prevent multiple simultaneous fetches
     if (isFetching.current) {
       console.log('Already fetching journal entries, skipping duplicate request');
-      return [];
+      return journalEntriesCache[userId]?.entries || [];
     }
     
     try {
@@ -39,9 +39,11 @@ export function useJournalEntries() {
       setLoading(true);
       isFetching.current = true;
       console.log('Fetching journal entries for user:', userId);
+      
+      // Attempt to fetch entries
       const entries = await journalService.fetchJournalEntries(userId);
       
-      // Update cache
+      // Update cache even if we get empty entries (to prevent constant retries)
       journalEntriesCache[userId] = {
         entries,
         timestamp: Date.now()
@@ -51,12 +53,16 @@ export function useJournalEntries() {
       return entries;
     } catch (error) {
       console.error('Error fetching journal entries:', error);
-      toast({
-        title: "Error loading journal entries",
-        description: "Please try refreshing the page",
-        variant: "destructive"
-      });
-      return [];
+      // Don't show error toast if we have cached entries
+      if (!journalEntriesCache[userId] || journalEntriesCache[userId].entries.length === 0) {
+        toast({
+          title: "Error loading journal entries",
+          description: "Please try refreshing the page",
+          variant: "destructive"
+        });
+      }
+      // Return cached entries if available, otherwise empty array
+      return journalEntriesCache[userId]?.entries || [];
     } finally {
       setLoading(false);
       isFetching.current = false;

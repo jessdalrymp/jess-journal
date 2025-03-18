@@ -30,9 +30,17 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     
     console.log(`Found ${data.length} journal entries`);
 
-    const entries: JournalEntry[] = data.map(entry => 
-      mapDatabaseEntryToJournalEntry(entry, userId)
-    );
+    // Map entries and handle any errors in the mapping process
+    const entries: JournalEntry[] = [];
+    for (const entryData of data) {
+      try {
+        const entry = mapDatabaseEntryToJournalEntry(entryData, userId);
+        entries.push(entry);
+      } catch (err) {
+        console.error('Error processing journal entry:', err, entryData);
+        // Continue with other entries even if one fails
+      }
+    }
     
     return entries;
   } catch (error) {
