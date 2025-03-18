@@ -4,8 +4,12 @@ import { DisclaimerBanner } from "../../components/ui/DisclaimerBanner";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Book } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 export const JournalEntryNotFound = () => {
+  const location = useLocation();
+  const entryId = location.pathname.split('/').pop();
+
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
@@ -18,8 +22,11 @@ export const JournalEntryNotFound = () => {
             <h1 className="text-2xl font-semibold text-jess-foreground mb-3">
               Journal Entry Not Found
             </h1>
-            <p className="text-jess-muted mb-6">
+            <p className="text-jess-muted mb-4">
               The journal entry you're looking for could not be found. It may have been deleted or the URL might be incorrect.
+            </p>
+            <p className="text-xs text-jess-muted mb-6 bg-gray-50 p-2 rounded">
+              Entry ID: {entryId || 'Unknown'}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button 

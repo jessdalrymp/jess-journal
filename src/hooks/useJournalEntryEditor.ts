@@ -37,7 +37,14 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
   }, [isEditing, entry]);
 
   const handleSave = async () => {
-    if (!entry || !entry.id || !user) return;
+    if (!entry || !entry.id || !user) {
+      toast({
+        title: "Error",
+        description: "Unable to save: Missing entry information or user not authenticated.",
+        variant: "destructive",
+      });
+      return false;
+    }
     
     // Process content before saving - we want to maintain the format
     // Update the JSON content with the current title
@@ -54,30 +61,42 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
       console.error("Error updating title in JSON content", e);
     }
     
-    const success = await updateJournalEntry(entry.id, contentToSave, user.id);
-    if (success) {
-      toast({
-        title: "Entry updated",
-        description: "Journal entry has been updated successfully",
-      });
-      
-      // Update local state
-      if (entry) {
-        setEntry({...entry, content: contentToSave, title: editableTitle});
-        setParsedContent(parseEntryContent(contentToSave));
+    try {
+      const success = await updateJournalEntry(entry.id, contentToSave, user.id);
+      if (success) {
+        toast({
+          title: "Entry updated",
+          description: "Journal entry has been updated successfully",
+        });
+        
+        // Update local state
+        if (entry) {
+          setEntry({...entry, content: contentToSave, title: editableTitle});
+          setParsedContent(parseEntryContent(contentToSave));
+        }
+        
+        // Refresh entries list
+        await fetchJournalEntries();
+        
+        // Exit editing mode
+        setIsEditing(false);
+        return true;
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update journal entry",
+          variant: "destructive",
+        });
+        return false;
       }
-      
-      // Refresh entries list
-      fetchJournalEntries();
-      
-      // Exit editing mode
-      setIsEditing(false);
-    } else {
+    } catch (error) {
+      console.error("Error saving journal entry:", error);
       toast({
         title: "Error",
-        description: "Failed to update journal entry",
+        description: "Failed to update journal entry due to an unexpected error",
         variant: "destructive",
       });
+      return false;
     }
   };
 
