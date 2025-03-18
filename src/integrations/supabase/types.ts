@@ -417,6 +417,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_coupon_to_user: {
+        Args: {
+          p_user_id: string
+          p_coupon_code: string
+        }
+        Returns: boolean
+      }
       apply_unlimited_access: {
         Args: {
           p_user_id: string
@@ -452,6 +459,23 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_teams_for_user: {
+        Args: {
+          user_id: string
+        }
+        Returns: string[]
+      }
+      get_users_with_details: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          email: string
+          created_at: string
+          profile_data: Json
+          subscription_data: Json
+          is_admin: boolean
+        }[]
+      }
       insert_journal_entry: {
         Args: {
           p_user_id: string
@@ -464,6 +488,13 @@ export type Database = {
       }
       make_user_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      toggle_user_admin_status: {
+        Args: {
+          p_user_id: string
+          p_admin_status: boolean
+        }
         Returns: boolean
       }
       update_journal_entry: {
