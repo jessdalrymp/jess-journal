@@ -52,6 +52,9 @@ export const useAuthActions = () => {
       const origin = window.location.origin;
       console.log("Current origin for redirects:", origin);
       
+      // Check if we're running in a development environment
+      const isDevelopment = origin.includes('localhost') || origin.includes('127.0.0.1');
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -83,20 +86,43 @@ export const useAuthActions = () => {
       // If we only have a user but no session, email confirmation is required
       else if (data?.user) {
         console.log("Sign-up requires email verification:", data.user.id);
-        // Check if email confirmation is actually enabled
-        if (data.user.identities && data.user.identities.length > 0 && 
-            data.user.identities[0].identity_data && 
-            data.user.identities[0].identity_data.email_verified === false) {
-          toast({
-            title: "Almost there!",
-            description: "Please check your email to verify your account. If you don't see it, check your spam folder.",
-            duration: 6000,
-          });
+        
+        // Check email verification status
+        if (data.user.identities && 
+            data.user.identities.length > 0 && 
+            data.user.identities[0].identity_data) {
+            
+          const emailVerified = data.user.identities[0].identity_data.email_verified;
+          
+          if (emailVerified === false) {
+            console.log("Email verification required, email sent");
+            toast({
+              title: "Almost there!",
+              description: "Please check your email to verify your account. If you don't see it, check your spam folder.",
+              duration: 6000,
+            });
+          } else {
+            console.log("Email already verified, but session not created");
+            toast({
+              title: "Account created",
+              description: "Your email is verified, but we couldn't log you in automatically. Please try logging in manually.",
+              duration: 6000,
+            });
+          }
         } else {
-          // If email verified is true, we can assume verification is disabled
+          // For development environments or when email verification is disabled
+          if (isDevelopment) {
+            console.log("Development environment detected - may need to disable email verification in Supabase dashboard");
+            toast({
+              title: "Development notice",
+              description: "For local testing, consider disabling email verification in the Supabase dashboard",
+              duration: 6000,
+            });
+          }
+          
           toast({
             title: "Account created!",
-            description: "Your account has been created but something went wrong with the login process. Please try logging in.",
+            description: "Your account has been created. Please check your email for verification instructions.",
             duration: 6000,
           });
         }

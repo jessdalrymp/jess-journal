@@ -82,8 +82,9 @@ export const LoginSignUpForm = ({
         console.log("Attempting to sign up with:", { email, name });
         const result = await signUp(email, password, name);
         
-        // If no session was created, it likely means verification is required
+        // If no session was created, assume verification is required
         if (result?.user && !result?.session) {
+          console.log("Email verification likely required, redirecting to verification screen");
           onVerificationSent(email);
         }
       }
