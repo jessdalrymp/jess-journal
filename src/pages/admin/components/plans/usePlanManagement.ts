@@ -45,16 +45,34 @@ export const usePlanManagement = () => {
     }
   };
 
-  // Fix: Use separate handlers for different input types to avoid type instantiation issues
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  // Fixed: Split into multiple handlers to avoid type instantiation issues
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.name;
-    
-    if (e.target instanceof HTMLInputElement && e.target.type === 'checkbox') {
-      setFormData(prev => ({ ...prev, [name]: e.target.checked }));
-    } else if (name === 'price' && typeof e.target.value === 'string') {
-      setFormData(prev => ({ ...prev, [name]: parseFloat(e.target.value) || 0 }));
+    setFormData(prev => ({ ...prev, [name]: e.target.checked }));
+  };
+
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const name = e.target.name;
+    setFormData(prev => ({ ...prev, [name]: parseFloat(e.target.value) || 0 }));
+  };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const name = e.target.name;
+    setFormData(prev => ({ ...prev, [name]: e.target.value }));
+  };
+
+  // Main input handler that routes to specific handlers
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (e.target instanceof HTMLInputElement) {
+      if (e.target.type === 'checkbox') {
+        handleCheckboxChange(e as React.ChangeEvent<HTMLInputElement>);
+      } else if (e.target.type === 'number' || e.target.name === 'price') {
+        handleNumberChange(e as React.ChangeEvent<HTMLInputElement>);
+      } else {
+        handleTextChange(e);
+      }
     } else {
-      setFormData(prev => ({ ...prev, [name]: e.target.value }));
+      handleTextChange(e);
     }
   };
 
