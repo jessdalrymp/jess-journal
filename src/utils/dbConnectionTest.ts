@@ -35,6 +35,7 @@ export const testDatabaseConnections = async (): Promise<ConnectionTest[]> => {
         .select('*', { count: 'exact', head: true });
       
       if (error) {
+        console.error(`Error details for ${table}:`, error);
         throw error;
       }
       
@@ -49,11 +50,18 @@ export const testDatabaseConnections = async (): Promise<ConnectionTest[]> => {
     } catch (error) {
       console.error(`❌ Failed to connect to ${table}:`, error);
       
+      let errorMessage = "Unknown error";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error);
+      }
+      
       results.push({
         tableName: table,
         success: false,
         count: null,
-        error: error instanceof Error ? error.message : String(error)
+        error: errorMessage
       });
     }
   }
