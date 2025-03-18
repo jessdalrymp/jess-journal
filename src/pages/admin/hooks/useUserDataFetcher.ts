@@ -21,7 +21,7 @@ export const useUserDataFetcher = () => {
     try {
       setLoading(true);
       
-      // Instead of using type assertion, let's explicitly handle the response data
+      // Make a type-safe call to the RPC function
       const { data, error } = await supabase.rpc('get_users_with_details');
       
       if (error) {
@@ -34,7 +34,7 @@ export const useUserDataFetcher = () => {
         return;
       }
       
-      // Make sure data is an array before setting it
+      // Ensure data is of the expected format
       if (Array.isArray(data)) {
         setUsers(data as User[]);
       } else {

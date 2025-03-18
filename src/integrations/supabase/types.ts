@@ -459,6 +459,12 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_teams_for_user: {
+        Args: {
+          user_id: string
+        }
+        Returns: string[]
+      }
       get_users_with_details: {
         Args: Record<PropertyKey, never>
         Returns: {
