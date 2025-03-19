@@ -7,4 +7,4 @@ export { deleteJournalEntry } from './deleteEntry';
 
 // Export utility functions that might be useful elsewhere
 export { encryptContent, decryptContent } from './encryption';
-export { parseContentWithJsonCodeBlock } from './contentParser';
+export { parseEntryContent, parseContentWithJsonCodeBlock } from './contentParser';

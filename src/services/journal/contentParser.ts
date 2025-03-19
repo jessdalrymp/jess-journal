@@ -51,6 +51,25 @@ export const formatContentForEditing = (content: string): string => {
 };
 
 /**
+ * Parses content for JSON with code blocks and returns the parsed object
+ * This is the function that was missing and causing the errors
+ */
+export const parseContentWithJsonCodeBlock = (content: string): any | null => {
+  try {
+    // Try to extract JSON from content if it has code blocks
+    const jsonRegex = /```(?:json)?\s*([\s\S]*?)```/;
+    const match = content.match(jsonRegex);
+    const contentToProcess = match && match[1] ? match[1].trim() : content;
+    
+    // Try to parse as JSON
+    return JSON.parse(contentToProcess);
+  } catch (e) {
+    console.log("Failed to parse JSON from content:", e);
+    return null;
+  }
+};
+
+/**
  * Converts third-person references to second-person for a more personal tone
  */
 export const convertToSecondPerson = (text: string): string => {
