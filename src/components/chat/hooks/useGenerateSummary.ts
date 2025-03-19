@@ -28,6 +28,7 @@ export const useGenerateSummary = () => {
         return null;
       }
       
+      // Format messages for the AI to summarize
       const aiMessages = formatMessagesForSummary(session.messages);
       
       console.log("Requesting AI summary...");
@@ -41,31 +42,27 @@ export const useGenerateSummary = () => {
       let summaryText = response.choices[0].message.content || "No summary available";
       console.log("Received summary from AI:", summaryText);
       
+      // Parse the AI response for title and summary
       let title = "Conversation Summary";
       let summary = summaryText;
       
       try {
-        // Check if the response is already in JSON format
+        // Check if the response is in JSON format
         if (summaryText.includes('{') && summaryText.includes('}')) {
-          const jsonMatch = summaryText.match(/{[\s\S]*}/);
+          const jsonMatch = summaryText.match(/{[\s\S]*?}/);
           if (jsonMatch) {
             const jsonString = jsonMatch[0];
             const jsonSummary = JSON.parse(jsonString);
-            if (jsonSummary.title && jsonSummary.summary) {
-              title = jsonSummary.title;
-              summary = jsonSummary.summary;
-              console.log("Parsed JSON summary:", { title, summary });
-            }
+            if (jsonSummary.title) title = jsonSummary.title;
+            if (jsonSummary.summary) summary = jsonSummary.summary;
+            console.log("Parsed JSON summary:", { title, summary });
           }
         }
       } catch (e) {
         console.log("Summary not in JSON format or parsing failed, using raw text");
-        // If parsing fails, use the entire text as summary
-        title = "Conversation Summary";
-        summary = summaryText;
       }
       
-      console.log("Saving summary to journal...", { 
+      console.log("Saving summary to database and journal...", { 
         userId: user.id, 
         title, 
         summary, 
@@ -73,9 +70,10 @@ export const useGenerateSummary = () => {
         type: session.type 
       });
       
+      // Save the summary to both the conversation record and journal entry
       await saveConversationSummary(user.id, title, summary, session.id, session.type);
       
-      console.log("Summary saved to journal");
+      console.log("Summary saved successfully");
       
       toast({
         title: "Conversation Summarized",

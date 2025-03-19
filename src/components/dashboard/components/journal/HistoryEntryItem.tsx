@@ -4,7 +4,6 @@ import { Calendar, Clock } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon } from '@/components/journal/JournalHistoryUtils';
 import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
-import { parseEntryContent, convertToSecondPerson } from '@/services/journal/contentParser';
 
 interface HistoryEntryItemProps {
   entry: JournalEntry;
@@ -33,12 +32,17 @@ const formatTime = (date: Date) => {
 // Enhanced function to extract and display content from journal entries
 const getEntryContent = (entry: JournalEntry): string => {
   try {
-    // First try to parse the content as JSON (for conversation summaries)
-    const parsedContent = parseEntryContent(entry.content);
-    if (parsedContent && parsedContent.summary) {
-      // If we have a parsed summary, use that and convert to second person
-      const summary = convertToSecondPerson(parsedContent.summary);
-      return summary.substring(0, 100) + (summary.length > 100 ? '...' : '');
+    // Check if the content is JSON in a code block
+    if (entry.content && entry.content.includes('```json')) {
+      const jsonMatch = entry.content.match(/```json\s*([\s\S]*?)```/);
+      if (jsonMatch && jsonMatch[1]) {
+        const parsedJson = JSON.parse(jsonMatch[1].trim());
+        if (parsedJson.summary) {
+          // Return the first part of the summary
+          const summary = parsedJson.summary;
+          return summary.substring(0, 100) + (summary.length > 100 ? '...' : '');
+        }
+      }
     }
     
     // If there's a prompt, try to separate the question from the answer
