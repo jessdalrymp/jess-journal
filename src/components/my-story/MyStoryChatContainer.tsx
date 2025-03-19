@@ -23,12 +23,14 @@ export const MyStoryChatContainer = ({
   // Give a short delay when loading existing conversations to allow initialization
   useEffect(() => {
     if (conversationId) {
+      console.log("Initializing with existing conversation ID:", conversationId);
       const timer = setTimeout(() => {
         setInitializing(false);
       }, 1500);
       
       return () => clearTimeout(timer);
     } else {
+      console.log("Starting new conversation");
       setInitializing(false);
     }
   }, [conversationId]);
@@ -36,6 +38,11 @@ export const MyStoryChatContainer = ({
   const handleError = (errorMessage: string) => {
     console.error("Chat error:", errorMessage);
     setError(errorMessage);
+    toast({
+      variant: "destructive",
+      title: "Error loading conversation",
+      description: errorMessage || "Failed to load the conversation. Please try again.",
+    });
   };
 
   const handleEndChat = () => {
@@ -45,6 +52,10 @@ export const MyStoryChatContainer = ({
       description: "We're preparing to save your story conversation to your journal",
     });
     onSave(true); // Pass true to indicate need for refresh
+  };
+
+  const handleReloadPage = () => {
+    window.location.reload();
   };
 
   return (
@@ -66,7 +77,7 @@ export const MyStoryChatContainer = ({
           <p className="text-gray-700 font-medium mb-2">Unable to load conversation</p>
           <p className="text-gray-500 text-center mb-4">{error}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={handleReloadPage}
             className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
           >
             Try Again

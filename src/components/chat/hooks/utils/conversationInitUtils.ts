@@ -29,6 +29,12 @@ export const loadExistingConversation = async (
     if (conversation) {
       console.log(`Successfully loaded conversation ${conversationId} with ${conversation.messages.length} messages`);
       
+      // Ensure messages is always an array
+      if (!conversation.messages || !Array.isArray(conversation.messages)) {
+        console.error(`Conversation ${conversationId} has no messages or invalid message format`);
+        throw new Error("Invalid conversation format: messages missing or not an array");
+      }
+
       // Convert to ConversationSession format
       const conversationSession: ConversationSession = {
         id: conversation.id,
@@ -49,11 +55,11 @@ export const loadExistingConversation = async (
       return conversationSession;
     } else {
       console.log(`Conversation ${conversationId} not found or not accessible`);
-      return null;
+      throw new Error(`Conversation ${conversationId} not found or not accessible`);
     }
   } catch (err) {
     console.error(`Error loading conversation ${conversationId}:`, err);
-    return null;
+    throw err;
   }
 };
 
@@ -72,7 +78,7 @@ export const createConversationWithInitialMessage = async (
     
     if (!conversation?.id) {
       console.error('Failed to create conversation - no ID returned');
-      return null;
+      throw new Error('Failed to create conversation - no ID returned');
     }
     
     // Add initial message and ensure we're capturing the boolean result

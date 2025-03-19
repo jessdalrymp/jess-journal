@@ -69,20 +69,25 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       // Try to load existing conversation first if ID is provided
       if (conversationId) {
         console.log(`Attempting to load existing conversation: ${conversationId}`);
-        const conversation = await loadExistingConversation(conversationId, authUser.id);
-        if (conversation) {
-          console.log(`Successfully loaded existing conversation with ${conversation.messages.length} messages`);
-          setIsInitialized(true);
-          return conversation;
-        } else {
-          console.log(`Failed to load existing conversation ${conversationId}, will create new conversation`);
+        try {
+          const conversation = await loadExistingConversation(conversationId, authUser.id);
+          if (conversation) {
+            console.log(`Successfully loaded existing conversation with ${conversation.messages.length} messages`);
+            setIsInitialized(true);
+            return conversation;
+          }
+        } catch (error) {
+          console.error(`Failed to load existing conversation ${conversationId}:`, error);
           // Clear conversation from storage to avoid loading it again
           clearCurrentConversationFromStorage(type);
           toast({
-            title: "Starting new conversation",
-            description: "Previous conversation could not be loaded",
-            duration: 3000,
+            title: "Error loading conversation",
+            description: "Previous conversation could not be loaded. Starting a new conversation.",
+            duration: 5000,
+            variant: "destructive"
           });
+          
+          setError(`Failed to load conversation: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }
       
@@ -122,8 +127,9 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         setIsInitialized(true);
         return conversation;
       } catch (err) {
-        console.error(`Error starting ${type} conversation:`, err);
-        setError(`Failed to initialize ${type} chat`);
+        const errorMessage = `Error starting ${type} conversation: ${err instanceof Error ? err.message : 'Unknown error'}`;
+        console.error(errorMessage, err);
+        setError(errorMessage);
         toast({
           title: "Error starting conversation",
           description: "Please try again later.",
@@ -133,8 +139,9 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       }
       
     } catch (error) {
-      console.error('Error in initializeChat:', error);
-      setError("Failed to initialize chat");
+      const errorMessage = `Error in initializeChat: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      console.error(errorMessage, error);
+      setError(errorMessage);
       toast({
         title: "Error starting conversation",
         description: "Please try again later.",
