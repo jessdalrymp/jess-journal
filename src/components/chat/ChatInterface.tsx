@@ -16,6 +16,7 @@ interface ChatInterfaceProps {
   onAcceptChallenge?: () => void;
   onRestart?: () => void;
   onEndChat?: () => void;
+  onError?: (error: string) => void;
   initialMessage?: string;
   saveChat?: boolean;
   conversationId?: string | null;
@@ -28,6 +29,7 @@ export const ChatInterface = ({
   onAcceptChallenge, 
   onRestart,
   onEndChat,
+  onError,
   initialMessage,
   saveChat = false,
   conversationId = null,
@@ -57,6 +59,13 @@ export const ChatInterface = ({
     onRestart,
     continuousChat
   );
+  
+  // Call parent error handler if provided
+  React.useEffect(() => {
+    if (error && onError) {
+      onError(error);
+    }
+  }, [error, onError]);
   
   if (authLoading) {
     return <ChatLoadingState type={type} onBack={onBack} />;

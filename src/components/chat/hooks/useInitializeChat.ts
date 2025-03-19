@@ -17,6 +17,8 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const initializationInProgress = useRef(false);
+  const initializationAttempts = useRef(0);
+  const MAX_RETRY_ATTEMPTS = 2;
 
   const { startConversation, addMessageToConversation } = useUserData();
   const { user: authUser } = useAuth();
@@ -28,6 +30,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
     if (!authUser) {
       setIsInitialized(false);
       initializationInProgress.current = false;
+      initializationAttempts.current = 0;
     }
   }, [authUser, type]);
 
@@ -51,9 +54,17 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       return null;
     }
 
+    if (initializationAttempts.current >= MAX_RETRY_ATTEMPTS) {
+      console.log(`Maximum initialization attempts (${MAX_RETRY_ATTEMPTS}) reached for ${type} chat`);
+      setError(`Failed to initialize chat after ${MAX_RETRY_ATTEMPTS} attempts. Please refresh the page.`);
+      return null;
+    }
+
     try {
       initializationInProgress.current = true;
       setLoading(true);
+      initializationAttempts.current += 1;
+      
       console.log(`Initializing chat for type: ${type}${conversationId ? ` with existing conversation id: ${conversationId}` : ''}`);
       console.log("User authentication state:", authUser ? "Authenticated" : "Not authenticated");
       
@@ -150,7 +161,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       
     } catch (error) {
       console.error('Error in initializeChat:', error);
-      setError("Failed to initialize chat");
+      setError(`Failed to initialize chat: ${error instanceof Error ? error.message : 'Unknown error'}`);
       toast({
         title: "Error starting conversation",
         description: "Please try again later.",
