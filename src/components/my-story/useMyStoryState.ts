@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useUserData } from '@/context/UserDataContext';
 import { getCurrentConversationFromStorage, clearCurrentConversationFromStorage } from '@/lib/storageUtils';
+import { fetchConversations } from '@/services/conversation/fetchConversations';
+import { Conversation } from '@/services/conversation/types';
 
 export const useMyStoryState = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -11,6 +13,9 @@ export const useMyStoryState = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [existingConversationId, setExistingConversationId] = useState<string | null>(null);
   const [refreshDataOnSave, setRefreshDataOnSave] = useState(false);
+  const [priorConversations, setPriorConversations] = useState<Conversation[]>([]);
+  const [loadingPriorConversations, setLoadingPriorConversations] = useState(false);
+  
   const navigate = useNavigate();
   const { user, loading: userLoading } = useAuth();
   const { fetchJournalEntries } = useUserData();
@@ -35,6 +40,28 @@ export const useMyStoryState = () => {
       
       setIsLoading(false);
     }
+  }, [user]);
+
+  // Fetch prior conversations when component loads
+  useEffect(() => {
+    const loadPriorConversations = async () => {
+      if (!user) return;
+      
+      try {
+        setLoadingPriorConversations(true);
+        const conversations = await fetchConversations(user.id);
+        // Filter only story type conversations
+        const storyConversations = conversations.filter(conv => conv.type === 'story');
+        setPriorConversations(storyConversations);
+        console.log(`Loaded ${storyConversations.length} prior story conversations`);
+      } catch (error) {
+        console.error('Error fetching prior conversations:', error);
+      } finally {
+        setLoadingPriorConversations(false);
+      }
+    };
+    
+    loadPriorConversations();
   }, [user]);
 
   const handleBack = async () => {
@@ -73,6 +100,17 @@ export const useMyStoryState = () => {
     }
   };
 
+  const handleLoadConversation = (conversationId: string) => {
+    if (existingConversationId === conversationId) {
+      console.log('Conversation already loaded');
+      return;
+    }
+    
+    // Set the conversation ID and reload the page to load it
+    setExistingConversationId(conversationId);
+    window.location.reload();
+  };
+
   return {
     showWelcomeModal,
     setShowWelcomeModal,
@@ -85,6 +123,9 @@ export const useMyStoryState = () => {
     handleBack,
     handleSaveChat,
     handleStartFresh,
-    refreshDataOnSave
+    refreshDataOnSave,
+    priorConversations,
+    loadingPriorConversations,
+    handleLoadConversation
   };
 };

@@ -8,6 +8,7 @@ import { MyStoryUnauthenticated } from "../components/my-story/MyStoryUnauthenti
 import { MyStoryHeader } from "../components/my-story/MyStoryHeader";
 import { MyStoryChatContainer } from "../components/my-story/MyStoryChatContainer";
 import { useMyStoryState } from "../components/my-story/useMyStoryState";
+import { MyStoryPriorConversations } from "../components/my-story/MyStoryPriorConversations";
 
 const MyStory = () => {
   const {
@@ -22,7 +23,10 @@ const MyStory = () => {
     handleBack,
     handleSaveChat,
     handleStartFresh,
-    refreshDataOnSave
+    refreshDataOnSave,
+    priorConversations,
+    loadingPriorConversations,
+    handleLoadConversation
   } = useMyStoryState();
   
   if (userLoading || isLoading) {
@@ -41,11 +45,24 @@ const MyStory = () => {
           existingConversationId={existingConversationId} 
           onStartFresh={handleStartFresh} 
         />
-        <MyStoryChatContainer 
-          onBack={handleBack} 
-          onSave={handleSaveChat}
-          conversationId={existingConversationId}
-        />
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div className="md:col-span-3">
+            <MyStoryChatContainer 
+              onBack={handleBack} 
+              onSave={handleSaveChat}
+              conversationId={existingConversationId}
+            />
+          </div>
+          <div className="md:col-span-1">
+            <MyStoryPriorConversations
+              conversations={priorConversations}
+              loading={loadingPriorConversations}
+              onSelectConversation={handleLoadConversation}
+              currentConversationId={existingConversationId}
+            />
+          </div>
+        </div>
       </main>
       <DisclaimerBanner />
       
