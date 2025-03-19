@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { Calendar, Clock } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
