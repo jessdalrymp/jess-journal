@@ -36,6 +36,17 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
     onSelectConversation(conversationId);
   };
 
+  // Format time with date-fns v4 compatibility
+  const formatTimeAgo = (date: Date | string) => {
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      return formatDistanceToNow(dateObj, { addSuffix: true });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'some time ago';
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm h-full p-4 flex flex-col">
       <h3 className="text-lg font-medium mb-3">Prior Conversations</h3>
@@ -72,7 +83,7 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
                 <div className="flex items-center text-xs text-gray-500 mt-1">
                   <Clock className="h-3 w-3 mr-1" />
                   <span>
-                    {formatDistanceToNow(new Date(conversation.updatedAt), { addSuffix: true })}
+                    {formatTimeAgo(conversation.updatedAt)}
                   </span>
                 </div>
                 
