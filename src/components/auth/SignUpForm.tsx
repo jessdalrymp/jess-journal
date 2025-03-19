@@ -67,19 +67,20 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
       // Check if user exists
       if (result?.exists) {
         console.log("User already exists");
+        setError("An account with this email already exists. Try signing in instead.");
         return;
       }
       
       // If no session was created, assume verification is required
-      if (result?.user && !result?.session) {
-        console.log("Email verification likely required, redirecting to verification screen");
+      if (result?.user && result.emailVerificationRequired) {
+        console.log("Email verification required, redirecting to verification screen");
         toast({
           title: "Account created",
           description: "Please check your email for verification instructions. If you don't see it, check your spam folder.",
           duration: 6000,
         });
         onVerificationSent(email);
-      } else if (result?.session) {
+      } else if (result?.user && result.session) {
         // User was created and logged in immediately (email verification disabled)
         toast({
           title: "Account created successfully",

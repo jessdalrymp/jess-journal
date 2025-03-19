@@ -49,7 +49,7 @@ export const useSignUp = () => {
     }
   };
 
-  const signUp = async (email: string, password: string, name?: string, checkExists = false): Promise<{ user?: any; session?: any; exists?: boolean }> => {
+  const signUp = async (email: string, password: string, name?: string, checkExists = false): Promise<{ user?: any; session?: any; exists?: boolean; emailVerificationRequired?: boolean }> => {
     setLoading(true);
     try {
       // Optionally check if user exists first
@@ -106,7 +106,7 @@ export const useSignUp = () => {
           title: "Welcome!",
           description: "Your account has been created successfully.",
         });
-        return data;
+        return { ...data, emailVerificationRequired: false };
       } 
       // If we only have a user but no session, email confirmation is required
       else if (data?.user) {
@@ -151,7 +151,7 @@ export const useSignUp = () => {
             duration: 6000,
           });
         }
-        return { user: data.user };
+        return { user: data.user, emailVerificationRequired: true };
       } else {
         console.error("No user or session returned after sign up");
         throw new Error("Account creation failed. Please try again.");
