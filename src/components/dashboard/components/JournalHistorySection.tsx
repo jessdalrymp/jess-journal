@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUserData } from '@/context/UserDataContext';
 import { HistorySectionHeading } from './journal/HistorySectionHeading';
 import { HistoryActionCard } from './journal/HistoryActionCard';
@@ -18,9 +18,20 @@ export const JournalHistorySection = () => {
       .slice(0, 5)
     : [];
   
+  // Force refresh when the component mounts to ensure latest entries
+  useEffect(() => {
+    const refreshEntries = async () => {
+      console.log("JournalHistorySection - Refreshing entries on mount");
+      await fetchJournalEntries();
+    };
+    
+    refreshEntries();
+  }, [fetchJournalEntries]);
+  
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
+      console.log("JournalHistorySection - Manual refresh triggered");
       await fetchJournalEntries();
     } finally {
       setIsRefreshing(false);

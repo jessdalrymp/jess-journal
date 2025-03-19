@@ -37,7 +37,16 @@ export const useMyStoryState = () => {
     }
   }, [user]);
 
-  const handleBack = () => {
+  const handleBack = async () => {
+    // Ensure journal entries are refreshed when navigating back to dashboard
+    if (user) {
+      console.log('Refreshing journal entries before navigating back to dashboard');
+      try {
+        await fetchJournalEntries();
+      } catch (error) {
+        console.error('Error refreshing journal entries:', error);
+      }
+    }
     navigate('/dashboard');
   };
 

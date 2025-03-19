@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { JournalEntry, UserProfile, User } from '../lib/types';
 import { UserDataContext } from './UserDataContext';
@@ -24,6 +25,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const [isJournalFetched, setIsJournalFetched] = useState(false);
   const [isJournalLoading, setIsJournalLoading] = useState(false);
   const isFetchingJournalRef = useRef(false);
+  const lastFetchTimeRef = useRef<number>(0);
   
   const { fetchJournalEntries: fetchEntries, loading: journalActionsLoading } = useJournalEntries();
   const { loading: conversationLoading, startConversation, addMessageToConversation } = useConversationData(user?.id);
@@ -109,13 +111,24 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   const fetchJournalEntries = async (): Promise<JournalEntry[]> => {
     if (!user) return [];
     
+    // Add a min delay between fetches to prevent excessive API calls
+    const now = Date.now();
+    const minFetchInterval = 1000; // 1 second
+    
     if (isFetchingJournalRef.current) {
       console.log("Journal entries already being fetched, skipping redundant fetch");
       return journalEntries;
     }
     
+    // If we've fetched recently, skip unless forceFetch is true
+    if (now - lastFetchTimeRef.current < minFetchInterval) {
+      console.log("Fetch throttled - recent fetch detected");
+      return journalEntries;
+    }
+    
     isFetchingJournalRef.current = true;
     setIsJournalLoading(true);
+    lastFetchTimeRef.current = now;
     
     try {
       console.log("Fetching journal entries for user:", user.id);
@@ -153,8 +166,8 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
       
       if (role === 'assistant') {
         if (!isFetchingJournalRef.current && user) {
+          console.log("Marking journal entries as not fetched to trigger refresh after conversation update");
           setIsJournalFetched(false);
-          await fetchJournalEntries();
         }
       }
       
