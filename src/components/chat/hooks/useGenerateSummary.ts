@@ -77,7 +77,7 @@ export const useGenerateSummary = () => {
         .update({
           title: title,
           summary: summary,
-          updated_at: new Date()
+          updated_at: new Date().toISOString() // Fix: Convert Date to ISO string
         })
         .eq('id', session.id);
       

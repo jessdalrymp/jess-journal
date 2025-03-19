@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatHeader } from './ChatHeader';
 import { ChatInput } from './ChatInput';
@@ -6,9 +7,6 @@ import { useChat } from './useChat';
 import { ChatDialogs } from './ChatDialogs';
 import { useJournalPrompt } from '@/hooks/useJournalPrompt';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ActionButton } from '../ui/ActionButton';
-import { ArrowLeft } from 'lucide-react';
-import { ConversationSession } from '@/lib/types';
 
 interface ChatInterfaceProps {
   onBack?: () => void;
@@ -20,7 +18,7 @@ interface ChatInterfaceProps {
 }
 
 export const ChatInterface = ({
-  onBack,
+  onBack = () => {},
   type,
   initialMessage,
   onEndChat,
@@ -33,14 +31,15 @@ export const ChatInterface = ({
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  const { prompt, loading: promptLoading, error: promptError } = useJournalPrompt();
+  // Fixed destructuring to match what useJournalPrompt actually returns
+  const { journalPrompt, isLoading: promptLoading } = useJournalPrompt();
 
   useEffect(() => {
-    if (prompt && type === 'journal') {
-      setPromptText(prompt.prompt);
-      localStorage.setItem('currentJournalPrompt', JSON.stringify(prompt));
+    if (journalPrompt && type === 'journal') {
+      setPromptText(journalPrompt.prompt);
+      localStorage.setItem('currentJournalPrompt', JSON.stringify(journalPrompt));
     }
-  }, [prompt, type]);
+  }, [journalPrompt, type]);
 
   const {
     session,
@@ -83,7 +82,7 @@ export const ChatInterface = ({
   return (
     <div className="flex flex-col h-full">
       <ChatHeader 
-        title={type === 'story' ? 'My Story' : 'Side Quest'} 
+        type={type}
         onBack={onBack} 
         onEnd={() => setShowEndDialog(true)} 
       />
@@ -97,9 +96,10 @@ export const ChatInterface = ({
 
       <ChatInput 
         onSendMessage={handleSendMessage} 
-        type={type} 
-        onJournal={() => setShowJournalingDialog(true)}
+        loading={chatLoading}
         disabled={chatLoading}
+        type={type}
+        onJournal={() => setShowJournalingDialog(true)}
       />
 
       {/* Dialogs */}
