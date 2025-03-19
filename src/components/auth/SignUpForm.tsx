@@ -17,6 +17,7 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const { signUp, loading } = useSignUp();
   const { toast } = useToast();
@@ -54,6 +55,8 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
 
   const sendCustomVerificationEmail = async (email: string) => {
     try {
+      setIsProcessing(true);
+      
       // Get the domain origin
       const origin = window.location.origin;
       
@@ -93,7 +96,7 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         
         toast({
           title: "Verification email error",
-          description: `Server error (${response.status}). Please try again later.`,
+          description: `Server error (${response.status}). Please try again.`,
           variant: "destructive",
         });
         return false;
@@ -108,7 +111,7 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         console.error('Error parsing response:', parseError);
         toast({
           title: "Verification email error",
-          description: "Invalid response from server. Please try again later.",
+          description: "Invalid response from server. Please try again.",
           variant: "destructive",
         });
         return false;
@@ -118,7 +121,7 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         console.error('Error in verification email response:', responseData.error);
         toast({
           title: "Verification email error",
-          description: responseData.error || "Error sending verification email. Please try again later.",
+          description: responseData.error || "Error sending verification email. Please try again.",
           variant: "destructive",
         });
         return false;
@@ -132,10 +135,12 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
       
       toast({
         title: "Verification email error",
-        description: `Error sending verification email: ${error.message}. Please try again later.`,
+        description: `Error sending verification email: ${error.message}. Please try again.`,
         variant: "destructive",
       });
       return false;
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -148,6 +153,7 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         return;
       }
 
+      setIsProcessing(true);
       console.log("Attempting to sign up with:", { email, name });
       const result = await signUp(email, password, name);
       
@@ -215,6 +221,8 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         description: errorMessage,
         variant: "destructive",
       });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -262,9 +270,9 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         <ActionButton 
           type="primary" 
           className="w-full py-3"
-          disabled={loading}
+          disabled={loading || isProcessing}
         >
-          {loading ? 'Processing...' : 'Create Account'}
+          {loading || isProcessing ? 'Processing...' : 'Create Account'}
         </ActionButton>
       </div>
     </form>

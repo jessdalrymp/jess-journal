@@ -140,32 +140,60 @@ const handler = async (req: Request): Promise<Response> => {
           <p>Best regards,<br>The Jess Journal Team</p>
         `,
       });
-    } catch (emailError) {
+    } catch (emailError: any) {
       console.error("Exception when calling Resend API:", emailError);
       console.error("Error details:", emailError.stack || "No stack trace available");
       
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: "Email sending failed", 
-          details: emailError.message || "Unknown error occurred while sending email"
-        }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+      // Try one more time with a simplified email
+      try {
+        console.log("Retrying with simplified email...");
+        emailResponse = await resend.emails.send({
+          from: "Jess Journal <onboarding@resend.dev>",
+          to: [email],
+          subject: "Verify your email - Jess Journal",
+          text: `
+            Welcome to Jess Journal!
+            
+            Thank you for signing up. Please verify your email address by visiting this link:
+            ${verificationUrl}
+            
+            This link will expire in 24 hours.
+            
+            Best regards,
+            The Jess Journal Team
+          `,
+        });
+        
+        if (emailResponse.error) {
+          throw new Error(emailResponse.error.message || "Unknown error with simplified email");
         }
-      );
+        
+        console.log("Simplified email sent successfully!");
+      } catch (retryError: any) {
+        console.error("Second attempt failed:", retryError);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "Email sending failed after multiple attempts", 
+            details: retryError.message || emailError.message || "Unknown error occurred while sending email"
+          }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
     }
     
     console.log("Verification email API response:", JSON.stringify(emailResponse, null, 2));
     
     // Check if there was an error in the response
-    if (emailResponse.error) {
+    if (emailResponse && emailResponse.error) {
       console.error("Error from Resend API:", emailResponse.error);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: emailResponse.error,
+          error: emailResponse.error.message || "Unknown API error",
           details: "Failed to send verification email through Resend API" 
         }),
         {
