@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -52,19 +51,26 @@ export const useMyStoryState = () => {
       try {
         setLoadingPriorConversations(true);
         const conversations = await fetchConversations(user.id);
+        
         // Filter only story type conversations
         const storyConversations = conversations.filter(conv => conv.type === 'story');
+        
+        console.log(`Loaded ${storyConversations.length} prior story conversations:`, storyConversations);
         setPriorConversations(storyConversations);
-        console.log(`Loaded ${storyConversations.length} prior story conversations`);
       } catch (error) {
         console.error('Error fetching prior conversations:', error);
+        toast({
+          title: "Error loading conversations",
+          description: "Could not load your previous conversations.",
+          variant: "destructive"
+        });
       } finally {
         setLoadingPriorConversations(false);
       }
     };
     
     loadPriorConversations();
-  }, [user]);
+  }, [user, toast]);
 
   const handleBack = async () => {
     // Ensure journal entries are refreshed when navigating back to dashboard
@@ -114,6 +120,29 @@ export const useMyStoryState = () => {
     
     // Set the conversation ID and reload the page to load it
     setExistingConversationId(conversationId);
+    
+    // Save the selected conversation to storage before reloading
+    const selectedConversation = priorConversations.find(c => c.id === conversationId);
+    if (selectedConversation) {
+      const sessionToSave = {
+        id: selectedConversation.id,
+        userId: selectedConversation.userId,
+        type: 'story',
+        title: selectedConversation.title || 'My Story',
+        messages: [],
+        createdAt: selectedConversation.createdAt,
+        updatedAt: selectedConversation.updatedAt
+      };
+      
+      try {
+        localStorage.setItem('current_conversation_story', JSON.stringify(sessionToSave));
+        console.log('Saved conversation to storage:', sessionToSave.id);
+      } catch (err) {
+        console.error('Error saving conversation to storage:', err);
+      }
+    }
+    
+    // Reload the page to load the conversation
     window.location.reload();
   };
 

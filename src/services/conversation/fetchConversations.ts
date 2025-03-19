@@ -1,3 +1,4 @@
+
 import { supabase } from '../../integrations/supabase/client';
 import { Conversation } from './types';
 import { getCachedConversation, cacheConversation } from './conversationCache';
@@ -8,6 +9,8 @@ export const fetchConversations = async (userId: string): Promise<Conversation[]
       console.error('No user ID provided to fetchConversations');
       return [];
     }
+
+    console.log('Fetching conversations for user:', userId);
 
     const { data, error } = await supabase
       .from('conversations')
@@ -20,11 +23,18 @@ export const fetchConversations = async (userId: string): Promise<Conversation[]
       return [];
     }
 
+    console.log('Fetched conversations:', data);
+
+    if (!data || data.length === 0) {
+      console.log('No conversations found for user:', userId);
+      return [];
+    }
+
     return data.map(item => ({
       id: item.id,
       userId: item.profile_id,
       type: item.type,
-      title: item.title,
+      title: item.title || 'Untitled Conversation',
       messages: [],
       summary: item.summary || '',
       createdAt: new Date(item.created_at),
