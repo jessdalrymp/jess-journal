@@ -60,8 +60,9 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
           // Still redirect to verification screen, but with a warning
           toast({
             title: "Account created, but...",
-            description: "We had trouble sending the verification email. Please check your spam folder or try logging in after a few minutes.",
-            duration: 6000,
+            description: "We had trouble sending the verification email. Please try signing in after a few minutes to verify your account.",
+            duration: 8000,
+            variant: "destructive",
           });
           onVerificationSent(email);
         }
@@ -84,7 +85,7 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
         } else if (error.message.includes("rate limit") || error.message.includes("429")) {
           errorMessage = "Too many attempts. Please try again after a few minutes.";
         } else if (error.message.includes("sending email") || error.message.includes("smtp")) {
-          errorMessage = "There was an issue sending the verification email. Your account has been created, but you may need to contact support to verify your email.";
+          errorMessage = "There was an issue with our email service. Your account has been created, but you may need to try signing in to verify your email.";
         } else {
           errorMessage = error.message;
         }

@@ -37,7 +37,8 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
       },
       body: JSON.stringify({
         email,
-        verificationUrl
+        verificationUrl,
+        retryCount: 0 // Adding retry count for tracking retries
       })
     });
     
@@ -45,6 +46,33 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unknown error');
       console.error(`Network error (${response.status}): ${errorText}`);
+      
+      // If this is the first attempt and we got a 500 error, try again with text-only email format
+      if (response.status === 500) {
+        console.log("Attempting to retry with text-only format...");
+        
+        const retryResponse = await fetch(functionUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnZscm9id29oZGxmYmhuaWhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4Mzg4MjcsImV4cCI6MjA1NTQxNDgyN30.72SrWrfSrHhZ_hCcj5slTml4BABh-z_du8v9LGI8bsc`
+          },
+          body: JSON.stringify({
+            email,
+            verificationUrl,
+            useTextOnly: true,
+            retryCount: 1
+          })
+        });
+        
+        if (retryResponse.ok) {
+          console.log("Retry with text-only format successful");
+          return true;
+        }
+        
+        console.error("Retry also failed");
+      }
+      
       return false;
     }
     

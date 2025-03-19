@@ -21,6 +21,8 @@ const corsHeaders = {
 interface VerificationRequest {
   email: string;
   verificationUrl: string;
+  useTextOnly?: boolean;
+  retryCount?: number;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -70,9 +72,9 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
     
-    const { email, verificationUrl } = requestData;
+    const { email, verificationUrl, useTextOnly = false, retryCount = 0 } = requestData;
     
-    console.log(`Received request to send verification email to: ${email}`);
+    console.log(`Received request to send verification email to: ${email} (retry: ${retryCount}, text-only: ${useTextOnly})`);
     console.log(`Verification URL: ${verificationUrl}`);
     
     if (!email || !verificationUrl) {
@@ -123,59 +125,97 @@ const handler = async (req: Request): Promise<Response> => {
     }
     
     // Prepare and send the email
-    console.log(`Attempting to send verification email to ${email} at ${new Date().toISOString()}`);
+    console.log(`Attempting to send verification email to ${email} at ${new Date().toISOString()} (text-only: ${useTextOnly})`);
     let emailResponse;
+    
     try {
-      emailResponse = await resend.emails.send({
-        from: "Jess Journal <onboarding@resend.dev>",
-        to: [email],
-        subject: "Verify your email - Jess Journal",
-        html: `
-          <h2>Welcome to Jess Journal!</h2>
-          <p>Thank you for signing up. Please verify your email address by clicking the link below:</p>
-          <p><a href="${verificationUrl}" style="display: inline-block; background-color: #8247e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
-          <p>If the button above doesn't work, you can also copy and paste this link into your browser:</p>
-          <p>${verificationUrl}</p>
-          <p>This link will expire in 24 hours.</p>
-          <p>Best regards,<br>The Jess Journal Team</p>
-        `,
-      });
-    } catch (emailError: any) {
-      console.error("Exception when calling Resend API:", emailError);
-      console.error("Error details:", emailError.stack || "No stack trace available");
-      
-      // Try one more time with a simplified email
-      try {
-        console.log("Retrying with simplified email...");
+      if (useTextOnly) {
+        // Send text-only email as fallback
+        console.log("Sending text-only email as fallback...");
         emailResponse = await resend.emails.send({
           from: "Jess Journal <onboarding@resend.dev>",
           to: [email],
           subject: "Verify your email - Jess Journal",
           text: `
-            Welcome to Jess Journal!
-            
-            Thank you for signing up. Please verify your email address by visiting this link:
-            ${verificationUrl}
-            
-            This link will expire in 24 hours.
-            
-            Best regards,
-            The Jess Journal Team
+Welcome to Jess Journal!
+
+Thank you for signing up. Please verify your email address by visiting this link:
+${verificationUrl}
+
+This link will expire in 24 hours.
+
+Best regards,
+The Jess Journal Team
           `,
         });
-        
-        if (emailResponse.error) {
-          throw new Error(emailResponse.error.message || "Unknown error with simplified email");
+      } else {
+        // Send HTML email (primary attempt)
+        emailResponse = await resend.emails.send({
+          from: "Jess Journal <onboarding@resend.dev>",
+          to: [email],
+          subject: "Verify your email - Jess Journal",
+          html: `
+            <h2>Welcome to Jess Journal!</h2>
+            <p>Thank you for signing up. Please verify your email address by clicking the link below:</p>
+            <p><a href="${verificationUrl}" style="display: inline-block; background-color: #8247e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
+            <p>If the button above doesn't work, you can also copy and paste this link into your browser:</p>
+            <p>${verificationUrl}</p>
+            <p>This link will expire in 24 hours.</p>
+            <p>Best regards,<br>The Jess Journal Team</p>
+          `,
+        });
+      }
+    } catch (emailError: any) {
+      console.error("Exception when calling Resend API:", emailError);
+      console.error("Error details:", emailError.stack || "No stack trace available");
+      
+      // If this was the HTML attempt, try with plain text instead
+      if (!useTextOnly) {
+        try {
+          console.log("First attempt failed, trying with text-only email...");
+          emailResponse = await resend.emails.send({
+            from: "Jess Journal <onboarding@resend.dev>",
+            to: [email],
+            subject: "Verify your email - Jess Journal",
+            text: `
+Welcome to Jess Journal!
+
+Thank you for signing up. Please verify your email address by visiting this link:
+${verificationUrl}
+
+This link will expire in 24 hours.
+
+Best regards,
+The Jess Journal Team
+            `,
+          });
+          
+          if (emailResponse.error) {
+            throw new Error(emailResponse.error.message || "Unknown error with simplified email");
+          }
+          
+          console.log("Text-only email sent successfully as fallback!");
+        } catch (retryError: any) {
+          console.error("Both HTML and text-only attempts failed:", retryError);
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: "Email sending failed after multiple attempts", 
+              details: retryError.message || emailError.message || "Unknown error occurred while sending email"
+            }),
+            {
+              status: 500,
+              headers: { "Content-Type": "application/json", ...corsHeaders },
+            }
+          );
         }
-        
-        console.log("Simplified email sent successfully!");
-      } catch (retryError: any) {
-        console.error("Second attempt failed:", retryError);
+      } else {
+        // This was already the text-only attempt and it failed
         return new Response(
           JSON.stringify({ 
             success: false, 
-            error: "Email sending failed after multiple attempts", 
-            details: retryError.message || emailError.message || "Unknown error occurred while sending email"
+            error: "Email sending failed", 
+            details: emailError.message || "Unknown error occurred while sending email"
           }),
           {
             status: 500,
@@ -208,7 +248,8 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: true, 
         data: emailResponse,
-        message: "Verification email sent successfully" 
+        message: "Verification email sent successfully",
+        textOnly: useTextOnly 
       }),
       {
         status: 200,
