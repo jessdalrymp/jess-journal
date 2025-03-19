@@ -111,7 +111,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           
           const initialMessage = determineInitialMessage(type, isFirstVisit);
           
-          await addMessageToConversation(
+          const messageAdded = await addMessageToConversation(
             conversation.id,
             initialMessage,
             'assistant' as const
