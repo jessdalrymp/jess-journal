@@ -63,17 +63,21 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
       console.log("Sending verification email to:", email);
       console.log("Verification URL:", verificationUrl);
       
-      // Use the correct Supabase project URL for the function
-      const supabaseUrl = 'https://uobvlrobwohdlfbhniho.supabase.co';
-      const functionUrl = `${supabaseUrl}/functions/v1/send-verification-email`;
+      // Get the Supabase project URL - use full URL to avoid CORS issues
+      const supabaseProjectUrl = 'https://uobvlrobwohdlfbhniho.supabase.co';
+      
+      // Construct the edge function URL
+      const functionEndpoint = '/functions/v1/send-verification-email';
+      const functionUrl = `${supabaseProjectUrl}${functionEndpoint}`;
       
       console.log("Calling verification email function at:", functionUrl);
       
-      // Make the request with proper headers
+      // Make the request with authorization headers
       const response = await fetch(functionUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          // This is the anonymous key, it's safe to include here
           'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnZscm9id29oZGxmYmhuaWhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4Mzg4MjcsImV4cCI6MjA1NTQxNDgyN30.72SrWrfSrHhZ_hCcj5slTml4BABh-z_du8v9LGI8bsc`
         },
         body: JSON.stringify({
@@ -82,15 +86,29 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         })
       });
       
-      // Parse the response
-      const responseData = await response.json();
-      console.log("Verification email API response:", responseData);
-      
+      // Check for network failures
       if (!response.ok) {
-        console.error('Failed to send verification email:', responseData);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        console.error(`Network error (${response.status}): ${errorText}`);
+        
         toast({
-          title: "Verification email issue",
-          description: "We had trouble sending the verification email. Please try again or contact support.",
+          title: "Verification email error",
+          description: `Server error (${response.status}). Please try again later.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      // Parse the response
+      let responseData;
+      try {
+        responseData = await response.json();
+        console.log("Verification email API response:", responseData);
+      } catch (parseError) {
+        console.error('Error parsing response:', parseError);
+        toast({
+          title: "Verification email error",
+          description: "Invalid response from server. Please try again later.",
           variant: "destructive",
         });
         return false;
@@ -110,7 +128,7 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
       return true;
     } catch (error: any) {
       console.error('Error sending verification email:', error);
-      console.error('Error details:', error.stack);
+      console.error('Error details:', error.stack || 'No stack trace available');
       
       toast({
         title: "Verification email error",
