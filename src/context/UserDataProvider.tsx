@@ -1,9 +1,8 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { JournalEntry, UserProfile, User } from '../lib/types';
+import React, { useEffect } from 'react';
 import { UserDataContext } from './UserDataContext';
-import { useUserActions } from '../hooks/useUserActions';
-import { useJournalEntries } from '../hooks/journal';
+import { useUserProfileContext } from '../hooks/useUserProfileContext';
+import { useJournalContext } from '../hooks/useJournalContext';
 import { useConversationData } from '../hooks/useConversationData';
 import { useSubscription } from '../hooks/useSubscription';
 import { useToast } from '@/components/ui/use-toast';
@@ -13,89 +12,47 @@ interface UserDataProviderProps {
 }
 
 export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
-  // User data
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isLoadingUser, setIsLoadingUser] = useState(true);
-  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
-  const userActions = useUserActions();
+  // Profile and user data
+  const {
+    user,
+    profile,
+    isLoadingUser,
+    isLoadingProfile,
+    fetchUser,
+    fetchProfile,
+    saveProfile
+  } = useUserProfileContext();
   
   // Journal entries
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
-  const [isJournalFetched, setIsJournalFetched] = useState(false);
-  const [isJournalLoading, setIsJournalLoading] = useState(false);
-  const isFetchingJournalRef = useRef(false);
-  const lastFetchTimeRef = useRef<number>(0);
+  const {
+    journalEntries,
+    isJournalFetched,
+    setIsJournalFetched,
+    isJournalLoading,
+    journalActionsLoading,
+    fetchJournalEntries
+  } = useJournalContext(user?.id);
   
-  const { fetchJournalEntries: fetchEntries, loading: journalActionsLoading } = useJournalEntries();
-  const { loading: conversationLoading, startConversation, addMessageToConversation } = useConversationData(user?.id);
-  const { subscription, loading: subscriptionLoading, checkSubscriptionStatus, applyCoupon } = useSubscription(user?.id);
+  // Conversation data
+  const { 
+    loading: conversationLoading, 
+    startConversation, 
+    addMessageToConversation 
+  } = useConversationData(user?.id);
+  
+  // Subscription data
+  const { 
+    subscription, 
+    loading: subscriptionLoading, 
+    checkSubscriptionStatus, 
+    applyCoupon 
+  } = useSubscription(user?.id);
+  
   const { toast } = useToast();
   
   // Combined loading state
-  const loading = isLoadingUser || isLoadingProfile || isJournalLoading || conversationLoading || subscriptionLoading || journalActionsLoading;
-
-  // Fetch user data
-  const fetchUser = async (): Promise<User | null> => {
-    try {
-      setIsLoadingUser(true);
-      const userData = await userActions.fetchUser();
-      setUser(userData);
-      return userData;
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      toast({
-        title: "Error loading user data",
-        description: "Please try refreshing the page",
-        variant: "destructive"
-      });
-      return null;
-    } finally {
-      setIsLoadingUser(false);
-    }
-  };
-
-  // Fetch user profile
-  const fetchProfile = async (): Promise<UserProfile | null> => {
-    if (!user) {
-      setProfile(null);
-      return null;
-    }
-
-    try {
-      setIsLoadingProfile(true);
-      const profileData = await userActions.fetchProfile(user.id);
-      setProfile(profileData);
-      return profileData;
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-      setIsLoadingProfile(false);
-      return null;
-    } finally {
-      setIsLoadingProfile(false);
-    }
-  };
-
-  // Save user profile
-  const saveProfile = async (profileData: Partial<UserProfile>): Promise<void> => {
-    if (!user) {
-      return;
-    }
-
-    try {
-      const updatedProfile = await userActions.saveProfile(user.id, profileData);
-      if (updatedProfile) {
-        setProfile(updatedProfile);
-      }
-    } catch (error) {
-      console.error("Error saving profile:", error);
-      toast({
-        title: "Error saving profile",
-        description: "Please try again",
-        variant: "destructive"
-      });
-    }
-  };
+  const loading = isLoadingUser || isLoadingProfile || isJournalLoading || 
+                  conversationLoading || subscriptionLoading || journalActionsLoading;
 
   // Initial data loading
   useEffect(() => {
@@ -108,52 +65,9 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   }, [user]);
 
-  const fetchJournalEntries = async (): Promise<JournalEntry[]> => {
-    if (!user) return [];
-    
-    // Add a min delay between fetches to prevent excessive API calls
-    const now = Date.now();
-    const minFetchInterval = 1000; // 1 second
-    
-    if (isFetchingJournalRef.current) {
-      console.log("Journal entries already being fetched, skipping redundant fetch");
-      return journalEntries;
-    }
-    
-    // If we've fetched recently, skip unless forceFetch is true
-    if (now - lastFetchTimeRef.current < minFetchInterval) {
-      console.log("Fetch throttled - recent fetch detected");
-      return journalEntries;
-    }
-    
-    isFetchingJournalRef.current = true;
-    setIsJournalLoading(true);
-    lastFetchTimeRef.current = now;
-    
-    try {
-      console.log("Fetching journal entries for user:", user.id);
-      const entries = await fetchEntries(user.id);
-      setJournalEntries(entries);
-      setIsJournalFetched(true);
-      console.log("Successfully fetched", entries.length, "journal entries");
-      return entries;
-    } catch (error) {
-      console.error("Error fetching journal entries:", error);
-      toast({
-        title: "Error loading journal entries",
-        description: "Please try refreshing the page",
-        variant: "destructive"
-      });
-      return [];
-    } finally {
-      isFetchingJournalRef.current = false;
-      setIsJournalLoading(false);
-    }
-  };
-
   // Only fetch journal entries when user is loaded and entries haven't been fetched yet
   useEffect(() => {
-    if (user && !isJournalFetched && !isFetchingJournalRef.current) {
+    if (user && !isJournalFetched) {
       console.log("Triggering journal entries fetch");
       fetchJournalEntries();
       checkSubscriptionStatus();
@@ -165,7 +79,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
       const result = await addMessageToConversation(conversationId, content, role);
       
       if (role === 'assistant') {
-        if (!isFetchingJournalRef.current && user) {
+        if (user) {
           console.log("Marking journal entries as not fetched to trigger refresh after conversation update");
           setIsJournalFetched(false);
         }

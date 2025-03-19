@@ -44,7 +44,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
           userId: entryData.user_id,
           title: entryData.prompt || 'Untitled Entry',
           content: 'Content could not be loaded',
-          type: entryData.type || 'journal',
+          type: (entryData.type as 'journal' | 'story' | 'sideQuest' | 'action') || 'journal',
           createdAt: new Date(entryData.created_at),
           prompt: entryData.prompt || null
         };
