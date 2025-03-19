@@ -1,17 +1,37 @@
 
 import { createContext, useContext } from 'react';
-import { UserData } from './types';
+import { JournalEntry, User, UserProfile } from '../lib/types';
 
-// Create the context with undefined as the default value
-export const UserDataContext = createContext<UserData | undefined>(undefined);
+interface UserDataContextType {
+  user: User | null;
+  profile: UserProfile | null;
+  loading: boolean;
+  fetchUser: () => Promise<User | null>;
+  fetchProfile: () => Promise<UserProfile | null>;
+  saveProfile: (profileData: Partial<UserProfile>) => Promise<void>;
+  startConversation: (type: 'story' | 'sideQuest' | 'action' | 'journal') => Promise<any>;
+  addMessageToConversation: (conversationId: string, content: string, role: 'user' | 'assistant') => Promise<boolean>;
+  journalEntries: JournalEntry[];
+  fetchJournalEntries: () => Promise<JournalEntry[]>;
+  subscription: any;
+  checkSubscriptionStatus: () => Promise<any>;
+  applyCoupon: (code: string) => Promise<any>;
+}
 
-// Custom hook to use the UserData context
-export const useUserData = () => {
-  const context = useContext(UserDataContext);
-  if (!context) {
-    throw new Error('useUserData must be used within a UserDataProvider');
-  }
-  return context;
-};
+export const UserDataContext = createContext<UserDataContextType>({
+  user: null,
+  profile: null,
+  loading: false,
+  fetchUser: async () => null,
+  fetchProfile: async () => null,
+  saveProfile: async () => {},
+  startConversation: async () => ({}),
+  addMessageToConversation: async () => false,
+  journalEntries: [],
+  fetchJournalEntries: async () => [],
+  subscription: null,
+  checkSubscriptionStatus: async () => null,
+  applyCoupon: async () => null,
+});
 
-// Note: We don't re-export UserDataProvider here to avoid circular dependencies
+export const useUserData = () => useContext(UserDataContext);

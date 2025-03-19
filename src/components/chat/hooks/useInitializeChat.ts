@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useUserData } from '../../../context/UserDataContext';
 import { useAuth } from '@/context/AuthContext';
@@ -31,7 +30,6 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
   }, [authUser]);
 
   const initializeChat = useCallback(async (conversationId?: string | null) => {
-    // Return early if already initialized or loading
     if (isInitialized && !loading) {
       console.log(`Chat for ${type} already initialized, using existing session`);
       const cachedConversation = getCachedConversation(authUser?.id || '');
@@ -45,7 +43,6 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       return null;
     }
 
-    // Prevent concurrent initialization attempts
     if (initializationInProgress.current) {
       console.log(`${type} chat initialization already in progress`);
       return null;
@@ -63,7 +60,6 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         return null;
       }
 
-      // If we have a specific conversation ID to load
       if (conversationId) {
         const conversation = await loadExistingConversation(conversationId, authUser.id);
         if (conversation) {
@@ -72,14 +68,12 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         }
       }
       
-      // Check for cached conversation if no specific ID was provided or if loading specific ID failed
       const cachedConversation = getCachedConversation(authUser.id);
       if (cachedConversation) {
         setIsInitialized(true);
         return cachedConversation;
       }
       
-      // For sideQuest or action, create with initial message
       if (type === 'sideQuest' || type === 'action') {
         try {
           const initialMessage = determineInitialMessage(type, false);
@@ -99,7 +93,6 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         }
       }
       
-      // For other types (story, journal)
       try {
         console.log(`Starting new ${type} conversation from API`);
         const conversation = await startConversation(type);

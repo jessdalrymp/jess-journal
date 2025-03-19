@@ -147,9 +147,9 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   }, [user, isJournalFetched]);
 
-  const handleAddMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<void> => {
+  const handleAddMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<boolean> => {
     try {
-      await addMessageToConversation(conversationId, content, role);
+      const result = await addMessageToConversation(conversationId, content, role);
       
       if (role === 'assistant') {
         if (!isFetchingJournalRef.current && user) {
@@ -157,6 +157,8 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
           await fetchJournalEntries();
         }
       }
+      
+      return result;
     } catch (error) {
       console.error('Error adding message to conversation:', error);
       toast({
