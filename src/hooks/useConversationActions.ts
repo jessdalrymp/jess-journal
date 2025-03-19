@@ -28,7 +28,7 @@ export function useConversationActions() {
     }
   };
 
-  const addMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<void> => {
+  const addMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<boolean> => {
     setLoading(true);
     try {
       await conversationService.addMessageToConversation(
@@ -36,6 +36,7 @@ export function useConversationActions() {
         role,
         content
       });
+      return true; // Return true to indicate success
     } catch (error) {
       console.error('Error adding message to conversation:', error);
       throw error;
