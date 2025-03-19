@@ -60,11 +60,16 @@ export const createConversationWithInitialMessage = async (
     console.log(`Creating new ${type} conversation`);
     const conversation = await startConversationFn(type);
     
-    await addMessageFn(
+    // Add initial message and ensure we're capturing the boolean result
+    const messageAdded = await addMessageFn(
       conversation.id,
       initialMessage,
       'assistant' as const
     );
+    
+    if (!messageAdded) {
+      console.warn('Initial message may not have been added properly');
+    }
     
     const updatedSession: ConversationSession = {
       ...conversation,

@@ -93,7 +93,7 @@ export const useConversations = (userId: string | undefined) => {
     return newConversation;
   };
 
-  const addMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant') => {
+  const addMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<boolean> => {
     if (!userId) throw new Error('User not authenticated');
     
     const conversationIndex = conversations.findIndex(c => c.id === conversationId);
@@ -118,6 +118,9 @@ export const useConversations = (userId: string | undefined) => {
     
     saveConversationsToStorage(updatedConversations);
     setConversations(updatedConversations);
+    
+    // Return true to indicate success
+    return true;
   };
 
   return {

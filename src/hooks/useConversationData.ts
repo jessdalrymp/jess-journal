@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useConversationActions } from './useConversationActions';
 import { useToast } from '@/hooks/use-toast';
@@ -27,15 +26,14 @@ export function useConversationData(userId?: string | null) {
     }
   };
 
-  const addMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant') => {
+  const addMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<boolean> => {
     try {
-      await conversationActions.addMessageToConversation(conversationId, content, role);
+      const result = await conversationActions.addMessageToConversation(conversationId, content, role);
       
       if (role === 'assistant') {
-        // Return true to indicate journal entries might need refreshing
         return true;
       }
-      return false;
+      return result;
     } catch (error) {
       console.error('Error adding message to conversation:', error);
       toast({
