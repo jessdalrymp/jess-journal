@@ -10,6 +10,7 @@ import { supabase } from '../integrations/supabase/client';
  */
 export const sendCustomVerificationEmail = async (email: string): Promise<boolean> => {
   try {
+    console.log("======= VERIFICATION EMAIL PROCESS STARTING =======");
     // Get the domain origin
     const origin = window.location.origin;
     
@@ -21,6 +22,7 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
     
     // First, try to use built-in Supabase auth email functionality
     try {
+      console.log("Attempting to use Supabase built-in email verification...");
       const { error: resendError } = await supabase.auth.resend({
         type: 'signup',
         email: email,
@@ -34,14 +36,16 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
         return true;
       }
       
-      console.warn("Supabase resend failed, falling back to custom function:", resendError);
+      console.warn("Supabase resend failed, error:", resendError);
+      console.log("Falling back to custom function...");
     } catch (resendError) {
-      console.warn("Exception in Supabase resend, falling back to custom function:", resendError);
+      console.warn("Exception in Supabase resend:", resendError);
+      console.log("Falling back to custom function...");
     }
     
     // If Supabase email fails, fall back to our custom email function
     // Get the Supabase project URL - use full URL to avoid CORS issues
-    const supabaseProjectUrl = 'https://uobvlrobwohdlfbhniho.supabase.co';
+    const supabaseProjectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://uobvlrobwohdlfbhniho.supabase.co';
     
     // Construct the edge function URL
     const functionEndpoint = '/functions/v1/send-verification-email';
@@ -52,26 +56,41 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
     // Get the session token for authentication
     const { data: sessionData } = await supabase.auth.getSession();
     const accessToken = sessionData?.session?.access_token;
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     
-    // If we don't have a session, use the public anon key from the environment
-    const authHeader = accessToken 
-      ? `Bearer ${accessToken}` 
-      : `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''}`;
+    // Prepare authentication header
+    let authHeader = '';
+    if (accessToken) {
+      console.log("Using access token for auth");
+      authHeader = `Bearer ${accessToken}`;
+    } else if (anonKey) {
+      console.log("Using anon key for auth (fallback)");
+      authHeader = `Bearer ${anonKey}`;
+    } else {
+      console.error("No authentication method available");
+      return false;
+    }
     
-    console.log("Using auth header:", authHeader ? "Bearer token present" : "No bearer token");
+    console.log("Auth header type:", authHeader ? "Bearer token present" : "No bearer token");
+    
+    // Prepare the request body
+    const requestBody = JSON.stringify({
+      email,
+      verificationUrl,
+      retryCount: 0
+    });
+    
+    console.log("Request body:", requestBody);
     
     // Make the request with authorization headers
+    console.log("Sending request to edge function...");
     const response = await fetch(functionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': authHeader
       },
-      body: JSON.stringify({
-        email,
-        verificationUrl,
-        retryCount: 0 // Adding retry count for tracking retries
-      })
+      body: requestBody
     });
     
     // Check for network failures
@@ -99,10 +118,18 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
         
         if (retryResponse.ok) {
           console.log("Retry with text-only format successful");
+          const responseData = await retryResponse.json();
+          console.log("Response data:", responseData);
           return true;
         }
         
         console.error("Retry also failed");
+        try {
+          const retryErrorText = await retryResponse.text();
+          console.error("Retry error details:", retryErrorText);
+        } catch (e) {
+          console.error("Could not extract retry error details");
+        }
       }
       
       return false;
@@ -124,10 +151,12 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
     }
     
     console.log("Verification email sent successfully via custom function");
+    console.log("======= VERIFICATION EMAIL PROCESS COMPLETED SUCCESSFULLY =======");
     return true;
   } catch (error: any) {
     console.error('Error sending verification email:', error);
     console.error('Error details:', error.stack || 'No stack trace available');
+    console.log("======= VERIFICATION EMAIL PROCESS FAILED =======");
     return false;
   }
 };

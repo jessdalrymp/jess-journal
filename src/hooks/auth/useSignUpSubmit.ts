@@ -59,20 +59,30 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
         // If Supabase email failed, try our custom email sender
         console.log("Trying custom verification email sender");
         let attemptCount = 0;
+        let maxAttempts = 3; // Increase max attempts
         let emailSent = false;
         
-        // Try up to 2 times with a short delay between attempts
-        while (attemptCount < 2 && !emailSent) {
+        // Try multiple times with a short delay between attempts
+        while (attemptCount < maxAttempts && !emailSent) {
           try {
+            console.log(`Custom email attempt ${attemptCount + 1} of ${maxAttempts}`);
             emailSent = await sendCustomVerificationEmail(email);
-            if (emailSent) break;
             
-            // Wait a short while before retrying
-            if (attemptCount < 1) {
-              await new Promise(resolve => setTimeout(resolve, 1000));
+            if (emailSent) {
+              console.log(`Attempt ${attemptCount + 1} succeeded!`);
+              break;
+            } else {
+              console.log(`Attempt ${attemptCount + 1} failed. Will retry.`);
+            }
+            
+            // Wait a short while before retrying, increasing the delay each time
+            if (attemptCount < maxAttempts - 1) {
+              const delayMs = 1000 * (attemptCount + 1); // Increase delay with each attempt
+              console.log(`Waiting ${delayMs}ms before retry...`);
+              await new Promise(resolve => setTimeout(resolve, delayMs));
             }
           } catch (error) {
-            console.error(`Attempt ${attemptCount + 1} failed:`, error);
+            console.error(`Attempt ${attemptCount + 1} failed with exception:`, error);
           }
           attemptCount++;
         }

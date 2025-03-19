@@ -36,15 +36,26 @@ export function validateApiKey(): EmailResponse | null {
     };
   }
   
+  // Log masked API key for debugging (just first/last few chars)
+  const keyLength = RESEND_API_KEY.length;
+  if (keyLength > 8) {
+    const maskedKey = RESEND_API_KEY.substring(0, 4) + '...' + RESEND_API_KEY.substring(keyLength - 4);
+    console.log(`Using Resend API key (masked): ${maskedKey}`);
+  } else {
+    console.log("API key present but too short to display safely");
+  }
+  
   return null;
 }
 
 // Sends HTML-formatted verification email
 export async function sendHtmlEmail(email: string, verificationUrl: string): Promise<any> {
-  console.log("Sending HTML verification email...");
+  console.log(`Attempting to send HTML verification email to: ${email}`);
+  console.log(`Using verification URL: ${verificationUrl}`);
   
   try {
-    return await resend.emails.send({
+    console.log("Calling Resend API for HTML email...");
+    const response = await resend.emails.send({
       from: "Jess Journal <onboarding@resend.dev>",
       to: [email],
       subject: "Verify your email - Jess Journal",
@@ -58,18 +69,29 @@ export async function sendHtmlEmail(email: string, verificationUrl: string): Pro
         <p>Best regards,<br>The Jess Journal Team</p>
       `,
     });
+    
+    console.log("Resend API HTML email response:", JSON.stringify(response, null, 2));
+    
+    if (response.error) {
+      console.error("Error returned from Resend API:", response.error);
+      throw new Error(response.error.message || "Unknown Resend API error");
+    }
+    
+    return response;
   } catch (error) {
-    console.error("Error in sendHtmlEmail:", error);
+    console.error("Exception in sendHtmlEmail:", error);
+    console.error("Error details:", error.stack || "No stack trace available");
     throw error;
   }
 }
 
 // Sends text-only verification email (fallback)
 export async function sendTextOnlyEmail(email: string, verificationUrl: string): Promise<any> {
-  console.log("Sending text-only verification email...");
+  console.log(`Attempting to send text-only verification email to: ${email}`);
   
   try {
-    return await resend.emails.send({
+    console.log("Calling Resend API for text-only email...");
+    const response = await resend.emails.send({
       from: "Jess Journal <onboarding@resend.dev>",
       to: [email],
       subject: "Verify your email - Jess Journal",
@@ -85,19 +107,35 @@ Best regards,
 The Jess Journal Team
       `,
     });
+    
+    console.log("Resend API text-only email response:", JSON.stringify(response, null, 2));
+    
+    if (response.error) {
+      console.error("Error returned from Resend API:", response.error);
+      throw new Error(response.error.message || "Unknown Resend API error");
+    }
+    
+    return response;
   } catch (error) {
-    console.error("Error in sendTextOnlyEmail:", error);
+    console.error("Exception in sendTextOnlyEmail:", error);
+    console.error("Error details:", error.stack || "No stack trace available");
     throw error;
   }
 }
 
 // Creates error response
 export function createErrorResponse(error: any, details?: string): Response {
+  const errorMessage = error.message || "Unknown error";
+  const errorDetails = details || "Exception caught in send-verification-email function";
+  
+  console.error(`Creating error response: ${errorMessage} - ${errorDetails}`);
+  console.error("Error stack:", error.stack || "No stack trace available");
+  
   return new Response(
     JSON.stringify({ 
       success: false, 
-      error: error.message || "Unknown error",
-      details: details || "Exception caught in send-verification-email function" 
+      error: errorMessage,
+      details: errorDetails 
     }),
     {
       status: 500,
