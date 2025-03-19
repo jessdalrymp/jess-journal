@@ -51,6 +51,51 @@ export const formatContentForEditing = (content: string): string => {
 };
 
 /**
+ * Parses content with JSON code blocks, specifically for extracting summaries
+ */
+export const parseContentWithJsonCodeBlock = (content: string): { title?: string; summary?: string } | null => {
+  if (!content) return null;
+  
+  try {
+    // Check for code blocks first
+    const jsonRegex = /```(?:json)?\s*([\s\S]*?)```/;
+    const match = content.match(jsonRegex);
+    
+    let contentToProcess = content;
+    if (match && match[1]) {
+      contentToProcess = match[1].trim();
+    }
+    
+    // Try to parse as JSON
+    const parsed = JSON.parse(contentToProcess);
+    if (parsed && (parsed.title || parsed.summary)) {
+      return parsed;
+    }
+    
+    // If we can't parse the entire content, try to find JSON objects within it
+    const jsonObjectRegex = /(\{[\s\S]*?\})/g;
+    const jsonMatches = content.match(jsonObjectRegex);
+    if (jsonMatches) {
+      for (const jsonString of jsonMatches) {
+        try {
+          const parsed = JSON.parse(jsonString);
+          if (parsed && (parsed.title || parsed.summary)) {
+            return parsed;
+          }
+        } catch (e) {
+          // Continue to next potential JSON object
+        }
+      }
+    }
+    
+    return null;
+  } catch (e) {
+    console.log("Failed to parse content with JSON code block:", e);
+    return null;
+  }
+};
+
+/**
  * Converts third-person references to second-person for a more personal tone
  */
 export const convertToSecondPerson = (text: string): string => {
@@ -63,4 +108,3 @@ export const convertToSecondPerson = (text: string): string => {
     .replace(/\bthem\b/gi, "you")
     .replace(/\bthemselves\b/gi, "yourself");
 };
-
