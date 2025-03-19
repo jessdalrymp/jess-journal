@@ -212,7 +212,7 @@ export const addMessageToConversation = async (
       role: data.role,
       content: data.content,
       metadata: data.metadata || {},
-      createdAt: new Date(data.created_at)
+      createdAt: new Date(data.timestamp)
     };
   } catch (error) {
     console.error('Error in addMessageToConversation:', error);

@@ -30,7 +30,7 @@ export function useConversationData(userId?: string | null) {
 
   const addMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant') => {
     try {
-      await conversationActions.addMessageToConversation(conversationId, content, role, userId);
+      await conversationActions.addMessageToConversation(conversationId, content, role);
       
       if (role === 'assistant') {
         // Return true to indicate journal entries might need refreshing
