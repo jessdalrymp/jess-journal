@@ -4,7 +4,7 @@ import { Calendar, Clock } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon } from '@/components/journal/JournalHistoryUtils';
 import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
-import { parseContentWithJsonCodeBlock } from '@/services/journal/contentParser';
+import { parseEntryContent } from '@/services/journal/contentParser';
 
 interface HistoryEntryItemProps {
   entry: JournalEntry;
@@ -30,62 +30,40 @@ const formatTime = (date: Date) => {
   return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 };
 
-// Enhanced function to extract and display user's answers rather than prompts
+// Enhanced function to extract and display content from journal entries
 const getEntryContent = (entry: JournalEntry): string => {
   try {
-    // First try to parse JSON content
-    const parsedContent = parseContentWithJsonCodeBlock(entry.content);
+    // First try to parse the content as JSON (for conversation summaries)
+    const parsedContent = parseEntryContent(entry.content);
     if (parsedContent && parsedContent.summary) {
       // If we have a parsed summary, use that
-      return parsedContent.summary.substring(0, 100) + '...';
+      return parsedContent.summary.substring(0, 100) + (parsedContent.summary.length > 100 ? '...' : '');
     }
     
-    // If there's a prompt, make sure we're only showing the user's response
+    // If there's a prompt, try to separate the question from the answer
     if (entry.prompt) {
       let userResponse = entry.content;
       
-      // Find where the prompt ends and the user's response begins
+      // Try to find where the prompt ends and response begins
       if (userResponse.includes(entry.prompt)) {
-        // More aggressive prompt removal to ensure we get just the answer
         userResponse = userResponse.replace(entry.prompt, '').trim();
-        
-        // If there are any remnants of the question format, try to clean those too
-        userResponse = userResponse.replace(/^[\s\n]*[Q|A][:.]?\s*/i, '').trim();
       }
       
-      // If user response is still too long after cleaning, truncate it
+      // Remove any Q/A format prefixes
+      userResponse = userResponse.replace(/^[\s\n]*[Q|A][:.]?\s*/i, '').trim();
+      
       return userResponse.substring(0, 100) + (userResponse.length > 100 ? '...' : '');
     }
     
-    // For entries without prompt or JSON content, just return a snippet
-    return entry.content.substring(0, 100) + '...';
+    // Fallback to just showing the first 100 chars of content
+    return entry.content.substring(0, 100) + (entry.content.length > 100 ? '...' : '');
   } catch (e) {
     console.error('Error processing entry content:', e);
     return entry.content.substring(0, 100) + '...';
   }
 };
 
-// Attempt to get journal entry type from content
-const getEntryType = (entry: JournalEntry): string => {
-  try {
-    // Check if the content contains JSON
-    if (entry.content.includes('"type":')) {
-      const match = entry.content.match(/"type"\s*:\s*"([^"]+)"/);
-      if (match && match[1]) {
-        return match[1];
-      }
-    }
-    
-    // Default to the entry's type field or "journal"
-    return entry.type || 'journal';
-  } catch (e) {
-    return entry.type || 'journal';
-  }
-};
-
 export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
-  const entryType = getEntryType(entry);
-  
   return (
     <Link 
       key={entry.id} 
@@ -100,12 +78,12 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
         <span>{formatTime(new Date(entry.createdAt))}</span>
       </div>
       <div className="flex items-center">
-        <span className="mr-2">{getEntryIcon(entryType)}</span>
+        <span className="mr-2">{getEntryIcon(entry.type)}</span>
         <p className="text-sm font-medium text-jess-foreground group-hover:text-jess-primary transition-colors">
           {getEntryTitle(entry)}
         </p>
       </div>
-      <div className="mt-1 text-xs text-jess-muted line-clamp-1">
+      <div className="mt-1 text-xs text-jess-muted line-clamp-2">
         {getEntryContent(entry)}
       </div>
     </Link>
