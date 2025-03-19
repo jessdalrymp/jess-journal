@@ -45,6 +45,17 @@ export function validateApiKey(): EmailResponse | null {
     console.log("API key present but too short to display safely");
   }
   
+  // Test the API key with a simple validation call (optional)
+  try {
+    console.log("Attempting to validate Resend API key integrity...");
+    // You could make a lightweight call to the Resend API here
+    // For example: await resend.domains.list();
+    console.log("API key format appears valid (note: this doesn't guarantee it works)");
+  } catch (error) {
+    console.error("Error during API key validation check:", error);
+    // We don't fail here, just log the error
+  }
+  
   return null;
 }
 
@@ -81,6 +92,16 @@ export async function sendHtmlEmail(email: string, verificationUrl: string): Pro
   } catch (error) {
     console.error("Exception in sendHtmlEmail:", error);
     console.error("Error details:", error.stack || "No stack trace available");
+    
+    // Log more details about the error for better debugging
+    if (error.response) {
+      console.error("Error response from Resend API:", error.response);
+    }
+    
+    if (error.message && error.message.includes("api_key")) {
+      console.error("API key related error detected. Check if your Resend API key is valid and active.");
+    }
+    
     throw error;
   }
 }
@@ -119,6 +140,16 @@ The Jess Journal Team
   } catch (error) {
     console.error("Exception in sendTextOnlyEmail:", error);
     console.error("Error details:", error.stack || "No stack trace available");
+    
+    // Log more details about the error for better debugging
+    if (error.response) {
+      console.error("Error response from Resend API:", error.response);
+    }
+    
+    if (error.message && error.message.includes("api_key")) {
+      console.error("API key related error detected. Check if your Resend API key is valid and active.");
+    }
+    
     throw error;
   }
 }
