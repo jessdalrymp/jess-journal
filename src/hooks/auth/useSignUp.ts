@@ -42,6 +42,25 @@ export const useSignUp = () => {
       // If we have a session, it means email confirmation is disabled
       if (data?.session) {
         console.log("Sign-up successful with session:", data.user?.id);
+        
+        // Insert the new user into the public.users table
+        if (data.user) {
+          try {
+            const { error: insertError } = await supabase.from('users').upsert({
+              id: data.user.id,
+              email: email,
+              created_at: new Date().toISOString(),
+              assessment_completed: false
+            });
+            
+            if (insertError) {
+              console.error("Error inserting user data:", insertError);
+            }
+          } catch (insertErr) {
+            console.error("Exception inserting user data:", insertErr);
+          }
+        }
+        
         toast({
           title: "Welcome!",
           description: "Your account has been created successfully.",

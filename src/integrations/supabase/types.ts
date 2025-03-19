@@ -244,6 +244,33 @@ export type Database = {
         }
         Relationships: []
       }
+      public_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string
+          id: string
+          profile_picture: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          id?: string
+          profile_picture?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          id?: string
+          profile_picture?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       saved_prompts: {
         Row: {
           created_at: string
