@@ -26,19 +26,17 @@ export const MyStoryChatContainer = ({
         if (existingConversation && existingConversation.messages && existingConversation.messages.length > 0) {
           console.log(`Found existing story conversation with ${existingConversation.messages.length} messages`);
           setHasExistingMessages(true);
+        } else {
+          console.log('No messages found in existing story conversation');
         }
       } catch (error) {
         console.error('Error checking for existing messages:', error);
       }
-    }
-  }, [conversationId]);
-  
-  // Give a short delay when loading existing conversations to allow initialization
-  useEffect(() => {
-    if (conversationId) {
+      
+      // Shorter initialization delay for better UX
       const timer = setTimeout(() => {
         setInitializing(false);
-      }, 1500);
+      }, 1000);
       
       return () => clearTimeout(timer);
     } else {
@@ -67,7 +65,7 @@ export const MyStoryChatContainer = ({
       {initializing ? (
         <div className="flex-1 flex flex-col items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin text-gray-400 mb-4" />
-          <p className="text-gray-500">Loading your conversation...</p>
+          <p className="text-gray-500">Loading your previous conversation...</p>
         </div>
       ) : (
         <ChatInterface 

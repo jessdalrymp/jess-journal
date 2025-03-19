@@ -71,6 +71,8 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       if (storedConversation && storedConversation.messages.length > 0) {
         console.log(`Found stored ${type} conversation with ${storedConversation.messages.length} messages`);
         setIsInitialized(true);
+        
+        // Ensure we return the conversation from storage to maintain continuity
         return storedConversation;
       }
 
@@ -80,6 +82,10 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         const conversation = await loadExistingConversation(conversationId, authUser.id);
         if (conversation) {
           console.log(`Successfully loaded existing conversation with ${conversation.messages.length} messages`);
+          
+          // Save to local storage to ensure continuity
+          saveCurrentConversationToStorage(conversation);
+          
           setIsInitialized(true);
           return conversation;
         } else {
@@ -108,6 +114,10 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         
         if (mostRecentConversation && mostRecentConversation.messages && mostRecentConversation.messages.length > 0) {
           console.log(`Using stored conversation for ${type}`);
+          
+          // Save to current conversation storage to ensure it's accessible
+          saveCurrentConversationToStorage(mostRecentConversation);
+          
           setIsInitialized(true);
           return mostRecentConversation;
         }

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { ConversationSession } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
@@ -51,17 +52,27 @@ export const useChat = (
           if (chatSession) {
             console.log(`Successfully loaded ${type} chat session with ${chatSession.messages?.length || 0} messages`);
             
-            // If we have a custom initial message and this is a new conversation (only has 1 message)
+            // If we have a custom initial message and this is a new conversation (empty or only has system message)
             // AND the initial message is not empty (for continuing conversations)
-            if (initialMessageRef.current && initialMessageRef.current !== "" && chatSession.messages.length === 1) {
+            if (initialMessageRef.current && 
+                initialMessageRef.current !== "" && 
+                (!chatSession.messages.length || 
+                 (chatSession.messages.length === 1 && chatSession.messages[0].role === 'assistant'))) {
               console.log(`Setting custom initial message for ${type} chat`);
               // Replace the default initial message with our custom one
               const updatedSession = {
                 ...chatSession,
-                messages: [
+                messages: chatSession.messages.length ? [
                   {
                     ...chatSession.messages[0],
                     content: initialMessageRef.current
+                  }
+                ] : [
+                  {
+                    id: Date.now().toString(),
+                    role: 'assistant' as const,
+                    content: initialMessageRef.current,
+                    timestamp: new Date()
                   }
                 ]
               };
@@ -80,7 +91,7 @@ export const useChat = (
     }
   }, [initializeChat, user, type, conversationId]);
   
-  // Reset initialization flag when user or type changes
+  // Reset initialization flag when user or type changes but NOT conversationId
   useEffect(() => {
     if (conversationId) {
       // Don't reset if we're loading a specific conversation
