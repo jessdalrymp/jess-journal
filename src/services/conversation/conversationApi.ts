@@ -211,7 +211,6 @@ export const addMessageToConversation = async (
       id: data.id,
       role: data.role,
       content: data.content,
-      metadata: data.metadata || {},
       createdAt: new Date(data.timestamp)
     };
   } catch (error) {
