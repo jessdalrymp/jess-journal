@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../context/UserDataContext';
@@ -15,11 +16,13 @@ export const Dashboard = () => {
   const [dashboardInitialized, setDashboardInitialized] = useState(false);
 
   useEffect(() => {
+    // Simply track the loading state
     if (!loading) {
       setIsLoading(false);
     }
   }, [loading]);
   
+  // Refresh entries when dashboard mounts or becomes visible
   useEffect(() => {
     if (user && !dashboardInitialized) {
       console.log("Dashboard mounted - refreshing journal entries");
@@ -29,6 +32,7 @@ export const Dashboard = () => {
     }
   }, [user, fetchJournalEntries, dashboardInitialized]);
   
+  // Also refresh when the window regains focus
   useEffect(() => {
     const handleFocus = () => {
       if (user) {
@@ -45,14 +49,7 @@ export const Dashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 relative">
-      <h2 className="text-2xl md:text-3xl font-medium mb-5 bg-gradient-to-r from-jess-primary to-jess-foreground bg-clip-text text-transparent">Dashboard</h2>
-      
-      {user && profile && !isLoading && (
-        <div className="mb-6">
-          <GrowthInsights />
-        </div>
-      )}
-      
+      {/* First row - 2 columns on lg screens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 relative z-10">
         <div className="core-actions-section">
           <CoreActionsSection />
@@ -62,12 +59,21 @@ export const Dashboard = () => {
         </div>
       </div>
       
+      {/* Growth Insights */}
+      {user && profile && !isLoading && (
+        <div className="mb-6">
+          <GrowthInsights />
+        </div>
+      )}
+      
+      {/* Second row - 1 column since we removed the JournalHistorySection */}
       <div className="relative z-10">
         <div className="account-section">
           <AccountSection />
         </div>
       </div>
       
+      {/* Decorative background elements for depth */}
       <div className="absolute top-20 right-10 w-64 h-64 bg-jess-primary/5 rounded-full blur-3xl -z-10"></div>
       <div className="absolute bottom-20 left-10 w-72 h-72 bg-jess-secondary/5 rounded-full blur-3xl -z-10"></div>
       
