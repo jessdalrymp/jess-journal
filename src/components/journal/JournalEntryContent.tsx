@@ -34,15 +34,12 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
     });
   };
 
-  // Using type assertion for prompt property which might exist
-  const prompt = entry.prompt;
-
   return (
     <div className="prose max-w-none">
-      {prompt && (
+      {entry.prompt && (
         <div className="bg-jess-subtle rounded-lg p-4 mb-6">
           <h4 className="text-lg font-medium mb-2">Journal Prompt:</h4>
-          <p>{prompt}</p>
+          <p>{entry.prompt}</p>
         </div>
       )}
       {renderContent()}

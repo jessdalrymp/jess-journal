@@ -27,6 +27,7 @@ export interface JournalEntry {
   content: string;
   type: 'story' | 'sideQuest' | 'action' | 'journal';
   createdAt: Date;
+  prompt?: string; // Added the prompt property as optional
 }
 
 export interface ChatMessage {
