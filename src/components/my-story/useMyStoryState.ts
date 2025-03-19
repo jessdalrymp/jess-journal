@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useUserData } from '@/context/UserDataContext';
-import { getCurrentConversationFromStorage, clearCurrentConversationFromStorage } from '@/lib/storageUtils';
+import { getCurrentConversationFromStorage } from '@/lib/storageUtils';
 import { fetchConversation } from '@/services/conversation';
 
 export const useMyStoryState = () => {
@@ -34,7 +33,7 @@ export const useMyStoryState = () => {
                 setExistingConversationId(conversation.id);
               } else {
                 console.log('Conversation not found in database, clearing from storage');
-                clearCurrentConversationFromStorage('story');
+                // We don't automatically clear the storage anymore to prevent session loss
                 setShowWelcomeModal(true);
               }
               setIsLoading(false);
@@ -78,7 +77,10 @@ export const useMyStoryState = () => {
   const handleStartFresh = async () => {
     if (existingConversationId) {
       // Clear out the current conversation from storage
-      clearCurrentConversationFromStorage('story');
+      // We keep this functionality here as it's a deliberate user action
+      import('@/lib/storageUtils').then(({ clearCurrentConversationFromStorage }) => {
+        clearCurrentConversationFromStorage('story');
+      });
       
       // Refresh journal entries to capture any new entries
       try {
