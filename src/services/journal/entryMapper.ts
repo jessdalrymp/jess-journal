@@ -49,16 +49,46 @@ export const mapDatabaseEntryToJournalEntry = (
 
   // For conversation summaries, we can enhance the entry with conversation data
   if (conversationId && conversationData) {
-    console.log('Including conversation data in journal entry:', conversationData);
+    console.log('Processing conversation data for entry:', {
+      entryId: entry.id,
+      conversationId,
+      hasTitle: !!conversationData.title,
+      hasSummary: !!conversationData.summary,
+      messageCount: conversationData.messages?.length || 0
+    });
     
     // If we have a conversation title, use it
     if (conversationData.title) {
       title = conversationData.title;
     }
     
-    // If we have a conversation summary but no content, use it
+    // If we have a conversation summary from the conversation record, use it
     if (conversationData.summary && (!content || content === 'No summary available')) {
       content = conversationData.summary;
+    }
+    
+    // Check for assistant messages (summaries) in the messages array
+    if (conversationData.messages && conversationData.messages.length > 0) {
+      // Look for the most recent assistant message that could be a summary
+      const assistantMessages = conversationData.messages
+        .filter((msg: any) => msg.role === 'assistant')
+        .sort((a: any, b: any) => 
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+      
+      if (assistantMessages.length > 0) {
+        const latestAssistantMessage = assistantMessages[0];
+        console.log('Found potential summary message:', {
+          messageId: latestAssistantMessage.id,
+          contentPreview: latestAssistantMessage.content.substring(0, 50) + '...'
+        });
+        
+        // If we don't have content yet, use the assistant message
+        if (!content || content === 'No summary available') {
+          content = latestAssistantMessage.content;
+          console.log('Using assistant message as summary content');
+        }
+      }
     }
   }
 
