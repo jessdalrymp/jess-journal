@@ -58,6 +58,8 @@ export const JournalHistoryEntryDetail = ({
         </span>
       </div>
       
+      <h1 className="text-xl font-semibold mb-4">{getEntryTitle(entry)}</h1>
+      
       {entry.type === 'story' ? (
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 whitespace-pre-wrap mb-4">
           {formattedContent}
