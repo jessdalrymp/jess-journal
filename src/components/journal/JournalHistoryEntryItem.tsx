@@ -12,7 +12,12 @@ interface JournalHistoryEntryItemProps {
 // Helper function to extract a readable summary from entry content
 const getEntrySummary = (entry: JournalEntry): string => {
   try {
-    // First try to parse JSON content
+    // First check if entry has a summary field directly 
+    if (entry.summary) {
+      return entry.summary;
+    }
+    
+    // Try to parse JSON content
     const parsedContent = parseContentWithJsonCodeBlock(entry.content);
     if (parsedContent && parsedContent.summary) {
       // If we have a parsed summary, use that

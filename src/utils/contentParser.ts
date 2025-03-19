@@ -19,31 +19,36 @@ export const parseEntryContent = (content: string): { title?: string; summary?: 
     // Try to parse as JSON
     const parsed = JSON.parse(contentToProcess);
     if (parsed && (parsed.title || parsed.summary)) {
-      console.log("Successfully parsed JSON content:", parsed);
       return parsed;
-    } else {
-      console.log("Parsed JSON but no title/summary found");
-      return null;
     }
+    
+    // If we got here with valid JSON but no title/summary, check for message content
+    if (parsed && parsed.content) {
+      return {
+        title: parsed.title || "Journal Entry",
+        summary: parsed.content
+      };
+    }
+    
+    return null;
   } catch (e) {
     // If not valid JSON, try to extract title/summary with regex
     try {
       const titleMatch = content.match(/"title"\s*:\s*"([^"]+)"/);
       const summaryMatch = content.match(/"summary"\s*:\s*"([^"]+)"/);
+      const contentMatch = content.match(/"content"\s*:\s*"([^"]+)"/);
       
-      if (titleMatch?.[1] || summaryMatch?.[1]) {
-        const result = {
+      if (titleMatch?.[1] || summaryMatch?.[1] || contentMatch?.[1]) {
+        return {
           title: titleMatch?.[1],
-          summary: summaryMatch?.[1]
+          summary: summaryMatch?.[1] || contentMatch?.[1]
         };
-        console.log("Extracted title/summary with regex:", result);
-        return result;
       }
     } catch (regexError) {
       console.log("Regex extraction failed:", regexError);
     }
     
-    console.log("Content is not valid JSON or doesn't have the expected format");
+    // Return null if we couldn't parse anything useful
     return null;
   }
 };
@@ -60,7 +65,7 @@ export const formatContentForEditing = (content: string): string => {
   // Check if it's valid JSON but not in code blocks
   try {
     const parsed = JSON.parse(content);
-    if (parsed && (parsed.title || parsed.summary)) {
+    if (parsed && (parsed.title || parsed.summary || parsed.content)) {
       // It's valid JSON, format it with code blocks
       return "```json\n" + JSON.stringify(parsed, null, 2) + "\n```";
     }
@@ -96,6 +101,11 @@ export const getContentPreview = (entry: any): string => {
       return parsedContent.summary.substring(0, 150) + (parsedContent.summary.length > 150 ? '...' : '');
     }
     
+    // Check if the entry has a summary field directly
+    if (entry.summary) {
+      return entry.summary.substring(0, 150) + (entry.summary.length > 150 ? '...' : '');
+    }
+    
     // If there's a prompt, make sure we're only showing the user's response
     if (entry.prompt && entry.content.includes(entry.prompt)) {
       const userResponse = entry.content.replace(entry.prompt, '').trim()
@@ -110,4 +120,3 @@ export const getContentPreview = (entry: any): string => {
     return entry.content ? entry.content.substring(0, 150) + '...' : '';
   }
 };
-

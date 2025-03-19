@@ -14,7 +14,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     
     const { data, error } = await supabase
       .from('journal_entries')
-      .select('*')
+      .select('*, conversations(summary)')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
@@ -34,7 +34,17 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     const entries: JournalEntry[] = [];
     for (const entryData of data) {
       try {
+        // Extract the summary from the related conversation if available
+        const summary = entryData.conversations?.summary || null;
+        
+        // Create the journal entry
         const entry = mapDatabaseEntryToJournalEntry(entryData, userId);
+        
+        // Add the summary from the conversation if available
+        if (summary) {
+          entry.summary = summary;
+        }
+        
         entries.push(entry);
       } catch (err) {
         console.error('Error processing journal entry:', err, entryData);
@@ -42,11 +52,11 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         const fallbackEntry: JournalEntry = {
           id: entryData.id,
           userId: entryData.user_id,
-          title: entryData.prompt || 'Untitled Entry',
           content: 'Content could not be loaded',
           type: (entryData.type as 'journal' | 'story' | 'sideQuest' | 'action') || 'journal',
           createdAt: new Date(entryData.created_at),
-          prompt: entryData.prompt || null
+          prompt: entryData.prompt || null,
+          summary: entryData.conversations?.summary || null
         };
         entries.push(fallbackEntry);
       }

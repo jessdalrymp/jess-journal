@@ -12,6 +12,11 @@ interface JournalHistoryEntryDetailProps {
 // Helper function to format the content for display
 const formatEntryContent = (entry: JournalEntry): string => {
   try {
+    // Check if entry has a summary field directly
+    if (entry.summary) {
+      return entry.summary;
+    }
+    
     // Try to parse content as JSON
     const parsedContent = parseEntryContent(entry.content);
     if (parsedContent && parsedContent.summary) {

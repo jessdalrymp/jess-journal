@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   email: string;
@@ -23,11 +22,12 @@ export interface UserProfile {
 export interface JournalEntry {
   id: string;
   userId: string;
-  title: string;
+  title?: string;
   content: string;
-  type: 'story' | 'sideQuest' | 'action' | 'journal';
+  type: 'journal' | 'story' | 'sideQuest' | 'action';
   createdAt: Date;
-  prompt?: string; // Added the prompt property as optional
+  prompt?: string | null;
+  summary?: string | null;
 }
 
 export interface ChatMessage {
