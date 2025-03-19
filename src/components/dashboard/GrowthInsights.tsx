@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useUserData } from '../../context/UserDataContext';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Sparkles } from 'lucide-react';
 import { generateDeepseekResponse, extractDeepseekResponseText } from '../../utils/deepseekApi';
 
@@ -82,12 +83,12 @@ export const GrowthInsights = () => {
   }
 
   return (
-    <div className="flex items-start gap-3">
-      <Sparkles className="h-5 w-5 text-jess-primary mt-1 flex-shrink-0" />
-      <div>
-        <h3 className="text-lg font-medium text-jess-primary mb-1">Growth Insight</h3>
-        <p className="text-jess-foreground">{insight}</p>
-      </div>
-    </div>
+    <Alert className="mb-6 border-jess-primary/20 bg-jess-primary/5">
+      <Sparkles className="h-4 w-4 text-jess-primary" />
+      <AlertTitle className="text-jess-primary font-medium">Growth Insight</AlertTitle>
+      <AlertDescription className="mt-1 text-jess-foreground">
+        {insight}
+      </AlertDescription>
+    </Alert>
   );
 };
