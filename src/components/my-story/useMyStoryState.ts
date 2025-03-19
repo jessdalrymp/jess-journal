@@ -6,6 +6,7 @@ import { useUserData } from '@/context/UserDataContext';
 import { getCurrentConversationFromStorage, clearCurrentConversationFromStorage } from '@/lib/storageUtils';
 import { fetchConversations } from '@/services/conversation/fetchConversations';
 import { Conversation } from '@/services/conversation/types';
+import { useToast } from '@/hooks/use-toast';
 
 export const useMyStoryState = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -19,6 +20,7 @@ export const useMyStoryState = () => {
   const navigate = useNavigate();
   const { user, loading: userLoading } = useAuth();
   const { fetchJournalEntries } = useUserData();
+  const { toast } = useToast();
 
   // Check for existing story conversation
   useEffect(() => {
@@ -90,6 +92,10 @@ export const useMyStoryState = () => {
       // Refresh journal entries to capture any new entries
       try {
         await fetchJournalEntries();
+        toast({
+          title: "New Story Started",
+          description: "Your previous story was saved and a new conversation has been started.",
+        });
       } catch (error) {
         console.error('Error refreshing journal entries:', error);
       }
