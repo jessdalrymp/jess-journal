@@ -30,8 +30,19 @@ export const useGenerateSummary = () => {
       
       const aiMessages = formatMessagesForSummary(session.messages);
       
-      console.log("Requesting AI summary...");
-      const response = await generateDeepseekResponse(aiMessages);
+      console.log("Requesting AI summary with prompt to create concise summary only...");
+      // Modify the request to specifically ask for a concise summary
+      const systemPrompt = `Create a brief summary of this conversation in JSON format with a title and summary. 
+      Focus on the main topics discussed and key insights. Keep it concise (max 100 words) and in this format:
+      {"title": "Short descriptive title", "summary": "Brief overview of the conversation"}`;
+      
+      // Add the system prompt to guide the AI to generate proper summaries
+      const messagesWithPrompt = [
+        { role: 'system', content: systemPrompt },
+        ...aiMessages
+      ];
+      
+      const response = await generateDeepseekResponse(messagesWithPrompt);
       
       if (!response || !response.choices || !response.choices[0] || !response.choices[0].message) {
         console.error("Received invalid response from AI service:", response);
@@ -53,6 +64,12 @@ export const useGenerateSummary = () => {
         }
       } catch (e) {
         console.log("Summary not in JSON format, using raw text");
+        // Attempt to create a basic title and summary from the raw text
+        const lines = summaryText.split('\n').filter(line => line.trim());
+        if (lines.length > 1) {
+          title = lines[0].replace(/^#|Title:|topic:/i, '').trim();
+          summary = lines.slice(1).join('\n').trim();
+        }
       }
       
       console.log("Saving summary to journal...", { 

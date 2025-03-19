@@ -45,6 +45,13 @@ const MyStory = () => {
     }
   }, [urlConversationId, user, isLoading]);
   
+  // Refresh prior conversations when loading is complete
+  useEffect(() => {
+    if (!isLoading && !userLoading && !isLoadingConversation) {
+      console.log("MyStory: Loading complete, priorConversations:", priorConversations.length);
+    }
+  }, [isLoading, userLoading, isLoadingConversation, priorConversations]);
+  
   if (userLoading || isLoading || isLoadingConversation) {
     return <MyStoryLoading />;
   }

@@ -42,6 +42,7 @@ export function SaveChatDialog({
       const currentConversation = getCurrentConversationFromStorage('story');
       
       if (currentConversation && currentConversation.messages.length > 1) {
+        console.log("Generating summary for story conversation before saving...");
         // Generate summary to save to journal
         await generateSummary({
           id: currentConversation.id,
@@ -90,6 +91,7 @@ export function SaveChatDialog({
       });
     } finally {
       setIsSaving(false);
+      onOpenChange(false); // Close the dialog after saving
     }
   };
 

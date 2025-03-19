@@ -30,6 +30,11 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
     );
   }
 
+  // Filter out the current conversation from the list to prevent duplicates
+  const filteredConversations = conversations.filter(
+    conversation => conversation.id !== currentConversationId
+  );
+
   // Handle conversation selection with better touch support
   const handleSelectConversation = (conversationId: string) => {
     console.log(`Mobile: Selecting conversation: ${conversationId}`);
@@ -51,7 +56,7 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
     <div className="bg-white rounded-lg shadow-sm h-full p-4 flex flex-col">
       <h3 className="text-lg font-medium mb-3">Prior Conversations</h3>
       
-      {conversations.length === 0 ? (
+      {filteredConversations.length === 0 ? (
         <div className="flex flex-col items-center justify-center flex-1 text-center p-4">
           <p className="text-gray-500 mb-2">No prior conversations yet</p>
           <p className="text-sm text-gray-400">Your saved conversations will appear here</p>
@@ -59,25 +64,18 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
       ) : (
         <ScrollArea className="flex-1">
           <div className="space-y-3">
-            {conversations.map(conversation => (
+            {filteredConversations.map(conversation => (
               <button 
                 key={conversation.id}
-                className={`w-full text-left p-3 rounded-md cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors border ${
-                  currentConversationId === conversation.id ? 'border-primary bg-primary/5' : 'border-gray-200'
-                }`}
+                className="w-full text-left p-3 rounded-md cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors border border-gray-200"
                 onClick={() => handleSelectConversation(conversation.id)}
                 aria-label={`Select conversation: ${conversation.title || 'My Story'}`}
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-1">
-                    <BookOpen className="h-4 w-4 text-blue-500" />
-                    <h4 className="font-medium text-sm line-clamp-1">
-                      {conversation.title || 'My Story'}
-                    </h4>
-                  </div>
-                  {currentConversationId === conversation.id && (
-                    <span className="bg-primary text-white text-xs px-2 py-0.5 rounded">Current</span>
-                  )}
+                <div className="flex items-center gap-1">
+                  <BookOpen className="h-4 w-4 text-blue-500" />
+                  <h4 className="font-medium text-sm line-clamp-1">
+                    {conversation.title || 'My Story'}
+                  </h4>
                 </div>
                 
                 <div className="flex items-center text-xs text-gray-500 mt-1">
