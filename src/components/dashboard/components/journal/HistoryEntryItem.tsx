@@ -5,6 +5,9 @@ import { JournalEntry } from '@/lib/types';
 import { getEntryIcon } from '@/components/journal/JournalHistoryUtils';
 import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
 import { getContentPreview } from '@/utils/contentParser';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface HistoryEntryItemProps {
   entry: JournalEntry;
@@ -77,7 +80,7 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
           {getEntryTitle(entry)}
         </p>
       </div>
-      <div className="mt-1 text-xs text-jess-muted line-clamp-2 bg-gray-50 p-1.5 rounded">
+      <div className="mt-1 text-xs text-jess-muted bg-gray-50 p-1.5 rounded">
         {content}
       </div>
     </Link>
