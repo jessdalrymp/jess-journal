@@ -24,7 +24,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email, verificationUrl }: VerificationRequest = await req.json();
     
-    console.log(`Sending verification email to ${email}`);
+    console.log(`Sending verification email to ${email} with URL: ${verificationUrl}`);
     
     const emailResponse = await resend.emails.send({
       from: "Jess Journal <onboarding@resend.dev>",
@@ -43,7 +43,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     console.log("Verification email sent successfully:", emailResponse);
     
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ success: true, data: emailResponse }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -53,7 +53,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in send-verification-email function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message, success: false }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

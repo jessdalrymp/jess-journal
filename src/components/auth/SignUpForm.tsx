@@ -53,20 +53,26 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
     return true;
   };
 
-  const sendCustomVerificationEmail = async (email: string, signUpUrl: string) => {
+  const sendCustomVerificationEmail = async (email: string) => {
     try {
       // Get the domain origin
       const origin = window.location.origin;
       
-      // Construct the verification URL (this would normally come from Supabase)
-      // For development purposes, we'll just redirect to the auth callback page
+      // Construct the verification URL
       const verificationUrl = `${origin}/auth/callback?signUpEmail=${encodeURIComponent(email)}`;
       
-      const response = await fetch(`${origin}/api/send-verification-email`, {
+      console.log("Sending verification email to:", email);
+      console.log("Verification URL:", verificationUrl);
+      
+      // Use the direct Supabase function URL for more reliable access
+      const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://uobvlrobwohdlfbhniho.supabase.co';
+      const functionUrl = `${supabaseUrl}/functions/v1/send-verification-email`;
+      
+      const response = await fetch(functionUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}` 
+          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnZscm9id29oZGxmYmhuaWhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4Mzg4MjcsImV4cCI6MjA1NTQxNDgyN30.72SrWrfSrHhZ_hCcj5slTml4BABh-z_du8v9LGI8bsc'}`
         },
         body: JSON.stringify({
           email,
@@ -74,14 +80,27 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         })
       });
       
+      const responseData = await response.json();
+      console.log("Verification email response:", responseData);
+      
       if (!response.ok) {
-        console.error('Failed to send verification email:', await response.text());
+        console.error('Failed to send verification email:', responseData);
+        toast({
+          title: "Verification email issue",
+          description: "We had trouble sending the verification email. Please try again or contact support.",
+          variant: "destructive",
+        });
         return false;
       }
       
       return true;
     } catch (error) {
       console.error('Error sending verification email:', error);
+      toast({
+        title: "Verification email error",
+        description: "There was an error sending the verification email. Please try again later.",
+        variant: "destructive",
+      });
       return false;
     }
   };
@@ -110,14 +129,26 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         console.log("Email verification required, redirecting to verification screen");
         
         // Try to manually send a verification email as a backup
-        await sendCustomVerificationEmail(email, window.location.origin);
+        const emailSent = await sendCustomVerificationEmail(email);
         
-        toast({
-          title: "Account created",
-          description: "Please check your email for verification instructions. If you don't see it, check your spam folder.",
-          duration: 6000,
-        });
-        onVerificationSent(email);
+        if (emailSent) {
+          console.log("Custom verification email sent successfully");
+          toast({
+            title: "Account created",
+            description: "Please check your email for verification instructions. If you don't see it, check your spam folder.",
+            duration: 6000,
+          });
+          onVerificationSent(email);
+        } else {
+          console.log("Failed to send custom verification email");
+          // Still redirect to verification screen, but with a warning
+          toast({
+            title: "Account created, but...",
+            description: "We had trouble sending the verification email. Please check your spam folder or try logging in after a few minutes.",
+            duration: 6000,
+          });
+          onVerificationSent(email);
+        }
       } else if (result?.user && result.session) {
         // User was created and logged in immediately (email verification disabled)
         toast({
