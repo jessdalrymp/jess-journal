@@ -49,17 +49,23 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
     
     console.log("Calling verification email function at:", functionUrl);
     
-    // Get the anonymous JWT from supabase client
-    const { data: { session } } = await supabase.auth.getSession();
-    const anonKey = session?.access_token || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    // Get the session token for authentication
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+    
+    // If we don't have a session, use the public anon key from the environment
+    const authHeader = accessToken 
+      ? `Bearer ${accessToken}` 
+      : `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''}`;
+    
+    console.log("Using auth header:", authHeader ? "Bearer token present" : "No bearer token");
     
     // Make the request with authorization headers
     const response = await fetch(functionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // Use the access token or fall back to SUPABASE_PUBLISHABLE_KEY from client.ts
-        'Authorization': `Bearer ${anonKey}`
+        'Authorization': authHeader
       },
       body: JSON.stringify({
         email,
@@ -81,7 +87,7 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${anonKey}`
+            'Authorization': authHeader
           },
           body: JSON.stringify({
             email,

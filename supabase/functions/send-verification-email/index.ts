@@ -17,6 +17,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Validate API key before proceeding
     const apiKeyError = validateApiKey();
     if (apiKeyError) {
+      console.error("API key validation failed:", apiKeyError);
       return new Response(
         JSON.stringify(apiKeyError),
         {
@@ -30,6 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { data: requestData, error: parseError } = await parseRequestBody(req);
     
     if (parseError || !requestData) {
+      console.error("Request parsing failed:", parseError);
       return createValidationErrorResponse("Invalid request format", parseError || "Could not parse JSON body");
     }
     
@@ -41,6 +43,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Validate request data
     const validationError = validateRequest(requestData);
     if (validationError) {
+      console.error("Request validation failed:", validationError);
       return new Response(
         JSON.stringify(validationError),
         {
@@ -58,9 +61,16 @@ const handler = async (req: Request): Promise<Response> => {
       if (useTextOnly) {
         // Send text-only email as fallback
         emailResponse = await sendTextOnlyEmail(email, verificationUrl);
+        console.log("Text-only email sent successfully");
       } else {
         // Send HTML email (primary attempt)
         emailResponse = await sendHtmlEmail(email, verificationUrl);
+        console.log("HTML email sent successfully");
+      }
+      
+      // Validate the email response - sometimes API returns success but with error details
+      if (emailResponse && emailResponse.error) {
+        throw new Error(emailResponse.error.message || "Error in Resend API response");
       }
     } catch (emailError: any) {
       console.error("Exception when calling Resend API:", emailError);
