@@ -45,14 +45,24 @@ export const useGenerateSummary = () => {
       let summary = summaryText;
       
       try {
-        const jsonSummary = JSON.parse(summaryText);
-        if (jsonSummary.title && jsonSummary.summary) {
-          title = jsonSummary.title;
-          summary = jsonSummary.summary;
-          console.log("Parsed JSON summary:", { title, summary });
+        // Check if the response is already in JSON format
+        if (summaryText.includes('{') && summaryText.includes('}')) {
+          const jsonMatch = summaryText.match(/{[\s\S]*}/);
+          if (jsonMatch) {
+            const jsonString = jsonMatch[0];
+            const jsonSummary = JSON.parse(jsonString);
+            if (jsonSummary.title && jsonSummary.summary) {
+              title = jsonSummary.title;
+              summary = jsonSummary.summary;
+              console.log("Parsed JSON summary:", { title, summary });
+            }
+          }
         }
       } catch (e) {
-        console.log("Summary not in JSON format, using raw text");
+        console.log("Summary not in JSON format or parsing failed, using raw text");
+        // If parsing fails, use the entire text as summary
+        title = "Conversation Summary";
+        summary = summaryText;
       }
       
       console.log("Saving summary to journal...", { 

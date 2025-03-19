@@ -20,13 +20,16 @@ export const saveConversationSummary = async (
       conversationId
     });
     
+    // Format the content as proper JSON in a code block
+    const formattedContent = formatSummaryContent(title, summary);
+    
     // Save the summary to the journal_entries table
     const { data, error } = await supabase
       .from('journal_entries')
       .insert({
         user_id: userId,
         prompt: title || 'Conversation Summary',
-        content: summary || 'No summary available',
+        content: formattedContent,
         conversation_id: conversationId,
         type: conversationType
       });
@@ -61,4 +64,16 @@ export const saveConversationSummary = async (
     console.error('Error in saveConversationSummary:', error);
     throw error;
   }
+};
+
+/**
+ * Helper function to format summary content as JSON with code blocks
+ */
+const formatSummaryContent = (title: string, summary: string): string => {
+  const jsonObj = {
+    title: title || 'Conversation Summary',
+    summary: summary || 'No summary available'
+  };
+  
+  return `\`\`\`json\n${JSON.stringify(jsonObj, null, 2)}\n\`\`\``;
 };

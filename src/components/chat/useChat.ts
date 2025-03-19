@@ -91,14 +91,23 @@ export const useChat = (
   const handleGenerateSummary = async () => {
     if (!session) return null;
     
-    return await generateSummary(session);
+    console.log("Generating summary for session:", session.id);
+    const result = await generateSummary(session);
+    console.log("Summary generation result:", result);
+    return result;
   };
   
   const saveJournalEntryFromChat = async () => {
-    if (!session || session.messages.length < 2 || type !== 'journal') return null;
+    if (!session || session.messages.length < 2 || type !== 'journal') {
+      console.log("Cannot save journal entry - invalid session state");
+      return null;
+    }
+    
+    console.log("Saving journal entry from chat...");
     
     // Generate summary to save as journal entry
     const summary = await handleGenerateSummary();
+    console.log("Journal summary generated:", summary);
     return summary;
   };
   
