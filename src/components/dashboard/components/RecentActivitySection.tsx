@@ -5,47 +5,12 @@ import { Clock, PenSquare } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
-import { parseContentWithJsonCodeBlock } from '@/services/journal/contentParser';
 
 interface RecentActivitySectionProps {
   journalEntries: JournalEntry[];
   isLoading: boolean;
   loading: boolean;
 }
-
-// Helper function to extract and format entry content for display
-const getEntryPreview = (entry: JournalEntry): string => {
-  try {
-    // Try to parse JSON content with code blocks
-    const parsedContent = parseContentWithJsonCodeBlock(entry.content);
-    if (parsedContent && parsedContent.summary) {
-      // If we have a parsed summary, use that
-      return parsedContent.summary.substring(0, 100) + (parsedContent.summary.length > 100 ? '...' : '');
-    }
-    
-    // For story entries, show content directly
-    if (entry.type === 'story') {
-      return entry.content.substring(0, 100) + (entry.content.length > 100 ? '...' : '');
-    }
-    
-    // For other types, do basic prompt cleanup
-    if (entry.prompt) {
-      let userResponse = entry.content;
-      // Find where the prompt ends and the user's response begins
-      if (userResponse.includes(entry.prompt)) {
-        userResponse = userResponse.replace(entry.prompt, '').trim();
-      }
-      
-      return userResponse.substring(0, 100) + (userResponse.length > 100 ? '...' : '');
-    }
-    
-    // Fallback to just the content
-    return entry.content.substring(0, 100) + (entry.content.length > 100 ? '...' : '');
-  } catch (e) {
-    console.error('Error processing entry content:', e);
-    return entry.content.substring(0, 100) + '...';
-  }
-};
 
 export const RecentActivitySection = ({ 
   journalEntries, 
@@ -89,9 +54,6 @@ export const RecentActivitySection = ({
                 <h3 className="font-medium text-sm line-clamp-1">{getEntryTitle(entry)}</h3>
                 <div className="text-xs text-jess-muted mt-1">
                   {new Date(entry.createdAt).toLocaleDateString()}
-                </div>
-                <div className="text-xs text-jess-foreground mt-1 line-clamp-1 bg-gray-50 p-1 rounded">
-                  {getEntryPreview(entry)}
                 </div>
               </Link>
             ))}
