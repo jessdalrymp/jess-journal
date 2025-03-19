@@ -19,7 +19,6 @@ const MyStory = () => {
     userLoading,
     existingConversationId,
     user,
-    authError,
     handleBack,
     handleSaveChat,
     handleStartFresh,
@@ -30,7 +29,7 @@ const MyStory = () => {
     return <MyStoryLoading />;
   }
 
-  if (!user || authError) {
+  if (!user) {
     return <MyStoryUnauthenticated />;
   }
 
