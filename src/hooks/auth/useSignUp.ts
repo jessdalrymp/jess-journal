@@ -7,9 +7,63 @@ export const useSignUp = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const signUp = async (email: string, password: string, name?: string) => {
+  const checkUserExists = async (email: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error checking if user exists:", error);
+        return false;
+      }
+
+      return !!data;
+    } catch (error) {
+      console.error("Exception checking if user exists:", error);
+      return false;
+    }
+  };
+
+  const createUserRecord = async (userId: string, email: string, name?: string) => {
+    try {
+      const { error } = await supabase.from('users').upsert({
+        id: userId,
+        email: email,
+        created_at: new Date().toISOString(),
+        assessment_completed: false,
+        name: name || email.split('@')[0]
+      });
+      
+      if (error) {
+        console.error("Error creating user record:", error);
+        throw error;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Exception creating user record:", error);
+      throw error;
+    }
+  };
+
+  const signUp = async (email: string, password: string, name?: string, checkExists = false) => {
     setLoading(true);
     try {
+      // Optionally check if user exists first
+      if (checkExists) {
+        const exists = await checkUserExists(email);
+        if (exists) {
+          toast({
+            title: "User exists",
+            description: "An account with this email already exists. Try signing in instead.",
+          });
+          return { exists: true };
+        }
+      }
+      
       console.log("Signing up with:", email, name);
       
       // Get the current origin (domain) to use for redirection
@@ -45,20 +99,7 @@ export const useSignUp = () => {
         
         // Insert the new user into the public.users table
         if (data.user) {
-          try {
-            const { error: insertError } = await supabase.from('users').upsert({
-              id: data.user.id,
-              email: email,
-              created_at: new Date().toISOString(),
-              assessment_completed: false
-            });
-            
-            if (insertError) {
-              console.error("Error inserting user data:", insertError);
-            }
-          } catch (insertErr) {
-            console.error("Exception inserting user data:", insertErr);
-          }
+          await createUserRecord(data.user.id, email, name);
         }
         
         toast({
@@ -129,5 +170,5 @@ export const useSignUp = () => {
     }
   };
 
-  return { signUp, loading };
+  return { signUp, checkUserExists, createUserRecord, loading };
 };
