@@ -57,6 +57,19 @@ export const saveConversationSummary = async (
     });
     
     console.log('Successfully saved conversation summary');
+    
+    // After saving, check if the entry is properly stored
+    const { data: checkData, error: checkError } = await supabase
+      .from('journal_entries')
+      .select('*')
+      .eq('conversation_id', conversationId)
+      .single();
+      
+    if (checkError) {
+      console.error('Error verifying saved summary:', checkError);
+    } else {
+      console.log('Verified saved summary exists in database:', checkData);
+    }
   } catch (error) {
     console.error('Error in saveConversationSummary:', error);
     throw error;

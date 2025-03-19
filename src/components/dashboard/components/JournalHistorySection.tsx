@@ -20,6 +20,12 @@ export const JournalHistorySection = () => {
       .slice(0, 5)
     : [];
   
+  // Debug logs to help identify issues
+  console.log('Journal History - entries count:', journalEntries?.length);
+  console.log('Journal History - entries with conversation_id:', 
+    journalEntries?.filter(e => e.conversation_id)?.length);
+  console.log('Journal History - recent entries sample:', recentEntries?.slice(0, 2));
+  
   // Force refresh when the component mounts to ensure latest entries
   useEffect(() => {
     const refreshEntries = async () => {

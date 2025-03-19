@@ -13,6 +13,7 @@ export const mapDatabaseEntryToJournalEntry = (
 ): JournalEntry => {
   let content = '';
   let prompt = entry.prompt || null;
+  let conversationId = entry.conversation_id || null;
   
   // Try to decrypt the content, but handle errors gracefully
   try {
@@ -52,6 +53,7 @@ export const mapDatabaseEntryToJournalEntry = (
     content: content,
     type: entryType as 'journal' | 'story' | 'sideQuest' | 'action',
     createdAt: new Date(entry.created_at),
-    prompt: prompt
+    prompt: prompt,
+    conversation_id: conversationId // Add the conversation_id to the journal entry
   };
 };

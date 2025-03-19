@@ -20,12 +20,17 @@ export const RecentActivitySection = ({
 }: RecentActivitySectionProps) => {
   const navigate = useNavigate();
 
-  // Get recent journal entries safely
+  // Get recent journal entries safely, including entries from conversations
   const recentEntries = journalEntries && journalEntries.length > 0
     ? [...journalEntries]
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, 3)
     : [];
+
+  // Debug logs to check what entries are available
+  console.log('Recent activity entries:', recentEntries);
+  console.log('Total journal entries:', journalEntries?.length);
+  console.log('Entries with conversation_id:', journalEntries?.filter(e => e.conversation_id)?.length);
 
   const handleStartJournal = () => {
     navigate('/journal-challenge');
@@ -83,4 +88,3 @@ export const RecentActivitySection = ({
     </div>
   );
 };
-

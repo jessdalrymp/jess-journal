@@ -28,7 +28,8 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
       return [];
     }
     
-    console.log(`Found ${data.length} journal entries`);
+    console.log(`Found ${data.length} journal entries, checking if any are conversation summaries`);
+    console.log('Sample entries:', data.slice(0, 2));
 
     // Map entries and handle any errors in the mapping process
     const entries: JournalEntry[] = [];
@@ -46,7 +47,8 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
           content: 'Content could not be loaded',
           type: (entryData.type as 'journal' | 'story' | 'sideQuest' | 'action') || 'journal',
           createdAt: new Date(entryData.created_at),
-          prompt: entryData.prompt || null
+          prompt: entryData.prompt || null,
+          conversation_id: entryData.conversation_id || null
         };
         entries.push(fallbackEntry);
       }
