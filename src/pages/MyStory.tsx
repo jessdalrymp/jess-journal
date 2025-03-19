@@ -46,48 +46,49 @@ const MyStory = () => {
       localStorage.setItem('hasVisitedStoryPage', 'true');
       setIsLoading(false);
     } else {
-      const checkExistingConversations = async () => {
-        if (isCheckingConversations) {
-          return;
-        }
-        
-        setIsCheckingConversations(true);
-        try {
-          console.log("Checking for existing story conversations for user:", user.id);
-          const { data, error } = await supabase
-            .from('conversations')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('type', 'story')
-            .limit(1);
-          
-          if (error) {
-            console.error('Error checking for existing conversations:', error);
-            setIsLoading(false);
-            return;
-          }
-          
-          if (data && data.length > 0) {
-            console.log("Found existing story conversations:", data.length);
-            toast({
-              title: "Welcome back!",
-              description: "Your previous conversation has been loaded.",
-              duration: 3000,
-            });
-          } else {
-            console.log("No existing story conversations found");
-          }
-        } catch (error) {
-          console.error('Error in conversation check:', error);
-        } finally {
-          setIsCheckingConversations(false);
-          setIsLoading(false);
-        }
-      };
-      
-      checkExistingConversations();
+      // Check for existing conversations after we confirm the user is logged in
+      checkExistingStoryConversations();
     }
-  }, [user, toast, userLoading, isCheckingConversations]);
+  }, [user, userLoading]);
+  
+  const checkExistingStoryConversations = async () => {
+    if (isCheckingConversations || !user) {
+      return;
+    }
+    
+    setIsCheckingConversations(true);
+    try {
+      console.log("Checking for existing story conversations for user:", user.id);
+      const { data, error } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('profile_id', user.id)
+        .eq('type', 'story')
+        .limit(1);
+      
+      if (error) {
+        console.error('Error checking for existing conversations:', error);
+        setIsLoading(false);
+        return;
+      }
+      
+      if (data && data.length > 0) {
+        console.log("Found existing story conversations:", data.length);
+        toast({
+          title: "Welcome back!",
+          description: "Your previous conversation has been loaded.",
+          duration: 3000,
+        });
+      } else {
+        console.log("No existing story conversations found");
+      }
+    } catch (error) {
+      console.error('Error in conversation check:', error);
+    } finally {
+      setIsCheckingConversations(false);
+      setIsLoading(false);
+    }
+  };
   
   const handleCloseWelcomeModal = () => {
     setShowWelcomeModal(false);

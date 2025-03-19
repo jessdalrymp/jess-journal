@@ -1,5 +1,24 @@
 import { supabase } from '../../integrations/supabase/client';
-import { Conversation, ConversationMessage } from '../../lib/types';
+
+// Define types for Conversation and ConversationMessage
+export interface ConversationMessage {
+  id: string;
+  role: string;
+  content: string;
+  metadata?: any;
+  createdAt: Date;
+}
+
+export interface Conversation {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  messages: ConversationMessage[];
+  summary: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 // Local cache for conversation data
 const conversationCache = new Map<string, Conversation>();
@@ -83,7 +102,7 @@ export const fetchConversation = async (conversationId: string, userId: string):
       .from('messages')
       .select('*')
       .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true });
+      .order('timestamp', { ascending: true });
 
     if (messagesError) {
       console.error('Error fetching messages:', messagesError);
@@ -96,7 +115,12 @@ export const fetchConversation = async (conversationId: string, userId: string):
       userId: data.profile_id,
       type: data.type,
       title: data.title,
-      messages: messages || [],
+      messages: messages ? messages.map(msg => ({
+        id: msg.id,
+        role: msg.role,
+        content: msg.content,
+        createdAt: new Date(msg.timestamp)
+      })) : [],
       summary: data.summary || '',
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at)
