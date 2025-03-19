@@ -19,8 +19,8 @@ export const mapDatabaseEntryToJournalEntry = (
     content = decryptContent(entry.content, userId);
   } catch (error) {
     console.error('Error decrypting content:', error);
-    // Use raw content if decryption fails
-    content = entry.content || '';
+    // Use raw content if decryption fails or a fallback message
+    content = entry.raw_content || entry.content || 'Content could not be decrypted';
   }
   
   // Try to parse the content as JSON

@@ -14,6 +14,7 @@ export const Dashboard = () => {
   const { user } = useAuth();
   const { journalEntries, loading, profile, fetchJournalEntries } = useUserData();
   const [isLoading, setIsLoading] = useState(true);
+  const [dashboardInitialized, setDashboardInitialized] = useState(false);
 
   useEffect(() => {
     // Simply track the loading state
@@ -22,12 +23,29 @@ export const Dashboard = () => {
     }
   }, [loading]);
   
-  // Always refresh entries when dashboard mounts
+  // Refresh entries when dashboard mounts or becomes visible
   useEffect(() => {
-    if (user) {
+    if (user && !dashboardInitialized) {
       console.log("Dashboard mounted - refreshing journal entries");
-      fetchJournalEntries();
+      fetchJournalEntries()
+        .then(() => setDashboardInitialized(true))
+        .catch(err => console.error("Error refreshing journal entries:", err));
     }
+  }, [user, fetchJournalEntries, dashboardInitialized]);
+  
+  // Also refresh when the window regains focus
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user) {
+        console.log("Window focused - refreshing journal entries");
+        fetchJournalEntries().catch(err => 
+          console.error("Error refreshing journal entries on focus:", err)
+        );
+      }
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, [user, fetchJournalEntries]);
 
   return (

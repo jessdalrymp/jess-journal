@@ -38,7 +38,17 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         entries.push(entry);
       } catch (err) {
         console.error('Error processing journal entry:', err, entryData);
-        // Continue with other entries even if one fails
+        // Create a fallback entry with minimal information
+        const fallbackEntry: JournalEntry = {
+          id: entryData.id,
+          userId: entryData.user_id,
+          title: entryData.prompt || 'Untitled Entry',
+          content: 'Content could not be loaded',
+          type: entryData.type || 'journal',
+          createdAt: new Date(entryData.created_at),
+          prompt: entryData.prompt || null
+        };
+        entries.push(fallbackEntry);
       }
     }
     

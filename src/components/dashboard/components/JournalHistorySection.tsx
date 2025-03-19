@@ -6,10 +6,12 @@ import { HistoryActionCard } from './journal/HistoryActionCard';
 import { HistoryEntriesList } from './journal/HistoryEntriesList';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 export const JournalHistorySection = () => {
   const { journalEntries, loading, fetchJournalEntries } = useUserData();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { toast } = useToast();
   
   // Filter and sort recent entries
   const recentEntries = journalEntries 
@@ -21,8 +23,12 @@ export const JournalHistorySection = () => {
   // Force refresh when the component mounts to ensure latest entries
   useEffect(() => {
     const refreshEntries = async () => {
-      console.log("JournalHistorySection - Refreshing entries on mount");
-      await fetchJournalEntries();
+      try {
+        console.log("JournalHistorySection - Refreshing entries on mount");
+        await fetchJournalEntries();
+      } catch (error) {
+        console.error("Error refreshing journal entries:", error);
+      }
     };
     
     refreshEntries();
@@ -33,6 +39,18 @@ export const JournalHistorySection = () => {
     try {
       console.log("JournalHistorySection - Manual refresh triggered");
       await fetchJournalEntries();
+      toast({
+        title: "Refreshed",
+        description: "Your journal entries have been refreshed",
+        duration: 2000
+      });
+    } catch (error) {
+      console.error("Error refreshing journal entries:", error);
+      toast({
+        title: "Refresh failed",
+        description: "Could not refresh journal entries. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsRefreshing(false);
     }
