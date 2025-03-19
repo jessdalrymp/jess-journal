@@ -20,6 +20,7 @@ const MyStory = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingConversations, setIsCheckingConversations] = useState(false);
   const [existingConversationId, setExistingConversationId] = useState<string | null>(null);
+  const [validConversation, setValidConversation] = useState<boolean>(false);
   const initializationAttempted = useRef(false);
   const { user, loading: userLoading } = useAuth();
   const { toast } = useToast();
@@ -77,16 +78,27 @@ const MyStory = () => {
       
       if (data && data.length > 0) {
         console.log("Found existing story conversation:", data[0].id);
-        setExistingConversationId(data[0].id);
         
-        // Try to load the conversation to make sure it's available
-        const conversation = await fetchConversation(data[0].id, user.id);
-        if (conversation) {
-          toast({
-            title: "Welcome back!",
-            description: "Your previous conversation has been loaded.",
-            duration: 3000,
-          });
+        // Try to load the conversation to make sure it's valid
+        try {
+          const conversation = await fetchConversation(data[0].id, user.id);
+          if (conversation) {
+            console.log("Successfully validated conversation:", data[0].id);
+            setExistingConversationId(data[0].id);
+            setValidConversation(true);
+            
+            toast({
+              title: "Welcome back!",
+              description: "Your previous conversation has been loaded.",
+              duration: 3000,
+            });
+          } else {
+            console.log("Conversation found but couldn't be loaded, creating new conversation");
+            setExistingConversationId(null);
+          }
+        } catch (err) {
+          console.error("Error validating conversation:", err);
+          setExistingConversationId(null);
         }
       } else {
         console.log("No existing story conversations found");
@@ -114,6 +126,14 @@ const MyStory = () => {
 
   const handleSaveChat = () => {
     setShowSaveChatDialog(true);
+  };
+
+  // Force restart with a new conversation if needed
+  const handleStartFresh = () => {
+    setExistingConversationId(null);
+    setValidConversation(false);
+    localStorage.removeItem('currentConversation_story');
+    window.location.reload();
   };
 
   if (userLoading || isLoading) {
@@ -158,7 +178,14 @@ const MyStory = () => {
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
       <main className="flex-1 container mx-auto flex flex-col">
-        <h1 className="text-2xl font-medium my-4">Let's Get to Know You</h1>
+        <div className="flex justify-between items-center my-4">
+          <h1 className="text-2xl font-medium">Let's Get to Know You</h1>
+          {existingConversationId && (
+            <Button variant="outline" size="sm" onClick={handleStartFresh}>
+              Start Fresh Conversation
+            </Button>
+          )}
+        </div>
         <div className="bg-white rounded-lg shadow-sm flex-1 flex flex-col overflow-hidden">
           <ChatInterface 
             type="story" 

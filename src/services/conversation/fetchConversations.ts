@@ -68,10 +68,28 @@ export const fetchConversation = async (conversationId: string, userId: string):
 
     if (messagesError) {
       console.error('Error fetching messages:', messagesError);
-      console.log('Will create conversation without messages');
+      // Return conversation without messages if we can't fetch them
+      const emptyConversation: Conversation = {
+        id: data.id,
+        userId: data.profile_id,
+        type: data.type,
+        title: data.title,
+        messages: [],
+        summary: data.summary || '',
+        createdAt: new Date(data.created_at),
+        updatedAt: new Date(data.updated_at)
+      };
+      return emptyConversation;
     }
 
     console.log(`Fetched ${messages?.length || 0} messages for conversation ${conversationId}`);
+
+    // Return null if no messages and this is not a brand new conversation
+    if ((!messages || messages.length === 0) && 
+        new Date().getTime() - new Date(data.created_at).getTime() > 30000) {
+      console.log(`Conversation ${conversationId} has no messages and is not new, treating as invalid`);
+      return null;
+    }
 
     // Build conversation object
     const conversation: Conversation = {
