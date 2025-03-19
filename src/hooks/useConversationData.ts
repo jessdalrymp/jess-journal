@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { ConversationSession } from '../lib/types';
 import { useConversationActions } from './useConversationActions';
 import { useToast } from '@/hooks/use-toast';
 

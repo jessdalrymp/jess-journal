@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
-import { ConversationSession } from '../lib/types';
-import * as conversationApi from '../services/conversation/conversationApi';
+import * as conversationService from '../services/conversation';
 
 export interface ConversationParams {
   userId: string;
@@ -19,7 +18,7 @@ export function useConversationActions() {
       const title = `New ${type} - ${new Date().toLocaleDateString()}`;
       const conversationParams: ConversationParams = { userId, type, title };
       
-      const result = await conversationApi.createConversation(conversationParams);
+      const result = await conversationService.createConversation(conversationParams);
       return result;
     } catch (error) {
       console.error('Error starting conversation:', error);
@@ -32,7 +31,8 @@ export function useConversationActions() {
   const addMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<void> => {
     setLoading(true);
     try {
-      await conversationApi.addMessageToConversation(conversationId, {
+      await conversationService.addMessageToConversation(
+        conversationId, {
         role,
         content
       });
