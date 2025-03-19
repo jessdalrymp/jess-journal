@@ -7,9 +7,63 @@ export const useSignUp = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const signUp = async (email: string, password: string, name?: string) => {
+  const checkUserExists = async (email: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error checking if user exists:", error);
+        return false;
+      }
+
+      return !!data;
+    } catch (error) {
+      console.error("Exception checking if user exists:", error);
+      return false;
+    }
+  };
+
+  const createUserRecord = async (userId: string, email: string, name?: string) => {
+    try {
+      const { error } = await supabase.from('profiles').upsert({
+        id: userId,
+        email: email,
+        created_at: new Date().toISOString(),
+        assessment_completed: false,
+        // We can set name in user_metadata but not in profiles directly since there's no name column
+      });
+      
+      if (error) {
+        console.error("Error creating user record:", error);
+        throw error;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Exception creating user record:", error);
+      throw error;
+    }
+  };
+
+  const signUp = async (email: string, password: string, name?: string, checkExists = false): Promise<{ user?: any; session?: any; exists?: boolean; emailVerificationRequired?: boolean }> => {
     setLoading(true);
     try {
+      // Optionally check if user exists first
+      if (checkExists) {
+        const exists = await checkUserExists(email);
+        if (exists) {
+          toast({
+            title: "User exists",
+            description: "An account with this email already exists. Try signing in instead.",
+          });
+          return { exists: true };
+        }
+      }
+      
       console.log("Signing up with:", email, name);
       
       // Get the current origin (domain) to use for redirection
@@ -18,6 +72,7 @@ export const useSignUp = () => {
       
       // Check if we're running in a development environment
       const isDevelopment = origin.includes('localhost') || origin.includes('127.0.0.1');
+      console.log("Is development environment:", isDevelopment);
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -41,11 +96,17 @@ export const useSignUp = () => {
       // If we have a session, it means email confirmation is disabled
       if (data?.session) {
         console.log("Sign-up successful with session:", data.user?.id);
+        
+        // Insert the new user into the profiles table
+        if (data.user) {
+          await createUserRecord(data.user.id, email, name);
+        }
+        
         toast({
           title: "Welcome!",
           description: "Your account has been created successfully.",
         });
-        return data;
+        return { ...data, emailVerificationRequired: false };
       } 
       // If we only have a user but no session, email confirmation is required
       else if (data?.user) {
@@ -59,7 +120,7 @@ export const useSignUp = () => {
           const emailVerified = data.user.identities[0].identity_data.email_verified;
           
           if (emailVerified === false) {
-            console.log("Email verification required, email sent");
+            console.log("Email verification required, email should be sent");
             toast({
               title: "Almost there!",
               description: "Please check your email to verify your account. If you don't see it, check your spam folder.",
@@ -76,7 +137,7 @@ export const useSignUp = () => {
         } else {
           // For development environments or when email verification is disabled
           if (isDevelopment) {
-            console.log("Development environment detected - may need to disable email verification in Supabase dashboard");
+            console.log("Development environment detected - email verification might be disabled in Supabase dashboard");
             toast({
               title: "Development notice",
               description: "For local testing, consider disabling email verification in the Supabase dashboard",
@@ -90,18 +151,24 @@ export const useSignUp = () => {
             duration: 6000,
           });
         }
-        return data;
+        return { user: data.user, emailVerificationRequired: true };
       } else {
         console.error("No user or session returned after sign up");
         throw new Error("Account creation failed. Please try again.");
       }
     } catch (error: any) {
       console.error('Registration error:', error);
+      
+      // Add specific handling for email sending errors
+      if (error.message && error.message.includes("sending email")) {
+        console.error("Email sending error detected, might be an SMTP configuration issue");
+      }
+      
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  return { signUp, loading };
+  return { signUp, checkUserExists, createUserRecord, loading };
 };

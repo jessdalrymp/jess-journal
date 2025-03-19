@@ -29,6 +29,24 @@ const formatTime = (date: Date) => {
   return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 };
 
+// Get entry content based on type - show summary/answer instead of question
+const getEntryContent = (entry: JournalEntry): string => {
+  try {
+    // Check if the content contains JSON
+    if (entry.content.includes('"summary":')) {
+      const match = entry.content.match(/"summary"\s*:\s*"([^"]+)"/);
+      if (match && match[1]) {
+        return match[1].substring(0, 40) + '...';
+      }
+    }
+    
+    // For non-JSON content, just return a snippet
+    return entry.content.substring(0, 40) + '...';
+  } catch (e) {
+    return entry.content.substring(0, 40) + '...';
+  }
+};
+
 // Attempt to get journal entry type from content
 const getEntryType = (entry: JournalEntry): string => {
   try {
@@ -68,6 +86,9 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
         <p className="text-sm font-medium text-jess-foreground group-hover:text-jess-primary transition-colors">
           {getEntryTitle(entry)}
         </p>
+      </div>
+      <div className="mt-1 text-xs text-jess-muted line-clamp-1">
+        {getEntryContent(entry)}
       </div>
     </Link>
   );

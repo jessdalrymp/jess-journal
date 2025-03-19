@@ -7,6 +7,7 @@ import { validateEmail } from '../../utils/authValidation';
 import { Input } from '../ui/input';
 import { ActionButton } from '../ui/ActionButton';
 import { ErrorMessage } from './ErrorMessage';
+import { usePasswordReset } from '../../hooks/auth/usePasswordReset';
 
 interface ForgotPasswordFormProps {
   onSuccess: (email: string) => void;
@@ -17,7 +18,8 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const { resetPassword } = useAuth();
+  const { resetPassword: authResetPassword } = useAuth();
+  const { resetPassword, loading: resetLoading } = usePasswordReset();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,6 +35,7 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
     
     try {
       console.log("Attempting to send reset email to:", email);
+      // Use the direct hook implementation rather than going through context
       await resetPassword(email);
       console.log("Reset email sent successfully");
       onSuccess(email);
@@ -79,9 +82,9 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
         <ActionButton 
           type="primary" 
           className="w-full py-3"
-          disabled={loading}
+          disabled={loading || resetLoading}
         >
-          {loading ? 'Sending...' : 'Send Reset Link'}
+          {loading || resetLoading ? 'Sending...' : 'Send Reset Link'}
         </ActionButton>
       </div>
     </form>

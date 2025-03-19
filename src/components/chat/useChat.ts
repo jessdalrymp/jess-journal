@@ -6,7 +6,11 @@ import { useInitializeChat } from './hooks/useInitializeChat';
 import { useSendMessage } from './hooks/useSendMessage';
 import { useGenerateSummary } from './hooks/useGenerateSummary';
 
-export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal', initialMessage?: string) => {
+export const useChat = (
+  type: 'story' | 'sideQuest' | 'action' | 'journal', 
+  initialMessage?: string,
+  conversationId?: string | null
+) => {
   const [session, setSession] = useState<ConversationSession | null>(null);
   const initializationAttempted = useRef(false);
   const initialMessageRef = useRef(initialMessage);
@@ -25,16 +29,17 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal', init
   }, [initialMessage]);
   
   useEffect(() => {
-    // Only load chat if user exists and we haven't attempted initialization
+    // Only load chat if user exists and we haven't attempted initialization yet
     if (user && !initializationAttempted.current && !session) {
-      console.log(`Attempting to initialize ${type} chat, user:`, user.id);
+      console.log(`Attempting to initialize ${type} chat, user:`, user.id, 
+                 conversationId ? `with existing conversation: ${conversationId}` : 'with new conversation');
       
       const loadChat = async () => {
         initializationAttempted.current = true;
         try {
-          const chatSession = await initializeChat();
+          const chatSession = await initializeChat(conversationId);
           if (chatSession) {
-            console.log(`Successfully loaded ${type} chat session`);
+            console.log(`Successfully loaded ${type} chat session with ${chatSession.messages?.length || 0} messages`);
             
             // If we have a custom initial message and this is a new conversation (only has 1 message)
             if (initialMessageRef.current && chatSession.messages.length === 1) {
@@ -62,12 +67,12 @@ export const useChat = (type: 'story' | 'sideQuest' | 'action' | 'journal', init
       
       loadChat();
     }
-  }, [initializeChat, user, type]);
+  }, [initializeChat, user, type, conversationId]);
   
   // Reset initialization flag when user or type changes
   useEffect(() => {
     initializationAttempted.current = false;
-  }, [user, type]);
+  }, [user, type, conversationId]);
   
   const handleSendMessage = async (message: string) => {
     if (!session) return;

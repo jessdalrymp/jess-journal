@@ -1,130 +1,164 @@
 
 import { useState } from 'react';
-import { supabase } from "../../../integrations/supabase/client";
-import { useToast } from "../../../hooks/use-toast";
+import { supabase } from '../../../integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export interface PaymentType {
   id: string;
   user_id: string;
   amount: number;
   currency: string;
-  description: string;
+  description: string | null;
   status: string;
-  is_annual: boolean;
   square_payment_id: string | null;
   created_at: string;
-  updated_at: string;
-  user_email?: string;
+  updated_at: string | null;
   refunded_at?: string | null;
+  user_email?: string;
 }
 
 export const usePaymentManagement = () => {
-  const { toast } = useToast();
   const [payments, setPayments] = useState<PaymentType[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   const fetchPayments = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      console.log("Fetching payments...");
-      
-      // Get payments
-      const { data: paymentData, error: paymentError } = await supabase
+      const { data, error } = await supabase
         .from('payments')
-        .select('*')
-        .order('created_at', { ascending: false });
-        
-      if (paymentError) {
-        console.error('Payment query failed:', paymentError);
-        throw paymentError;
-      }
-
-      // Get user emails to match with payments
-      const userIds = [...new Set(paymentData.map((payment: any) => payment.user_id))];
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id, email')
-        .in('id', userIds);
+        .select('*, payment_plans(name, price)');
       
-      if (userError) {
-        console.error('User query failed:', userError);
-        // Continue with what we have
+      if (error) {
+        throw error;
       }
       
-      // Create a map of user_id to email
-      const userEmailMap = new Map();
-      if (userData) {
-        userData.forEach((user: any) => {
-          userEmailMap.set(user.id, user.email);
-        });
+      // For each payment, get the user email
+      if (data) {
+        const paymentsWithEmail = await Promise.all(
+          data.map(async (payment) => {
+            const email = await getUserEmail(payment.user_id);
+            return {
+              ...payment,
+              user_email: email
+            };
+          })
+        );
+        setPayments(paymentsWithEmail);
+      } else {
+        setPayments([]);
       }
-      
-      // Combine payment data with user emails
-      const mappedPayments = paymentData.map((payment: any) => ({
-        ...payment,
-        user_email: userEmailMap.get(payment.user_id) || 'Unknown',
-      }));
-      
-      console.log("Payments with user data:", mappedPayments);
-      setPayments(mappedPayments);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching payments:', error);
       toast({
-        title: "Error fetching payments",
-        description: "Could not retrieve payment data",
-        variant: "destructive"
+        title: 'Error',
+        description: error.message || 'Failed to fetch payments',
+        variant: 'destructive',
       });
-      setPayments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getUserEmail = async (userId: string) => {
+    try {
+      // Fetch from profiles table instead of users
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return data?.email || 'Unknown';
+    } catch (error) {
+      console.error('Error fetching user email:', error);
+      return 'Unknown';
+    }
+  };
+
+  const updatePaymentStatus = async (paymentId: string, newStatus: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('payments')
+        .update({ status: newStatus })
+        .eq('id', paymentId);
+
+      if (error) {
+        throw error;
+      }
+
+      // Optimistically update the payments state
+      setPayments(payments.map(payment =>
+        payment.id === paymentId ? { ...payment, status: newStatus } : payment
+      ));
+
+      toast({
+        title: 'Success',
+        description: `Payment status updated to ${newStatus}`,
+      });
+    } catch (error: any) {
+      console.error('Error updating payment status:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update payment status',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const refundPayment = async (paymentId: string, squarePaymentId: string) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      
-      // Call the Edge Function to process the refund
-      const { data, error } = await supabase.functions.invoke("refund-payment", {
-        body: { 
+      // Call the Supabase Edge Function for refunding
+      const response = await fetch('/api/refund-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           paymentId,
-          squarePaymentId
-        }
+          squarePaymentId,
+        }),
       });
-      
-      if (error) {
-        console.error("Error processing refund:", error);
-        toast({
-          title: "Refund failed",
-          description: error.message || "Could not process refund",
-          variant: "destructive"
-        });
-        return false;
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to process refund');
       }
-      
-      if (data && data.success) {
-        toast({
-          title: "Refund successful",
-          description: "Payment has been refunded",
-        });
-        
-        // Update local state
-        fetchPayments();
-        return true;
-      } else {
-        toast({
-          title: "Refund failed",
-          description: data?.error || "Could not process refund",
-          variant: "destructive"
-        });
-        return false;
-      }
-    } catch (error: any) {
-      console.error("Error in refundPayment:", error);
+
+      // Optimistically update the payment status in the UI
+      setPayments(
+        payments.map((payment) =>
+          payment.id === paymentId
+            ? {
+                ...payment,
+                status: 'refunded',
+                refunded_at: new Date().toISOString(),
+              }
+            : payment
+        )
+      );
+
       toast({
-        title: "Refund failed",
-        description: error.message || "An unexpected error occurred",
-        variant: "destructive"
+        title: 'Success',
+        description: 'Payment has been refunded successfully',
+      });
+
+      return true;
+    } catch (error: any) {
+      console.error('Error refunding payment:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to process refund',
+        variant: 'destructive',
       });
       return false;
     } finally {
@@ -136,6 +170,8 @@ export const usePaymentManagement = () => {
     payments,
     loading,
     fetchPayments,
+    getUserEmail,
+    updatePaymentStatus,
     refundPayment
   };
 };

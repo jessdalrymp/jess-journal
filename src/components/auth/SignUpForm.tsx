@@ -1,11 +1,11 @@
 
 import { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { AuthFormInput } from './AuthFormInput';
 import { ActionButton } from '../ui/ActionButton';
 import { ErrorMessage } from './ErrorMessage';
 import { validateEmail, validatePassword, validateName } from '../../utils/authValidation';
+import { useSignUp } from '../../hooks/auth/useSignUp';
 
 interface SignUpFormProps {
   onVerificationSent: (email: string) => void;
@@ -16,10 +16,9 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const { signUp } = useAuth();
+  const { signUp, loading } = useSignUp();
   const { toast } = useToast();
 
   const validateForm = (): boolean => {
@@ -55,22 +54,39 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
     
     try {
       if (!validateForm()) {
-        setLoading(false);
         return;
       }
 
       console.log("Attempting to sign up with:", { email, name });
       const result = await signUp(email, password, name);
       
+      // Check if user exists
+      if (result?.exists) {
+        console.log("User already exists");
+        setError("An account with this email already exists. Try signing in instead.");
+        return;
+      }
+      
       // If no session was created, assume verification is required
-      if (result?.user && !result?.session) {
-        console.log("Email verification likely required, redirecting to verification screen");
+      if (result?.user && result.emailVerificationRequired) {
+        console.log("Email verification required, redirecting to verification screen");
+        toast({
+          title: "Account created",
+          description: "Please check your email for verification instructions. If you don't see it, check your spam folder.",
+          duration: 6000,
+        });
         onVerificationSent(email);
+      } else if (result?.user && result.session) {
+        // User was created and logged in immediately (email verification disabled)
+        toast({
+          title: "Account created successfully",
+          description: "You have been logged in automatically.",
+          duration: 4000,
+        });
       }
     } catch (error: any) {
       console.error('Authentication error:', error);
@@ -82,6 +98,8 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
           errorMessage = "An account with this email already exists. Try signing in instead.";
         } else if (error.message.includes("rate limit") || error.message.includes("429")) {
           errorMessage = "Too many attempts. Please try again after a few minutes.";
+        } else if (error.message.includes("sending email") || error.message.includes("smtp")) {
+          errorMessage = "There was an issue sending the verification email. Your account has been created, but you may need to contact support to verify your email.";
         } else {
           errorMessage = error.message;
         }
@@ -90,12 +108,10 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
       setError(errorMessage);
       
       toast({
-        title: "Registration failed",
+        title: "Registration issue",
         description: errorMessage,
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 

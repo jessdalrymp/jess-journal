@@ -6,6 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Input } from "../ui/input";
 import { useUserData } from "../../context/UserDataContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "../../integrations/supabase/client";
 
 interface PersonalInfoSectionProps {
   onSave?: (name: string) => void;
@@ -36,18 +37,19 @@ export const PersonalInfoSection = ({ onSave }: PersonalInfoSectionProps) => {
 
     setIsSaving(true);
     try {
-      // Save to auth user metadata
-      await saveProfile({ 
-        // This will update the profile data in Supabase  
+      // Update auth metadata
+      const { error: metadataError } = await supabase.auth.updateUser({
+        data: { name: editedName }
       });
+      
+      if (metadataError) {
+        throw metadataError;
+      }
       
       // Call the onSave prop which updates the local UI state
       if (onSave) {
         onSave(editedName);
       }
-      
-      // Update the user in auth context
-      // This is handled by the auth context when user updates their profile
       
       toast({
         title: "Profile updated",

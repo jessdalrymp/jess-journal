@@ -23,6 +23,7 @@ interface ChatInterfaceProps {
   onEndChat?: () => void;
   initialMessage?: string;
   saveChat?: boolean;
+  conversationId?: string | null;
 }
 
 export const ChatInterface = ({ 
@@ -32,10 +33,11 @@ export const ChatInterface = ({
   onRestart,
   onEndChat,
   initialMessage,
-  saveChat = false
+  saveChat = false,
+  conversationId = null
 }: ChatInterfaceProps) => {
   const { user, loading: authLoading } = useAuth();
-  const { session, loading: chatLoading, error, sendMessage, generateSummary, saveJournalEntryFromChat } = useChat(type, initialMessage);
+  const { session, loading: chatLoading, error, sendMessage, generateSummary, saveJournalEntryFromChat } = useChat(type, initialMessage, conversationId);
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [showJournalingDialog, setShowJournalingDialog] = useState(false);
   const chatInitialized = useRef(false);
@@ -51,6 +53,12 @@ export const ChatInterface = ({
     // Set chatInitialized to true once we get a session
     if (session && !chatInitialized.current) {
       chatInitialized.current = true;
+      
+      // Log session info for debugging
+      console.log(`ChatInterface received session for ${type} with ${session.messages?.length || 0} messages`);
+      if (session.messages && session.messages.length > 0) {
+        console.log(`First message role: ${session.messages[0].role}, content: ${session.messages[0].content?.substring(0, 50)}...`);
+      }
     }
     
     return () => {
