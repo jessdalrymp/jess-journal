@@ -4,6 +4,7 @@ import { Calendar, Clock } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon } from '@/components/journal/JournalHistoryUtils';
 import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
+import { parseContentWithJsonCodeBlock } from '@/services/journal/contentParser';
 
 interface HistoryEntryItemProps {
   entry: JournalEntry;
@@ -29,25 +30,29 @@ const formatTime = (date: Date) => {
   return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 };
 
-// Get entry content based on type - show summary/answer instead of question
+// Improved function to get user's answer rather than the prompt/question
 const getEntryContent = (entry: JournalEntry): string => {
   try {
-    // Check if the content contains JSON with a summary field
-    if (entry.content.includes('"summary":')) {
-      const match = entry.content.match(/"summary"\s*:\s*"([^"]+)"/);
-      if (match && match[1]) {
-        return match[1].substring(0, 100) + '...';
-      }
+    // First try to parse JSON content
+    const parsedContent = parseContentWithJsonCodeBlock(entry.content);
+    if (parsedContent && parsedContent.summary) {
+      // If we have a parsed summary, use that
+      return parsedContent.summary.substring(0, 100) + '...';
     }
     
-    // If there's a prompt, show the content without the prompt
+    // If there's a prompt, extract the user's response
     if (entry.prompt) {
-      // Remove the prompt from the beginning of the content if it exists
-      const cleanContent = entry.content.replace(entry.prompt, '').trim();
-      return cleanContent.substring(0, 100) + '...';
+      // Remove the prompt from the beginning of the content
+      let userResponse = entry.content;
+      if (userResponse.includes(entry.prompt)) {
+        userResponse = userResponse.replace(entry.prompt, '').trim();
+      }
+      
+      // Return a snippet of the user's response
+      return userResponse.substring(0, 100) + '...';
     }
     
-    // For non-JSON content, just return a snippet
+    // For entries without prompt or JSON content, just return a snippet
     return entry.content.substring(0, 100) + '...';
   } catch (e) {
     return entry.content.substring(0, 100) + '...';
