@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -7,6 +6,7 @@ import { getCurrentConversationFromStorage, clearCurrentConversationFromStorage,
 import { fetchConversations, fetchConversation } from '@/services/conversation/fetchConversations';
 import { Conversation } from '@/services/conversation/types';
 import { useToast } from '@/hooks/use-toast';
+import { ConversationSession } from '@/lib/types';
 
 export const useMyStoryState = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -22,7 +22,6 @@ export const useMyStoryState = () => {
   const { fetchJournalEntries } = useUserData();
   const { toast } = useToast();
 
-  // Check for existing story conversation
   useEffect(() => {
     if (user) {
       try {
@@ -33,7 +32,6 @@ export const useMyStoryState = () => {
           setExistingConversationId(existingConversation.id);
         } else {
           console.log('No existing story conversation found');
-          // Show welcome modal if no existing conversation
           setShowWelcomeModal(true);
         }
       } catch (error) {
@@ -44,7 +42,6 @@ export const useMyStoryState = () => {
     }
   }, [user]);
 
-  // Fetch prior conversations when component loads
   useEffect(() => {
     const loadPriorConversations = async () => {
       if (!user) return;
@@ -53,7 +50,6 @@ export const useMyStoryState = () => {
         setLoadingPriorConversations(true);
         const conversations = await fetchConversations(user.id);
         
-        // Filter only story type conversations
         const storyConversations = conversations.filter(conv => conv.type === 'story');
         
         console.log(`Loaded ${storyConversations.length} prior story conversations:`, storyConversations);
@@ -74,7 +70,6 @@ export const useMyStoryState = () => {
   }, [user, toast]);
 
   const handleBack = async () => {
-    // Ensure journal entries are refreshed when navigating back to dashboard
     if (user) {
       console.log('Refreshing journal entries before navigating back to dashboard');
       try {
@@ -93,10 +88,8 @@ export const useMyStoryState = () => {
 
   const handleStartFresh = async () => {
     if (existingConversationId) {
-      // Clear out the current conversation from storage
       clearCurrentConversationFromStorage('story');
       
-      // Refresh journal entries to capture any new entries
       try {
         await fetchJournalEntries();
         toast({
@@ -107,7 +100,6 @@ export const useMyStoryState = () => {
         console.error('Error refreshing journal entries:', error);
       }
       
-      // Reset conversation ID and reload page
       setExistingConversationId(null);
       window.location.reload();
     }
@@ -129,7 +121,6 @@ export const useMyStoryState = () => {
     }
     
     try {
-      // Fetch the full conversation with messages
       const conversation = await fetchConversation(conversationId, user.id);
       
       if (!conversation) {
@@ -138,23 +129,25 @@ export const useMyStoryState = () => {
       
       console.log('Loading conversation:', conversation);
       
-      // Save to localStorage for persistence
-      const conversationToSave = {
+      const conversationToSave: ConversationSession = {
         id: conversation.id,
         userId: conversation.userId,
-        type: 'story',
+        type: conversation.type as 'story' | 'sideQuest' | 'action' | 'journal',
         title: conversation.title || 'My Story',
-        messages: conversation.messages || [],
+        messages: conversation.messages.map(msg => ({
+          id: msg.id,
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content,
+          timestamp: msg.createdAt
+        })),
         createdAt: conversation.createdAt,
         updatedAt: conversation.updatedAt
       };
       
       saveCurrentConversationToStorage(conversationToSave);
       
-      // Update current conversation ID
       setExistingConversationId(conversationId);
       
-      // Reload the page to ensure fresh state
       window.location.reload();
     } catch (error) {
       console.error('Error loading conversation:', error);
