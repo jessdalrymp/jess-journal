@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { ConversationSession } from '@/lib/types';
+import { ConversationSession, ChatMessage } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
 import { useUserData } from '@/context/UserDataContext';
 import { getInitialMessage } from '../chatUtils';
@@ -41,7 +41,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
             title: existingConversation.title,
             messages: existingConversation.messages.map(msg => ({
               id: msg.id,
-              role: msg.role,
+              role: msg.role as 'user' | 'assistant',
               content: msg.content,
               timestamp: msg.createdAt
             })),
@@ -76,9 +76,9 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       console.log(`Created new ${type} conversation:`, newConversationData.id);
       
       // Prepare initial message
-      const initialSystemMessage = {
+      const initialSystemMessage: ChatMessage = {
         id: Date.now().toString(),
-        role: 'assistant' as const,
+        role: 'assistant',
         content: getInitialMessage(type),
         timestamp: new Date(),
       };

@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { useUserData } from "@/context/UserDataContext";
 
 interface MyStoryChatContainerProps {
   onBack: () => void;
@@ -22,6 +23,7 @@ export const MyStoryChatContainer = ({
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { fetchJournalEntries } = useUserData();
   
   // Give a short delay when loading existing conversations to allow initialization
   useEffect(() => {
@@ -40,6 +42,9 @@ export const MyStoryChatContainer = ({
       console.log("Ending chat and saving data");
       // Call onSave with true to indicate need for refresh
       onSave(true);
+      
+      // Explicit journal refresh to ensure latest data is available
+      await fetchJournalEntries();
       
       // Show success toast
       toast({

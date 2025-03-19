@@ -69,7 +69,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   useEffect(() => {
     if (user && !isJournalFetched) {
       console.log("Triggering journal entries fetch");
-      fetchJournalEntries();
+      fetchJournalEntries(true); // Force refresh
       checkSubscriptionStatus();
     }
   }, [user, isJournalFetched]);
@@ -97,6 +97,14 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   };
 
+  const refreshJournalEntries = async () => {
+    if (user) {
+      console.log("Manually refreshing journal entries");
+      return await fetchJournalEntries(true); // Force refresh
+    }
+    return [];
+  };
+
   const value = {
     user,
     profile,
@@ -107,7 +115,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     startConversation,
     addMessageToConversation: handleAddMessageToConversation,
     journalEntries,
-    fetchJournalEntries,
+    fetchJournalEntries: refreshJournalEntries,
     subscription,
     checkSubscriptionStatus,
     applyCoupon
