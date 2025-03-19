@@ -12,12 +12,14 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { getInitialMessage } from "@/components/chat/chatUtils";
 import { SaveChatDialog } from "@/components/chat/SaveChatDialog";
+import { fetchConversation } from "@/services/conversation";
 
 const MyStory = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showSaveChatDialog, setShowSaveChatDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingConversations, setIsCheckingConversations] = useState(false);
+  const [existingConversationId, setExistingConversationId] = useState<string | null>(null);
   const initializationAttempted = useRef(false);
   const { user, loading: userLoading } = useAuth();
   const { toast } = useToast();
@@ -64,6 +66,7 @@ const MyStory = () => {
         .select('id')
         .eq('profile_id', user.id)
         .eq('type', 'story')
+        .order('updated_at', { ascending: false })
         .limit(1);
       
       if (error) {
@@ -73,12 +76,18 @@ const MyStory = () => {
       }
       
       if (data && data.length > 0) {
-        console.log("Found existing story conversations:", data.length);
-        toast({
-          title: "Welcome back!",
-          description: "Your previous conversation has been loaded.",
-          duration: 3000,
-        });
+        console.log("Found existing story conversation:", data[0].id);
+        setExistingConversationId(data[0].id);
+        
+        // Try to load the conversation to make sure it's available
+        const conversation = await fetchConversation(data[0].id, user.id);
+        if (conversation) {
+          toast({
+            title: "Welcome back!",
+            description: "Your previous conversation has been loaded.",
+            duration: 3000,
+          });
+        }
       } else {
         console.log("No existing story conversations found");
       }
@@ -157,6 +166,7 @@ const MyStory = () => {
             initialMessage={getInitialMessage('story')} 
             onEndChat={handleSaveChat}
             saveChat
+            conversationId={existingConversationId}
           />
         </div>
       </main>

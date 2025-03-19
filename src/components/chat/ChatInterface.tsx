@@ -23,6 +23,7 @@ interface ChatInterfaceProps {
   onEndChat?: () => void;
   initialMessage?: string;
   saveChat?: boolean;
+  conversationId?: string | null;
 }
 
 export const ChatInterface = ({ 
@@ -32,10 +33,11 @@ export const ChatInterface = ({
   onRestart,
   onEndChat,
   initialMessage,
-  saveChat = false
+  saveChat = false,
+  conversationId = null
 }: ChatInterfaceProps) => {
   const { user, loading: authLoading } = useAuth();
-  const { session, loading: chatLoading, error, sendMessage, generateSummary, saveJournalEntryFromChat } = useChat(type, initialMessage);
+  const { session, loading: chatLoading, error, sendMessage, generateSummary, saveJournalEntryFromChat } = useChat(type, initialMessage, conversationId);
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [showJournalingDialog, setShowJournalingDialog] = useState(false);
   const chatInitialized = useRef(false);

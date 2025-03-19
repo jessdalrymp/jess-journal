@@ -9,6 +9,7 @@ import {
   saveCurrentConversationToStorage,
   getCurrentConversationFromStorage
 } from '@/lib/storageUtils';
+import { fetchConversation } from '@/services/conversation';
 
 export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const [loading, setLoading] = useState(false);
@@ -27,7 +28,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
     }
   }, [authUser]);
 
-  const initializeChat = useCallback(async () => {
+  const initializeChat = useCallback(async (conversationId?: string | null) => {
     // Return early if already initialized or loading
     if (isInitialized && !loading) {
       console.log(`Chat for ${type} already initialized, using existing session`);
@@ -51,7 +52,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
     try {
       initializationInProgress.current = true;
       setLoading(true);
-      console.log(`Initializing chat for type: ${type}`);
+      console.log(`Initializing chat for type: ${type}${conversationId ? ` with existing conversation id: ${conversationId}` : ''}`);
       console.log("User authentication state:", authUser ? "Authenticated" : "Not authenticated");
       
       if (!authUser) {
@@ -59,8 +60,44 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         setError("Authentication required");
         return null;
       }
+
+      // If we have a specific conversation ID to load
+      if (conversationId) {
+        console.log(`Attempting to load specific conversation ID: ${conversationId}`);
+        try {
+          const conversation = await fetchConversation(conversationId, authUser.id);
+          
+          if (conversation) {
+            console.log(`Successfully loaded conversation ${conversationId} with ${conversation.messages.length} messages`);
+            
+            // Convert to ConversationSession format
+            const conversationSession: ConversationSession = {
+              id: conversation.id,
+              userId: conversation.userId,
+              type: conversation.type as 'story' | 'sideQuest' | 'action' | 'journal',
+              title: conversation.title,
+              messages: conversation.messages.map(msg => ({
+                id: msg.id,
+                role: msg.role as 'user' | 'assistant',
+                content: msg.content,
+                timestamp: msg.createdAt
+              })),
+              createdAt: conversation.createdAt,
+              updatedAt: conversation.updatedAt
+            };
+            
+            saveCurrentConversationToStorage(conversationSession);
+            setIsInitialized(true);
+            return conversationSession;
+          } else {
+            console.log(`Conversation ${conversationId} not found or not accessible`);
+          }
+        } catch (err) {
+          console.error(`Error loading conversation ${conversationId}:`, err);
+        }
+      }
       
-      // Check for cached conversation first
+      // Check for cached conversation if no specific ID was provided or if loading specific ID failed
       const cachedConversation = getCurrentConversationFromStorage(type);
       
       if (cachedConversation && cachedConversation.userId === authUser.id) {
