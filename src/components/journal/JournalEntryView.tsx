@@ -42,10 +42,10 @@ export const JournalEntryView = ({
               title={editableTitle}
               content={editableContent}
               onTitleChange={setEditableTitle}
-              onContentChange={setEditableContent}
+              onChange={setEditableContent}
             />
             <div className="mt-6">
-              <JournalEntrySaveButton onClick={handleSaveClick} isSaving={isSaving} />
+              <JournalEntrySaveButton onSave={handleSaveClick} isSaving={isSaving} />
             </div>
           </>
         ) : (
@@ -54,7 +54,10 @@ export const JournalEntryView = ({
               <h1 className="text-2xl font-semibold text-jess-foreground mb-2">
                 {parsedContent?.title || entry.title || "Journal Entry"}
               </h1>
-              <JournalEntryMeta entry={entry} />
+              <JournalEntryMeta 
+                entry={entry} 
+                title={parsedContent?.title || entry.title || "Journal Entry"} 
+              />
             </header>
             
             <JournalEntryContent entry={entry} parsedContent={parsedContent} />
