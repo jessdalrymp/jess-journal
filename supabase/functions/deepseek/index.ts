@@ -20,20 +20,23 @@ serve(async (req) => {
     
     const apiUrl = "https://api.deepseek.com/v1/chat/completions";
     
+    // Default to a lower token count for summaries to encourage brevity
+    const maxTokens = messages && messages[0]?.content?.includes('brief summary') ? 
+      300 : // Reduce token count for summary requests
+      1000; // Default for other requests
+    
     const requestBody = {
       model: model,
       messages: messages || [
         { role: 'user', content: prompt }
       ],
       temperature: 0.7,
-      max_tokens: 1000
+      max_tokens: maxTokens
     };
 
-    // Log additional info for action challenges to help with debugging
-    if (messages && messages.some(m => 
-      m.content && typeof m.content === 'string' && 
-      m.content.includes('LGAT-style'))) {
-      console.log("Processing Action Challenge request with LGAT parameters");
+    // Check if this is a summary request
+    if (messages && messages[0]?.content?.includes('brief summary')) {
+      console.log("Processing summary request with reduced token count");
     }
 
     console.log("DeepSeek API request - system prompt preview:", 

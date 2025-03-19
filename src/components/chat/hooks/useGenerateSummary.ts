@@ -30,13 +30,13 @@ export const useGenerateSummary = () => {
       
       const aiMessages = formatMessagesForSummary(session.messages);
       
-      console.log("Requesting AI summary with prompt to create concise summary only...");
-      // Modify the request to specifically ask for a concise summary
+      console.log("Requesting AI summary with prompt to create very brief summary...");
+      // Modify the request to specifically ask for a very brief summary
       const systemPrompt: DeepseekMessage = {
         role: 'system',
-        content: `Create a brief summary of this conversation in JSON format with a title and summary. 
-        Focus on the main topics discussed and key insights. Keep it concise (max 100 words) and in this format:
-        {"title": "Short descriptive title", "summary": "Brief overview of the conversation"}`
+        content: `Create a very brief summary of this conversation in JSON format with a title and summary. 
+        Focus only on the main topics discussed. Keep it extremely concise (max 50 words) and in this format:
+        {"title": "Short descriptive title", "summary": "Brief overview of what was discussed"}`
       };
       
       // Add the system prompt to guide the AI to generate proper summaries

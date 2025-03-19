@@ -52,6 +52,12 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
     }
   };
 
+  // Function to truncate summary for more compact display
+  const truncateSummary = (summary: string | null | undefined) => {
+    if (!summary) return "";
+    return summary.length > 80 ? summary.substring(0, 80) + "..." : summary;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm h-full p-4 flex flex-col">
       <h3 className="text-lg font-medium mb-3">Prior Conversations</h3>
@@ -86,8 +92,8 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
                 </div>
                 
                 {conversation.summary && (
-                  <p className="text-xs text-gray-600 mt-2 line-clamp-3 bg-gray-50 p-2 rounded italic">
-                    {conversation.summary}
+                  <p className="text-xs text-gray-600 mt-2 line-clamp-2 bg-gray-50 p-2 rounded italic">
+                    {truncateSummary(conversation.summary)}
                   </p>
                 )}
                 
