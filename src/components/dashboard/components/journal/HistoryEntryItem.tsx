@@ -32,7 +32,9 @@ const formatTime = (date: Date) => {
 
 export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   const entryType = entry.type || 'journal';
-  const content = getContentPreview(entry);
+  
+  // Use entry.summary if available, otherwise use getContentPreview
+  const content = entry.summary || getContentPreview(entry);
   
   return (
     <Link 

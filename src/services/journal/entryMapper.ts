@@ -12,6 +12,7 @@ export function mapDatabaseEntryToJournalEntry(dbEntry: any, userId: string): Jo
     type: dbEntry.type || 'journal',
     createdAt: new Date(dbEntry.created_at),
     prompt: dbEntry.prompt || null,
-    summary: dbEntry.summary || null
+    summary: dbEntry.summary || null,
+    title: dbEntry.title || undefined
   };
 }

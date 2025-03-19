@@ -12,9 +12,10 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
   try {
     console.log('Fetching journal entries for user:', userId);
     
+    // First, fetch the journal entries
     const { data, error } = await supabase
       .from('journal_entries')
-      .select('*, conversations(summary)')
+      .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
@@ -34,15 +35,20 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     const entries: JournalEntry[] = [];
     for (const entryData of data) {
       try {
-        // Extract the summary from the related conversation if available
-        const summary = entryData.conversations?.summary || null;
-        
         // Create the journal entry
         const entry = mapDatabaseEntryToJournalEntry(entryData, userId);
         
-        // Add the summary from the conversation if available
-        if (summary) {
-          entry.summary = summary;
+        // If there's a conversation_id, fetch the summary separately
+        if (entryData.conversation_id) {
+          const { data: conversationData, error: conversationError } = await supabase
+            .from('conversations')
+            .select('summary')
+            .eq('id', entryData.conversation_id)
+            .single();
+            
+          if (!conversationError && conversationData && conversationData.summary) {
+            entry.summary = conversationData.summary;
+          }
         }
         
         entries.push(entry);
@@ -56,7 +62,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
           type: (entryData.type as 'journal' | 'story' | 'sideQuest' | 'action') || 'journal',
           createdAt: new Date(entryData.created_at),
           prompt: entryData.prompt || null,
-          summary: entryData.conversations?.summary || null
+          summary: null
         };
         entries.push(fallbackEntry);
       }
