@@ -82,7 +82,8 @@ export const useSignUp = () => {
             name,
             isNewUser: true // Add flag to identify new users
           },
-          emailRedirectTo: `${origin}/auth/callback`
+          emailRedirectTo: `${origin}/auth/callback`,
+          // If testing in development, consider disabling this in the Supabase dashboard
         },
       });
 
@@ -121,6 +122,26 @@ export const useSignUp = () => {
           
           if (emailVerified === false) {
             console.log("Email verification required, email should be sent");
+            
+            // Try to send a manual verification email as a backup
+            try {
+              const { error: resendError } = await supabase.auth.resend({
+                type: 'signup',
+                email: email,
+                options: {
+                  emailRedirectTo: `${origin}/auth/callback`,
+                }
+              });
+              
+              if (resendError) {
+                console.error("Error resending verification email:", resendError);
+              } else {
+                console.log("Manual verification email sent successfully");
+              }
+            } catch (resendError) {
+              console.error("Exception resending verification email:", resendError);
+            }
+            
             toast({
               title: "Almost there!",
               description: "Please check your email to verify your account. If you don't see it, check your spam folder.",

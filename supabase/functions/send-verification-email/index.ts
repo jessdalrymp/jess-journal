@@ -10,10 +10,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-interface ContactMessageRequest {
+interface VerificationRequest {
   email: string;
-  subject: string;
-  message: string;
+  verificationUrl: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -21,41 +20,29 @@ const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
-
+  
   try {
-    const { email, subject, message }: ContactMessageRequest = await req.json();
+    const { email, verificationUrl }: VerificationRequest = await req.json();
     
-    console.log(`Sending email from ${email} with subject: ${subject}`);
-
+    console.log(`Sending verification email to ${email}`);
+    
     const emailResponse = await resend.emails.send({
       from: "Jess Journal <onboarding@resend.dev>",
-      to: ["contactus@jess-journal.com"],
-      subject: `Contact Form: ${subject}`,
-      html: `
-        <h2>New message from Contact Form</h2>
-        <p><strong>From:</strong> ${email}</p>
-        <p><strong>Subject:</strong> ${subject}</p>
-        <h3>Message:</h3>
-        <p>${message.replace(/\n/g, "<br>")}</p>
-      `,
-      reply_to: email,
-    });
-
-    // Send an auto-reply to the user
-    await resend.emails.send({
-      from: "Jess Journal <onboarding@resend.dev>",
       to: [email],
-      subject: "We received your message - Jess Journal",
+      subject: "Verify your email - Jess Journal",
       html: `
-        <h2>Thank you for contacting Jess Journal!</h2>
-        <p>We have received your message with the subject: "${subject}".</p>
-        <p>Our team will review your inquiry and get back to you as soon as possible.</p>
+        <h2>Welcome to Jess Journal!</h2>
+        <p>Thank you for signing up. Please verify your email address by clicking the link below:</p>
+        <p><a href="${verificationUrl}" style="display: inline-block; background-color: #8247e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
+        <p>If the button above doesn't work, you can also copy and paste this link into your browser:</p>
+        <p>${verificationUrl}</p>
+        <p>This link will expire in 24 hours.</p>
         <p>Best regards,<br>The Jess Journal Team</p>
       `,
     });
-
-    console.log("Email sent successfully:", emailResponse);
-
+    
+    console.log("Verification email sent successfully:", emailResponse);
+    
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: {
@@ -64,7 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
-    console.error("Error in send-contact-email function:", error);
+    console.error("Error in send-verification-email function:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {

@@ -6,6 +6,7 @@ import { ActionButton } from '../ui/ActionButton';
 import { ErrorMessage } from './ErrorMessage';
 import { validateEmail, validatePassword, validateName } from '../../utils/authValidation';
 import { useSignUp } from '../../hooks/auth/useSignUp';
+import { supabase } from '../../integrations/supabase/client';
 
 interface SignUpFormProps {
   onVerificationSent: (email: string) => void;
@@ -52,6 +53,39 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
     return true;
   };
 
+  const sendCustomVerificationEmail = async (email: string, signUpUrl: string) => {
+    try {
+      // Get the domain origin
+      const origin = window.location.origin;
+      
+      // Construct the verification URL (this would normally come from Supabase)
+      // For development purposes, we'll just redirect to the auth callback page
+      const verificationUrl = `${origin}/auth/callback?signUpEmail=${encodeURIComponent(email)}`;
+      
+      const response = await fetch(`${origin}/api/send-verification-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}` 
+        },
+        body: JSON.stringify({
+          email,
+          verificationUrl
+        })
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to send verification email:', await response.text());
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -74,6 +108,10 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
       // If no session was created, assume verification is required
       if (result?.user && result.emailVerificationRequired) {
         console.log("Email verification required, redirecting to verification screen");
+        
+        // Try to manually send a verification email as a backup
+        await sendCustomVerificationEmail(email, window.location.origin);
+        
         toast({
           title: "Account created",
           description: "Please check your email for verification instructions. If you don't see it, check your spam folder.",
