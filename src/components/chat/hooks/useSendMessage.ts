@@ -84,62 +84,6 @@ export const useSendMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal
       
       await addMessageToConversation(session.id, aiResponseText, 'assistant');
       
-      // For journal entries, save important insights to the journal
-      if (type === 'journal' && session.messages.length > 4) {
-        try {
-          const summaryMessages = [
-            {
-              role: 'system' as const,
-              content: `Review the conversation about the journaling prompt and create a concise summary of key insights and reflections. Format as JSON with "title" and "summary" fields.`
-            },
-            ...finalUpdatedSession.messages.map(m => ({
-              role: m.role as 'user' | 'assistant',
-              content: m.content
-            }))
-          ];
-          
-          const summaryResponse = await generateDeepseekResponse(summaryMessages);
-          const summaryText = summaryResponse.choices[0].message.content;
-          
-          try {
-            // Try to parse JSON from the response
-            let summaryContent = summaryText;
-            let title = finalUpdatedSession.messages[0].content.substring(0, 50) + '...';
-            
-            // Try to extract JSON if it exists
-            try {
-              const jsonMatch = summaryText.match(/```json\s*([\s\S]*?)```/) || 
-                               summaryText.match(/\{[\s\S]*?\}/);
-              
-              if (jsonMatch) {
-                const parsedJson = JSON.parse(jsonMatch[0].replace(/```json|```/g, '').trim());
-                if (parsedJson.title) title = parsedJson.title;
-                summaryContent = JSON.stringify(parsedJson, null, 2);
-              }
-            } catch (e) {
-              console.log('Could not parse JSON from summary, using raw text');
-            }
-            
-            const journalContent = JSON.stringify({
-              title: title,
-              summary: summaryContent,
-              type: 'journal'
-            }, null, 2);
-            
-            await saveJournalEntryFromConversation(
-              session.userId, 
-              finalUpdatedSession.messages[0].content, 
-              `\`\`\`json\n${journalContent}\n\`\`\``, 
-              'journal'
-            );
-          } catch (e) {
-            console.error('Error saving journal entry from conversation:', e);
-          }
-        } catch (e) {
-          console.error('Error generating journal summary:', e);
-        }
-      }
-      
       return finalUpdatedSession;
     } catch (error) {
       console.error('Error sending message:', error);
