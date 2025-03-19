@@ -1,3 +1,4 @@
+
 import { JournalEntry } from "@/lib/types";
 
 interface JournalEntryContentProps {
@@ -18,8 +19,14 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
       });
     }
     
-    // Otherwise use the raw content
-    return entry.content.split('\n').map((paragraph, index) => {
+    // Remove the prompt from the content if it exists
+    let displayContent = entry.content;
+    if (entry.prompt && displayContent.includes(entry.prompt)) {
+      displayContent = displayContent.replace(entry.prompt, '').trim();
+    }
+    
+    // Render the content with newlines
+    return displayContent.split('\n').map((paragraph, index) => {
       if (!paragraph.trim()) {
         return <br key={index} />;
       }
@@ -28,7 +35,7 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
   };
 
   // Using type assertion for prompt property which might exist
-  const prompt = (entry as any).prompt;
+  const prompt = entry.prompt;
 
   return (
     <div className="prose max-w-none">

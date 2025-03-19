@@ -32,18 +32,25 @@ const formatTime = (date: Date) => {
 // Get entry content based on type - show summary/answer instead of question
 const getEntryContent = (entry: JournalEntry): string => {
   try {
-    // Check if the content contains JSON
+    // Check if the content contains JSON with a summary field
     if (entry.content.includes('"summary":')) {
       const match = entry.content.match(/"summary"\s*:\s*"([^"]+)"/);
       if (match && match[1]) {
-        return match[1].substring(0, 40) + '...';
+        return match[1].substring(0, 100) + '...';
       }
     }
     
+    // If there's a prompt, show the content without the prompt
+    if (entry.prompt) {
+      // Remove the prompt from the beginning of the content if it exists
+      const cleanContent = entry.content.replace(entry.prompt, '').trim();
+      return cleanContent.substring(0, 100) + '...';
+    }
+    
     // For non-JSON content, just return a snippet
-    return entry.content.substring(0, 40) + '...';
+    return entry.content.substring(0, 100) + '...';
   } catch (e) {
-    return entry.content.substring(0, 40) + '...';
+    return entry.content.substring(0, 100) + '...';
   }
 };
 

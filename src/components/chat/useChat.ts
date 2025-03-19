@@ -30,7 +30,7 @@ export const useChat = (
   
   useEffect(() => {
     // Only load chat if user exists and we haven't attempted initialization yet
-    if (user && !initializationAttempted.current && !session) {
+    if (user && !initializationAttempted.current) {
       console.log(`Attempting to initialize ${type} chat, user:`, user.id, 
                  conversationId ? `with existing conversation: ${conversationId}` : 'with new conversation');
       
@@ -71,6 +71,10 @@ export const useChat = (
   
   // Reset initialization flag when user or type changes
   useEffect(() => {
+    if (conversationId) {
+      // Don't reset if we're loading a specific conversation
+      return;
+    }
     initializationAttempted.current = false;
   }, [user, type, conversationId]);
   
