@@ -32,13 +32,13 @@ export const RecentActivitySection = ({
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm">
+    <div className="bg-white rounded-xl p-6 shadow-sm h-full">
       <div className="flex justify-between items-center mb-5">
         <h2 className="text-xl font-medium">Recent Activity</h2>
         <Link to="/journal-history" className="text-jess-primary text-sm hover:underline transition-all duration-200">View All</Link>
       </div>
       
-      <div className="flex flex-col items-center justify-center h-[220px]">
+      <div className="flex flex-col items-center justify-center max-h-[220px] overflow-y-auto">
         {isLoading || loading ? (
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-t-jess-primary border-r-jess-primary border-b-jess-subtle border-l-jess-subtle rounded-full animate-spin mx-auto mb-3"></div>
