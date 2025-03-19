@@ -1,9 +1,12 @@
 
 import { JournalEntry } from "@/lib/types";
-import { JournalEntryContent } from "./JournalEntryContent";
-import { JournalEntryEditForm } from "./JournalEntryEditForm";
 import { JournalEntryMeta } from "./JournalEntryMeta";
+import { JournalEntryContent } from "./JournalEntryContent";
+import { JournalEntryEditor } from "./JournalEntryEditor";
 import { JournalEntrySaveButton } from "./JournalEntrySaveButton";
+import { Button } from "@/components/ui/button";
+import { MessageSquare } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface JournalEntryViewProps {
   entry: JournalEntry;
@@ -26,36 +29,49 @@ export const JournalEntryView = ({
   setEditableTitle,
   setEditableContent,
   handleSaveClick,
-  isSaving
+  isSaving,
 }: JournalEntryViewProps) => {
+  const isConversationSummary = !!entry.conversation_id;
+
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <JournalEntryMeta 
-        entry={entry} 
-        title={isEditing ? editableTitle : parsedContent?.title} 
-      />
-      
-      {isEditing ? (
-        <>
-          <JournalEntryEditForm
-            entry={entry}
-            editableContent={editableContent}
-            editableTitle={editableTitle}
-            setEditableContent={setEditableContent}
-            setEditableTitle={setEditableTitle}
-          />
-          
-          <JournalEntrySaveButton 
-            onSave={handleSaveClick} 
-            isSaving={isSaving} 
-          />
-        </>
-      ) : (
-        <JournalEntryContent 
-          entry={entry} 
-          parsedContent={parsedContent} 
-        />
-      )}
+    <div className="container mx-auto max-w-3xl px-4">
+      <article className="bg-white rounded-xl shadow-sm p-6 mb-6">
+        {isEditing ? (
+          <>
+            <JournalEntryEditor
+              title={editableTitle}
+              content={editableContent}
+              onTitleChange={setEditableTitle}
+              onContentChange={setEditableContent}
+            />
+            <div className="mt-6">
+              <JournalEntrySaveButton onClick={handleSaveClick} isSaving={isSaving} />
+            </div>
+          </>
+        ) : (
+          <>
+            <header className="mb-6">
+              <h1 className="text-2xl font-semibold text-jess-foreground mb-2">
+                {parsedContent?.title || entry.title || "Journal Entry"}
+              </h1>
+              <JournalEntryMeta entry={entry} />
+            </header>
+            
+            <JournalEntryContent entry={entry} parsedContent={parsedContent} />
+            
+            {isConversationSummary && (
+              <div className="mt-6">
+                <Link to={`/my-story?conversationId=${entry.conversation_id}`}>
+                  <Button variant="secondary" className="flex items-center gap-2">
+                    <MessageSquare size={16} />
+                    View Full Conversation
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </>
+        )}
+      </article>
     </div>
   );
 };

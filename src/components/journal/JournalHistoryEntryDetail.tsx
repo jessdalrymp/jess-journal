@@ -2,6 +2,9 @@
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon, getEntryTypeName } from './JournalHistoryUtils';
 import { parseEntryContent } from '@/utils/contentParser';
+import { Button } from '@/components/ui/button';
+import { MessageSquare } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface JournalHistoryEntryDetailProps {
   entry: JournalEntry;
@@ -37,6 +40,7 @@ export const JournalHistoryEntryDetail = ({
   onBack
 }: JournalHistoryEntryDetailProps) => {
   const formattedContent = formatEntryContent(entry);
+  const isConversationSummary = !!entry.conversation_id;
   
   return (
     <div>
@@ -61,6 +65,17 @@ export const JournalHistoryEntryDetail = ({
       ) : (
         <div className="whitespace-pre-wrap">
           {formattedContent}
+        </div>
+      )}
+      
+      {isConversationSummary && (
+        <div className="mt-6 mb-6">
+          <Link to={`/my-story?conversationId=${entry.conversation_id}`}>
+            <Button variant="secondary" className="flex items-center gap-2">
+              <MessageSquare size={16} />
+              View Full Conversation
+            </Button>
+          </Link>
         </div>
       )}
       

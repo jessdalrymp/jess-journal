@@ -85,10 +85,8 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
     content: content.substring(0, 50) + (content.length > 50 ? '...' : '')
   });
   
-  // Create appropriate link based on entry type
-  const linkPath = isConversationSummary 
-    ? `/my-story?conversationId=${entry.conversation_id}` 
-    : `/journal-entry/${entry.id}`;
+  // Always link to journal entry for conversation summaries
+  const linkPath = `/journal-entry/${entry.id}`;
   
   return (
     <Link 

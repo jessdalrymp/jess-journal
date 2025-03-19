@@ -20,9 +20,16 @@ serve(async (req) => {
     
     const apiUrl = "https://api.deepseek.com/v1/chat/completions";
     
+    // Check if this is a summary request
+    const isSummaryRequest = messages && 
+      messages.some(m => 
+        m.role === 'system' && 
+        (m.content.includes('summary') || m.content.includes('brief'))
+      );
+    
     // Default to a lower token count for summaries to encourage brevity
-    const maxTokens = messages && messages[0]?.content?.includes('brief summary') ? 
-      300 : // Reduce token count for summary requests
+    const maxTokens = isSummaryRequest ? 
+      200 : // Reduce token count for summary requests
       1000; // Default for other requests
     
     const requestBody = {
@@ -34,9 +41,9 @@ serve(async (req) => {
       max_tokens: maxTokens
     };
 
-    // Check if this is a summary request
-    if (messages && messages[0]?.content?.includes('brief summary')) {
-      console.log("Processing summary request with reduced token count");
+    // Log summary request details
+    if (isSummaryRequest) {
+      console.log("Processing summary request with reduced token count:", maxTokens);
     }
 
     console.log("DeepSeek API request - system prompt preview:", 
