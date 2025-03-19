@@ -21,10 +21,26 @@ export const useSendMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal
     setLoading(true);
     
     try {
+      // Check if message is a JSON string containing brevity preference
+      let actualMessage = message;
+      let brevityPreference = 'detailed';
+      
+      try {
+        const parsedMessage = JSON.parse(message);
+        if (parsedMessage && parsedMessage.message && parsedMessage.brevity) {
+          actualMessage = parsedMessage.message;
+          brevityPreference = parsedMessage.brevity;
+          console.log(`Using ${brevityPreference} response style`);
+        }
+      } catch (e) {
+        // Not a JSON message, use the original message
+        actualMessage = message;
+      }
+      
       const newUserMessage: ChatMessage = {
         id: Date.now().toString(),
         role: 'user' as const,
-        content: message,
+        content: actualMessage, // Show the actual message to the user, not the JSON
         timestamp: new Date(),
       };
       
@@ -35,11 +51,17 @@ export const useSendMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal
       
       saveCurrentConversationToStorage(updatedSessionWithUserMsg);
       
-      await addMessageToConversation(session.id, message, 'user');
+      await addMessageToConversation(session.id, actualMessage, 'user');
       
       const updatedMessages = [...(session.messages || []), newUserMessage];
       
       let aiMessages = formatMessagesForAI(updatedMessages, type);
+      
+      // Add brevity instruction to the system prompt
+      if (brevityPreference === 'short') {
+        const brevityInstruction = "\n\nIMPORTANT: Keep your responses brief, concise, and to the point. Aim for 1-3 short paragraphs maximum.";
+        aiMessages[0].content = aiMessages[0].content + brevityInstruction;
+      }
       
       // For journal type, include more structured context from the current journal prompt
       if (type === 'journal' && localStorage.getItem('currentJournalPrompt')) {
@@ -60,6 +82,7 @@ export const useSendMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal
       
       console.log(`Sending ${type} messages to AI with system prompt:`, 
         aiMessages.length > 0 ? aiMessages[0].content.substring(0, 100) + '...' : 'No system prompt');
+      console.log(`Using ${brevityPreference} response style`);
       
       const response = await generateDeepseekResponse(aiMessages);
       const aiResponseText = response.choices[0].message.content;

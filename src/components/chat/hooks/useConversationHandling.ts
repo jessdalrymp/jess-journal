@@ -1,13 +1,11 @@
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useChat } from '../useChat';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { clearCurrentConversationFromStorage } from '@/lib/storageUtils';
-import { useChat } from '../useChat';
 
-/**
- * Hook to handle conversation logic for the chat interface
- */
 export const useConversationHandling = (
   type: 'story' | 'sideQuest' | 'action' | 'journal',
   onBack: () => void,
@@ -17,103 +15,120 @@ export const useConversationHandling = (
   onRestart?: () => void,
   persistConversation: boolean = false
 ) => {
+  const { user, loading: authLoading } = useAuth();
+  const { session, loading, error, sendMessage: chatSendMessage, generateSummary, saveJournalEntryFromChat } = useChat(type, initialMessage, conversationId);
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [showJournalingDialog, setShowJournalingDialog] = useState(false);
-  const chatInitialized = useRef(false);
-  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
-  
-  const { 
-    session, 
-    loading: chatLoading, 
-    error, 
-    sendMessage, 
-    generateSummary, 
-    saveJournalEntryFromChat 
-  } = useChat(type, initialMessage, conversationId);
-  
-  const loading = authLoading || chatLoading;
 
-  // Set chatInitialized to true once we get a session
-  if (session && !chatInitialized.current) {
-    chatInitialized.current = true;
-    
-    // Log session info for debugging
-    console.log(`ChatInterface received session for ${type} with ${session.messages?.length || 0} messages`);
-    if (session.messages && session.messages.length > 0) {
-      console.log(`First message role: ${session.messages[0].role}, content: ${session.messages[0].content?.substring(0, 50)}...`);
+  // Handle sending a message with brevity option
+  const sendMessage = useCallback((message: string, options?: { brevity?: 'short' | 'detailed' }) => {
+    if (!session) {
+      console.error("Cannot send message: No active session");
+      return;
     }
-  }
+    
+    // Add brevity info to the message context
+    const brevityParameter = options?.brevity || 'detailed';
+    let messageToSend = message;
+    
+    // Only modify the API call, not the displayed message
+    const messageContext = {
+      brevity: brevityParameter,
+      message
+    };
+    
+    // Pass the JSON as the actual message
+    chatSendMessage(JSON.stringify(messageContext));
+  }, [session, chatSendMessage]);
 
-  const openEndDialog = (saveChat?: boolean) => {
-    if (saveChat && onEndChat) {
-      onEndChat();
-    } else if (type === 'journal') {
-      // For journal type, open the journaling dialog instead of the end dialog
+  // Clean up conversation storage when navigating away
+  useEffect(() => {
+    return () => {
+      // Only clear if not persisting
+      if (!persistConversation) {
+        clearCurrentConversationFromStorage(type);
+      }
+    };
+  }, [type, persistConversation]);
+
+  // Open the end dialog
+  const openEndDialog = (save: boolean = false) => {
+    if (type === 'journal') {
       setShowJournalingDialog(true);
-    } else if (type === 'sideQuest') {
-      handleEndConversation();
     } else {
       setShowEndDialog(true);
     }
   };
 
-  const handleEndConversation = async () => {
-    setShowEndDialog(false);
-    
+  // Handle ending the conversation
+  const handleEndConversation = async (saveToJournal: boolean = false) => {
     try {
-      if (session && session.messages.length > 2) {
-        if (type === 'story' || type === 'sideQuest') {
-          toast({
-            title: "Saving conversation...",
-            description: "We're storing your progress to journal history.",
-          });
-          await generateSummary();
-        } else if (type === 'journal') {
-          toast({
-            title: "Saving journal entry...",
-            description: "We're saving your journal to history.",
-          });
-          await saveJournalEntryFromChat();
-        }
+      if (saveToJournal) {
+        const summary = await generateSummary();
+        console.log("Summary generated:", summary);
+        toast({
+          title: `${type === 'story' ? 'Story' : 'Side Quest'} Saved`,
+          description: `Your conversation has been summarized and saved to your journal.`,
+        });
       }
       
-      // Only clear conversation if not persisting and we're ending the chat
-      if (!persistConversation && type === 'story') {
-        console.log("Not clearing story conversation due to persistConversation=true");
-      } else if (type !== 'story') {
-        // For other types, still clear conversation
+      if (!persistConversation) {
         clearCurrentConversationFromStorage(type);
       }
       
-      onBack();
+      if (onEndChat) {
+        onEndChat();
+      } else {
+        onBack();
+      }
     } catch (error) {
-      console.error('Error ending conversation:', error);
+      console.error("Error ending conversation:", error);
       toast({
-        title: "Error saving conversation",
-        description: "There was a problem saving your progress.",
-        variant: "destructive"
+        title: "Error",
+        description: "There was a problem ending your conversation.",
+        variant: "destructive",
       });
-      onBack();
     }
   };
 
-  const handleJournalingComplete = () => {
-    setShowJournalingDialog(false);
-    onBack();
-  };
-
-  const handleNewChallenge = () => {
+  // Handle completing journaling
+  const handleJournalingComplete = async (saveEntry: boolean = false) => {
+    if (saveEntry && type === 'journal') {
+      try {
+        const result = await saveJournalEntryFromChat();
+        console.log("Journal entry saved:", result);
+        toast({
+          title: "Journal Entry Saved",
+          description: "Your journal entry has been saved successfully.",
+        });
+      } catch (error) {
+        console.error("Error saving journal entry:", error);
+        toast({
+          title: "Error",
+          description: "There was a problem saving your journal entry.",
+          variant: "destructive",
+        });
+      }
+    }
+    
+    if (!persistConversation) {
+      clearCurrentConversationFromStorage(type);
+    }
+    
+    // If we have a restart handler, use it, otherwise default to back
     if (onRestart) {
       onRestart();
     } else {
-      clearCurrentConversationFromStorage(type);
-      toast({
-        title: "New challenge requested",
-        description: "Generating a new action challenge for you...",
-      });
-      window.location.reload();
+      onBack();
     }
+  };
+
+  // Handle creating a new challenge
+  const handleNewChallenge = () => {
+    clearCurrentConversationFromStorage(type);
+    window.location.reload();
   };
 
   return {
@@ -122,7 +137,6 @@ export const useConversationHandling = (
     loading,
     error,
     authLoading,
-    chatLoading,
     sendMessage,
     showEndDialog,
     setShowEndDialog,
