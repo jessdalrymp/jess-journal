@@ -62,6 +62,7 @@ const MyStory = () => {
         open={showSaveChatDialog}
         onOpenChange={setShowSaveChatDialog}
         refreshData={refreshDataOnSave}
+        continuousChat={true} // Add this prop to maintain continuous chat
       />
     </div>
   );

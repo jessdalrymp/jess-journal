@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { ChatInterface } from "../../components/chat/ChatInterface";
 import { getInitialMessage } from "../../components/chat/chatUtils";
 import { Loader2 } from "lucide-react";
+import { saveCurrentConversationToStorage } from "@/lib/storageUtils";
 
 interface MyStoryChatContainerProps {
   onBack: () => void;
@@ -30,6 +31,12 @@ export const MyStoryChatContainer = ({
     }
   }, [conversationId]);
 
+  // Custom handler to ensure we don't clear the story conversation when leaving the page
+  const handleEndChat = () => {
+    // Instead of clearing, we'll make sure to save
+    onSave(true); // Pass true to indicate need for refresh
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm flex-1 flex flex-col overflow-hidden">
       {initializing ? (
@@ -42,9 +49,10 @@ export const MyStoryChatContainer = ({
           type="story" 
           onBack={onBack} 
           initialMessage={getInitialMessage('story')} 
-          onEndChat={() => onSave(true)} // Pass true to indicate need for refresh
+          onEndChat={handleEndChat}
           saveChat
           conversationId={conversationId}
+          continuousChat={true} // Add flag to indicate this is a continuous conversation
         />
       )}
     </div>

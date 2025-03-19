@@ -19,6 +19,7 @@ interface ChatInterfaceProps {
   initialMessage?: string;
   saveChat?: boolean;
   conversationId?: string | null;
+  continuousChat?: boolean;
 }
 
 export const ChatInterface = ({ 
@@ -29,7 +30,8 @@ export const ChatInterface = ({
   onEndChat,
   initialMessage,
   saveChat = false,
-  conversationId = null
+  conversationId = null,
+  continuousChat = false
 }: ChatInterfaceProps) => {
   const {
     user,
@@ -52,7 +54,8 @@ export const ChatInterface = ({
     initialMessage,
     conversationId,
     onEndChat,
-    onRestart
+    onRestart,
+    continuousChat
   );
   
   if (authLoading) {
@@ -101,6 +104,7 @@ export const ChatInterface = ({
         setShowJournalingDialog={setShowJournalingDialog}
         promptText={promptText}
         saveChat={saveChat}
+        continuousChat={continuousChat}
       />
     </>
   );
