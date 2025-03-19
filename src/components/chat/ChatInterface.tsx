@@ -1,144 +1,107 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { ChatHeader } from './ChatHeader';
-import { ChatInput } from './ChatInput';
-import { useChat } from './useChat';
+import React from 'react';
+import { useConversationHandling } from './hooks/useConversationHandling';
+import { 
+  ChatLoadingState, 
+  ChatUnauthenticatedState, 
+  ChatErrorState, 
+  ChatInitializing 
+} from './ChatStateComponents';
+import { ChatContent } from './ChatContent';
 import { ChatDialogs } from './ChatDialogs';
-import { useJournalPrompt } from '@/hooks/useJournalPrompt';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { ChatMessageDisplay } from './ChatMessageDisplay';
-import { useToast } from '@/hooks/use-toast';
 
 interface ChatInterfaceProps {
-  onBack?: () => void;
   type: 'story' | 'sideQuest' | 'action' | 'journal';
-  initialMessage?: string;
+  onBack: () => void;
+  onAcceptChallenge?: () => void;
+  onRestart?: () => void;
   onEndChat?: () => void;
+  initialMessage?: string;
   saveChat?: boolean;
   conversationId?: string | null;
 }
 
-export const ChatInterface = ({
-  onBack = () => {},
-  type,
-  initialMessage,
+export const ChatInterface = ({ 
+  type, 
+  onBack, 
+  onAcceptChallenge, 
+  onRestart,
   onEndChat,
+  initialMessage,
   saveChat = false,
-  conversationId
+  conversationId = null
 }: ChatInterfaceProps) => {
-  const [showEndDialog, setShowEndDialog] = useState(false);
-  const [showJournalingDialog, setShowJournalingDialog] = useState(false);
-  const [promptText, setPromptText] = useState<string | undefined>(undefined);
-  const chatBottomRef = useRef<HTMLDivElement>(null);
-  const isMobile = useIsMobile();
-  const { toast } = useToast();
-
-  // Fixed destructuring to match what useJournalPrompt actually returns
-  const { journalPrompt, isLoading: promptLoading } = useJournalPrompt();
-
-  useEffect(() => {
-    if (journalPrompt && type === 'journal') {
-      setPromptText(journalPrompt.prompt);
-      localStorage.setItem('currentJournalPrompt', JSON.stringify(journalPrompt));
-    }
-  }, [journalPrompt, type]);
-
   const {
+    user,
     session,
-    loading: chatLoading,
-    error: chatError,
+    loading,
+    error,
+    authLoading,
     sendMessage,
-    generateSummary
-  } = useChat(type, initialMessage, conversationId);
-
-  useEffect(() => {
-    if (chatBottomRef.current) {
-      chatBottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }
-  }, [session?.messages]);
-
-  // Log session state for debugging
-  useEffect(() => {
-    console.log(`ChatInterface for ${type} - Session state:`, 
-      session ? `Active with ${session.messages.length} messages` : 'No active session');
-    
-    if (chatError) {
-      console.error(`Chat error for ${type}:`, chatError);
-      toast({
-        title: "Connection issue detected",
-        description: "There was a problem connecting to the AI. Please try again.",
-        variant: "destructive"
-      });
-    }
-  }, [session, chatError, type, toast]);
-
-  const handleEndChat = async () => {
-    if (saveChat && session) {
-      try {
-        // Generate summary before ending chat
-        await generateSummary();
-        console.log("Summary generated successfully before ending chat");
-      } catch (error) {
-        console.error("Error generating summary:", error);
-      }
-    }
-    
-    if (onEndChat) {
-      onEndChat();
-    }
-    
-    setShowEndDialog(false);
-  };
-
-  const handleSendMessage = (message: string) => {
-    if (session) {
-      console.log(`Sending message in ${type} chat:`, message.substring(0, 50) + '...');
-      sendMessage(message);
-    } else {
-      console.error("Cannot send message: No active session");
-      toast({
-        title: "Connection issue",
-        description: "Unable to send your message. Please refresh the page and try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
+    showEndDialog,
+    setShowEndDialog,
+    showJournalingDialog,
+    setShowJournalingDialog,
+    openEndDialog,
+    handleEndConversation,
+    handleJournalingComplete,
+    handleNewChallenge
+  } = useConversationHandling(
+    type, 
+    onBack, 
+    initialMessage,
+    conversationId,
+    onEndChat,
+    onRestart
+  );
+  
+  if (authLoading) {
+    return <ChatLoadingState type={type} onBack={onBack} />;
+  }
+  
+  if (!user) {
+    return <ChatUnauthenticatedState type={type} onBack={onBack} />;
+  }
+  
+  if (loading && !session) {
+    return <ChatLoadingState type={type} onBack={onBack} />;
+  }
+  
+  if (error) {
+    return <ChatErrorState type={type} onBack={onBack} error={error} />;
+  }
+  
+  if (!session) {
+    return <ChatInitializing type={type} onBack={onBack} />;
+  }
+  
+  // Extract the first message content (which is the prompt) for journal entry
+  const promptText = session.messages.length > 0 ? session.messages[0].content : undefined;
+  
   return (
-    <div className="flex flex-col h-full">
-      <ChatHeader 
+    <>
+      <ChatContent
         type={type}
-        onBack={onBack} 
-        onEnd={() => setShowEndDialog(true)} 
+        session={session}
+        loading={loading}
+        onBack={onBack}
+        onSendMessage={sendMessage}
+        onEndChat={() => openEndDialog(saveChat)}
+        onAcceptChallenge={onAcceptChallenge}
+        onNewChallenge={type === 'action' || type === 'journal' ? handleNewChallenge : undefined}
+        saveChat={saveChat}
       />
-
-      <ChatMessageDisplay
-        messages={session?.messages || []}
-        loading={chatLoading}
-        error={chatError}
-        chatBottomRef={chatBottomRef}
-      />
-
-      <ChatInput 
-        onSendMessage={handleSendMessage} 
-        loading={chatLoading}
-        disabled={chatLoading || !session}
-        type={type}
-        onJournal={() => setShowJournalingDialog(true)}
-      />
-
-      {/* Dialogs */}
+      
       <ChatDialogs
         type={type}
         showEndDialog={showEndDialog}
         setShowEndDialog={setShowEndDialog}
-        onEndConversation={handleEndChat}
+        onEndConversation={handleEndConversation}
         showJournalingDialog={showJournalingDialog}
         setShowJournalingDialog={setShowJournalingDialog}
         promptText={promptText}
         saveChat={saveChat}
-        session={session}
       />
-    </div>
+    </>
   );
 };

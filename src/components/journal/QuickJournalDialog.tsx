@@ -32,13 +32,12 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
       const contentPreview = content.trim().substring(0, 40) + (content.length > 40 ? '...' : '');
       const entryTitle = `${category.name}: ${contentPreview}`;
       
-      // Format content as JSON with code blocks for consistent storage
-      const journalContent = `\`\`\`json\n${JSON.stringify({
+      const journalContent = JSON.stringify({
         title: entryTitle,
         prompt: prompt, // Store the original prompt for reference
         summary: content,
         type: category.id
-      }, null, 2)}\n\`\`\``;
+      });
       
       // Import these dynamically to reduce initial load time
       const journalCreateModule = await import('@/hooks/journal/useJournalCreate');
@@ -46,8 +45,7 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
       
       await saveJournalEntry(user.id, entryTitle, journalContent);
       
-      // Ensure journal entries are refreshed after saving
-      await fetchJournalEntries();
+      fetchJournalEntries();
       
       toast({
         title: "Journal entry saved",

@@ -1,5 +1,5 @@
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef } from 'react';
 import { JournalEntry } from '../lib/types';
 import { useJournalEntries } from './journal';
 import { useToast } from '@/components/ui/use-toast';
@@ -14,7 +14,7 @@ export function useJournalContext(userId: string | null | undefined) {
   const { fetchJournalEntries: fetchEntries, loading: journalActionsLoading } = useJournalEntries();
   const { toast } = useToast();
   
-  const fetchJournalEntries = async (forceRefresh = false): Promise<JournalEntry[]> => {
+  const fetchJournalEntries = async (): Promise<JournalEntry[]> => {
     if (!userId) return [];
     
     // Add a min delay between fetches to prevent excessive API calls
@@ -27,7 +27,7 @@ export function useJournalContext(userId: string | null | undefined) {
     }
     
     // If we've fetched recently, skip unless forceFetch is true
-    if (!forceRefresh && now - lastFetchTimeRef.current < minFetchInterval) {
+    if (now - lastFetchTimeRef.current < minFetchInterval) {
       console.log("Fetch throttled - recent fetch detected");
       return journalEntries;
     }
@@ -39,7 +39,6 @@ export function useJournalContext(userId: string | null | undefined) {
     try {
       console.log("Fetching journal entries for user:", userId);
       const entries = await fetchEntries(userId);
-      console.log(`Fetched ${entries.length} journal entries:`, entries);
       setJournalEntries(entries);
       setIsJournalFetched(true);
       console.log("Successfully fetched", entries.length, "journal entries");

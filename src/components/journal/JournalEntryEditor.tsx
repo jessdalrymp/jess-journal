@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -22,55 +21,43 @@ export const JournalEntryEditor = ({
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // Check if content is in JSON code block format
-    const jsonCodeBlockRegex = /```json\s*([\s\S]*?)```/;
+    const jsonCodeBlockRegex = /^```json\s*([\s\S]*?)```$/;
     const match = content.match(jsonCodeBlockRegex);
     
     if (match && match[1]) {
       try {
         const parsedJson = JSON.parse(match[1].trim());
         
-        // Extract the summary from the parsed JSON
+        let formattedContent = '';
         if (parsedJson.summary) {
-          setCleanedContent(parsedJson.summary);
-        } else {
-          setCleanedContent(match[1].trim());
+          formattedContent += parsedJson.summary;
         }
         
-        // Set the title if it exists in the parsed JSON
-        if (parsedJson.title && onTitleChange) {
-          onTitleChange(parsedJson.title);
-        }
+        setCleanedContent(formattedContent);
       } catch (e) {
-        console.error("Error parsing JSON in code block:", e);
         setCleanedContent(match[1].trim());
       }
     } else {
       setCleanedContent(content);
     }
-  }, [content, onTitleChange]);
+  }, [content]);
 
   const handleChange = (newValue: string) => {
     setCleanedContent(newValue);
     
     try {
-      // Create a JSON object with title and summary
       const jsonObj = {
         title: title,
-        summary: newValue.trim(),
-        type: "journal" // Set a default type
+        summary: newValue.trim()
       };
       
-      // Remove undefined properties
       Object.keys(jsonObj).forEach(key => 
         jsonObj[key] === undefined && delete jsonObj[key]
       );
       
-      // Format as a JSON code block
       const jsonString = JSON.stringify(jsonObj, null, 2);
       onChange(`\`\`\`json\n${jsonString}\n\`\`\``);
     } catch (e) {
-      console.error("Error creating JSON for content:", e);
       onChange(newValue);
     }
   };

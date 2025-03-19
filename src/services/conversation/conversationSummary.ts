@@ -20,10 +20,23 @@ export const saveConversationSummary = async (
       conversationId
     });
     
-    // Format the content as proper JSON in a code block
-    const formattedContent = formatSummaryContent(title, summary);
+    // Save the summary to the journal_entries table
+    const { data, error } = await supabase
+      .from('journal_entries')
+      .insert({
+        user_id: userId,
+        prompt: title || 'Conversation Summary',
+        content: summary || 'No summary available',
+        conversation_id: conversationId,
+        type: conversationType
+      });
     
-    // First update the conversations table with the summary
+    if (error) {
+      console.error(`Error saving ${conversationType} summary to journal_entries:`, error);
+      throw error;
+    }
+    
+    // Also update the conversations table with the summary
     const { error: updateError } = await supabase
       .from('conversations')
       .update({ 
@@ -34,23 +47,7 @@ export const saveConversationSummary = async (
     
     if (updateError) {
       console.error('Error updating conversation with summary:', updateError);
-      throw updateError;
-    }
-    
-    // Then save the summary to the journal_entries table
-    const { error } = await supabase
-      .from('journal_entries')
-      .insert({
-        user_id: userId,
-        prompt: title || 'Conversation Summary',
-        content: formattedContent,
-        conversation_id: conversationId,
-        type: conversationType
-      });
-    
-    if (error) {
-      console.error(`Error saving ${conversationType} summary to journal_entries:`, error);
-      throw error;
+      // Not throwing here as the journal entry was already created
     }
     
     // Update the cached conversation
@@ -64,16 +61,4 @@ export const saveConversationSummary = async (
     console.error('Error in saveConversationSummary:', error);
     throw error;
   }
-};
-
-/**
- * Helper function to format summary content as JSON with code blocks
- */
-const formatSummaryContent = (title: string, summary: string): string => {
-  const jsonObj = {
-    title: title || 'Conversation Summary',
-    summary: summary || 'No summary available'
-  };
-  
-  return `\`\`\`json\n${JSON.stringify(jsonObj, null, 2)}\n\`\`\``;
 };

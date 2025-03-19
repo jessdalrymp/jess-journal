@@ -1,111 +1,155 @@
 
-import { useState } from 'react';
-import { ConversationSession, ChatMessage } from '@/lib/types';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { useUserData } from '../../../context/UserDataContext';
 import { useAuth } from '@/context/AuthContext';
-import { useUserData } from '@/context/UserDataContext';
-import { getInitialMessage } from '../chatUtils';
-import { getCurrentConversationFromStorage, saveCurrentConversationToStorage } from '@/lib/storageUtils';
-import { fetchConversation } from '@/services/conversation';
+import { useToast } from '@/components/ui/use-toast';
+import { ConversationSession } from '@/lib/types';
+import { saveCurrentConversationToStorage, clearCurrentConversationFromStorage, getConversationsFromStorage } from '@/lib/storageUtils';
+import { 
+  loadExistingConversation, 
+  createConversationWithInitialMessage, 
+  determineInitialMessage 
+} from './utils/conversationInitUtils';
+import { useConversationCache } from './useConversationCache';
 
 export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
-  const { startConversation } = useUserData();
+  const [isInitialized, setIsInitialized] = useState(false);
+  const initializationInProgress = useRef(false);
 
-  const initializeChat = async (conversationId?: string | null): Promise<ConversationSession | null> => {
-    if (!user) {
-      setError("User not authenticated");
+  const { startConversation, addMessageToConversation } = useUserData();
+  const { user: authUser } = useAuth();
+  const { toast } = useToast();
+  const { getCachedConversation } = useConversationCache(type);
+
+  useEffect(() => {
+    // Reset initialization status when auth or type changes
+    if (!authUser) {
+      setIsInitialized(false);
+      initializationInProgress.current = false;
+    }
+  }, [authUser, type]);
+
+  const initializeChat = useCallback(async (conversationId?: string | null) => {
+    if (!authUser) {
+      console.log("User not authenticated, cannot initialize chat");
+      setError("Authentication required");
       return null;
     }
 
-    setLoading(true);
-    setError(null);
+    if (isInitialized && !loading) {
+      console.log(`Chat for ${type} already initialized, using existing session`);
+      const cachedConversation = getCachedConversation(authUser.id);
+      if (cachedConversation) {
+        return cachedConversation;
+      }
+    }
+
+    if (initializationInProgress.current) {
+      console.log(`${type} chat initialization already in progress`);
+      return null;
+    }
 
     try {
-      console.log(`Initializing ${type} chat${conversationId ? ` with conversation ID: ${conversationId}` : ''}`);
+      initializationInProgress.current = true;
+      setLoading(true);
+      console.log(`Initializing chat for type: ${type}${conversationId ? ` with existing conversation id: ${conversationId}` : ''}`);
+      console.log("User authentication state:", authUser ? "Authenticated" : "Not authenticated");
       
-      // If we have a conversation ID, attempt to load it from database
+      if (!authUser) {
+        console.log("User not authenticated, cannot initialize chat");
+        setError("Authentication required");
+        return null;
+      }
+
+      // Clear any potential stale error
+      setError(null);
+
+      // Try to load existing conversation first if ID is provided
       if (conversationId) {
-        console.log(`Fetching conversation ${conversationId} from database`);
-        const existingConversation = await fetchConversation(conversationId, user.id);
-        
-        if (existingConversation) {
-          console.log(`Successfully loaded conversation ${conversationId} with ${existingConversation.messages.length} messages`);
-          
-          // Convert to session format
-          const session: ConversationSession = {
-            id: existingConversation.id,
-            userId: existingConversation.userId,
-            type: existingConversation.type as 'story' | 'sideQuest' | 'action' | 'journal',
-            title: existingConversation.title,
-            messages: existingConversation.messages.map(msg => ({
-              id: msg.id,
-              role: msg.role as 'user' | 'assistant',
-              content: msg.content,
-              timestamp: msg.createdAt
-            })),
-            createdAt: existingConversation.createdAt,
-            updatedAt: existingConversation.updatedAt
-          };
-          
-          // Save to local storage for offline access
-          saveCurrentConversationToStorage(session);
-          return session;
+        console.log(`Attempting to load existing conversation: ${conversationId}`);
+        const conversation = await loadExistingConversation(conversationId, authUser.id);
+        if (conversation) {
+          console.log(`Successfully loaded existing conversation with ${conversation.messages.length} messages`);
+          setIsInitialized(true);
+          return conversation;
         } else {
-          console.warn(`Conversation ${conversationId} not found in database`);
-          // Fall through to create a new conversation if specified one not found
+          console.log(`Failed to load existing conversation ${conversationId}, will create new conversation`);
+          // Clear conversation from storage to avoid loading it again
+          clearCurrentConversationFromStorage(type);
+          toast({
+            title: "Starting new conversation",
+            description: "Previous conversation could not be loaded",
+            duration: 3000,
+          });
         }
       }
       
-      // Check if there's an existing conversation in storage
-      const storedConversation = getCurrentConversationFromStorage(type);
-      if (storedConversation && !conversationId) {
-        console.log(`Found existing ${type} conversation in storage:`, storedConversation.id);
-        return storedConversation;
+      // Try to get cached conversation from storage
+      const storedConversations = getConversationsFromStorage();
+      const typeConversations = storedConversations.filter(
+        c => c.type === type && c.userId === authUser.id
+      );
+      
+      if (typeConversations.length > 0) {
+        // Sort by most recent
+        const mostRecentConversation = typeConversations.sort((a, b) => {
+          const dateA = a.updatedAt ? new Date(a.updatedAt) : new Date(a.createdAt);
+          const dateB = b.updatedAt ? new Date(b.updatedAt) : new Date(b.createdAt);
+          return dateB.getTime() - dateA.getTime();
+        })[0];
+        
+        if (mostRecentConversation && mostRecentConversation.messages && mostRecentConversation.messages.length > 0) {
+          console.log(`Using stored conversation for ${type}`);
+          setIsInitialized(true);
+          return mostRecentConversation;
+        }
       }
       
-      // Create a new conversation
-      console.log(`Creating new ${type} conversation`);
-      const newConversationData = await startConversation(type);
-      
-      if (!newConversationData) {
-        throw new Error("Failed to create new conversation");
+      // For all conversation types, create with initial message
+      try {
+        console.log(`Creating new ${type} conversation with initial message`);
+        const initialMessage = determineInitialMessage(type, false);
+        const conversation = await createConversationWithInitialMessage(
+          type, 
+          initialMessage, 
+          startConversation, 
+          addMessageToConversation
+        );
+        
+        console.log(`Successfully created new ${type} conversation`);
+        setIsInitialized(true);
+        return conversation;
+      } catch (err) {
+        console.error(`Error starting ${type} conversation:`, err);
+        setError(`Failed to initialize ${type} chat`);
+        toast({
+          title: "Error starting conversation",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
+        throw err;
       }
       
-      console.log(`Created new ${type} conversation:`, newConversationData.id);
-      
-      // Prepare initial message
-      const initialSystemMessage: ChatMessage = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: getInitialMessage(type),
-        timestamp: new Date(),
-      };
-      
-      // Create new session
-      const newSession: ConversationSession = {
-        id: newConversationData.id,
-        userId: user.id,
-        type,
-        title: newConversationData.title || `New ${type} conversation`,
-        messages: [initialSystemMessage],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      
-      // Save to local storage
-      saveCurrentConversationToStorage(newSession);
-      
-      return newSession;
-    } catch (err) {
-      console.error(`Error initializing ${type} chat:`, err);
-      setError(`Failed to initialize chat: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } catch (error) {
+      console.error('Error in initializeChat:', error);
+      setError("Failed to initialize chat");
+      toast({
+        title: "Error starting conversation",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
       return null;
     } finally {
       setLoading(false);
+      initializationInProgress.current = false;
     }
-  };
+  }, [type, authUser, addMessageToConversation, startConversation, toast, isInitialized, loading, getCachedConversation]);
 
-  return { initializeChat, loading, error };
+  return {
+    initializeChat,
+    loading,
+    error
+  };
 };

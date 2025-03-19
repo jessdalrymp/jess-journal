@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 import { formatMessagesForSummary } from '../chatUtils';
 import { generateDeepseekResponse } from '../../../utils/deepseekApi';
 import { saveConversationSummary } from '@/services/conversation';
-import { supabase } from '@/integrations/supabase/client';
 
 export const useGenerateSummary = () => {
   const [loading, setLoading] = useState(false);
@@ -29,7 +28,6 @@ export const useGenerateSummary = () => {
         return null;
       }
       
-      // Format messages for the AI to summarize
       const aiMessages = formatMessagesForSummary(session.messages);
       
       console.log("Requesting AI summary...");
@@ -43,36 +41,21 @@ export const useGenerateSummary = () => {
       let summaryText = response.choices[0].message.content || "No summary available";
       console.log("Received summary from AI:", summaryText);
       
-      // Parse the AI response for title and summary
       let title = "Conversation Summary";
       let summary = summaryText;
       
       try {
-        // Check if the response is in JSON format
-        if (summaryText.includes('{') && summaryText.includes('}')) {
-          const jsonMatch = summaryText.match(/{[\s\S]*?}/);
-          if (jsonMatch) {
-            const jsonString = jsonMatch[0];
-            const jsonSummary = JSON.parse(jsonString);
-            if (jsonSummary.title) title = jsonSummary.title;
-            if (jsonSummary.summary) summary = jsonSummary.summary;
-            console.log("Parsed JSON summary:", { title, summary });
-          }
+        const jsonSummary = JSON.parse(summaryText);
+        if (jsonSummary.title && jsonSummary.summary) {
+          title = jsonSummary.title;
+          summary = jsonSummary.summary;
+          console.log("Parsed JSON summary:", { title, summary });
         }
       } catch (e) {
-        console.log("Summary not in JSON format or parsing failed, using raw text");
+        console.log("Summary not in JSON format, using raw text");
       }
       
-      // Ensure we have some content in both title and summary
-      if (!title || title.trim() === '') {
-        title = "Conversation Summary";
-      }
-      
-      if (!summary || summary.trim() === '') {
-        summary = "No content was generated for this conversation summary.";
-      }
-      
-      console.log("Saving summary to database and journal...", { 
+      console.log("Saving summary to journal...", { 
         userId: user.id, 
         title, 
         summary, 
@@ -80,45 +63,9 @@ export const useGenerateSummary = () => {
         type: session.type 
       });
       
-      // Create a properly formatted content JSON with the summary and type
-      const formattedContent = JSON.stringify({ 
-        title, 
-        summary, 
-        type: session.type 
-      }, null, 2);
+      await saveConversationSummary(user.id, title, summary, session.id, session.type);
       
-      // First, update the conversation record in the conversations table directly
-      const { error: conversationError } = await supabase
-        .from('conversations')
-        .update({
-          title: title,
-          summary: summary,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', session.id);
-      
-      if (conversationError) {
-        console.error("Error updating conversation summary:", conversationError);
-        throw new Error("Failed to update conversation summary");
-      }
-      
-      // Then, save the summary to journal_entries table
-      const { error: journalError } = await supabase
-        .from('journal_entries')
-        .insert({
-          user_id: user.id,
-          prompt: title,
-          content: `\`\`\`json\n${formattedContent}\n\`\`\``,
-          conversation_id: session.id,
-          type: session.type
-        });
-      
-      if (journalError) {
-        console.error("Error saving journal entry:", journalError);
-        throw new Error("Failed to save journal entry");
-      }
-      
-      console.log("Summary saved successfully to both conversations and journal_entries tables");
+      console.log("Summary saved to journal");
       
       toast({
         title: "Conversation Summarized",

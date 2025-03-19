@@ -1,29 +1,20 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { ActionButton } from '../ui/ActionButton';
-import { Send, Loader2, BookOpen } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
-  loading?: boolean;
-  disabled?: boolean;
-  type?: 'story' | 'sideQuest' | 'action' | 'journal';
-  onJournal?: () => void;
+  loading: boolean;
 }
 
-export const ChatInput = ({ 
-  onSendMessage, 
-  loading = false, 
-  disabled = false,
-  type,
-  onJournal
-}: ChatInputProps) => {
+export const ChatInput = ({ onSendMessage, loading }: ChatInputProps) => {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   const handleSend = () => {
-    if (!message.trim() || loading || disabled) return;
+    if (!message.trim() || loading) return;
     onSendMessage(message);
     setMessage('');
   };
@@ -54,20 +45,9 @@ export const ChatInput = ({
               handleSend();
             }
           }}
-          disabled={loading || disabled}
+          disabled={loading}
           rows={1}
         />
-        
-        {type === 'journal' && onJournal && (
-          <button
-            onClick={onJournal}
-            className="ml-2 p-2 rounded-full bg-jess-subtle hover:bg-jess-muted transition-colors"
-            title="Open journal prompts"
-          >
-            <BookOpen size={18} />
-          </button>
-        )}
-        
         {loading ? (
           <div className="ml-2 w-10 h-10 p-0 rounded-full flex items-center justify-center bg-jess-subtle">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
@@ -76,7 +56,7 @@ export const ChatInput = ({
           <ActionButton
             type="primary"
             onClick={handleSend}
-            disabled={!message.trim() || disabled}
+            disabled={!message.trim()}
             className="ml-2 w-10 h-10 p-0 rounded-full flex items-center justify-center"
             icon={<Send size={18} />}
           >

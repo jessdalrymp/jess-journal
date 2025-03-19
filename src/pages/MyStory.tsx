@@ -62,7 +62,6 @@ const MyStory = () => {
         open={showSaveChatDialog}
         onOpenChange={setShowSaveChatDialog}
         refreshData={refreshDataOnSave}
-        keepConversation={true} // Keep the conversation after saving
       />
     </div>
   );

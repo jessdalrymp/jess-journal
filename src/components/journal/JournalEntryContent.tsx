@@ -19,26 +19,6 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
       });
     }
     
-    // If content includes a JSON code block, try to extract and display the summary
-    if (entry.content.includes('```json')) {
-      try {
-        const jsonMatch = entry.content.match(/```json\s*([\s\S]*?)```/);
-        if (jsonMatch && jsonMatch[1]) {
-          const parsed = JSON.parse(jsonMatch[1].trim());
-          if (parsed.summary) {
-            return parsed.summary.split('\n').map((paragraph, index) => {
-              if (!paragraph.trim()) {
-                return <br key={index} />;
-              }
-              return <p key={index} className="mb-4">{paragraph}</p>;
-            });
-          }
-        }
-      } catch (e) {
-        console.error("Error parsing JSON code block:", e);
-      }
-    }
-    
     // Remove the prompt from the content if it exists
     let displayContent = entry.content;
     if (entry.prompt && displayContent.includes(entry.prompt)) {

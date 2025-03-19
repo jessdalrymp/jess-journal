@@ -1,9 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useUserData } from '@/context/UserDataContext';
-import { getCurrentConversationFromStorage } from '@/lib/storageUtils';
-import { fetchConversation } from '@/services/conversation';
+import { getCurrentConversationFromStorage, clearCurrentConversationFromStorage } from '@/lib/storageUtils';
 
 export const useMyStoryState = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -19,40 +19,21 @@ export const useMyStoryState = () => {
   useEffect(() => {
     if (user) {
       try {
-        setIsLoading(true);
         const existingConversation = getCurrentConversationFromStorage('story');
         
         if (existingConversation) {
-          console.log('Found existing story conversation in storage:', existingConversation.id);
-          
-          // Verify the conversation exists in the database
-          fetchConversation(existingConversation.id, user.id)
-            .then(conversation => {
-              if (conversation) {
-                console.log('Verified conversation in database:', conversation.id);
-                setExistingConversationId(conversation.id);
-              } else {
-                console.log('Conversation not found in database, clearing from storage');
-                // We don't automatically clear the storage anymore to prevent session loss
-                setShowWelcomeModal(true);
-              }
-              setIsLoading(false);
-            })
-            .catch(error => {
-              console.error('Error verifying conversation:', error);
-              setIsLoading(false);
-              setShowWelcomeModal(true);
-            });
+          console.log('Found existing story conversation:', existingConversation.id);
+          setExistingConversationId(existingConversation.id);
         } else {
-          console.log('No existing story conversation found in storage');
-          setIsLoading(false);
+          console.log('No existing story conversation found');
+          // Show welcome modal if no existing conversation
           setShowWelcomeModal(true);
         }
       } catch (error) {
         console.error('Error retrieving conversation from storage:', error);
-        setIsLoading(false);
-        setShowWelcomeModal(true);
       }
+      
+      setIsLoading(false);
     }
   }, [user]);
 
@@ -77,10 +58,7 @@ export const useMyStoryState = () => {
   const handleStartFresh = async () => {
     if (existingConversationId) {
       // Clear out the current conversation from storage
-      // We keep this functionality here as it's a deliberate user action
-      import('@/lib/storageUtils').then(({ clearCurrentConversationFromStorage }) => {
-        clearCurrentConversationFromStorage('story');
-      });
+      clearCurrentConversationFromStorage('story');
       
       // Refresh journal entries to capture any new entries
       try {

@@ -1,6 +1,5 @@
 
 import { supabase } from "../integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 export interface DeepseekMessage {
   role: 'user' | 'assistant' | 'system';
@@ -32,52 +31,18 @@ export async function generateDeepseekResponse(
     console.log("Sending messages to DeepSeek API:", 
       messages.map(m => ({role: m.role, contentPreview: m.content.substring(0, 50) + '...'})));
     
-    // Add retries for API calls
-    let retries = 0;
-    const maxRetries = 3;
-    let lastError = null;
-    
-    while (retries < maxRetries) {
-      try {
-        const { data, error } = await supabase.functions.invoke('deepseek', {
-          body: { messages, model },
-        });
+    const { data, error } = await supabase.functions.invoke('deepseek', {
+      body: { messages, model },
+    });
 
-        if (error) {
-          console.error(`DeepSeek API error (attempt ${retries + 1}):`, error);
-          lastError = error;
-          retries++;
-          
-          if (retries < maxRetries) {
-            // Wait before retrying (exponential backoff)
-            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retries)));
-            continue;
-          } else {
-            throw new Error(`Failed to generate response after ${maxRetries} attempts: ${error.message}`);
-          }
-        }
-
-        console.log("DeepSeek API response received:", 
-          data?.choices?.[0]?.message?.content?.substring(0, 50) + '...');
-        
-        return data as DeepseekResponse;
-      } catch (error) {
-        console.error(`Error in generateDeepseekResponse (attempt ${retries + 1}):`, error);
-        lastError = error;
-        retries++;
-        
-        if (retries < maxRetries) {
-          // Wait before retrying
-          await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retries)));
-        } else {
-          throw error;
-        }
-      }
+    if (error) {
+      console.error("Error invoking DeepSeek edge function:", error);
+      throw new Error(`Failed to generate response: ${error.message}`);
     }
-    
-    throw lastError || new Error("Failed to generate response after multiple attempts");
+
+    return data as DeepseekResponse;
   } catch (error) {
-    console.error("Final error generating DeepSeek response:", error);
+    console.error("Error generating DeepSeek response:", error);
     throw error;
   }
 }

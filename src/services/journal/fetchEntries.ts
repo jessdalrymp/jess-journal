@@ -1,7 +1,7 @@
+
 import { JournalEntry } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { mapDatabaseEntryToJournalEntry } from './entryMapper';
-import { parseEntryContent } from './contentParser';
 
 /**
  * Fetches all journal entries for a user
@@ -34,35 +34,16 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     const entries: JournalEntry[] = [];
     for (const entryData of data) {
       try {
-        // First try to map entry using the mapper which handles encryption
         const entry = mapDatabaseEntryToJournalEntry(entryData, userId);
         entries.push(entry);
       } catch (err) {
         console.error('Error processing journal entry:', err, entryData);
-        
         // Create a fallback entry with minimal information
-        // Try to extract title and summary from content if possible
-        let title = entryData.prompt || 'Untitled Entry';
-        let content = entryData.content || 'Content could not be loaded';
-        
-        // Check if content is valid JSON or has JSON blocks
-        try {
-          const parsedContent = parseEntryContent(content);
-          if (parsedContent && parsedContent.title) {
-            title = parsedContent.title;
-          }
-          if (parsedContent && parsedContent.summary) {
-            content = parsedContent.summary;
-          }
-        } catch (parseErr) {
-          // If parsing fails, keep the original content
-        }
-        
         const fallbackEntry: JournalEntry = {
           id: entryData.id,
           userId: entryData.user_id,
-          title: title,
-          content: content,
+          title: entryData.prompt || 'Untitled Entry',
+          content: 'Content could not be loaded',
           type: (entryData.type as 'journal' | 'story' | 'sideQuest' | 'action') || 'journal',
           createdAt: new Date(entryData.created_at),
           prompt: entryData.prompt || null
