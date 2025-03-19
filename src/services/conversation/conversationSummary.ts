@@ -58,17 +58,31 @@ export const saveConversationSummary = async (
     
     console.log('Successfully saved conversation summary');
     
-    // After saving, check if the entry is properly stored
-    const { data: checkData, error: checkError } = await supabase
+    // After saving, verify what was stored
+    console.log('Verifying journal entry was created...');
+    const { data: journalCheck, error: journalCheckError } = await supabase
       .from('journal_entries')
       .select('*')
       .eq('conversation_id', conversationId)
       .single();
       
-    if (checkError) {
-      console.error('Error verifying saved summary:', checkError);
+    if (journalCheckError) {
+      console.error('Error verifying journal entry:', journalCheckError);
     } else {
-      console.log('Verified saved summary exists in database:', checkData);
+      console.log('Verified journal entry exists:', journalCheck);
+    }
+    
+    console.log('Verifying conversation was updated...');
+    const { data: conversationCheck, error: conversationCheckError } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('id', conversationId)
+      .single();
+      
+    if (conversationCheckError) {
+      console.error('Error verifying conversation update:', conversationCheckError);
+    } else {
+      console.log('Verified conversation was updated:', conversationCheck);
     }
   } catch (error) {
     console.error('Error in saveConversationSummary:', error);

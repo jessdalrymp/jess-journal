@@ -35,10 +35,19 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   const content = getContentPreview(entry);
   const isConversationSummary = !!entry.conversation_id;
   
+  console.log('Rendering entry in history item:', { 
+    id: entry.id, 
+    title: getEntryTitle(entry), 
+    type: entry.type,
+    isConversationSummary, 
+    conversation_id: entry.conversation_id,
+    content: content.substring(0, 50) + (content.length > 50 ? '...' : '')
+  });
+  
   return (
     <Link 
       key={entry.id} 
-      to={isConversationSummary ? `/my-story` : `/journal-entry/${entry.id}`}
+      to={isConversationSummary ? `/my-story?conversationId=${entry.conversation_id}` : `/journal-entry/${entry.id}`}
       className="relative border-l-2 border-jess-subtle pl-4 pb-5 block group"
     >
       <div className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-jess-secondary group-hover:bg-jess-primary transition-colors"></div>

@@ -9,7 +9,8 @@ import { parseContentWithJsonCodeBlock } from './contentParser';
  */
 export const mapDatabaseEntryToJournalEntry = (
   entry: any, 
-  userId: string
+  userId: string,
+  conversationData: any = null
 ): JournalEntry => {
   let content = '';
   let prompt = entry.prompt || null;
@@ -44,6 +45,21 @@ export const mapDatabaseEntryToJournalEntry = (
   } catch (error) {
     console.error('Error parsing content:', error);
     // Continue without parsedContent if parsing fails
+  }
+
+  // For conversation summaries, we can enhance the entry with conversation data
+  if (conversationId && conversationData) {
+    console.log('Including conversation data in journal entry:', conversationData);
+    
+    // If we have a conversation title, use it
+    if (conversationData.title) {
+      title = conversationData.title;
+    }
+    
+    // If we have a conversation summary but no content, use it
+    if (conversationData.summary && (!content || content === 'No summary available')) {
+      content = conversationData.summary;
+    }
   }
 
   return {

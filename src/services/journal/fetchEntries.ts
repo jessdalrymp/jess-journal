@@ -12,9 +12,10 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
   try {
     console.log('Fetching journal entries for user:', userId);
     
+    // Fetch all journal entries including ones linked to conversations
     const { data, error } = await supabase
       .from('journal_entries')
-      .select('*')
+      .select('*, conversations:conversation_id(*)')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
@@ -29,13 +30,22 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     }
     
     console.log(`Found ${data.length} journal entries, checking if any are conversation summaries`);
-    console.log('Sample entries:', data.slice(0, 2));
+    
+    // Check for conversation-linked entries
+    const conversationEntries = data.filter(entry => entry.conversation_id);
+    console.log(`Found ${conversationEntries.length} entries linked to conversations`);
+    
+    if (conversationEntries.length > 0) {
+      console.log('Sample conversation entry:', conversationEntries[0]);
+    }
 
     // Map entries and handle any errors in the mapping process
     const entries: JournalEntry[] = [];
     for (const entryData of data) {
       try {
-        const entry = mapDatabaseEntryToJournalEntry(entryData, userId);
+        // Pass the conversation data to the mapper if available
+        const conversationData = entryData.conversations || null;
+        const entry = mapDatabaseEntryToJournalEntry(entryData, userId, conversationData);
         entries.push(entry);
       } catch (err) {
         console.error('Error processing journal entry:', err, entryData);
