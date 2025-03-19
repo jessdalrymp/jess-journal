@@ -7,9 +7,20 @@ import { useNavigate } from 'react-router-dom';
 interface ChatHeaderProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
   onBack: () => void;
+  onEndChat?: () => void;
+  onAcceptChallenge?: () => void;
+  onNewChallenge?: () => void;
+  saveChat?: boolean;
 }
 
-export const ChatHeader = ({ type, onBack }: ChatHeaderProps) => {
+export const ChatHeader = ({
+  type,
+  onBack,
+  onEndChat,
+  onAcceptChallenge,
+  onNewChallenge,
+  saveChat
+}: ChatHeaderProps) => {
   const navigate = useNavigate();
   
   return (
