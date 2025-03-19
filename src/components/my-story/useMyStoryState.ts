@@ -71,7 +71,7 @@ export const useMyStoryState = () => {
       console.log("Checking for existing story conversations for user:", user.id);
       const { data, error } = await supabase
         .from('conversations')
-        .select('id')
+        .select('id, created_at, updated_at')
         .eq('profile_id', user.id)
         .eq('type', 'story')
         .order('updated_at', { ascending: false })
@@ -94,8 +94,10 @@ export const useMyStoryState = () => {
         // Try to load the conversation to make sure it's valid
         try {
           const conversation = await fetchConversation(data[0].id, user.id);
+          console.log("Conversation validation result:", conversation);
+          
           if (conversation && conversation.messages && conversation.messages.length > 0) {
-            console.log("Successfully validated conversation:", data[0].id);
+            console.log("Successfully validated conversation:", data[0].id, "with", conversation.messages.length, "messages");
             setExistingConversationId(data[0].id);
             setValidConversation(true);
             
@@ -114,6 +116,11 @@ export const useMyStoryState = () => {
           console.error("Error validating conversation:", err);
           setExistingConversationId(null);
           clearCurrentConversationFromStorage('story');
+          toast({
+            title: "Conversation error",
+            description: "Could not load your previous conversation. Starting a new one.",
+            variant: "destructive",
+          });
         }
       } else {
         console.log("No existing story conversations found");

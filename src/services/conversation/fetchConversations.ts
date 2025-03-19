@@ -1,4 +1,3 @@
-
 import { supabase } from '../../integrations/supabase/client';
 import { Conversation } from './types';
 import { getCachedConversation, cacheConversation } from './conversationCache';
@@ -63,7 +62,7 @@ export const fetchConversation = async (conversationId: string, userId: string):
       .select('*')
       .eq('id', conversationId)
       .eq('profile_id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching conversation:', error);
@@ -99,13 +98,6 @@ export const fetchConversation = async (conversationId: string, userId: string):
     }
 
     console.log(`Fetched ${messages?.length || 0} messages for conversation ${conversationId}`);
-
-    // Return null if no messages and this is not a brand new conversation
-    if ((!messages || messages.length === 0) && 
-        new Date().getTime() - new Date(data.created_at).getTime() > 30000) {
-      console.log(`Conversation ${conversationId} has no messages and is not new, treating as invalid`);
-      return null;
-    }
 
     // Build conversation object
     const conversation: Conversation = {

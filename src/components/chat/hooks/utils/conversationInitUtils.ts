@@ -29,12 +29,6 @@ export const loadExistingConversation = async (
     if (conversation) {
       console.log(`Successfully loaded conversation ${conversationId} with ${conversation.messages.length} messages`);
       
-      // Skip conversations with no messages
-      if (conversation.messages.length === 0) {
-        console.log(`Conversation ${conversationId} has no messages, creating a new one instead`);
-        return null;
-      }
-      
       // Convert to ConversationSession format
       const conversationSession: ConversationSession = {
         id: conversation.id,
