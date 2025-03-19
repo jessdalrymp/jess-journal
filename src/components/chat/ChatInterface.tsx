@@ -81,6 +81,13 @@ export const ChatInterface = ({
   // Extract the first message content (which is the prompt) for journal entry
   const promptText = session.messages.length > 0 ? session.messages[0].content : undefined;
   
+  // Create a wrapper function that doesn't require parameters
+  const handleNewChallengeWrapper = () => {
+    // Call the original function with a default or generated challengeId
+    // This resolves the type mismatch
+    handleNewChallenge("new");
+  };
+  
   return (
     <>
       <ChatContent
@@ -91,7 +98,7 @@ export const ChatInterface = ({
         onSendMessage={sendMessage}
         onEndChat={() => openEndDialog(saveChat)}
         onAcceptChallenge={onAcceptChallenge}
-        onNewChallenge={type === 'action' || type === 'journal' ? handleNewChallenge : undefined}
+        onNewChallenge={type === 'action' || type === 'journal' ? handleNewChallengeWrapper : undefined}
         saveChat={saveChat}
       />
       
