@@ -47,7 +47,7 @@ const App = () => {
               <Route path="/404" element={<NotFound />} />
               <Route path="*" element={<Navigate to="/404" replace />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
-              {/* <Route path="/auth/reset-password" element={<ResetPasswordPage />} /> */}
+              <Route path="/auth/reset-password" element={<AuthCallback />} />
             </Routes>
             <Toaster />
           </UserDataProvider>
