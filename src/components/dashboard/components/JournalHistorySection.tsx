@@ -7,6 +7,7 @@ import { HistoryEntriesList } from './journal/HistoryEntriesList';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { HistoryViewAllLink } from './journal/HistoryViewAllLink';
 
 export const JournalHistorySection = () => {
   const { journalEntries, loading, fetchJournalEntries } = useUserData();
@@ -63,13 +64,11 @@ export const JournalHistorySection = () => {
   };
   
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-jess-subtle/50 transition-all duration-300 hover:shadow-xl relative overflow-hidden group">
-      {/* Subtle gradient background that moves on hover */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-jess-subtle/10 via-white to-jess-secondary/10 opacity-70 group-hover:opacity-100 transition-opacity duration-500"></div>
-      
-      <div className="relative z-10">
-        <div className="flex justify-between items-center mb-4">
-          <HistorySectionHeading />
+    <div className="bg-white rounded-xl p-6 shadow-sm h-full flex flex-col">
+      <div className="flex justify-between items-center mb-5">
+        <h2 className="text-2xl font-medium">Journal History</h2>
+        <div className="flex items-center gap-3">
+          <HistoryViewAllLink />
           <Button 
             onClick={handleRefresh} 
             variant="ghost" 
@@ -81,16 +80,16 @@ export const JournalHistorySection = () => {
             {isRefreshing ? "Refreshing..." : "Refresh"}
           </Button>
         </div>
+      </div>
+      
+      <div className="flex flex-col flex-1">
+        <HistoryActionCard />
         
-        <div className="space-y-3">
-          <HistoryActionCard />
-          
-          {/* Recent Entries - Show actual entries or placeholder */}
-          <HistoryEntriesList 
-            entries={recentEntries}
-            loading={loading || isRefreshing}
-          />
-        </div>
+        {/* Recent Entries - Show actual entries or placeholder */}
+        <HistoryEntriesList 
+          entries={recentEntries}
+          loading={loading || isRefreshing}
+        />
       </div>
     </div>
   );

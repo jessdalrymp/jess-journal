@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../context/UserDataContext';
 import { CoreActionsSection } from './components/CoreActionsSection';
-import { RecentActivitySection } from './components/RecentActivitySection';
 import { JournalHistorySection } from './components/JournalHistorySection';
 import { AccountSection } from './components/AccountSection';
 import { DashboardWelcomeModal } from './WelcomeModal';
@@ -55,27 +54,20 @@ export const Dashboard = () => {
         <div className="core-actions-section">
           <CoreActionsSection />
         </div>
-        <div className="recent-activity-section">
-          <RecentActivitySection 
-            journalEntries={journalEntries || []} 
-            isLoading={isLoading} 
-            loading={loading} 
-          />
+        <div className="journal-history-section">
+          <JournalHistorySection />
         </div>
       </div>
       
-      {/* Growth Insights - Moved here to appear before Journal History */}
+      {/* Growth Insights */}
       {user && profile && !isLoading && (
         <div className="mb-6">
           <GrowthInsights />
         </div>
       )}
       
-      {/* Second row - 2 columns on lg screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
-        <div className="journal-history-section">
-          <JournalHistorySection />
-        </div>
+      {/* Second row - 1 column since we removed the JournalHistorySection */}
+      <div className="relative z-10">
         <div className="account-section">
           <AccountSection />
         </div>
