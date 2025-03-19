@@ -4,7 +4,7 @@ import { useUserData } from '../../../context/UserDataContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { ConversationSession } from '@/lib/types';
-import { saveCurrentConversationToStorage, clearCurrentConversationFromStorage, getConversationsFromStorage, getCurrentConversationFromStorage } from '@/lib/storageUtils';
+import { saveCurrentConversationToStorage, clearCurrentConversationFromStorage, getConversationsFromStorage } from '@/lib/storageUtils';
 import { 
   loadExistingConversation, 
   createConversationWithInitialMessage, 
@@ -17,8 +17,6 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const initializationInProgress = useRef(false);
-  const initializationAttempts = useRef(0);
-  const MAX_RETRY_ATTEMPTS = 2;
 
   const { startConversation, addMessageToConversation } = useUserData();
   const { user: authUser } = useAuth();
@@ -30,7 +28,6 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
     if (!authUser) {
       setIsInitialized(false);
       initializationInProgress.current = false;
-      initializationAttempts.current = 0;
     }
   }, [authUser, type]);
 
@@ -54,17 +51,9 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       return null;
     }
 
-    if (initializationAttempts.current >= MAX_RETRY_ATTEMPTS) {
-      console.log(`Maximum initialization attempts (${MAX_RETRY_ATTEMPTS}) reached for ${type} chat`);
-      setError(`Failed to initialize chat after ${MAX_RETRY_ATTEMPTS} attempts. Please refresh the page.`);
-      return null;
-    }
-
     try {
       initializationInProgress.current = true;
       setLoading(true);
-      initializationAttempts.current += 1;
-      
       console.log(`Initializing chat for type: ${type}${conversationId ? ` with existing conversation id: ${conversationId}` : ''}`);
       console.log("User authentication state:", authUser ? "Authenticated" : "Not authenticated");
       
@@ -77,30 +66,18 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       // Clear any potential stale error
       setError(null);
 
-      // First, check for conversation in local storage
-      const storedConversation = getCurrentConversationFromStorage(type);
-      if (storedConversation && storedConversation.messages.length > 0) {
-        console.log(`Found stored ${type} conversation with ${storedConversation.messages.length} messages`);
-        setIsInitialized(true);
-        
-        // Ensure we return the conversation from storage to maintain continuity
-        return storedConversation;
-      }
-
-      // Try to load existing conversation if ID is provided
+      // Try to load existing conversation first if ID is provided
       if (conversationId) {
         console.log(`Attempting to load existing conversation: ${conversationId}`);
         const conversation = await loadExistingConversation(conversationId, authUser.id);
         if (conversation) {
           console.log(`Successfully loaded existing conversation with ${conversation.messages.length} messages`);
-          
-          // Save to local storage to ensure continuity
-          saveCurrentConversationToStorage(conversation);
-          
           setIsInitialized(true);
           return conversation;
         } else {
           console.log(`Failed to load existing conversation ${conversationId}, will create new conversation`);
+          // Clear conversation from storage to avoid loading it again
+          clearCurrentConversationFromStorage(type);
           toast({
             title: "Starting new conversation",
             description: "Previous conversation could not be loaded",
@@ -125,10 +102,6 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         
         if (mostRecentConversation && mostRecentConversation.messages && mostRecentConversation.messages.length > 0) {
           console.log(`Using stored conversation for ${type}`);
-          
-          // Save to current conversation storage to ensure it's accessible
-          saveCurrentConversationToStorage(mostRecentConversation);
-          
           setIsInitialized(true);
           return mostRecentConversation;
         }
@@ -161,7 +134,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       
     } catch (error) {
       console.error('Error in initializeChat:', error);
-      setError(`Failed to initialize chat: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setError("Failed to initialize chat");
       toast({
         title: "Error starting conversation",
         description: "Please try again later.",

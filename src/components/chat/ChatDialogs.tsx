@@ -12,7 +12,6 @@ interface ChatDialogsProps {
   setShowJournalingDialog: (show: boolean) => void;
   promptText?: string;
   saveChat?: boolean;
-  continuousChat?: boolean;
 }
 
 export const ChatDialogs = ({
@@ -23,12 +22,11 @@ export const ChatDialogs = ({
   showJournalingDialog,
   setShowJournalingDialog,
   promptText,
-  saveChat = false,
-  continuousChat = false
+  saveChat = false
 }: ChatDialogsProps) => {
   return (
     <>
-      {(!saveChat || !continuousChat) && (
+      {!saveChat && (
         <ChatEndDialog 
           open={showEndDialog} 
           onOpenChange={setShowEndDialog} 
