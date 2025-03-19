@@ -4,7 +4,7 @@ import { useUserData } from '../../../context/UserDataContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { ConversationSession } from '@/lib/types';
-import { saveCurrentConversationToStorage, clearCurrentConversationFromStorage, getConversationsFromStorage } from '@/lib/storageUtils';
+import { saveCurrentConversationToStorage, clearCurrentConversationFromStorage, getConversationsFromStorage, getCurrentConversationFromStorage } from '@/lib/storageUtils';
 import { 
   loadExistingConversation, 
   createConversationWithInitialMessage, 
@@ -66,7 +66,15 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       // Clear any potential stale error
       setError(null);
 
-      // Try to load existing conversation first if ID is provided
+      // First, check for conversation in local storage
+      const storedConversation = getCurrentConversationFromStorage(type);
+      if (storedConversation && storedConversation.messages.length > 0) {
+        console.log(`Found stored ${type} conversation with ${storedConversation.messages.length} messages`);
+        setIsInitialized(true);
+        return storedConversation;
+      }
+
+      // Try to load existing conversation if ID is provided
       if (conversationId) {
         console.log(`Attempting to load existing conversation: ${conversationId}`);
         const conversation = await loadExistingConversation(conversationId, authUser.id);
@@ -76,8 +84,6 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           return conversation;
         } else {
           console.log(`Failed to load existing conversation ${conversationId}, will create new conversation`);
-          // Clear conversation from storage to avoid loading it again
-          clearCurrentConversationFromStorage(type);
           toast({
             title: "Starting new conversation",
             description: "Previous conversation could not be loaded",

@@ -1,10 +1,10 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { ConversationSession } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
 import { useInitializeChat } from './hooks/useInitializeChat';
 import { useSendMessage } from './hooks/useSendMessage';
 import { useGenerateSummary } from './hooks/useGenerateSummary';
+import { getCurrentConversationFromStorage } from '@/lib/storageUtils';
 
 export const useChat = (
   type: 'story' | 'sideQuest' | 'action' | 'journal', 
@@ -37,13 +37,23 @@ export const useChat = (
       const loadChat = async () => {
         initializationAttempted.current = true;
         try {
-          // Pass the conversationId directly to initializeChat
+          // First, check if there's an existing conversation in storage
+          const existingConversation = getCurrentConversationFromStorage(type);
+          
+          if (existingConversation && existingConversation.messages.length > 0) {
+            console.log(`Using existing ${type} chat from storage with ${existingConversation.messages.length} messages`);
+            setSession(existingConversation);
+            return;
+          }
+          
+          // Otherwise, attempt to initialize from database or create new
           const chatSession = await initializeChat(conversationId);
           if (chatSession) {
             console.log(`Successfully loaded ${type} chat session with ${chatSession.messages?.length || 0} messages`);
             
             // If we have a custom initial message and this is a new conversation (only has 1 message)
-            if (initialMessageRef.current && chatSession.messages.length === 1) {
+            // AND the initial message is not empty (for continuing conversations)
+            if (initialMessageRef.current && initialMessageRef.current !== "" && chatSession.messages.length === 1) {
               console.log(`Setting custom initial message for ${type} chat`);
               // Replace the default initial message with our custom one
               const updatedSession = {
