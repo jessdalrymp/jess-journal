@@ -15,7 +15,7 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
-  // Force the formatting functions to be compatible with date-fns v4
+  // Custom formatters for date-fns v3 compatibility
   const formatWeekdayName = React.useCallback((date: Date) => {
     return format(date, 'EEEEEE');
   }, []);

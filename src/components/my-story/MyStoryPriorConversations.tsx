@@ -36,7 +36,7 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
     onSelectConversation(conversationId);
   };
 
-  // Format time with date-fns v4 compatibility
+  // Format time with date-fns v3 compatibility
   const formatTimeAgo = (date: Date | string) => {
     try {
       const dateObj = typeof date === 'string' ? new Date(date) : date;

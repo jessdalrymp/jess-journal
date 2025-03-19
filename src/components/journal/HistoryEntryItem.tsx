@@ -10,7 +10,7 @@ interface HistoryEntryItemProps {
   entry: JournalEntry;
 }
 
-// Format the date in a readable way compatible with date-fns v4
+// Format the date in a readable way compatible with date-fns v3
 const formatDate = (date: Date) => {
   const now = new Date();
   const yesterday = new Date(now);
