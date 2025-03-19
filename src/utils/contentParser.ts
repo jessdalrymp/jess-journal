@@ -1,9 +1,8 @@
+
 /**
  * Attempts to parse journal entry content as JSON, handling code blocks
  */
 export const parseEntryContent = (content: string): { title?: string; summary?: string } | null => {
-  if (!content) return null;
-  
   try {
     // First, try to detect if this is a JSON string inside code blocks
     let contentToProcess = content;
@@ -17,27 +16,13 @@ export const parseEntryContent = (content: string): { title?: string; summary?: 
     
     // Try to parse as JSON
     const parsed = JSON.parse(contentToProcess);
-    console.log("Successfully parsed content as JSON:", parsed);
-    
     if (parsed && (parsed.title || parsed.summary)) {
       return parsed;
     } else {
-      // If JSON doesn't have expected fields, check if the content itself might be a summary
-      if (typeof content === 'string' && content.length > 0 && !content.includes('{') && !content.includes('}')) {
-        return { summary: content };
-      }
-      console.log("Content parsed as JSON but missing expected fields");
       return null;
     }
   } catch (e) {
-    console.log("Could not parse as JSON, checking if it's plain text");
-    
-    // If not JSON, check if the content itself might be a summary
-    if (typeof content === 'string' && content.length > 0 && !content.includes('{') && !content.includes('}')) {
-      return { summary: content };
-    }
-    
-    console.log("Content is not valid JSON or plain text summary");
+    console.log("Content is not valid JSON or doesn't have the expected format");
     return null;
   }
 };
@@ -46,8 +31,6 @@ export const parseEntryContent = (content: string): { title?: string; summary?: 
  * Formats content for editing, ensuring proper code block formatting for JSON
  */
 export const formatContentForEditing = (content: string): string => {
-  if (!content) return '';
-  
   // Check if it's already properly formatted with code blocks
   if (content.trim().startsWith('```json') && content.trim().endsWith('```')) {
     return content;
@@ -68,6 +51,51 @@ export const formatContentForEditing = (content: string): string => {
 };
 
 /**
+ * Parses content with JSON code blocks, specifically for extracting summaries
+ */
+export const parseContentWithJsonCodeBlock = (content: string): { title?: string; summary?: string } | null => {
+  if (!content) return null;
+  
+  try {
+    // Check for code blocks first
+    const jsonRegex = /```(?:json)?\s*([\s\S]*?)```/;
+    const match = content.match(jsonRegex);
+    
+    let contentToProcess = content;
+    if (match && match[1]) {
+      contentToProcess = match[1].trim();
+    }
+    
+    // Try to parse as JSON
+    const parsed = JSON.parse(contentToProcess);
+    if (parsed && (parsed.title || parsed.summary)) {
+      return parsed;
+    }
+    
+    // If we can't parse the entire content, try to find JSON objects within it
+    const jsonObjectRegex = /(\{[\s\S]*?\})/g;
+    const jsonMatches = content.match(jsonObjectRegex);
+    if (jsonMatches) {
+      for (const jsonString of jsonMatches) {
+        try {
+          const parsed = JSON.parse(jsonString);
+          if (parsed && (parsed.title || parsed.summary)) {
+            return parsed;
+          }
+        } catch (e) {
+          // Continue to next potential JSON object
+        }
+      }
+    }
+    
+    return null;
+  } catch (e) {
+    console.log("Failed to parse content with JSON code block:", e);
+    return null;
+  }
+};
+
+/**
  * Converts third-person references to second-person for a more personal tone
  */
 export const convertToSecondPerson = (text: string): string => {
@@ -79,26 +107,4 @@ export const convertToSecondPerson = (text: string): string => {
     .replace(/\btheir\b/gi, "your")
     .replace(/\bthem\b/gi, "you")
     .replace(/\bthemselves\b/gi, "yourself");
-};
-
-/**
- * Extracts a preview of content for display in lists
- */
-export const getContentPreview = (content: string, maxLength: number = 100): string => {
-  if (!content) return '';
-  
-  // Try to parse as JSON first
-  const parsed = parseEntryContent(content);
-  if (parsed && parsed.summary) {
-    const summary = parsed.summary;
-    return summary.length > maxLength 
-      ? summary.substring(0, maxLength) + '...' 
-      : summary;
-  }
-  
-  // Otherwise, just return the raw content with code blocks removed
-  const withoutCodeBlocks = content.replace(/```[^`]*```/g, '').trim();
-  return withoutCodeBlocks.length > maxLength 
-    ? withoutCodeBlocks.substring(0, maxLength) + '...' 
-    : withoutCodeBlocks;
 };

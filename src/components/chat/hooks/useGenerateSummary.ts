@@ -45,45 +45,25 @@ export const useGenerateSummary = () => {
       let summary = summaryText;
       
       try {
-        // First try to parse as JSON directly
-        if (summaryText.includes('{') && summaryText.includes('}')) {
-          // Extract JSON if within code blocks
-          const jsonMatch = summaryText.match(/```(?:json)?\s*([\s\S]*?)```/);
-          const contentToProcess = jsonMatch && jsonMatch[1] ? jsonMatch[1].trim() : summaryText;
-          
-          const jsonSummary = JSON.parse(contentToProcess);
-          if (jsonSummary.title && jsonSummary.summary) {
-            title = jsonSummary.title;
-            summary = jsonSummary.summary;
-            console.log("Parsed JSON summary:", { title, summary });
-          }
+        const jsonSummary = JSON.parse(summaryText);
+        if (jsonSummary.title && jsonSummary.summary) {
+          title = jsonSummary.title;
+          summary = jsonSummary.summary;
+          console.log("Parsed JSON summary:", { title, summary });
         }
       } catch (e) {
-        console.log("Summary not in proper JSON format, using raw text:", e);
-        
-        // Format as JSON before saving
-        const formattedSummary = {
-          title: `${session.type.charAt(0).toUpperCase() + session.type.slice(1)} Summary`,
-          summary: summaryText
-        };
-        
-        summary = summaryText;
-        title = formattedSummary.title;
-        
-        // Format as JSON code block for storage
-        summaryText = `\`\`\`json\n${JSON.stringify(formattedSummary, null, 2)}\n\`\`\``;
-        console.log("Formatted raw text as JSON:", summaryText);
+        console.log("Summary not in JSON format, using raw text");
       }
       
       console.log("Saving summary to journal...", { 
         userId: user.id, 
         title, 
-        summary: summaryText, 
+        summary, 
         sessionId: session.id,
         type: session.type 
       });
       
-      await saveConversationSummary(user.id, title, summaryText, session.id, session.type);
+      await saveConversationSummary(user.id, title, summary, session.id, session.type);
       
       console.log("Summary saved to journal");
       
