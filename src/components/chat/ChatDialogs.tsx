@@ -12,6 +12,7 @@ interface ChatDialogsProps {
   setShowJournalingDialog: (show: boolean) => void;
   promptText?: string;
   saveChat?: boolean;
+  persistConversation?: boolean;
 }
 
 export const ChatDialogs = ({
@@ -22,7 +23,8 @@ export const ChatDialogs = ({
   showJournalingDialog,
   setShowJournalingDialog,
   promptText,
-  saveChat = false
+  saveChat = false,
+  persistConversation = false
 }: ChatDialogsProps) => {
   return (
     <>

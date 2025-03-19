@@ -16,6 +16,7 @@ export const MyStoryChatContainer = ({
   conversationId 
 }: MyStoryChatContainerProps) => {
   const [initializing, setInitializing] = useState(!!conversationId);
+  const [error, setError] = useState<string | null>(null);
   
   // Give a short delay when loading existing conversations to allow initialization
   useEffect(() => {
@@ -30,6 +31,11 @@ export const MyStoryChatContainer = ({
     }
   }, [conversationId]);
 
+  const handleError = (errorMessage: string) => {
+    console.error("Chat error:", errorMessage);
+    setError(errorMessage);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm flex-1 flex flex-col overflow-hidden">
       {initializing ? (
@@ -37,13 +43,33 @@ export const MyStoryChatContainer = ({
           <Loader2 className="h-8 w-8 animate-spin text-gray-400 mb-4" />
           <p className="text-gray-500">Loading your conversation...</p>
         </div>
+      ) : error ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-8">
+          <div className="text-red-500 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <p className="text-gray-700 font-medium mb-2">Unable to load conversation</p>
+          <p className="text-gray-500 text-center mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       ) : (
         <ChatInterface 
           type="story" 
           onBack={onBack} 
           initialMessage={getInitialMessage('story')} 
           onEndChat={() => onSave(true)} // Pass true to indicate need for refresh
+          onError={handleError}
           saveChat
+          persistConversation={true} // Keep conversation after saving
           conversationId={conversationId}
         />
       )}

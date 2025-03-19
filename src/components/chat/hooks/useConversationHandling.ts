@@ -14,7 +14,8 @@ export const useConversationHandling = (
   initialMessage?: string,
   conversationId?: string | null,
   onEndChat?: () => void,
-  onRestart?: () => void
+  onRestart?: () => void,
+  persistConversation: boolean = false
 ) => {
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [showJournalingDialog, setShowJournalingDialog] = useState(false);
@@ -75,6 +76,14 @@ export const useConversationHandling = (
           });
           await saveJournalEntryFromChat();
         }
+      }
+      
+      // Only clear conversation if not persisting and we're ending the chat
+      if (!persistConversation && type === 'story') {
+        console.log("Not clearing story conversation due to persistConversation=true");
+      } else if (type !== 'story') {
+        // For other types, still clear conversation
+        clearCurrentConversationFromStorage(type);
       }
       
       onBack();

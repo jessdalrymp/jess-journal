@@ -16,8 +16,10 @@ interface ChatInterfaceProps {
   onAcceptChallenge?: () => void;
   onRestart?: () => void;
   onEndChat?: () => void;
+  onError?: (error: string) => void;
   initialMessage?: string;
   saveChat?: boolean;
+  persistConversation?: boolean;
   conversationId?: string | null;
 }
 
@@ -27,8 +29,10 @@ export const ChatInterface = ({
   onAcceptChallenge, 
   onRestart,
   onEndChat,
+  onError,
   initialMessage,
   saveChat = false,
+  persistConversation = false,
   conversationId = null
 }: ChatInterfaceProps) => {
   const {
@@ -52,8 +56,16 @@ export const ChatInterface = ({
     initialMessage,
     conversationId,
     onEndChat,
-    onRestart
+    onRestart,
+    persistConversation
   );
+  
+  // Report errors back to parent if needed
+  React.useEffect(() => {
+    if (error && onError) {
+      onError(error);
+    }
+  }, [error, onError]);
   
   if (authLoading) {
     return <ChatLoadingState type={type} onBack={onBack} />;
@@ -101,6 +113,7 @@ export const ChatInterface = ({
         setShowJournalingDialog={setShowJournalingDialog}
         promptText={promptText}
         saveChat={saveChat}
+        persistConversation={persistConversation}
       />
     </>
   );

@@ -18,16 +18,24 @@ interface SaveChatDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   refreshData?: boolean;
+  persistConversation?: boolean;
 }
 
-export function SaveChatDialog({ open, onOpenChange, refreshData = false }: SaveChatDialogProps) {
+export function SaveChatDialog({ 
+  open, 
+  onOpenChange, 
+  refreshData = false,
+  persistConversation = false
+}: SaveChatDialogProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { fetchJournalEntries } = useUserData();
 
   const handleSave = async () => {
-    // Clear current conversation to start fresh next time
-    clearCurrentConversationFromStorage('story');
+    // Only clear current conversation if not persisting
+    if (!persistConversation) {
+      clearCurrentConversationFromStorage('story');
+    }
     
     // If refresh is needed, fetch latest entries before navigating
     if (refreshData) {
@@ -39,9 +47,13 @@ export function SaveChatDialog({ open, onOpenChange, refreshData = false }: Save
       }
     }
     
+    const message = persistConversation 
+      ? "Your story has been saved to your journal. You can continue your conversation."
+      : "Your story chat has been saved to your journal. A new conversation will begin next time.";
+    
     toast({
       title: "Conversation saved",
-      description: "Your story chat has been saved to your journal. A new conversation will begin next time.",
+      description: message,
     });
     
     navigate('/dashboard');
@@ -57,8 +69,9 @@ export function SaveChatDialog({ open, onOpenChange, refreshData = false }: Save
         <DialogHeader>
           <DialogTitle>Save your story chat</DialogTitle>
           <DialogDescription>
-            Saving your chat will add this conversation to your journal history and start 
-            a fresh conversation next time you return.
+            {persistConversation 
+              ? "Saving your chat will add this conversation to your journal while keeping your current conversation." 
+              : "Saving your chat will add this conversation to your journal and start a fresh conversation next time you return."}
           </DialogDescription>
         </DialogHeader>
         <div className="p-4 my-2 bg-jess-subtle rounded-md">
@@ -68,7 +81,7 @@ export function SaveChatDialog({ open, onOpenChange, refreshData = false }: Save
           <ul className="mt-2 space-y-1 text-sm list-disc list-inside">
             <li>This conversation is saved to your journal</li>
             <li>A summary is created for easy reference</li>
-            <li>Your next visit will start a new conversation</li>
+            {!persistConversation && <li>Your next visit will start a new conversation</li>}
           </ul>
         </div>
         <DialogFooter className="flex space-x-2 sm:justify-between sm:space-x-0">
