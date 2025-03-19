@@ -37,6 +37,7 @@ export const useChat = (
       const loadChat = async () => {
         initializationAttempted.current = true;
         try {
+          // Pass the conversationId directly to initializeChat
           const chatSession = await initializeChat(conversationId);
           if (chatSession) {
             console.log(`Successfully loaded ${type} chat session with ${chatSession.messages?.length || 0} messages`);
