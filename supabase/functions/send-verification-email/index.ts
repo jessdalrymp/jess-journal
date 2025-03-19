@@ -2,7 +2,14 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+// Get API key from environment variable
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+
+// Log the API key status (not the actual key)
+console.log(`Resend API key ${RESEND_API_KEY ? "is set" : "is NOT set"}`);
+
+// Initialize Resend with the API key
+const resend = new Resend(RESEND_API_KEY);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,10 +29,42 @@ const handler = async (req: Request): Promise<Response> => {
   }
   
   try {
+    // Parse request body
     const { email, verificationUrl }: VerificationRequest = await req.json();
     
-    console.log(`Sending verification email to ${email} with URL: ${verificationUrl}`);
+    console.log(`Received request to send verification email to: ${email}`);
+    console.log(`Verification URL: ${verificationUrl}`);
     
+    if (!email || !verificationUrl) {
+      console.error("Missing required parameters: email or verificationUrl");
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Missing required parameters: email or verificationUrl" 
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+    
+    if (!RESEND_API_KEY) {
+      console.error("RESEND_API_KEY is not set in environment variables");
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Email service configuration error: RESEND_API_KEY not set" 
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+    
+    // Prepare and send the email
+    console.log(`Attempting to send verification email to ${email}`);
     const emailResponse = await resend.emails.send({
       from: "Jess Journal <onboarding@resend.dev>",
       to: [email],
@@ -41,19 +80,47 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
     
-    console.log("Verification email sent successfully:", emailResponse);
+    console.log("Verification email response:", JSON.stringify(emailResponse));
     
-    return new Response(JSON.stringify({ success: true, data: emailResponse }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
-  } catch (error: any) {
-    console.error("Error in send-verification-email function:", error);
+    // Check if there was an error in the response
+    if (emailResponse.error) {
+      console.error("Error from Resend API:", emailResponse.error);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: emailResponse.error,
+          details: "Failed to send verification email through Resend API" 
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+    
+    // Return success response
     return new Response(
-      JSON.stringify({ error: error.message, success: false }),
+      JSON.stringify({ 
+        success: true, 
+        data: emailResponse,
+        message: "Verification email sent successfully" 
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  } catch (error: any) {
+    // Log the full error details
+    console.error("Error in send-verification-email function:", error);
+    console.error("Error stack:", error.stack);
+    
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message,
+        details: "Exception caught in send-verification-email function" 
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

@@ -6,7 +6,6 @@ import { ActionButton } from '../ui/ActionButton';
 import { ErrorMessage } from './ErrorMessage';
 import { validateEmail, validatePassword, validateName } from '../../utils/authValidation';
 import { useSignUp } from '../../hooks/auth/useSignUp';
-import { supabase } from '../../integrations/supabase/client';
 
 interface SignUpFormProps {
   onVerificationSent: (email: string) => void;
@@ -64,15 +63,18 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
       console.log("Sending verification email to:", email);
       console.log("Verification URL:", verificationUrl);
       
-      // Use the direct Supabase function URL for more reliable access
-      const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://uobvlrobwohdlfbhniho.supabase.co';
+      // Use the correct Supabase project URL for the function
+      const supabaseUrl = 'https://uobvlrobwohdlfbhniho.supabase.co';
       const functionUrl = `${supabaseUrl}/functions/v1/send-verification-email`;
       
+      console.log("Calling verification email function at:", functionUrl);
+      
+      // Make the request with proper headers
       const response = await fetch(functionUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnZscm9id29oZGxmYmhuaWhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4Mzg4MjcsImV4cCI6MjA1NTQxNDgyN30.72SrWrfSrHhZ_hCcj5slTml4BABh-z_du8v9LGI8bsc'}`
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnZscm9id29oZGxmYmhuaWhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4Mzg4MjcsImV4cCI6MjA1NTQxNDgyN30.72SrWrfSrHhZ_hCcj5slTml4BABh-z_du8v9LGI8bsc`
         },
         body: JSON.stringify({
           email,
@@ -80,8 +82,9 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         })
       });
       
+      // Parse the response
       const responseData = await response.json();
-      console.log("Verification email response:", responseData);
+      console.log("Verification email API response:", responseData);
       
       if (!response.ok) {
         console.error('Failed to send verification email:', responseData);
@@ -93,12 +96,25 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         return false;
       }
       
+      if (!responseData.success) {
+        console.error('Error in verification email response:', responseData.error);
+        toast({
+          title: "Verification email error",
+          description: responseData.error || "Error sending verification email. Please try again later.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      console.log("Verification email sent successfully via custom function");
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending verification email:', error);
+      console.error('Error details:', error.stack);
+      
       toast({
         title: "Verification email error",
-        description: "There was an error sending the verification email. Please try again later.",
+        description: `Error sending verification email: ${error.message}. Please try again later.`,
         variant: "destructive",
       });
       return false;
@@ -126,9 +142,9 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
       
       // If no session was created, assume verification is required
       if (result?.user && result.emailVerificationRequired) {
-        console.log("Email verification required, redirecting to verification screen");
+        console.log("Email verification required, sending verification email");
         
-        // Try to manually send a verification email as a backup
+        // Try to manually send a verification email
         const emailSent = await sendCustomVerificationEmail(email);
         
         if (emailSent) {
