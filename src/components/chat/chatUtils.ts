@@ -1,4 +1,3 @@
-
 import { ChatMessage } from '@/lib/types';
 import { DeepseekMessage } from '@/utils/deepseekApi';
 
@@ -78,26 +77,12 @@ export const formatMessagesForAI = (messages: ChatMessage[], type: 'story' | 'si
 };
 
 export const formatMessagesForSummary = (messages: ChatMessage[]): DeepseekMessage[] => {
-  const userMessages = messages.filter(msg => msg.role === 'user');
-  const assistantMessages = messages.filter(msg => msg.role === 'assistant');
-  
   const formattedMessages: DeepseekMessage[] = messages.map(msg => ({
     role: msg.role as 'user' | 'assistant',
     content: msg.content
   }));
   
-  const systemMessage: DeepseekMessage = {
-    role: 'system',
-    content: `Analyze the conversation and create a concise summary including key insights, themes, and takeaways. 
-    Format your response as a JSON object with two fields:
-    1. "title": A brief, descriptive title for this conversation (max 60 chars)
-    2. "summary": A 2-3 paragraph summary highlighting the most important points discussed.
-    IMPORTANT: Use second-person perspective ("you", "your") instead of third-person ("the user", "they", "their") 
-    to make it sound like you're speaking directly to the user as a friend.
-    Only respond with valid JSON.`
-  };
-  
-  return [systemMessage, ...formattedMessages];
+  return formattedMessages;
 };
 
 export const getChatTitle = (type: 'story' | 'sideQuest' | 'action' | 'journal'): string => {

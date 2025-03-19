@@ -4,7 +4,7 @@ import { ConversationSession } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { formatMessagesForSummary } from '../chatUtils';
-import { generateDeepseekResponse } from '../../../utils/deepseekApi';
+import { generateDeepseekResponse, DeepseekMessage } from '../../../utils/deepseekApi';
 import { saveConversationSummary } from '@/services/conversation';
 
 export const useGenerateSummary = () => {
@@ -32,13 +32,16 @@ export const useGenerateSummary = () => {
       
       console.log("Requesting AI summary with prompt to create concise summary only...");
       // Modify the request to specifically ask for a concise summary
-      const systemPrompt = `Create a brief summary of this conversation in JSON format with a title and summary. 
-      Focus on the main topics discussed and key insights. Keep it concise (max 100 words) and in this format:
-      {"title": "Short descriptive title", "summary": "Brief overview of the conversation"}`;
+      const systemPrompt: DeepseekMessage = {
+        role: 'system',
+        content: `Create a brief summary of this conversation in JSON format with a title and summary. 
+        Focus on the main topics discussed and key insights. Keep it concise (max 100 words) and in this format:
+        {"title": "Short descriptive title", "summary": "Brief overview of the conversation"}`
+      };
       
       // Add the system prompt to guide the AI to generate proper summaries
-      const messagesWithPrompt = [
-        { role: 'system', content: systemPrompt },
+      const messagesWithPrompt: DeepseekMessage[] = [
+        systemPrompt,
         ...aiMessages
       ];
       
