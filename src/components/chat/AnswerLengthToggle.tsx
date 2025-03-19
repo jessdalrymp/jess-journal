@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { MessageSquare, MessageSquareText } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -18,7 +17,15 @@ export const AnswerLengthToggle = ({ brevity, onToggle }: AnswerLengthToggleProp
         <ToggleGroup type="single" value={brevity} onValueChange={(value) => value && onToggle(value as 'short' | 'detailed')}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <ToggleGroupItem value="short" aria-label="Short answers" className="h-8 w-8 p-0">
+              <ToggleGroupItem 
+                value="short" 
+                aria-label="Short answers" 
+                className={`h-8 w-8 p-0 transition-colors ${
+                  brevity === 'short' 
+                    ? 'bg-jess-primary text-white hover:bg-jess-primary/90' 
+                    : 'hover:bg-jess-subtle'
+                }`}
+              >
                 <MessageSquare className="h-4 w-4" />
               </ToggleGroupItem>
             </TooltipTrigger>
@@ -29,7 +36,15 @@ export const AnswerLengthToggle = ({ brevity, onToggle }: AnswerLengthToggleProp
           
           <Tooltip>
             <TooltipTrigger asChild>
-              <ToggleGroupItem value="detailed" aria-label="Detailed answers" className="h-8 w-8 p-0">
+              <ToggleGroupItem 
+                value="detailed" 
+                aria-label="Detailed answers" 
+                className={`h-8 w-8 p-0 transition-colors ${
+                  brevity === 'detailed' 
+                    ? 'bg-jess-primary text-white hover:bg-jess-primary/90' 
+                    : 'hover:bg-jess-subtle'
+                }`}
+              >
                 <MessageSquareText className="h-4 w-4" />
               </ToggleGroupItem>
             </TooltipTrigger>
