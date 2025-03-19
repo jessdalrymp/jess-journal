@@ -36,7 +36,8 @@ export const ChatDialogs = ({
       
       // If we should save the chat and have a valid session, generate summary
       if (saveChat && session) {
-        await generateSummary(session);
+        const summary = await generateSummary(session);
+        console.log("Summary generated:", summary);
       }
       
       // Call the original onEndConversation callback

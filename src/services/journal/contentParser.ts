@@ -2,7 +2,7 @@
 /**
  * Attempts to parse journal entry content as JSON, handling code blocks
  */
-export const parseEntryContent = (content: string): { title?: string; summary?: string } | null => {
+export const parseEntryContent = (content: string): { title?: string; summary?: string; type?: string } | null => {
   try {
     // First, try to detect if this is a JSON string inside code blocks
     let contentToProcess = content;
@@ -16,11 +16,7 @@ export const parseEntryContent = (content: string): { title?: string; summary?: 
     
     // Try to parse as JSON
     const parsed = JSON.parse(contentToProcess);
-    if (parsed && (parsed.title || parsed.summary)) {
-      return parsed;
-    } else {
-      return null;
-    }
+    return parsed;
   } catch (e) {
     console.log("Content is not valid JSON or doesn't have the expected format");
     return null;
@@ -39,7 +35,7 @@ export const formatContentForEditing = (content: string): string => {
   // Check if it's valid JSON but not in code blocks
   try {
     const parsed = JSON.parse(content);
-    if (parsed && (parsed.title || parsed.summary)) {
+    if (parsed) {
       // It's valid JSON, format it with code blocks
       return "```json\n" + JSON.stringify(parsed, null, 2) + "\n```";
     }
@@ -52,7 +48,6 @@ export const formatContentForEditing = (content: string): string => {
 
 /**
  * Parses content for JSON with code blocks and returns the parsed object
- * This is the function that was missing and causing the errors
  */
 export const parseContentWithJsonCodeBlock = (content: string): any | null => {
   try {

@@ -80,6 +80,13 @@ export const useGenerateSummary = () => {
         type: session.type 
       });
       
+      // Create a properly formatted content JSON with the summary and type
+      const formattedContent = JSON.stringify({ 
+        title, 
+        summary, 
+        type: session.type 
+      }, null, 2);
+      
       // First, update the conversation record in the conversations table directly
       const { error: conversationError } = await supabase
         .from('conversations')
@@ -101,7 +108,7 @@ export const useGenerateSummary = () => {
         .insert({
           user_id: user.id,
           prompt: title,
-          content: `\`\`\`json\n${JSON.stringify({ title, summary, type: session.type }, null, 2)}\n\`\`\``,
+          content: `\`\`\`json\n${formattedContent}\n\`\`\``,
           conversation_id: session.id,
           type: session.type
         });
