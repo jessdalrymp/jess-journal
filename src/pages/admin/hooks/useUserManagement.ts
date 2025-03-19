@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from "../../../integrations/supabase/client";
 import { useToast } from "../../../hooks/use-toast";
@@ -32,9 +33,9 @@ export const useUserManagement = () => {
       console.log("Fetching users...");
       
       // Skip the RPC function since it's giving type errors and go straight to the tables we know work
-      // Get basic user data from public.users table
+      // Get basic user data from public.profiles table
       const { data: userData, error: userError } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id, email, created_at, last_session');
         
       if (userError) {

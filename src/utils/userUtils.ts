@@ -2,7 +2,7 @@
 import { supabase } from '../integrations/supabase/client';
 
 /**
- * Ensures a user exists in both auth and the users table.
+ * Ensures a user exists in both auth and the profiles table.
  * If the user doesn't exist, creates a new user.
  * 
  * @param email User email
@@ -18,9 +18,9 @@ export const ensureUserExists = async (
   skipEmailVerification = false
 ) => {
   try {
-    // Check if user exists in the users table
+    // Check if user exists in the profiles table
     const { data: existingUser, error: fetchError } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id, email')
       .eq('email', email)
       .maybeSingle();
@@ -71,11 +71,10 @@ export const ensureUserExists = async (
          window.location.origin.includes('127.0.0.1'))) {
       console.log('Skipping email verification in development');
       
-      // Create a record in the users table
-      const { error: insertError } = await supabase.from('users').upsert({
+      // Create a record in the profiles table
+      const { error: insertError } = await supabase.from('profiles').upsert({
         id: data.user.id,
         email: email,
-        name: name || email.split('@')[0],
         created_at: new Date().toISOString(),
         assessment_completed: false
       });

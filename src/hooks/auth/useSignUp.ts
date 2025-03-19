@@ -10,7 +10,7 @@ export const useSignUp = () => {
   const checkUserExists = async (email: string): Promise<boolean> => {
     try {
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id')
         .eq('email', email)
         .maybeSingle();
@@ -29,12 +29,12 @@ export const useSignUp = () => {
 
   const createUserRecord = async (userId: string, email: string, name?: string) => {
     try {
-      const { error } = await supabase.from('users').upsert({
+      const { error } = await supabase.from('profiles').upsert({
         id: userId,
         email: email,
         created_at: new Date().toISOString(),
         assessment_completed: false,
-        name: name || email.split('@')[0]
+        // We can set name in user_metadata but not in profiles directly since there's no name column
       });
       
       if (error) {
@@ -49,7 +49,7 @@ export const useSignUp = () => {
     }
   };
 
-  const signUp = async (email: string, password: string, name?: string, checkExists = false) => {
+  const signUp = async (email: string, password: string, name?: string, checkExists = false): Promise<{ user?: any; session?: any; exists?: boolean }> => {
     setLoading(true);
     try {
       // Optionally check if user exists first
@@ -97,7 +97,7 @@ export const useSignUp = () => {
       if (data?.session) {
         console.log("Sign-up successful with session:", data.user?.id);
         
-        // Insert the new user into the public.users table
+        // Insert the new user into the profiles table
         if (data.user) {
           await createUserRecord(data.user.id, email, name);
         }
@@ -151,7 +151,7 @@ export const useSignUp = () => {
             duration: 6000,
           });
         }
-        return data;
+        return { user: data.user };
       } else {
         console.error("No user or session returned after sign up");
         throw new Error("Account creation failed. Please try again.");

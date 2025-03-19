@@ -1,7 +1,82 @@
-
-import { ConversationSession, ChatMessage } from '../../lib/types';
 import { supabase } from '../../integrations/supabase/client';
-import { getCachedConversation, cacheConversation } from './conversationCache';
+import { ConversationSession, ChatMessage } from '../../lib/types';
+
+// Helper to convert database timestamps to JavaScript Date objects
+const dbTimestampToDate = (timestamp: string | null): Date => {
+  return timestamp ? new Date(timestamp) : new Date();
+};
+
+/**
+ * Fetch all conversations for a user
+ */
+export async function fetchConversations(userId: string): Promise<ConversationSession[]> {
+  try {
+    const { data, error } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('profile_id', userId)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching conversations:', error);
+      throw error;
+    }
+
+    return (data || []).map(conv => ({
+      id: conv.id,
+      userId: conv.profile_id, // Map profile_id to userId for consistency
+      type: conv.type as 'story' | 'sideQuest' | 'action' | 'journal',
+      title: conv.title || 'Untitled Conversation',
+      messages: [],
+      summary: conv.summary || '',
+      createdAt: dbTimestampToDate(conv.created_at),
+      updatedAt: dbTimestampToDate(conv.updated_at)
+    }));
+  } catch (error) {
+    console.error('Error in fetchConversations:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create a new conversation
+ */
+export async function createConversation(
+  userId: string,
+  type: 'story' | 'sideQuest' | 'action' | 'journal',
+  title: string
+): Promise<ConversationSession> {
+  try {
+    const { data, error } = await supabase
+      .from('conversations')
+      .insert({
+        profile_id: userId, // Use profile_id instead of user_id
+        type,
+        title
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating conversation:', error);
+      throw error;
+    }
+
+    return {
+      id: data.id,
+      userId: data.profile_id, // Map profile_id to userId for consistency
+      type: data.type as 'story' | 'sideQuest' | 'action' | 'journal',
+      title: data.title,
+      messages: [],
+      summary: data.summary || '',
+      createdAt: dbTimestampToDate(data.created_at),
+      updatedAt: dbTimestampToDate(data.updated_at)
+    };
+  } catch (error) {
+    console.error('Error in createConversation:', error);
+    throw error;
+  }
+}
 
 /**
  * Starts or retrieves an existing conversation for a user
@@ -22,7 +97,7 @@ export const startConversation = async (userId: string | undefined, type: 'story
     const { data: existingConversations, error: fetchError } = await supabase
       .from('conversations')
       .select('*')
-      .eq('user_id', userId)
+      .eq('profile_id', userId)
       .eq('type', type)
       .order('updated_at', { ascending: false })
       .limit(1);
@@ -55,7 +130,7 @@ export const startConversation = async (userId: string | undefined, type: 'story
       
       const conversation = {
         id: existingConv.id,
-        userId: existingConv.user_id,
+        userId: existingConv.profile_id, // Map profile_id to userId for consistency
         type: existingConv.type as 'story' | 'sideQuest' | 'action' | 'journal',
         title: existingConv.title,
         messages: messages,
@@ -72,7 +147,7 @@ export const startConversation = async (userId: string | undefined, type: 'story
     }
     
     const newConversationData = {
-      user_id: userId,
+      profile_id: userId,
       type,
       title: `${type.charAt(0).toUpperCase() + type.slice(1)} Conversation`,
     };
@@ -90,7 +165,7 @@ export const startConversation = async (userId: string | undefined, type: 'story
     
     const conversation = {
       id: newConversation.id,
-      userId: newConversation.user_id,
+      userId: newConversation.profile_id, // Map profile_id to userId for consistency
       type: newConversation.type as 'story' | 'sideQuest' | 'action' | 'journal',
       title: newConversation.title,
       messages: [],

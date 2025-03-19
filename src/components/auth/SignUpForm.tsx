@@ -64,6 +64,12 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
       console.log("Attempting to sign up with:", { email, name });
       const result = await signUp(email, password, name);
       
+      // Check if user exists
+      if (result?.exists) {
+        console.log("User already exists");
+        return;
+      }
+      
       // If no session was created, assume verification is required
       if (result?.user && !result?.session) {
         console.log("Email verification likely required, redirecting to verification screen");
