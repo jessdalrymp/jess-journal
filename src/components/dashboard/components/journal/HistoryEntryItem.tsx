@@ -32,15 +32,48 @@ const formatTime = (date: Date) => {
 // Enhanced function to extract and display content from journal entries
 const getEntryContent = (entry: JournalEntry): string => {
   try {
-    // Check if the content is JSON in a code block
+    // First check if it's a story or sideQuest entry with a summary field
+    if (entry.type === 'story' || entry.type === 'sideQuest') {
+      // Try to parse summary from content if it exists
+      if (entry.content) {
+        // Check if the content is JSON in a code block
+        if (entry.content.includes('```json')) {
+          const jsonMatch = entry.content.match(/```json\s*([\s\S]*?)```/);
+          if (jsonMatch && jsonMatch[1]) {
+            try {
+              const parsedJson = JSON.parse(jsonMatch[1].trim());
+              if (parsedJson.summary) {
+                return parsedJson.summary.substring(0, 100) + (parsedJson.summary.length > 100 ? '...' : '');
+              }
+            } catch (e) {
+              console.error('Error parsing JSON in content:', e);
+            }
+          }
+        }
+        
+        // If no summary found, try to extract from JSON format
+        try {
+          const jsonObject = JSON.parse(entry.content);
+          if (jsonObject.summary) {
+            return jsonObject.summary.substring(0, 100) + (jsonObject.summary.length > 100 ? '...' : '');
+          }
+        } catch (e) {
+          // Not JSON, continue with other methods
+        }
+      }
+    }
+    
+    // Check if the content is JSON in a code block for any type
     if (entry.content && entry.content.includes('```json')) {
       const jsonMatch = entry.content.match(/```json\s*([\s\S]*?)```/);
       if (jsonMatch && jsonMatch[1]) {
-        const parsedJson = JSON.parse(jsonMatch[1].trim());
-        if (parsedJson.summary) {
-          // Return the first part of the summary
-          const summary = parsedJson.summary;
-          return summary.substring(0, 100) + (summary.length > 100 ? '...' : '');
+        try {
+          const parsedJson = JSON.parse(jsonMatch[1].trim());
+          if (parsedJson.summary) {
+            return parsedJson.summary.substring(0, 100) + (parsedJson.summary.length > 100 ? '...' : '');
+          }
+        } catch (e) {
+          console.error('Error parsing JSON in content:', e);
         }
       }
     }

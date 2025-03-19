@@ -2,6 +2,8 @@
 import React from 'react';
 import { ChatEndDialog } from './ChatEndDialog';
 import { JournalingDialog } from '../challenges/JournalingDialog';
+import { useGenerateSummary } from './hooks/useGenerateSummary';
+import { ConversationSession } from '@/lib/types';
 
 interface ChatDialogsProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
@@ -12,6 +14,7 @@ interface ChatDialogsProps {
   setShowJournalingDialog: (show: boolean) => void;
   promptText?: string;
   saveChat?: boolean;
+  session?: ConversationSession | null;
 }
 
 export const ChatDialogs = ({
@@ -22,17 +25,36 @@ export const ChatDialogs = ({
   showJournalingDialog,
   setShowJournalingDialog,
   promptText,
-  saveChat = false
+  saveChat = false,
+  session
 }: ChatDialogsProps) => {
+  const { generateSummary } = useGenerateSummary();
+
+  const handleEndConversation = async () => {
+    try {
+      console.log("Ending conversation and generating summary...");
+      
+      // If we should save the chat and have a valid session, generate summary
+      if (saveChat && session) {
+        await generateSummary(session);
+      }
+      
+      // Call the original onEndConversation callback
+      onEndConversation();
+    } catch (error) {
+      console.error("Error in handleEndConversation:", error);
+      // Still call onEndConversation even if there's an error
+      onEndConversation();
+    }
+  };
+
   return (
     <>
-      {!saveChat && (
-        <ChatEndDialog 
-          open={showEndDialog} 
-          onOpenChange={setShowEndDialog} 
-          onEndConversation={onEndConversation} 
-        />
-      )}
+      <ChatEndDialog 
+        open={showEndDialog} 
+        onOpenChange={setShowEndDialog} 
+        onEndConversation={handleEndConversation} 
+      />
       
       {type === 'journal' && (
         <JournalingDialog

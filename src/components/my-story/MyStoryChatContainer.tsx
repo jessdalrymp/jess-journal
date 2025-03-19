@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { ChatInterface } from "../../components/chat/ChatInterface";
 import { getInitialMessage } from "../../components/chat/chatUtils";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface MyStoryChatContainerProps {
   onBack: () => void;
@@ -16,6 +17,7 @@ export const MyStoryChatContainer = ({
   conversationId 
 }: MyStoryChatContainerProps) => {
   const [initializing, setInitializing] = useState(true);
+  const { toast } = useToast();
   
   // Give a short delay when loading existing conversations to allow initialization
   useEffect(() => {
@@ -28,6 +30,27 @@ export const MyStoryChatContainer = ({
     
     return () => clearTimeout(timer);
   }, [conversationId]);
+
+  const handleEndChat = async () => {
+    try {
+      console.log("Ending chat and saving data");
+      // Call onSave with true to indicate need for refresh
+      onSave(true);
+      
+      // Show success toast
+      toast({
+        title: "Story saved",
+        description: "Your story has been saved to your journal history.",
+      });
+    } catch (error) {
+      console.error("Error saving chat:", error);
+      toast({
+        title: "Error saving story",
+        description: "There was a problem saving your story. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm flex-1 flex flex-col overflow-hidden">
@@ -45,8 +68,8 @@ export const MyStoryChatContainer = ({
           type="story" 
           onBack={onBack} 
           initialMessage={getInitialMessage('story')} 
-          onEndChat={() => onSave(true)} // Pass true to indicate need for refresh
-          saveChat
+          onEndChat={handleEndChat}
+          saveChat={true}
           conversationId={conversationId}
         />
       )}

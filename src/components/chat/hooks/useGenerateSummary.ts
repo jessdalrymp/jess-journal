@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { formatMessagesForSummary } from '../chatUtils';
 import { generateDeepseekResponse } from '../../../utils/deepseekApi';
 import { saveConversationSummary } from '@/services/conversation';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useGenerateSummary = () => {
   const [loading, setLoading] = useState(false);
@@ -70,10 +71,38 @@ export const useGenerateSummary = () => {
         type: session.type 
       });
       
-      // Save the summary to both the conversation record and journal entry
-      await saveConversationSummary(user.id, title, summary, session.id, session.type);
+      // First, update the conversation record in the conversations table directly
+      const { error: conversationError } = await supabase
+        .from('conversations')
+        .update({
+          title: title,
+          summary: summary,
+          updated_at: new Date()
+        })
+        .eq('id', session.id);
       
-      console.log("Summary saved successfully");
+      if (conversationError) {
+        console.error("Error updating conversation summary:", conversationError);
+        throw new Error("Failed to update conversation summary");
+      }
+      
+      // Then, save the summary to journal_entries table
+      const { error: journalError } = await supabase
+        .from('journal_entries')
+        .insert({
+          user_id: user.id,
+          prompt: title,
+          content: `\`\`\`json\n${JSON.stringify({ title, summary, type: session.type }, null, 2)}\n\`\`\``,
+          conversation_id: session.id,
+          type: session.type
+        });
+      
+      if (journalError) {
+        console.error("Error saving journal entry:", journalError);
+        throw new Error("Failed to save journal entry");
+      }
+      
+      console.log("Summary saved successfully to both conversations and journal_entries tables");
       
       toast({
         title: "Conversation Summarized",

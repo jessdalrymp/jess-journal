@@ -1,107 +1,119 @@
-
-import React from 'react';
-import { useConversationHandling } from './hooks/useConversationHandling';
-import { 
-  ChatLoadingState, 
-  ChatUnauthenticatedState, 
-  ChatErrorState, 
-  ChatInitializing 
-} from './ChatStateComponents';
-import { ChatContent } from './ChatContent';
+import React, { useState, useEffect, useRef } from 'react';
+import { ChatHeader } from './ChatHeader';
+import { ChatInput } from './ChatInput';
+import { ChatMessageDisplay } from './ChatMessageDisplay';
+import { useChat } from './useChat';
 import { ChatDialogs } from './ChatDialogs';
+import { useJournalPrompt } from '@/hooks/useJournalPrompt';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { ActionButton } from '../ui/ActionButton';
+import { ArrowLeft } from 'lucide-react';
+import { ConversationSession } from '@/lib/types';
 
 interface ChatInterfaceProps {
+  onBack?: () => void;
   type: 'story' | 'sideQuest' | 'action' | 'journal';
-  onBack: () => void;
-  onAcceptChallenge?: () => void;
-  onRestart?: () => void;
-  onEndChat?: () => void;
   initialMessage?: string;
+  onEndChat?: () => void;
   saveChat?: boolean;
   conversationId?: string | null;
 }
 
-export const ChatInterface = ({ 
-  type, 
-  onBack, 
-  onAcceptChallenge, 
-  onRestart,
-  onEndChat,
+export const ChatInterface = ({
+  onBack,
+  type,
   initialMessage,
+  onEndChat,
   saveChat = false,
-  conversationId = null
+  conversationId
 }: ChatInterfaceProps) => {
+  const [showEndDialog, setShowEndDialog] = useState(false);
+  const [showJournalingDialog, setShowJournalingDialog] = useState(false);
+  const [promptText, setPromptText] = useState<string | undefined>(undefined);
+  const chatBottomRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+
+  const { prompt, loading: promptLoading, error: promptError } = useJournalPrompt();
+
+  useEffect(() => {
+    if (prompt && type === 'journal') {
+      setPromptText(prompt.prompt);
+      localStorage.setItem('currentJournalPrompt', JSON.stringify(prompt));
+    }
+  }, [prompt, type]);
+
   const {
-    user,
     session,
-    loading,
-    error,
-    authLoading,
+    loading: chatLoading,
+    error: chatError,
     sendMessage,
-    showEndDialog,
-    setShowEndDialog,
-    showJournalingDialog,
-    setShowJournalingDialog,
-    openEndDialog,
-    handleEndConversation,
-    handleJournalingComplete,
-    handleNewChallenge
-  } = useConversationHandling(
-    type, 
-    onBack, 
-    initialMessage,
-    conversationId,
-    onEndChat,
-    onRestart
-  );
-  
-  if (authLoading) {
-    return <ChatLoadingState type={type} onBack={onBack} />;
-  }
-  
-  if (!user) {
-    return <ChatUnauthenticatedState type={type} onBack={onBack} />;
-  }
-  
-  if (loading && !session) {
-    return <ChatLoadingState type={type} onBack={onBack} />;
-  }
-  
-  if (error) {
-    return <ChatErrorState type={type} onBack={onBack} error={error} />;
-  }
-  
-  if (!session) {
-    return <ChatInitializing type={type} onBack={onBack} />;
-  }
-  
-  // Extract the first message content (which is the prompt) for journal entry
-  const promptText = session.messages.length > 0 ? session.messages[0].content : undefined;
-  
+    generateSummary
+  } = useChat(type, initialMessage, conversationId);
+
+  useEffect(() => {
+    if (chatBottomRef.current) {
+      chatBottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, [session?.messages]);
+
+  const handleEndChat = async () => {
+    if (saveChat && session) {
+      try {
+        // Generate summary before ending chat
+        await generateSummary();
+        console.log("Summary generated successfully before ending chat");
+      } catch (error) {
+        console.error("Error generating summary:", error);
+      }
+    }
+    
+    if (onEndChat) {
+      onEndChat();
+    }
+    
+    setShowEndDialog(false);
+  };
+
+  const handleSendMessage = (message: string) => {
+    if (session) {
+      sendMessage(message);
+    }
+  };
+
   return (
-    <>
-      <ChatContent
-        type={type}
-        session={session}
-        loading={loading}
-        onBack={onBack}
-        onSendMessage={sendMessage}
-        onEndChat={() => openEndDialog(saveChat)}
-        onAcceptChallenge={onAcceptChallenge}
-        onNewChallenge={type === 'action' || type === 'journal' ? handleNewChallenge : undefined}
-        saveChat={saveChat}
+    <div className="flex flex-col h-full">
+      <ChatHeader 
+        title={type === 'story' ? 'My Story' : 'Side Quest'} 
+        onBack={onBack} 
+        onEnd={() => setShowEndDialog(true)} 
       />
-      
+
+      <ChatMessageDisplay 
+        messages={session?.messages || []} 
+        loading={chatLoading} 
+        error={chatError} 
+        chatBottomRef={chatBottomRef}
+      />
+
+      <ChatInput 
+        onSendMessage={handleSendMessage} 
+        type={type} 
+        onJournal={() => setShowJournalingDialog(true)}
+        disabled={chatLoading}
+      />
+
+      {/* Dialogs */}
       <ChatDialogs
         type={type}
         showEndDialog={showEndDialog}
         setShowEndDialog={setShowEndDialog}
-        onEndConversation={handleEndConversation}
+        onEndConversation={handleEndChat}
         showJournalingDialog={showJournalingDialog}
         setShowJournalingDialog={setShowJournalingDialog}
         promptText={promptText}
         saveChat={saveChat}
+        session={session}
       />
-    </>
+    </div>
   );
 };
