@@ -4,17 +4,18 @@ import { parseEntryContent } from "@/utils/contentParser";
 
 interface JournalEntryContentProps {
   entry: JournalEntry;
+  parsedContent?: { title?: string; summary?: string } | null;
 }
 
-export const JournalEntryContent = ({ entry }: JournalEntryContentProps) => {
-  // Get parsed content from the entry
-  const parsedContent = parseEntryContent(entry.content);
+export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryContentProps) => {
+  // Use provided parsedContent or parse it if not provided
+  const contentData = parsedContent || parseEntryContent(entry.content);
   
   // Function to render content with proper formatting for newlines
   const renderContent = () => {
     // If we have parsed JSON content, use the summary
-    if (parsedContent && parsedContent.summary) {
-      return parsedContent.summary.split('\n').map((paragraph, index) => {
+    if (contentData && contentData.summary) {
+      return contentData.summary.split('\n').map((paragraph, index) => {
         if (!paragraph.trim()) {
           return <br key={index} />;
         }
