@@ -22,7 +22,11 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
     // Remove the prompt from the content if it exists
     let displayContent = entry.content;
     if (entry.prompt && displayContent.includes(entry.prompt)) {
+      // More thorough prompt removal
       displayContent = displayContent.replace(entry.prompt, '').trim();
+      
+      // Also remove any Q: or A: prefixes that might remain
+      displayContent = displayContent.replace(/^[\s\n]*[Q|A][:.]?\s*/im, '').trim();
     }
     
     // Render the content with newlines

@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Calendar, Clock } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
@@ -30,7 +29,7 @@ const formatTime = (date: Date) => {
   return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 };
 
-// Improved function to get user's answer rather than the prompt/question
+// Enhanced function to extract and display user's answers rather than prompts
 const getEntryContent = (entry: JournalEntry): string => {
   try {
     // First try to parse JSON content
@@ -40,21 +39,27 @@ const getEntryContent = (entry: JournalEntry): string => {
       return parsedContent.summary.substring(0, 100) + '...';
     }
     
-    // If there's a prompt, extract the user's response
+    // If there's a prompt, make sure we're only showing the user's response
     if (entry.prompt) {
-      // Remove the prompt from the beginning of the content
       let userResponse = entry.content;
+      
+      // Find where the prompt ends and the user's response begins
       if (userResponse.includes(entry.prompt)) {
+        // More aggressive prompt removal to ensure we get just the answer
         userResponse = userResponse.replace(entry.prompt, '').trim();
+        
+        // If there are any remnants of the question format, try to clean those too
+        userResponse = userResponse.replace(/^[\s\n]*[Q|A][:.]?\s*/i, '').trim();
       }
       
-      // Return a snippet of the user's response
-      return userResponse.substring(0, 100) + '...';
+      // If user response is still too long after cleaning, truncate it
+      return userResponse.substring(0, 100) + (userResponse.length > 100 ? '...' : '');
     }
     
     // For entries without prompt or JSON content, just return a snippet
     return entry.content.substring(0, 100) + '...';
   } catch (e) {
+    console.error('Error processing entry content:', e);
     return entry.content.substring(0, 100) + '...';
   }
 };
