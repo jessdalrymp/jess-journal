@@ -63,6 +63,15 @@ export const useGenerateSummary = () => {
         console.log("Summary not in JSON format or parsing failed, using raw text");
       }
       
+      // Ensure we have some content in both title and summary
+      if (!title || title.trim() === '') {
+        title = "Conversation Summary";
+      }
+      
+      if (!summary || summary.trim() === '') {
+        summary = "No content was generated for this conversation summary.";
+      }
+      
       console.log("Saving summary to database and journal...", { 
         userId: user.id, 
         title, 
@@ -77,7 +86,7 @@ export const useGenerateSummary = () => {
         .update({
           title: title,
           summary: summary,
-          updated_at: new Date().toISOString() // Fix: Convert Date to ISO string
+          updated_at: new Date().toISOString()
         })
         .eq('id', session.id);
       

@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatHeader } from './ChatHeader';
 import { ChatInput } from './ChatInput';
-import { ChatMessageDisplay } from './ChatMessageDisplay';
 import { useChat } from './useChat';
 import { ChatDialogs } from './ChatDialogs';
 import { useJournalPrompt } from '@/hooks/useJournalPrompt';
@@ -87,12 +86,43 @@ export const ChatInterface = ({
         onEnd={() => setShowEndDialog(true)} 
       />
 
-      <ChatMessageDisplay 
-        messages={session?.messages || []} 
-        loading={chatLoading} 
-        error={chatError} 
-        chatBottomRef={chatBottomRef}
-      />
+      <div className="flex-1 overflow-y-auto bg-white">
+        {session?.messages && session.messages.length > 0 && (
+          <div className="px-4 py-4 space-y-6">
+            {session.messages.map((message, index) => (
+              <div 
+                key={index} 
+                className={`flex ${message.role === 'assistant' ? 'justify-start' : 'justify-end'}`}
+              >
+                <div 
+                  className={`max-w-[80%] p-3 rounded-lg ${
+                    message.role === 'assistant' 
+                      ? 'bg-jess-subtle text-jess-foreground' 
+                      : 'bg-jess-primary text-white'
+                  }`}
+                >
+                  {message.content}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {chatLoading && (
+          <div className="px-4 py-2 bg-gray-100 border-t border-jess-subtle flex items-center">
+            <div className="h-5 w-5 mr-2 animate-spin border-2 border-primary border-t-transparent rounded-full"></div>
+            <span className="text-sm font-medium">Jess is thinking...</span>
+          </div>
+        )}
+        
+        {chatError && (
+          <div className="px-4 py-2 bg-red-50 border-t border-red-200 text-red-600">
+            <p>Something went wrong. Please try again.</p>
+          </div>
+        )}
+        
+        <div ref={chatBottomRef} />
+      </div>
 
       <ChatInput 
         onSendMessage={handleSendMessage} 

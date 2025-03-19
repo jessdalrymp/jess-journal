@@ -89,7 +89,10 @@ export const useChat = (
   };
   
   const handleGenerateSummary = async () => {
-    if (!session) return null;
+    if (!session) {
+      console.error("Cannot generate summary: No active session");
+      return null;
+    }
     
     console.log("Generating summary for session:", session.id);
     const result = await generateSummary(session);
