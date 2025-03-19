@@ -1,6 +1,7 @@
 
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon, getEntryTypeName } from './JournalHistoryUtils';
+import { parseContentWithJsonCodeBlock } from '@/services/journal/contentParser';
 
 interface JournalHistoryEntryDetailProps {
   entry: JournalEntry;
@@ -8,11 +9,35 @@ interface JournalHistoryEntryDetailProps {
   onBack: () => void;
 }
 
+// Helper function to format the content for display
+const formatEntryContent = (entry: JournalEntry): string => {
+  try {
+    // Try to parse content as JSON
+    const parsedContent = parseContentWithJsonCodeBlock(entry.content);
+    if (parsedContent && parsedContent.summary) {
+      return parsedContent.summary;
+    }
+    
+    // For story entries, the content might be the summary itself
+    if (entry.type === 'story') {
+      return entry.content;
+    }
+    
+    // For other entries, return the content as-is
+    return entry.content;
+  } catch (e) {
+    console.error('Error parsing entry content:', e);
+    return entry.content;
+  }
+};
+
 export const JournalHistoryEntryDetail = ({
   entry,
   getEntryTitle,
   onBack
 }: JournalHistoryEntryDetailProps) => {
+  const formattedContent = formatEntryContent(entry);
+  
   return (
     <div>
       <div className="flex items-center text-sm text-jess-muted mb-4">
@@ -29,9 +54,15 @@ export const JournalHistoryEntryDetail = ({
         </span>
       </div>
       
-      <div className="whitespace-pre-wrap">
-        {entry.content}
-      </div>
+      {entry.type === 'story' ? (
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 whitespace-pre-wrap mb-4">
+          {formattedContent}
+        </div>
+      ) : (
+        <div className="whitespace-pre-wrap">
+          {formattedContent}
+        </div>
+      )}
       
       <div className="mt-6">
         <button

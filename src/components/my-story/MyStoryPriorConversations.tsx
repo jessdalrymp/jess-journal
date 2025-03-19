@@ -2,7 +2,7 @@
 import React from 'react';
 import { Conversation } from '@/services/conversation/types';
 import { Button } from "@/components/ui/button";
-import { Loader2, Clock, ChevronRight } from "lucide-react";
+import { Loader2, Clock, ChevronRight, BookOpen } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from 'date-fns';
 
@@ -51,9 +51,12 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
                 onClick={() => onSelectConversation(conversation.id)}
               >
                 <div className="flex justify-between items-start">
-                  <h4 className="font-medium text-sm line-clamp-1">
-                    {conversation.title || 'Untitled conversation'}
-                  </h4>
+                  <div className="flex items-center gap-1">
+                    <BookOpen className="h-4 w-4 text-blue-500" />
+                    <h4 className="font-medium text-sm line-clamp-1">
+                      {conversation.title || 'My Story'}
+                    </h4>
+                  </div>
                   {currentConversationId === conversation.id && (
                     <span className="bg-primary text-white text-xs px-2 py-0.5 rounded">Current</span>
                   )}
@@ -67,10 +70,15 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
                 </div>
                 
                 {conversation.summary && (
-                  <p className="text-xs text-gray-600 mt-2 line-clamp-2">
+                  <p className="text-xs text-gray-600 mt-2 line-clamp-3 bg-gray-50 p-2 rounded italic">
                     {conversation.summary}
                   </p>
                 )}
+                
+                <div className="mt-2 text-xs text-blue-500 hover:text-blue-700 flex items-center">
+                  <span>Continue story</span>
+                  <ChevronRight className="h-3 w-3 ml-1" />
+                </div>
               </div>
             ))}
           </div>
