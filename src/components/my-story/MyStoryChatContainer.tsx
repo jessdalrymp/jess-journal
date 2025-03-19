@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 
 interface MyStoryChatContainerProps {
   onBack: () => void;
-  onSave: () => void;
+  onSave: (refreshData?: boolean) => void;
   conversationId: string | null;
 }
 
@@ -42,7 +42,7 @@ export const MyStoryChatContainer = ({
           type="story" 
           onBack={onBack} 
           initialMessage={getInitialMessage('story')} 
-          onEndChat={onSave}
+          onEndChat={() => onSave(true)} // Pass true to indicate need for refresh
           saveChat
           conversationId={conversationId}
         />

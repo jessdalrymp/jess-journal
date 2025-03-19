@@ -22,7 +22,8 @@ const MyStory = () => {
     authError,
     handleBack,
     handleSaveChat,
-    handleStartFresh
+    handleStartFresh,
+    refreshDataOnSave
   } = useMyStoryState();
   
   if (userLoading || isLoading) {
@@ -61,6 +62,7 @@ const MyStory = () => {
       <SaveChatDialog
         open={showSaveChatDialog}
         onOpenChange={setShowSaveChatDialog}
+        refreshData={refreshDataOnSave}
       />
     </div>
   );

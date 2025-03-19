@@ -12,7 +12,7 @@ import { GrowthInsights } from './GrowthInsights';
 
 export const Dashboard = () => {
   const { user } = useAuth();
-  const { journalEntries, loading, profile } = useUserData();
+  const { journalEntries, loading, profile, fetchJournalEntries } = useUserData();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -21,6 +21,14 @@ export const Dashboard = () => {
       setIsLoading(false);
     }
   }, [loading]);
+  
+  // Always refresh entries when dashboard mounts
+  useEffect(() => {
+    if (user) {
+      console.log("Dashboard mounted - refreshing journal entries");
+      fetchJournalEntries();
+    }
+  }, [user, fetchJournalEntries]);
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 relative">

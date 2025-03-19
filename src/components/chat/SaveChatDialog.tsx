@@ -12,19 +12,32 @@ import { useNavigate } from "react-router-dom";
 import { Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { clearCurrentConversationFromStorage } from "@/lib/storageUtils";
+import { useUserData } from "@/context/UserDataContext";
 
 interface SaveChatDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  refreshData?: boolean;
 }
 
-export function SaveChatDialog({ open, onOpenChange }: SaveChatDialogProps) {
+export function SaveChatDialog({ open, onOpenChange, refreshData = false }: SaveChatDialogProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { fetchJournalEntries } = useUserData();
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Clear current conversation to start fresh next time
     clearCurrentConversationFromStorage('story');
+    
+    // If refresh is needed, fetch latest entries before navigating
+    if (refreshData) {
+      try {
+        await fetchJournalEntries();
+        console.log("Journal entries refreshed after saving story");
+      } catch (error) {
+        console.error("Error refreshing journal entries:", error);
+      }
+    }
     
     toast({
       title: "Conversation saved",
