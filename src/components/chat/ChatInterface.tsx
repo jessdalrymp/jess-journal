@@ -6,6 +6,8 @@ import { useChat } from './useChat';
 import { ChatDialogs } from './ChatDialogs';
 import { useJournalPrompt } from '@/hooks/useJournalPrompt';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ChatMessageDisplay } from './ChatMessageDisplay';
+import { useToast } from '@/hooks/use-toast';
 
 interface ChatInterfaceProps {
   onBack?: () => void;
@@ -29,6 +31,7 @@ export const ChatInterface = ({
   const [promptText, setPromptText] = useState<string | undefined>(undefined);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   // Fixed destructuring to match what useJournalPrompt actually returns
   const { journalPrompt, isLoading: promptLoading } = useJournalPrompt();
@@ -54,6 +57,21 @@ export const ChatInterface = ({
     }
   }, [session?.messages]);
 
+  // Log session state for debugging
+  useEffect(() => {
+    console.log(`ChatInterface for ${type} - Session state:`, 
+      session ? `Active with ${session.messages.length} messages` : 'No active session');
+    
+    if (chatError) {
+      console.error(`Chat error for ${type}:`, chatError);
+      toast({
+        title: "Connection issue detected",
+        description: "There was a problem connecting to the AI. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [session, chatError, type, toast]);
+
   const handleEndChat = async () => {
     if (saveChat && session) {
       try {
@@ -74,7 +92,15 @@ export const ChatInterface = ({
 
   const handleSendMessage = (message: string) => {
     if (session) {
+      console.log(`Sending message in ${type} chat:`, message.substring(0, 50) + '...');
       sendMessage(message);
+    } else {
+      console.error("Cannot send message: No active session");
+      toast({
+        title: "Connection issue",
+        description: "Unable to send your message. Please refresh the page and try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -86,48 +112,17 @@ export const ChatInterface = ({
         onEnd={() => setShowEndDialog(true)} 
       />
 
-      <div className="flex-1 overflow-y-auto bg-white">
-        {session?.messages && session.messages.length > 0 && (
-          <div className="px-4 py-4 space-y-6">
-            {session.messages.map((message, index) => (
-              <div 
-                key={index} 
-                className={`flex ${message.role === 'assistant' ? 'justify-start' : 'justify-end'}`}
-              >
-                <div 
-                  className={`max-w-[80%] p-3 rounded-lg ${
-                    message.role === 'assistant' 
-                      ? 'bg-jess-subtle text-jess-foreground' 
-                      : 'bg-jess-primary text-white'
-                  }`}
-                >
-                  {message.content}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        
-        {chatLoading && (
-          <div className="px-4 py-2 bg-gray-100 border-t border-jess-subtle flex items-center">
-            <div className="h-5 w-5 mr-2 animate-spin border-2 border-primary border-t-transparent rounded-full"></div>
-            <span className="text-sm font-medium">Jess is thinking...</span>
-          </div>
-        )}
-        
-        {chatError && (
-          <div className="px-4 py-2 bg-red-50 border-t border-red-200 text-red-600">
-            <p>Something went wrong. Please try again.</p>
-          </div>
-        )}
-        
-        <div ref={chatBottomRef} />
-      </div>
+      <ChatMessageDisplay
+        messages={session?.messages || []}
+        loading={chatLoading}
+        error={chatError}
+        chatBottomRef={chatBottomRef}
+      />
 
       <ChatInput 
         onSendMessage={handleSendMessage} 
         loading={chatLoading}
-        disabled={chatLoading}
+        disabled={chatLoading || !session}
         type={type}
         onJournal={() => setShowJournalingDialog(true)}
       />

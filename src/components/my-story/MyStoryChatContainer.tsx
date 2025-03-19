@@ -4,6 +4,9 @@ import { ChatInterface } from "../../components/chat/ChatInterface";
 import { getInitialMessage } from "../../components/chat/chatUtils";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 interface MyStoryChatContainerProps {
   onBack: () => void;
@@ -17,6 +20,7 @@ export const MyStoryChatContainer = ({
   conversationId 
 }: MyStoryChatContainerProps) => {
   const [initializing, setInitializing] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   
   // Give a short delay when loading existing conversations to allow initialization
@@ -44,12 +48,22 @@ export const MyStoryChatContainer = ({
       });
     } catch (error) {
       console.error("Error saving chat:", error);
+      setError("Failed to save your story. Please try again.");
       toast({
         title: "Error saving story",
         description: "There was a problem saving your story. Please try again.",
         variant: "destructive"
       });
     }
+  };
+
+  const handleRetry = () => {
+    setError(null);
+    setInitializing(true);
+    // Force a refresh by triggering the loading state again
+    setTimeout(() => {
+      setInitializing(false);
+    }, 1500);
   };
 
   return (
@@ -62,6 +76,17 @@ export const MyStoryChatContainer = ({
               ? "Loading your previous conversation..." 
               : "Setting up a new conversation..."}
           </p>
+        </div>
+      ) : error ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-8">
+          <Alert variant="destructive" className="mb-4 max-w-md">
+            <AlertTitle>Connection Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          <Button onClick={handleRetry} className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Try Again
+          </Button>
         </div>
       ) : (
         <ChatInterface 
