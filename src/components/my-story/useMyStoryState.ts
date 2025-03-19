@@ -12,7 +12,7 @@ export const useMyStoryState = () => {
   const [existingConversationId, setExistingConversationId] = useState<string | null>(null);
   const [refreshDataOnSave, setRefreshDataOnSave] = useState(false);
   const navigate = useNavigate();
-  const { user, loading: userLoading, error: authError } = useAuth();
+  const { user, loading: userLoading } = useAuth();
   const { fetchJournalEntries } = useUserData();
 
   // Check for existing story conversation
@@ -73,7 +73,6 @@ export const useMyStoryState = () => {
     userLoading,
     existingConversationId,
     user,
-    authError,
     handleBack,
     handleSaveChat,
     handleStartFresh,
