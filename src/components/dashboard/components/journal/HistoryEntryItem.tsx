@@ -85,10 +85,15 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
     content: content.substring(0, 50) + (content.length > 50 ? '...' : '')
   });
   
+  // Create appropriate link based on entry type
+  const linkPath = isConversationSummary 
+    ? `/my-story?conversationId=${entry.conversation_id}` 
+    : `/journal-entry/${entry.id}`;
+  
   return (
     <Link 
       key={entry.id} 
-      to={isConversationSummary ? `/my-story?conversationId=${entry.conversation_id}` : `/journal-entry/${entry.id}`}
+      to={linkPath}
       className="relative border-l-2 border-jess-subtle pl-4 pb-5 block group"
     >
       <div className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-jess-secondary group-hover:bg-jess-primary transition-colors"></div>
@@ -116,7 +121,7 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
           {getEntryTitle(entry)}
         </p>
       </div>
-      <div className="mt-1 text-xs text-jess-muted bg-gray-50 p-1.5 rounded">
+      <div className="mt-1 text-xs text-jess-muted line-clamp-2 bg-gray-50 p-1.5 rounded">
         {content}
       </div>
     </Link>

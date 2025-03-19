@@ -1,4 +1,6 @@
 
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { WelcomeModal } from "../components/chat/WelcomeModal";
@@ -11,6 +13,9 @@ import { useMyStoryState } from "../components/my-story/useMyStoryState";
 import { MyStoryPriorConversations } from "../components/my-story/MyStoryPriorConversations";
 
 const MyStory = () => {
+  const [searchParams] = useSearchParams();
+  const urlConversationId = searchParams.get("conversationId");
+  
   const {
     showWelcomeModal,
     setShowWelcomeModal,
@@ -28,6 +33,14 @@ const MyStory = () => {
     loadingPriorConversations,
     handleLoadConversation
   } = useMyStoryState();
+  
+  // Load conversation from URL parameter if present
+  useEffect(() => {
+    if (urlConversationId && user && !isLoading) {
+      console.log("Found conversation ID in URL:", urlConversationId);
+      handleLoadConversation(urlConversationId);
+    }
+  }, [urlConversationId, user, isLoading]);
   
   if (userLoading || isLoading) {
     return <MyStoryLoading />;

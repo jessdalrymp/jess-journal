@@ -48,7 +48,10 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
                 className={`p-3 rounded-md cursor-pointer hover:bg-gray-50 transition-colors border ${
                   currentConversationId === conversation.id ? 'border-primary bg-primary/5' : 'border-gray-200'
                 }`}
-                onClick={() => onSelectConversation(conversation.id)}
+                onClick={() => {
+                  console.log(`Selecting conversation: ${conversation.id}`);
+                  onSelectConversation(conversation.id);
+                }}
               >
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-1">

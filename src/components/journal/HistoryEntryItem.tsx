@@ -33,11 +33,17 @@ const formatTime = (date: Date) => {
 export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   const entryType = entry.type || 'journal';
   const content = getContentPreview(entry);
+  const isConversationSummary = !!entry.conversation_id;
+  
+  // Create appropriate link based on entry type
+  const linkPath = isConversationSummary 
+    ? `/my-story?conversationId=${entry.conversation_id}` 
+    : `/journal-entry/${entry.id}`;
   
   return (
     <Link 
       key={entry.id} 
-      to={`/journal-entry/${entry.id}`}
+      to={linkPath}
       className="relative border-l-2 border-jess-subtle pl-4 pb-5 block group"
     >
       <div className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-jess-secondary group-hover:bg-jess-primary transition-colors"></div>

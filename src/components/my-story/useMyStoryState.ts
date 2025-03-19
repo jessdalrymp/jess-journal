@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useUserData } from '@/context/UserDataContext';
-import { getCurrentConversationFromStorage, clearCurrentConversationFromStorage } from '@/lib/storageUtils';
-import { fetchConversations } from '@/services/conversation/fetchConversations';
+import { getCurrentConversationFromStorage, clearCurrentConversationFromStorage, saveCurrentConversationToStorage } from '@/lib/storageUtils';
+import { fetchConversations, fetchConversation } from '@/services/conversation/fetchConversations';
 import { Conversation } from '@/services/conversation/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -112,38 +113,57 @@ export const useMyStoryState = () => {
     }
   };
 
-  const handleLoadConversation = (conversationId: string) => {
+  const handleLoadConversation = async (conversationId: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to view this conversation",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (existingConversationId === conversationId) {
       console.log('Conversation already loaded');
       return;
     }
     
-    // Set the conversation ID and reload the page to load it
-    setExistingConversationId(conversationId);
-    
-    // Save the selected conversation to storage before reloading
-    const selectedConversation = priorConversations.find(c => c.id === conversationId);
-    if (selectedConversation) {
-      const sessionToSave = {
-        id: selectedConversation.id,
-        userId: selectedConversation.userId,
+    try {
+      // Fetch the full conversation with messages
+      const conversation = await fetchConversation(conversationId, user.id);
+      
+      if (!conversation) {
+        throw new Error("Conversation not found");
+      }
+      
+      console.log('Loading conversation:', conversation);
+      
+      // Save to localStorage for persistence
+      const conversationToSave = {
+        id: conversation.id,
+        userId: conversation.userId,
         type: 'story',
-        title: selectedConversation.title || 'My Story',
-        messages: [],
-        createdAt: selectedConversation.createdAt,
-        updatedAt: selectedConversation.updatedAt
+        title: conversation.title || 'My Story',
+        messages: conversation.messages || [],
+        createdAt: conversation.createdAt,
+        updatedAt: conversation.updatedAt
       };
       
-      try {
-        localStorage.setItem('current_conversation_story', JSON.stringify(sessionToSave));
-        console.log('Saved conversation to storage:', sessionToSave.id);
-      } catch (err) {
-        console.error('Error saving conversation to storage:', err);
-      }
+      saveCurrentConversationToStorage(conversationToSave);
+      
+      // Update current conversation ID
+      setExistingConversationId(conversationId);
+      
+      // Reload the page to ensure fresh state
+      window.location.reload();
+    } catch (error) {
+      console.error('Error loading conversation:', error);
+      toast({
+        title: "Error loading conversation",
+        description: "Could not load the selected conversation. Please try again.",
+        variant: "destructive"
+      });
     }
-    
-    // Reload the page to load the conversation
-    window.location.reload();
   };
 
   return {
