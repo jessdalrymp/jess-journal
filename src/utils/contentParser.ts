@@ -4,6 +4,8 @@
  */
 export const parseEntryContent = (content: string): { title?: string; summary?: string } | null => {
   try {
+    if (!content) return null;
+    
     // First, try to detect if this is a JSON string inside code blocks
     let contentToProcess = content;
     
@@ -17,11 +19,30 @@ export const parseEntryContent = (content: string): { title?: string; summary?: 
     // Try to parse as JSON
     const parsed = JSON.parse(contentToProcess);
     if (parsed && (parsed.title || parsed.summary)) {
+      console.log("Successfully parsed JSON content:", parsed);
       return parsed;
     } else {
+      console.log("Parsed JSON but no title/summary found");
       return null;
     }
   } catch (e) {
+    // If not valid JSON, try to extract title/summary with regex
+    try {
+      const titleMatch = content.match(/"title"\s*:\s*"([^"]+)"/);
+      const summaryMatch = content.match(/"summary"\s*:\s*"([^"]+)"/);
+      
+      if (titleMatch?.[1] || summaryMatch?.[1]) {
+        const result = {
+          title: titleMatch?.[1],
+          summary: summaryMatch?.[1]
+        };
+        console.log("Extracted title/summary with regex:", result);
+        return result;
+      }
+    } catch (regexError) {
+      console.log("Regex extraction failed:", regexError);
+    }
+    
     console.log("Content is not valid JSON or doesn't have the expected format");
     return null;
   }
@@ -62,5 +83,31 @@ export const convertToSecondPerson = (text: string): string => {
     .replace(/\btheir\b/gi, "your")
     .replace(/\bthem\b/gi, "you")
     .replace(/\bthemselves\b/gi, "yourself");
+};
+
+/**
+ * Gets a preview of the content for display in lists/cards
+ */
+export const getContentPreview = (entry: any): string => {
+  try {
+    // First try to parse the content for JSON format
+    const parsedContent = parseEntryContent(entry.content);
+    if (parsedContent?.summary) {
+      return parsedContent.summary.substring(0, 150) + (parsedContent.summary.length > 150 ? '...' : '');
+    }
+    
+    // If there's a prompt, make sure we're only showing the user's response
+    if (entry.prompt && entry.content.includes(entry.prompt)) {
+      const userResponse = entry.content.replace(entry.prompt, '').trim()
+        .replace(/^[\s\n]*[Q|A][:.]?\s*/i, '').trim();
+      return userResponse.substring(0, 150) + (userResponse.length > 150 ? '...' : '');
+    }
+    
+    // Fallback to the content itself
+    return entry.content.substring(0, 150) + (entry.content.length > 150 ? '...' : '');
+  } catch (e) {
+    console.error('Error getting content preview:', e);
+    return entry.content ? entry.content.substring(0, 150) + '...' : '';
+  }
 };
 

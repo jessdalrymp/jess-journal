@@ -1,12 +1,15 @@
 
 import { JournalEntry } from "@/lib/types";
+import { parseEntryContent } from "@/utils/contentParser";
 
 interface JournalEntryContentProps {
   entry: JournalEntry;
-  parsedContent: { title?: string; summary?: string } | null;
 }
 
-export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryContentProps) => {
+export const JournalEntryContent = ({ entry }: JournalEntryContentProps) => {
+  // Get parsed content from the entry
+  const parsedContent = parseEntryContent(entry.content);
+  
   // Function to render content with proper formatting for newlines
   const renderContent = () => {
     // If we have parsed JSON content, use the summary

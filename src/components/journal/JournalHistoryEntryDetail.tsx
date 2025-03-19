@@ -1,7 +1,7 @@
 
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon, getEntryTypeName } from './JournalHistoryUtils';
-import { parseContentWithJsonCodeBlock } from '@/services/journal/contentParser';
+import { parseEntryContent } from '@/utils/contentParser';
 
 interface JournalHistoryEntryDetailProps {
   entry: JournalEntry;
@@ -13,7 +13,7 @@ interface JournalHistoryEntryDetailProps {
 const formatEntryContent = (entry: JournalEntry): string => {
   try {
     // Try to parse content as JSON
-    const parsedContent = parseContentWithJsonCodeBlock(entry.content);
+    const parsedContent = parseEntryContent(entry.content);
     if (parsedContent && parsedContent.summary) {
       return parsedContent.summary;
     }
