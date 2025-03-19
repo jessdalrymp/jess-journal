@@ -36,10 +36,12 @@ export const fetchConversation = async (conversationId: string, userId: string):
     // Check cache first
     const cachedConversation = getCachedConversation(conversationId);
     if (cachedConversation) {
+      console.log(`Using cached conversation ${conversationId}`);
       return cachedConversation;
     }
 
     // Otherwise fetch from database
+    console.log(`Fetching conversation ${conversationId} from database`);
     const { data, error } = await supabase
       .from('conversations')
       .select('*')
@@ -53,6 +55,7 @@ export const fetchConversation = async (conversationId: string, userId: string):
     }
 
     if (!data) {
+      console.log(`No conversation found with id ${conversationId}`);
       return null;
     }
 
@@ -65,8 +68,10 @@ export const fetchConversation = async (conversationId: string, userId: string):
 
     if (messagesError) {
       console.error('Error fetching messages:', messagesError);
-      return null;
+      console.log('Will create conversation without messages');
     }
+
+    console.log(`Fetched ${messages?.length || 0} messages for conversation ${conversationId}`);
 
     // Build conversation object
     const conversation: Conversation = {

@@ -53,6 +53,12 @@ export const ChatInterface = ({
     // Set chatInitialized to true once we get a session
     if (session && !chatInitialized.current) {
       chatInitialized.current = true;
+      
+      // Log session info for debugging
+      console.log(`ChatInterface received session for ${type} with ${session.messages?.length || 0} messages`);
+      if (session.messages && session.messages.length > 0) {
+        console.log(`First message role: ${session.messages[0].role}, content: ${session.messages[0].content?.substring(0, 50)}...`);
+      }
     }
     
     return () => {
