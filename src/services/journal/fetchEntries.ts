@@ -12,57 +12,61 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
   try {
     console.log('Fetching journal entries for user:', userId);
     
-    // Fetch all journal entries including ones linked to conversations and their messages
-    const { data, error } = await supabase
+    // Fetch all journal entries
+    const { data: entriesData, error: entriesError } = await supabase
       .from('journal_entries')
-      .select(`
-        *,
-        conversations:conversation_id(
-          *,
-          messages(*)
-        )
-      `)
+      .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching journal entries:', error);
+    if (entriesError) {
+      console.error('Error fetching journal entries:', entriesError);
       return [];
     }
 
-    if (!data || data.length === 0) {
+    if (!entriesData || entriesData.length === 0) {
       console.log('No journal entries found for user:', userId);
       return [];
     }
     
-    console.log(`Found ${data.length} journal entries, processing conversation data`);
+    console.log(`Found ${entriesData.length} journal entries`);
     
-    // Check for conversation-linked entries
-    const conversationEntries = data.filter(entry => entry.conversation_id);
-    console.log(`Found ${conversationEntries.length} entries linked to conversations`);
-    
-    if (conversationEntries.length > 0) {
-      const entrySample = conversationEntries[0];
-      console.log('Sample conversation entry:', { 
-        id: entrySample.id,
-        conversation_id: entrySample.conversation_id,
-        has_conversation_data: !!entrySample.conversations,
-        has_messages: entrySample.conversations?.messages?.length > 0
-      });
-    }
-
-    // Map entries and handle any errors in the mapping process
+    // Process entries and fetch conversations where needed
     const entries: JournalEntry[] = [];
-    for (const entryData of data) {
+    
+    for (const entryData of entriesData) {
       try {
-        // Pass the conversation data including messages to the mapper
-        const conversationData = entryData.conversations || null;
+        let conversationData = null;
         
-        // Check if we have message data
-        if (conversationData && conversationData.messages && conversationData.messages.length > 0) {
-          console.log(`Entry ${entryData.id} has ${conversationData.messages.length} messages`);
+        // If the entry has a conversation_id, fetch the conversation data
+        if (entryData.conversation_id) {
+          console.log(`Fetching conversation data for entry ${entryData.id} with conversation_id ${entryData.conversation_id}`);
+          
+          // First get the conversation
+          const { data: conversationResult } = await supabase
+            .from('conversations')
+            .select('*')
+            .eq('id', entryData.conversation_id)
+            .single();
+            
+          if (conversationResult) {
+            conversationData = conversationResult;
+            
+            // Then get messages for this conversation
+            const { data: messagesData } = await supabase
+              .from('messages')
+              .select('*')
+              .eq('conversation_id', entryData.conversation_id)
+              .order('timestamp', { ascending: false });
+              
+            if (messagesData && messagesData.length > 0) {
+              console.log(`Found ${messagesData.length} messages for conversation ${entryData.conversation_id}`);
+              conversationData.messages = messagesData;
+            }
+          }
         }
         
+        // Map the entry with any conversation data we found
         const entry = mapDatabaseEntryToJournalEntry(entryData, userId, conversationData);
         entries.push(entry);
       } catch (err) {
