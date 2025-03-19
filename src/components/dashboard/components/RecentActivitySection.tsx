@@ -5,6 +5,7 @@ import { Clock, PenSquare } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
+import { getContentPreview } from '@/utils/contentParser';
 
 interface RecentActivitySectionProps {
   journalEntries: JournalEntry[];
@@ -52,6 +53,9 @@ export const RecentActivitySection = ({
                 className="block border border-jess-subtle p-3 rounded-lg hover:bg-jess-subtle/30 transition-all duration-200 hover:border-jess-primary/50 transform hover:-translate-y-0.5"
               >
                 <h3 className="font-medium text-sm line-clamp-1">{getEntryTitle(entry)}</h3>
+                <div className="text-xs text-jess-muted mt-1 line-clamp-1">
+                  {getContentPreview(entry.content, 60)}
+                </div>
                 <div className="text-xs text-jess-muted mt-1">
                   {new Date(entry.createdAt).toLocaleDateString()}
                 </div>
