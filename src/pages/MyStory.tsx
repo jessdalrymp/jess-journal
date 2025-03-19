@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { getInitialMessage } from "@/components/chat/chatUtils";
 import { SaveChatDialog } from "@/components/chat/SaveChatDialog";
 import { fetchConversation } from "@/services/conversation";
+import { clearCurrentConversationFromStorage } from "@/lib/storageUtils";
 
 const MyStory = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -21,6 +22,7 @@ const MyStory = () => {
   const [isCheckingConversations, setIsCheckingConversations] = useState(false);
   const [existingConversationId, setExistingConversationId] = useState<string | null>(null);
   const [validConversation, setValidConversation] = useState<boolean>(false);
+  const [authError, setAuthError] = useState<boolean>(false);
   const initializationAttempted = useRef(false);
   const { user, loading: userLoading } = useAuth();
   const { toast } = useToast();
@@ -29,17 +31,28 @@ const MyStory = () => {
   useEffect(() => {
     console.log("MyStory - Auth state:", user ? "Authenticated" : "Not authenticated", "Loading:", userLoading);
     
-    // Only proceed if we've determined auth status and haven't attempted initialization yet
-    if (userLoading || initializationAttempted.current) {
+    // Only proceed after we've determined auth status
+    if (userLoading) {
+      return;
+    }
+    
+    // If user is not authenticated, mark as error and stop loading
+    if (!user) {
+      console.log("User is not authenticated");
+      setAuthError(true);
+      setIsLoading(false);
+      return;
+    } else {
+      // Reset auth error if user is now authenticated
+      setAuthError(false);
+    }
+    
+    // Don't re-initialize if we've already tried
+    if (initializationAttempted.current) {
       return;
     }
     
     initializationAttempted.current = true;
-    
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
     
     const hasVisitedStoryPage = localStorage.getItem('hasVisitedStoryPage');
     
@@ -72,6 +85,11 @@ const MyStory = () => {
       
       if (error) {
         console.error('Error checking for existing conversations:', error);
+        toast({
+          title: "Error loading conversations",
+          description: "Could not load your previous conversations.",
+          variant: "destructive",
+        });
         setIsLoading(false);
         return;
       }
@@ -82,7 +100,7 @@ const MyStory = () => {
         // Try to load the conversation to make sure it's valid
         try {
           const conversation = await fetchConversation(data[0].id, user.id);
-          if (conversation) {
+          if (conversation && conversation.messages && conversation.messages.length > 0) {
             console.log("Successfully validated conversation:", data[0].id);
             setExistingConversationId(data[0].id);
             setValidConversation(true);
@@ -93,18 +111,26 @@ const MyStory = () => {
               duration: 3000,
             });
           } else {
-            console.log("Conversation found but couldn't be loaded, creating new conversation");
+            console.log("Conversation found but couldn't be loaded or has no messages, creating new conversation");
             setExistingConversationId(null);
+            // Clear any stale conversation data from storage
+            clearCurrentConversationFromStorage('story');
           }
         } catch (err) {
           console.error("Error validating conversation:", err);
           setExistingConversationId(null);
+          clearCurrentConversationFromStorage('story');
         }
       } else {
         console.log("No existing story conversations found");
       }
     } catch (error) {
       console.error('Error in conversation check:', error);
+      toast({
+        title: "Error checking conversations",
+        description: "Please try refreshing the page.",
+        variant: "destructive",
+      });
     } finally {
       setIsCheckingConversations(false);
       setIsLoading(false);
@@ -132,7 +158,11 @@ const MyStory = () => {
   const handleStartFresh = () => {
     setExistingConversationId(null);
     setValidConversation(false);
-    localStorage.removeItem('currentConversation_story');
+    clearCurrentConversationFromStorage('story');
+    toast({
+      title: "Starting fresh conversation",
+      description: "Your previous conversation has been cleared.",
+    });
     window.location.reload();
   };
 
@@ -151,7 +181,7 @@ const MyStory = () => {
     );
   }
 
-  if (!user) {
+  if (!user || authError) {
     return (
       <div className="min-h-screen flex flex-col bg-jess-background">
         <Header />

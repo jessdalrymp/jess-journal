@@ -1,9 +1,15 @@
+
 import { supabase } from '../../integrations/supabase/client';
 import { Conversation } from './types';
 import { getCachedConversation, cacheConversation } from './conversationCache';
 
 export const fetchConversations = async (userId: string): Promise<Conversation[]> => {
   try {
+    if (!userId) {
+      console.error('No user ID provided to fetchConversations');
+      return [];
+    }
+
     const { data, error } = await supabase
       .from('conversations')
       .select('*')
@@ -33,6 +39,16 @@ export const fetchConversations = async (userId: string): Promise<Conversation[]
 
 export const fetchConversation = async (conversationId: string, userId: string): Promise<Conversation | null> => {
   try {
+    if (!userId) {
+      console.error('No user ID provided to fetchConversation');
+      return null;
+    }
+
+    if (!conversationId) {
+      console.error('No conversation ID provided to fetchConversation');
+      return null;
+    }
+
     // Check cache first
     const cachedConversation = getCachedConversation(conversationId);
     if (cachedConversation) {

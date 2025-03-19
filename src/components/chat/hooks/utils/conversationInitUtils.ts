@@ -12,7 +12,17 @@ export const loadExistingConversation = async (
   userId: string
 ): Promise<ConversationSession | null> => {
   try {
-    console.log(`Attempting to load specific conversation ID: ${conversationId}`);
+    if (!userId) {
+      console.error('Cannot load conversation: No user ID provided');
+      return null;
+    }
+    
+    if (!conversationId) {
+      console.error('Cannot load conversation: No conversation ID provided');
+      return null;
+    }
+    
+    console.log(`Attempting to load specific conversation ID: ${conversationId} for user: ${userId}`);
     
     const conversation = await fetchConversation(conversationId, userId);
     

@@ -4,7 +4,7 @@ import { useUserData } from '../../../context/UserDataContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { ConversationSession } from '@/lib/types';
-import { saveCurrentConversationToStorage } from '@/lib/storageUtils';
+import { saveCurrentConversationToStorage, clearCurrentConversationFromStorage } from '@/lib/storageUtils';
 import { 
   loadExistingConversation, 
   createConversationWithInitialMessage, 
@@ -24,9 +24,15 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
   const { getCachedConversation } = useConversationCache(type);
 
   const initializeChat = useCallback(async (conversationId?: string | null) => {
+    if (!authUser) {
+      console.log("User not authenticated, cannot initialize chat");
+      setError("Authentication required");
+      return null;
+    }
+
     if (isInitialized && !loading) {
       console.log(`Chat for ${type} already initialized, using existing session`);
-      const cachedConversation = getCachedConversation(authUser?.id || '');
+      const cachedConversation = getCachedConversation(authUser.id);
       if (cachedConversation) {
         return cachedConversation;
       }
@@ -49,6 +55,10 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         return null;
       }
 
+      // Clear any potential stale error
+      setError(null);
+
+      // Try to load existing conversation first if ID is provided
       if (conversationId) {
         console.log(`Attempting to load existing conversation: ${conversationId}`);
         const conversation = await loadExistingConversation(conversationId, authUser.id);
@@ -58,9 +68,12 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           return conversation;
         } else {
           console.log(`Failed to load existing conversation ${conversationId}, will create new conversation`);
+          // Clear conversation from storage to avoid loading it again
+          clearCurrentConversationFromStorage(type);
         }
       }
       
+      // Try to get cached conversation
       const cachedConversation = getCachedConversation(authUser.id);
       if (cachedConversation) {
         console.log(`Using cached conversation for ${type}`);
@@ -68,6 +81,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         return cachedConversation;
       }
       
+      // For sideQuest or action types, create with initial message
       if (type === 'sideQuest' || type === 'action') {
         try {
           console.log(`Creating new ${type} conversation with initial message`);
@@ -89,6 +103,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
         }
       }
       
+      // For other types (story, journal)
       try {
         console.log(`Starting new ${type} conversation from API`);
         const conversation = await startConversation(type);
