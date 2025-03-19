@@ -1,3 +1,4 @@
+
 import { supabase } from '../../integrations/supabase/client';
 import { Conversation } from './types';
 import { getCachedConversation, cacheConversation } from './conversationCache';
@@ -57,6 +58,8 @@ export const fetchConversation = async (conversationId: string, userId: string):
 
     // Otherwise fetch from database
     console.log(`Fetching conversation ${conversationId} from database`);
+    
+    // First fetch the conversation
     const { data, error } = await supabase
       .from('conversations')
       .select('*')
@@ -74,7 +77,8 @@ export const fetchConversation = async (conversationId: string, userId: string):
       return null;
     }
 
-    // Fetch messages for this conversation
+    // Then fetch messages for this conversation with proper ordering
+    console.log(`Fetching messages for conversation ${conversationId}`);
     const { data: messages, error: messagesError } = await supabase
       .from('messages')
       .select('*')

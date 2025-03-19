@@ -26,7 +26,7 @@ export const loadExistingConversation = async (
     
     const conversation = await fetchConversation(conversationId, userId);
     
-    if (conversation) {
+    if (conversation && conversation.messages.length > 0) {
       console.log(`Successfully loaded conversation ${conversationId} with ${conversation.messages.length} messages`);
       
       // Convert to ConversationSession format
@@ -41,6 +41,30 @@ export const loadExistingConversation = async (
           content: msg.content,
           timestamp: msg.createdAt
         })),
+        createdAt: conversation.createdAt,
+        updatedAt: conversation.updatedAt
+      };
+      
+      saveCurrentConversationToStorage(conversationSession);
+      return conversationSession;
+    } else if (conversation) {
+      console.log(`Conversation ${conversationId} found but contains no messages. Adding initial message.`);
+      
+      // Create a session with the existing conversation but add an initial message
+      const initialMessage = determineInitialMessage(conversation.type as 'story' | 'sideQuest' | 'action' | 'journal', false);
+      
+      // Create session with initial message
+      const conversationSession: ConversationSession = {
+        id: conversation.id,
+        userId: conversation.userId,
+        type: conversation.type as 'story' | 'sideQuest' | 'action' | 'journal',
+        title: conversation.title,
+        messages: [{
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: initialMessage,
+          timestamp: new Date()
+        }],
         createdAt: conversation.createdAt,
         updatedAt: conversation.updatedAt
       };

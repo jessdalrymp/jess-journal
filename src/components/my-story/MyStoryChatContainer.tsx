@@ -15,19 +15,18 @@ export const MyStoryChatContainer = ({
   onSave, 
   conversationId 
 }: MyStoryChatContainerProps) => {
-  const [initializing, setInitializing] = useState(!!conversationId);
+  const [initializing, setInitializing] = useState(true);
   
   // Give a short delay when loading existing conversations to allow initialization
   useEffect(() => {
-    if (conversationId) {
-      const timer = setTimeout(() => {
-        setInitializing(false);
-      }, 1500);
-      
-      return () => clearTimeout(timer);
-    } else {
+    console.log("MyStoryChatContainer: Initializing with conversation ID:", conversationId);
+    
+    // Always show loading state briefly to ensure proper initialization
+    const timer = setTimeout(() => {
       setInitializing(false);
-    }
+    }, conversationId ? 2000 : 1000);
+    
+    return () => clearTimeout(timer);
   }, [conversationId]);
 
   return (
@@ -35,7 +34,11 @@ export const MyStoryChatContainer = ({
       {initializing ? (
         <div className="flex-1 flex flex-col items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin text-gray-400 mb-4" />
-          <p className="text-gray-500">Loading your conversation...</p>
+          <p className="text-gray-500">
+            {conversationId 
+              ? "Loading your previous conversation..." 
+              : "Setting up a new conversation..."}
+          </p>
         </div>
       ) : (
         <ChatInterface 

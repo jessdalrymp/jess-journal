@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useUserData } from '@/context/UserDataContext';
 import { getCurrentConversationFromStorage, clearCurrentConversationFromStorage } from '@/lib/storageUtils';
+import { fetchConversation } from '@/services/conversation';
 
 export const useMyStoryState = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -19,21 +20,40 @@ export const useMyStoryState = () => {
   useEffect(() => {
     if (user) {
       try {
+        setIsLoading(true);
         const existingConversation = getCurrentConversationFromStorage('story');
         
         if (existingConversation) {
-          console.log('Found existing story conversation:', existingConversation.id);
-          setExistingConversationId(existingConversation.id);
+          console.log('Found existing story conversation in storage:', existingConversation.id);
+          
+          // Verify the conversation exists in the database
+          fetchConversation(existingConversation.id, user.id)
+            .then(conversation => {
+              if (conversation) {
+                console.log('Verified conversation in database:', conversation.id);
+                setExistingConversationId(conversation.id);
+              } else {
+                console.log('Conversation not found in database, clearing from storage');
+                clearCurrentConversationFromStorage('story');
+                setShowWelcomeModal(true);
+              }
+              setIsLoading(false);
+            })
+            .catch(error => {
+              console.error('Error verifying conversation:', error);
+              setIsLoading(false);
+              setShowWelcomeModal(true);
+            });
         } else {
-          console.log('No existing story conversation found');
-          // Show welcome modal if no existing conversation
+          console.log('No existing story conversation found in storage');
+          setIsLoading(false);
           setShowWelcomeModal(true);
         }
       } catch (error) {
         console.error('Error retrieving conversation from storage:', error);
+        setIsLoading(false);
+        setShowWelcomeModal(true);
       }
-      
-      setIsLoading(false);
     }
   }, [user]);
 
