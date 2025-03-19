@@ -49,13 +49,17 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
     
     console.log("Calling verification email function at:", functionUrl);
     
+    // Get the anonymous JWT from supabase client
+    const { data: { session } } = await supabase.auth.getSession();
+    const anonKey = session?.access_token || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    
     // Make the request with authorization headers
     const response = await fetch(functionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // This is the anonymous key, it's safe to include here
-        'Authorization': `Bearer ${supabase.auth.anon}`
+        // Use the access token or fall back to SUPABASE_PUBLISHABLE_KEY from client.ts
+        'Authorization': `Bearer ${anonKey}`
       },
       body: JSON.stringify({
         email,
@@ -77,7 +81,7 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabase.auth.anon}`
+            'Authorization': `Bearer ${anonKey}`
           },
           body: JSON.stringify({
             email,
