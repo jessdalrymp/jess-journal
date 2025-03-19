@@ -23,12 +23,11 @@ export interface UserProfile {
 export interface JournalEntry {
   id: string;
   userId: string;
-  title?: string;
+  title: string;
   content: string;
-  type: 'journal' | 'story' | 'sideQuest' | 'action';
+  type: 'story' | 'sideQuest' | 'action' | 'journal';
   createdAt: Date;
-  prompt?: string | null;
-  summary?: string | null;
+  prompt?: string; // Added the prompt property as optional
 }
 
 export interface ChatMessage {

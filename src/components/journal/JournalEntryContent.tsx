@@ -13,16 +13,6 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
   
   // Function to render content with proper formatting for newlines
   const renderContent = () => {
-    // Check if entry has a summary field directly
-    if (entry.summary) {
-      return entry.summary.split('\n').map((paragraph, index) => {
-        if (!paragraph.trim()) {
-          return <br key={index} />;
-        }
-        return <p key={index} className="mb-4">{paragraph}</p>;
-      });
-    }
-    
     // If we have parsed JSON content, use the summary
     if (contentData && contentData.summary) {
       return contentData.summary.split('\n').map((paragraph, index) => {
