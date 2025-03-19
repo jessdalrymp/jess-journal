@@ -30,6 +30,12 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
     );
   }
 
+  // Handle conversation selection with better touch support
+  const handleSelectConversation = (conversationId: string) => {
+    console.log(`Mobile: Selecting conversation: ${conversationId}`);
+    onSelectConversation(conversationId);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm h-full p-4 flex flex-col">
       <h3 className="text-lg font-medium mb-3">Prior Conversations</h3>
@@ -43,15 +49,13 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
         <ScrollArea className="flex-1">
           <div className="space-y-3">
             {conversations.map(conversation => (
-              <div 
+              <button 
                 key={conversation.id}
-                className={`p-3 rounded-md cursor-pointer hover:bg-gray-50 transition-colors border ${
+                className={`w-full text-left p-3 rounded-md cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors border ${
                   currentConversationId === conversation.id ? 'border-primary bg-primary/5' : 'border-gray-200'
                 }`}
-                onClick={() => {
-                  console.log(`Selecting conversation: ${conversation.id}`);
-                  onSelectConversation(conversation.id);
-                }}
+                onClick={() => handleSelectConversation(conversation.id)}
+                aria-label={`Select conversation: ${conversation.title || 'My Story'}`}
               >
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-1">
@@ -82,7 +86,7 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
                   <span>Continue story</span>
                   <ChevronRight className="h-3 w-3 ml-1" />
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </ScrollArea>

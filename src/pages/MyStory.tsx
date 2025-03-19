@@ -11,10 +11,12 @@ import { MyStoryHeader } from "../components/my-story/MyStoryHeader";
 import { MyStoryChatContainer } from "../components/my-story/MyStoryChatContainer";
 import { useMyStoryState } from "../components/my-story/useMyStoryState";
 import { MyStoryPriorConversations } from "../components/my-story/MyStoryPriorConversations";
+import { useToast } from "@/hooks/use-toast";
 
 const MyStory = () => {
   const [searchParams] = useSearchParams();
   const urlConversationId = searchParams.get("conversationId");
+  const { toast } = useToast();
   
   const {
     showWelcomeModal,
@@ -31,7 +33,8 @@ const MyStory = () => {
     refreshDataOnSave,
     priorConversations,
     loadingPriorConversations,
-    handleLoadConversation
+    handleLoadConversation,
+    isLoadingConversation
   } = useMyStoryState();
   
   // Load conversation from URL parameter if present
@@ -42,7 +45,7 @@ const MyStory = () => {
     }
   }, [urlConversationId, user, isLoading]);
   
-  if (userLoading || isLoading) {
+  if (userLoading || isLoading || isLoadingConversation) {
     return <MyStoryLoading />;
   }
 

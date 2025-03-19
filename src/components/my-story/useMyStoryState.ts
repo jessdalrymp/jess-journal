@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -16,6 +17,7 @@ export const useMyStoryState = () => {
   const [refreshDataOnSave, setRefreshDataOnSave] = useState(false);
   const [priorConversations, setPriorConversations] = useState<Conversation[]>([]);
   const [loadingPriorConversations, setLoadingPriorConversations] = useState(false);
+  const [isLoadingConversation, setIsLoadingConversation] = useState(false);
   
   const navigate = useNavigate();
   const { user, loading: userLoading } = useAuth();
@@ -121,6 +123,9 @@ export const useMyStoryState = () => {
     }
     
     try {
+      setIsLoadingConversation(true);
+      console.log(`Loading conversation with ID: ${conversationId}`);
+      
       const conversation = await fetchConversation(conversationId, user.id);
       
       if (!conversation) {
@@ -129,6 +134,19 @@ export const useMyStoryState = () => {
       
       console.log('Loading conversation:', conversation);
       
+      // Verify we have messages before proceeding
+      if (!conversation.messages || conversation.messages.length === 0) {
+        console.error("Conversation has no messages");
+        toast({
+          title: "Error loading conversation",
+          description: "This conversation appears to be empty.",
+          variant: "destructive"
+        });
+        setIsLoadingConversation(false);
+        return;
+      }
+      
+      // Create the conversation object to save
       const conversationToSave: ConversationSession = {
         id: conversation.id,
         userId: conversation.userId,
@@ -144,10 +162,17 @@ export const useMyStoryState = () => {
         updatedAt: conversation.updatedAt
       };
       
+      console.log('Saving conversation to storage:', conversationToSave);
       saveCurrentConversationToStorage(conversationToSave);
       
       setExistingConversationId(conversationId);
       
+      toast({
+        title: "Conversation loaded",
+        description: "Your conversation has been loaded successfully.",
+      });
+      
+      // Force reload to ensure everything is fresh
       window.location.reload();
     } catch (error) {
       console.error('Error loading conversation:', error);
@@ -156,6 +181,8 @@ export const useMyStoryState = () => {
         description: "Could not load the selected conversation. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsLoadingConversation(false);
     }
   };
 
@@ -174,6 +201,7 @@ export const useMyStoryState = () => {
     refreshDataOnSave,
     priorConversations,
     loadingPriorConversations,
-    handleLoadConversation
+    handleLoadConversation,
+    isLoadingConversation
   };
 };
