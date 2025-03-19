@@ -2,7 +2,6 @@
 import { saveCurrentConversationToStorage } from '@/lib/storageUtils';
 import { ConversationSession } from '@/lib/types';
 import { getInitialMessage } from '../../chatUtils';
-import { addMessageToConversation, startConversation } from '@/context/UserDataContext';
 import { fetchConversation } from '@/services/conversation';
 
 /**
@@ -54,8 +53,8 @@ export const loadExistingConversation = async (
 export const createConversationWithInitialMessage = async (
   type: 'story' | 'sideQuest' | 'action' | 'journal',
   initialMessage: string,
-  startConversationFn: typeof startConversation,
-  addMessageFn: typeof addMessageToConversation
+  startConversationFn: (type: 'story' | 'sideQuest' | 'action' | 'journal') => Promise<ConversationSession>,
+  addMessageFn: (conversationId: string, content: string, role: 'user' | 'assistant') => Promise<boolean>
 ): Promise<ConversationSession | null> => {
   try {
     console.log(`Creating new ${type} conversation`);
