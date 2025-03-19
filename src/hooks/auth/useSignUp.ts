@@ -49,7 +49,7 @@ export const useSignUp = () => {
     }
   };
 
-  const signUp = async (email: string, password: string, name?: string, checkExists = false): Promise<{ user?: any; session?: any; exists?: boolean; emailVerificationRequired?: boolean }> => {
+  const signUp = async (email: string, password: string, name?: string, checkExists = false): Promise<{ user?: any; session?: any; exists?: boolean; emailVerificationRequired?: boolean; emailSent?: boolean }> => {
     setLoading(true);
     try {
       // Optionally check if user exists first
@@ -107,11 +107,12 @@ export const useSignUp = () => {
           title: "Welcome!",
           description: "Your account has been created successfully.",
         });
-        return { ...data, emailVerificationRequired: false };
+        return { ...data, emailVerificationRequired: false, emailSent: true };
       } 
       // If we only have a user but no session, email confirmation is required
       else if (data?.user) {
         console.log("Sign-up requires email verification:", data.user.id);
+        let emailSent = false;
         
         // Check email verification status
         if (data.user.identities && 
@@ -137,6 +138,7 @@ export const useSignUp = () => {
                 console.error("Error resending verification email:", resendError);
               } else {
                 console.log("Manual verification email sent successfully");
+                emailSent = true;
               }
             } catch (resendError) {
               console.error("Exception resending verification email:", resendError);
@@ -172,7 +174,7 @@ export const useSignUp = () => {
             duration: 6000,
           });
         }
-        return { user: data.user, emailVerificationRequired: true };
+        return { user: data.user, emailVerificationRequired: true, emailSent };
       } else {
         console.error("No user or session returned after sign up");
         throw new Error("Account creation failed. Please try again.");

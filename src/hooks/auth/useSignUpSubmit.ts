@@ -42,25 +42,38 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
       
       // If no session was created, assume verification is required
       if (result?.user && result.emailVerificationRequired) {
-        console.log("Email verification required, sending verification email");
+        console.log("Email verification required, attempting different methods to send verification");
         
-        // Try to manually send a verification email
+        // First check if the built-in Supabase email was sent successfully
+        if (result.emailSent) {
+          console.log("Supabase verification email sent successfully");
+          toast({
+            title: "Account created",
+            description: "Please check your email to verify your account. If you don't see it, check your spam folder.",
+            duration: 6000,
+          });
+          onVerificationSent(email);
+          return;
+        }
+        
+        // If Supabase email failed, try our custom email sender
+        console.log("Trying custom verification email sender");
         const emailSent = await sendCustomVerificationEmail(email);
         
         if (emailSent) {
           console.log("Custom verification email sent successfully");
           toast({
             title: "Account created",
-            description: "Please check your email for verification instructions. If you don't see it, check your spam folder.",
+            description: "Please check your email to verify your account. If you don't see it, check your spam folder.",
             duration: 6000,
           });
           onVerificationSent(email);
         } else {
-          console.log("Failed to send custom verification email");
+          console.log("All verification email methods failed");
           // Still redirect to verification screen, but with a warning
           toast({
             title: "Account created, but...",
-            description: "We had trouble sending the verification email. Please try signing in after a few minutes to verify your account.",
+            description: "We had trouble sending the verification email. Please check your spam folder or try signing in after a few minutes.",
             duration: 8000,
             variant: "destructive",
           });

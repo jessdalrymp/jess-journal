@@ -1,5 +1,6 @@
 
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '../integrations/supabase/client';
 
 /**
  * Sends a custom verification email using the Supabase Edge Function
@@ -18,6 +19,27 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
     console.log("Sending verification email to:", email);
     console.log("Verification URL:", verificationUrl);
     
+    // First, try to use built-in Supabase auth email functionality
+    try {
+      const { error: resendError } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+        options: {
+          emailRedirectTo: verificationUrl,
+        }
+      });
+      
+      if (!resendError) {
+        console.log("Successfully sent verification email using Supabase auth.resend");
+        return true;
+      }
+      
+      console.warn("Supabase resend failed, falling back to custom function:", resendError);
+    } catch (resendError) {
+      console.warn("Exception in Supabase resend, falling back to custom function:", resendError);
+    }
+    
+    // If Supabase email fails, fall back to our custom email function
     // Get the Supabase project URL - use full URL to avoid CORS issues
     const supabaseProjectUrl = 'https://uobvlrobwohdlfbhniho.supabase.co';
     
@@ -33,7 +55,7 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
       headers: {
         'Content-Type': 'application/json',
         // This is the anonymous key, it's safe to include here
-        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnZscm9id29oZGxmYmhuaWhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4Mzg4MjcsImV4cCI6MjA1NTQxNDgyN30.72SrWrfSrHhZ_hCcj5slTml4BABh-z_du8v9LGI8bsc`
+        'Authorization': `Bearer ${supabase.auth.anon}`
       },
       body: JSON.stringify({
         email,
@@ -55,7 +77,7 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnZscm9id29oZGxmYmhuaWhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4Mzg4MjcsImV4cCI6MjA1NTQxNDgyN30.72SrWrfSrHhZ_hCcj5slTml4BABh-z_du8v9LGI8bsc`
+            'Authorization': `Bearer ${supabase.auth.anon}`
           },
           body: JSON.stringify({
             email,
@@ -96,6 +118,39 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
   } catch (error: any) {
     console.error('Error sending verification email:', error);
     console.error('Error details:', error.stack || 'No stack trace available');
+    return false;
+  }
+};
+
+/**
+ * Helper function to check if a user's email is verified
+ * 
+ * @param email User's email address
+ * @returns Promise resolving to boolean indicating if email is verified
+ */
+export const checkEmailVerification = async (email: string): Promise<boolean> => {
+  try {
+    // Get user details by email - this only works for the current user
+    const { data, error } = await supabase.auth.getUser();
+    
+    if (error || !data.user) {
+      console.log("No current user or error getting user:", error);
+      return false;
+    }
+    
+    // If the user's email doesn't match the one we're checking, return false
+    if (data.user.email !== email) {
+      console.log("Current user email doesn't match the one being checked");
+      return false;
+    }
+    
+    // Check if email is confirmed
+    const isVerified = data.user.email_confirmed_at != null;
+    console.log("Email verification status for", email, ":", isVerified);
+    
+    return isVerified;
+  } catch (error) {
+    console.error("Error checking email verification:", error);
     return false;
   }
 };
