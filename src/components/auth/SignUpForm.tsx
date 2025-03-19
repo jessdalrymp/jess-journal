@@ -1,11 +1,10 @@
 
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { AuthFormInput } from './AuthFormInput';
 import { ActionButton } from '../ui/ActionButton';
 import { ErrorMessage } from './ErrorMessage';
-import { validateEmail, validatePassword, validateName } from '../../utils/authValidation';
-import { useSignUp } from '../../hooks/auth/useSignUp';
+import { useSignUpValidation } from '../../hooks/auth/useSignUpValidation';
+import { useSignUpSubmit } from '../../hooks/auth/useSignUpSubmit';
 
 interface SignUpFormProps {
   onVerificationSent: (email: string) => void;
@@ -16,218 +15,17 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
   
-  const { signUp, loading } = useSignUp();
-  const { toast } = useToast();
+  const { error, setError, validateForm } = useSignUpValidation();
+  const { handleSubmit, isProcessing, loading } = useSignUpSubmit({ onVerificationSent });
 
-  const validateForm = (): boolean => {
-    setError(null);
-    
-    if (!email || !password || !name) {
-      setError("Please fill in all required fields.");
-      return false;
-    }
-
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address.");
-      return false;
-    }
-
-    if (!validatePassword(password)) {
-      setError("Password must be at least 6 characters long.");
-      return false;
-    }
-
-    if (!validateName(name)) {
-      setError("Please enter your name to create an account.");
-      return false;
-    }
-    
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return false;
-    }
-
-    return true;
-  };
-
-  const sendCustomVerificationEmail = async (email: string) => {
-    try {
-      setIsProcessing(true);
-      
-      // Get the domain origin
-      const origin = window.location.origin;
-      
-      // Construct the verification URL
-      const verificationUrl = `${origin}/auth/callback?signUpEmail=${encodeURIComponent(email)}`;
-      
-      console.log("Sending verification email to:", email);
-      console.log("Verification URL:", verificationUrl);
-      
-      // Get the Supabase project URL - use full URL to avoid CORS issues
-      const supabaseProjectUrl = 'https://uobvlrobwohdlfbhniho.supabase.co';
-      
-      // Construct the edge function URL
-      const functionEndpoint = '/functions/v1/send-verification-email';
-      const functionUrl = `${supabaseProjectUrl}${functionEndpoint}`;
-      
-      console.log("Calling verification email function at:", functionUrl);
-      
-      // Make the request with authorization headers
-      const response = await fetch(functionUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // This is the anonymous key, it's safe to include here
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnZscm9id29oZGxmYmhuaWhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4Mzg4MjcsImV4cCI6MjA1NTQxNDgyN30.72SrWrfSrHhZ_hCcj5slTml4BABh-z_du8v9LGI8bsc`
-        },
-        body: JSON.stringify({
-          email,
-          verificationUrl
-        })
-      });
-      
-      // Check for network failures
-      if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Unknown error');
-        console.error(`Network error (${response.status}): ${errorText}`);
-        
-        toast({
-          title: "Verification email error",
-          description: `Server error (${response.status}). Please try again.`,
-          variant: "destructive",
-        });
-        return false;
-      }
-      
-      // Parse the response
-      let responseData;
-      try {
-        responseData = await response.json();
-        console.log("Verification email API response:", responseData);
-      } catch (parseError) {
-        console.error('Error parsing response:', parseError);
-        toast({
-          title: "Verification email error",
-          description: "Invalid response from server. Please try again.",
-          variant: "destructive",
-        });
-        return false;
-      }
-      
-      if (!responseData.success) {
-        console.error('Error in verification email response:', responseData.error);
-        toast({
-          title: "Verification email error",
-          description: responseData.error || "Error sending verification email. Please try again.",
-          variant: "destructive",
-        });
-        return false;
-      }
-      
-      console.log("Verification email sent successfully via custom function");
-      return true;
-    } catch (error: any) {
-      console.error('Error sending verification email:', error);
-      console.error('Error details:', error.stack || 'No stack trace available');
-      
-      toast({
-        title: "Verification email error",
-        description: `Error sending verification email: ${error.message}. Please try again.`,
-        variant: "destructive",
-      });
-      return false;
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    
-    try {
-      if (!validateForm()) {
-        return;
-      }
-
-      setIsProcessing(true);
-      console.log("Attempting to sign up with:", { email, name });
-      const result = await signUp(email, password, name);
-      
-      // Check if user exists
-      if (result?.exists) {
-        console.log("User already exists");
-        setError("An account with this email already exists. Try signing in instead.");
-        return;
-      }
-      
-      // If no session was created, assume verification is required
-      if (result?.user && result.emailVerificationRequired) {
-        console.log("Email verification required, sending verification email");
-        
-        // Try to manually send a verification email
-        const emailSent = await sendCustomVerificationEmail(email);
-        
-        if (emailSent) {
-          console.log("Custom verification email sent successfully");
-          toast({
-            title: "Account created",
-            description: "Please check your email for verification instructions. If you don't see it, check your spam folder.",
-            duration: 6000,
-          });
-          onVerificationSent(email);
-        } else {
-          console.log("Failed to send custom verification email");
-          // Still redirect to verification screen, but with a warning
-          toast({
-            title: "Account created, but...",
-            description: "We had trouble sending the verification email. Please check your spam folder or try logging in after a few minutes.",
-            duration: 6000,
-          });
-          onVerificationSent(email);
-        }
-      } else if (result?.user && result.session) {
-        // User was created and logged in immediately (email verification disabled)
-        toast({
-          title: "Account created successfully",
-          description: "You have been logged in automatically.",
-          duration: 4000,
-        });
-      }
-    } catch (error: any) {
-      console.error('Authentication error:', error);
-      
-      let errorMessage = "An unexpected error occurred. Please try again.";
-      
-      if (error.message) {
-        if (error.message.includes("User already registered")) {
-          errorMessage = "An account with this email already exists. Try signing in instead.";
-        } else if (error.message.includes("rate limit") || error.message.includes("429")) {
-          errorMessage = "Too many attempts. Please try again after a few minutes.";
-        } else if (error.message.includes("sending email") || error.message.includes("smtp")) {
-          errorMessage = "There was an issue sending the verification email. Your account has been created, but you may need to contact support to verify your email.";
-        } else {
-          errorMessage = error.message;
-        }
-      }
-      
-      setError(errorMessage);
-      
-      toast({
-        title: "Registration issue",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
+  const validateAndSubmit = (e: React.FormEvent) => {
+    const isValid = validateForm(email, password, confirmPassword, name);
+    handleSubmit(e, email, password, name, () => isValid, setError);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={validateAndSubmit} className="space-y-4">
       <AuthFormInput
         id="name"
         type="text"
