@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 import { formatMessagesForAI } from '../chatUtils';
 import { generateDeepseekResponse } from '../../../utils/deepseekApi';
 import { saveCurrentConversationToStorage } from '@/lib/storageUtils';
-import { saveJournalEntryFromConversation } from '@/services/conversation/journalIntegration';
 
 export const useSendMessage = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const [loading, setLoading] = useState(false);

@@ -1,42 +1,43 @@
+
 import { JournalEntry } from '@/lib/types';
+import { parseContentWithJsonCodeBlock } from '@/services/journal/contentParser';
 
 export const getEntryTitle = (entry: JournalEntry): string => {
-  // If there's a title field, use it
+  // If the entry has a title, use it
   if (entry.title) {
     return entry.title;
   }
-  
-  // Otherwise, try to extract title from content or use a fallback
-  if (entry.content) {
-    // Check if content is JSON
+
+  // For summary entries, create a formatted title
+  if (entry.type === 'summary') {
+    // Try to extract a title from content if it's JSON
     try {
-      if (typeof entry.content === 'string' && entry.content.trim().startsWith('{')) {
-        const contentObj = JSON.parse(entry.content);
-        if (contentObj.title) {
-          return contentObj.title;
-        }
+      const parsedContent = parseContentWithJsonCodeBlock(entry.content);
+      if (parsedContent && parsedContent.title) {
+        return parsedContent.title;
       }
     } catch (e) {
-      // Not JSON, continue with text processing
+      // Ignore parsing errors
     }
     
-    // If not JSON or no title in JSON, extract first line/sentence
-    const content = typeof entry.content === 'string' ? entry.content : '';
-    const firstLine = content.split('\n')[0];
-    
-    // If first line is too long, truncate it
-    if (firstLine && firstLine.length > 0) {
-      return firstLine.length > 60 ? firstLine.substring(0, 57) + '...' : firstLine;
-    }
+    // Fall back to a date-based title
+    return `Daily Summary: ${new Date(entry.createdAt).toLocaleDateString()}`;
   }
   
-  // Fallback based on entry type
-  const typeNames = {
-    story: 'My Story',
-    sideQuest: 'Side Quest',
-    action: 'Action Challenge',
-    journal: 'Journal Entry',
-  };
-  
-  return typeNames[entry.type as keyof typeof typeNames] || 'Entry';
+  // For entries with a prompt, use that as the title
+  if (entry.prompt) {
+    return entry.prompt.substring(0, 50) + (entry.prompt.length > 50 ? '...' : '');
+  }
+
+  // For entries with a type but no title or prompt
+  switch (entry.type) {
+    case 'story':
+      return 'Story Journey';
+    case 'sideQuest':
+      return 'Side Quest Adventure';
+    case 'action':
+      return 'Action Plan';
+    default:
+      return 'Journal Entry';
+  }
 };

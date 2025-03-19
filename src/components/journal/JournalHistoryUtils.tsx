@@ -1,33 +1,37 @@
+import { Pencil, Scroll, Compass, Zap, FileText } from 'lucide-react';
 
-import { JournalEntry } from '@/lib/types';
-import { BookOpen, MessageSquare, Zap, PenLine } from 'lucide-react';
-
+// Add 'summary' to the entry type icons
 export const getEntryIcon = (type: string) => {
   switch (type) {
-    case 'story':
-      return <BookOpen size={18} className="text-blue-500" />;
-    case 'sideQuest':
-      return <MessageSquare size={18} className="text-purple-500" />;
-    case 'action':
-      return <Zap size={18} className="text-amber-500" />;
     case 'journal':
-      return <PenLine size={18} className="text-green-500" />;
+      return <Pencil size={16} />;
+    case 'story':
+      return <Scroll size={16} />;
+    case 'sideQuest':
+      return <Compass size={16} />;
+    case 'action':
+      return <Zap size={16} />;
+    case 'summary':
+      return <FileText size={16} className="text-blue-500" />;
     default:
-      return <PenLine size={18} className="text-jess-muted" />;
+      return <Pencil size={16} />;
   }
 };
 
+// Update the getEntryTypeName function to include summary
 export const getEntryTypeName = (type: string) => {
   switch (type) {
+    case 'journal':
+      return 'Journal Entry';
     case 'story':
-      return 'My Story';
+      return 'Story';
     case 'sideQuest':
       return 'Side Quest';
     case 'action':
-      return 'Action Challenge';
-    case 'journal':
-      return 'Journal Challenge';
+      return 'Action Plan';
+    case 'summary':
+      return 'Daily Summary';
     default:
-      return 'Entry';
+      return 'Journal Entry';
   }
 };

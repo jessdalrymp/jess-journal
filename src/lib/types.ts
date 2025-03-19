@@ -24,10 +24,10 @@ export interface JournalEntry {
   userId: string;
   title: string;
   content: string;
-  type: 'story' | 'sideQuest' | 'action' | 'journal';
+  type: 'journal' | 'story' | 'sideQuest' | 'action' | 'summary';
   createdAt: Date;
-  prompt?: string;
-  conversation_id?: string;
+  prompt: string | null;
+  conversation_id?: string | null;
 }
 
 export interface ChatMessage {

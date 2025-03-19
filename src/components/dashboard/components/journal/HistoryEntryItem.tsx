@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, MessageSquare } from 'lucide-react';
+import { Calendar, Clock, MessageSquare, FileText } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon } from '@/components/journal/JournalHistoryUtils';
 import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
@@ -34,12 +34,14 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   const entryType = entry.type || 'journal';
   const content = getContentPreview(entry);
   const isConversationSummary = !!entry.conversation_id;
+  const isSummary = entry.type === 'summary';
   
   console.log('Rendering entry in history item:', { 
     id: entry.id, 
     title: getEntryTitle(entry), 
     type: entry.type,
     isConversationSummary, 
+    isSummary,
     conversation_id: entry.conversation_id,
     content: content.substring(0, 50) + (content.length > 50 ? '...' : '')
   });
@@ -60,6 +62,12 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
           <span className="ml-2 inline-flex items-center">
             <MessageSquare size={12} className="mr-1 text-blue-500" />
             <span className="text-blue-500">Conversation</span>
+          </span>
+        )}
+        {isSummary && (
+          <span className="ml-2 inline-flex items-center">
+            <FileText size={12} className="mr-1 text-green-500" />
+            <span className="text-green-500">Daily Summary</span>
           </span>
         )}
       </div>

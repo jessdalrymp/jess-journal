@@ -1,4 +1,3 @@
-
 /**
  * Attempts to parse journal entry content as JSON, handling code blocks
  */
@@ -86,28 +85,41 @@ export const convertToSecondPerson = (text: string): string => {
 };
 
 /**
- * Gets a preview of the content for display in lists/cards
+ * Get a readable preview of content from a journal entry
  */
 export const getContentPreview = (entry: any): string => {
+  if (!entry) return '';
+  
   try {
-    // First try to parse the content for JSON format
-    const parsedContent = parseEntryContent(entry.content);
-    if (parsedContent?.summary) {
-      return parsedContent.summary.substring(0, 150) + (parsedContent.summary.length > 150 ? '...' : '');
+    // For summary entries, handle them specially
+    if (entry.type === 'summary') {
+      // Try to extract the summary from JSON content
+      const parsedContent = parseEntryContent(entry.content);
+      if (parsedContent && parsedContent.summary) {
+        return parsedContent.summary;
+      }
     }
     
-    // If there's a prompt, make sure we're only showing the user's response
-    if (entry.prompt && entry.content.includes(entry.prompt)) {
-      const userResponse = entry.content.replace(entry.prompt, '').trim()
-        .replace(/^[\s\n]*[Q|A][:.]?\s*/i, '').trim();
-      return userResponse.substring(0, 150) + (userResponse.length > 150 ? '...' : '');
+    // For entries with JSON content
+    if (entry.content && (entry.content.includes('{') || entry.content.includes('```'))) {
+      const parsedContent = parseEntryContent(entry.content);
+      if (parsedContent) {
+        // For content with a summary field
+        if (parsedContent.summary) {
+          return parsedContent.summary;
+        }
+        // For content with other fields
+        if (typeof parsedContent === 'object') {
+          // Try to convert the object to a string representation
+          return JSON.stringify(parsedContent);
+        }
+      }
     }
     
-    // Fallback to the content itself
-    return entry.content.substring(0, 150) + (entry.content.length > 150 ? '...' : '');
+    // For regular content, just return it
+    return entry.content;
   } catch (e) {
-    console.error('Error getting content preview:', e);
-    return entry.content ? entry.content.substring(0, 150) + '...' : '';
+    console.error('Error parsing content for preview:', e);
+    return entry.content || '';
   }
 };
-

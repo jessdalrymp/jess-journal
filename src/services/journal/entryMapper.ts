@@ -47,6 +47,30 @@ export const mapDatabaseEntryToJournalEntry = (
     // Continue without parsedContent if parsing fails
   }
 
+  // Special handling for summary type entries
+  if (entryType === 'summary' || entry.type === 'summary') {
+    console.log('Processing summary entry:', entry.id);
+    
+    // If it's a summary but doesn't have a proper title yet
+    if (title === 'Untitled Entry' || title.includes('Daily Summary:')) {
+      // Try to create a better title from the prompt
+      if (prompt && prompt.includes('Daily Summary:')) {
+        title = prompt;
+      } else if (parsedContent && parsedContent.title) {
+        title = parsedContent.title;
+      } else {
+        title = `Daily Journal Summary: ${new Date(entry.created_at).toLocaleDateString()}`;
+      }
+    }
+    
+    // If we have parsed content with a summary field, use that for the content
+    if (parsedContent && parsedContent.summary) {
+      content = parsedContent.summary;
+    }
+    
+    entryType = 'summary';
+  }
+
   // For conversation summaries, we can enhance the entry with conversation data
   if (conversationId && conversationData) {
     console.log('Processing conversation data for entry:', {
@@ -97,7 +121,7 @@ export const mapDatabaseEntryToJournalEntry = (
     userId: entry.user_id,
     title: title,
     content: content,
-    type: entryType as 'journal' | 'story' | 'sideQuest' | 'action',
+    type: entryType as 'journal' | 'story' | 'sideQuest' | 'action' | 'summary',
     createdAt: new Date(entry.created_at),
     prompt: prompt,
     conversation_id: conversationId // Add the conversation_id to the journal entry
