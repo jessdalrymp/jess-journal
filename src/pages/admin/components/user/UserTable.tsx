@@ -1,19 +1,7 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Badge } from "../../../../components/ui/badge";
 import { Switch } from "../../../../components/ui/switch";
-import { Button } from "../../../../components/ui/button";
-import { Trash2 } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../../../../components/ui/alert-dialog";
 
 interface UserType {
   id: string;
@@ -34,13 +22,9 @@ interface UserTableProps {
   users: UserType[];
   loading: boolean;
   onToggleAdminStatus?: (userId: string, currentStatus: boolean) => Promise<boolean>;
-  onDeleteUser?: (userId: string, email: string) => Promise<boolean>;
 }
 
-export const UserTable = ({ users, loading, onToggleAdminStatus, onDeleteUser }: UserTableProps) => {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<UserType | null>(null);
-  
+export const UserTable = ({ users, loading, onToggleAdminStatus }: UserTableProps) => {
   if (loading) {
     return <div className="text-center py-4">Loading users...</div>;
   }
@@ -53,26 +37,6 @@ export const UserTable = ({ users, loading, onToggleAdminStatus, onDeleteUser }:
     if (onToggleAdminStatus) {
       await onToggleAdminStatus(userId, currentStatus);
     }
-  };
-
-  const handleDeleteClick = (user: UserType) => {
-    setUserToDelete(user);
-  };
-
-  const confirmDelete = async () => {
-    if (userToDelete && onDeleteUser) {
-      setIsDeleting(true);
-      try {
-        await onDeleteUser(userToDelete.id, userToDelete.email);
-      } finally {
-        setIsDeleting(false);
-        setUserToDelete(null);
-      }
-    }
-  };
-
-  const cancelDelete = () => {
-    setUserToDelete(null);
   };
 
   const getSubscriptionBadgeVariant = (status?: string) => {
@@ -146,54 +110,21 @@ export const UserTable = ({ users, loading, onToggleAdminStatus, onDeleteUser }:
                 )}
               </td>
               <td className="px-4 py-3">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <Switch 
-                      checked={user.is_admin}
-                      onCheckedChange={() => handleToggleAdmin(user.id, user.is_admin)}
-                      id={`admin-toggle-${user.id}`}
-                    />
-                    <label htmlFor={`admin-toggle-${user.id}`} className="text-sm cursor-pointer">
-                      {user.is_admin ? 'Admin' : 'Make Admin'}
-                    </label>
-                  </div>
-                  
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => handleDeleteClick(user)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    checked={user.is_admin}
+                    onCheckedChange={() => handleToggleAdmin(user.id, user.is_admin)}
+                    id={`admin-toggle-${user.id}`}
+                  />
+                  <label htmlFor={`admin-toggle-${user.id}`} className="text-sm cursor-pointer">
+                    {user.is_admin ? 'Admin' : 'Make Admin'}
+                  </label>
                 </div>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-
-      <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && cancelDelete()}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this user?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the account for {userToDelete?.email}. 
-              This action cannot be undone, and all user data will be lost.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              className="bg-red-500 hover:bg-red-600" 
-              onClick={confirmDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Deleting..." : "Delete User"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };

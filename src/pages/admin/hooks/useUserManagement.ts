@@ -33,9 +33,9 @@ export const useUserManagement = () => {
       console.log("Fetching users...");
       
       // Skip the RPC function since it's giving type errors and go straight to the tables we know work
-      // Get basic user data from public.profiles table
+      // Get basic user data from public.users table
       const { data: userData, error: userError } = await supabase
-        .from('profiles')
+        .from('users')
         .select('id, email, created_at, last_session');
         
       if (userError) {
@@ -169,50 +169,10 @@ export const useUserManagement = () => {
     }
   };
 
-  const deleteUser = async (userId: string, email: string) => {
-    try {
-      setLoading(true);
-      console.log(`Attempting to delete user: ${email} (${userId})`);
-      
-      // Call Supabase to delete the user
-      const { error } = await supabase.auth.admin.deleteUser(userId);
-      
-      if (error) {
-        console.error('Error deleting user:', error);
-        toast({
-          title: "Error deleting user",
-          description: error.message || "Could not delete user",
-          variant: "destructive"
-        });
-        return false;
-      }
-      
-      // If successful, update the local state
-      setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
-      
-      toast({
-        title: "User deleted",
-        description: `User ${email} has been deleted`,
-      });
-      return true;
-    } catch (error: any) {
-      console.error('Error in deleteUser:', error);
-      toast({
-        title: "Error deleting user",
-        description: error.message || "An unexpected error occurred",
-        variant: "destructive"
-      });
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return {
     users,
     loading,
     fetchUsers,
-    toggleAdminStatus,
-    deleteUser
+    toggleAdminStatus
   };
 };

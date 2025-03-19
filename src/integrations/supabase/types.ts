@@ -34,39 +34,31 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          profile_id: string
           summary: string | null
           title: string
           type: string
           updated_at: string
+          user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
-          profile_id: string
           summary?: string | null
           title: string
           type: string
           updated_at?: string
+          user_id: string
         }
         Update: {
           created_at?: string
           id?: string
-          profile_id?: string
           summary?: string | null
           title?: string
           type?: string
           updated_at?: string
+          user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "conversations_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       coupons: {
         Row: {
@@ -149,7 +141,7 @@ export type Database = {
             foreignKeyName: "journal_entries_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -252,60 +244,6 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
-        Row: {
-          ADMIN: Database["public"]["Enums"]["app_role"] | null
-          assessment_answers: Json | null
-          assessment_completed: boolean | null
-          assessment_data: Json | null
-          booktext: boolean | null
-          communication_style: string | null
-          created_at: string
-          email: string
-          emotional_state: string | null
-          goals: string[] | null
-          growth_stage: string | null
-          id: string
-          last_session: string | null
-          learning_style: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          ADMIN?: Database["public"]["Enums"]["app_role"] | null
-          assessment_answers?: Json | null
-          assessment_completed?: boolean | null
-          assessment_data?: Json | null
-          booktext?: boolean | null
-          communication_style?: string | null
-          created_at?: string
-          email: string
-          emotional_state?: string | null
-          goals?: string[] | null
-          growth_stage?: string | null
-          id: string
-          last_session?: string | null
-          learning_style?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          ADMIN?: Database["public"]["Enums"]["app_role"] | null
-          assessment_answers?: Json | null
-          assessment_completed?: boolean | null
-          assessment_data?: Json | null
-          booktext?: boolean | null
-          communication_style?: string | null
-          created_at?: string
-          email?: string
-          emotional_state?: string | null
-          goals?: string[] | null
-          growth_stage?: string | null
-          id?: string
-          last_session?: string | null
-          learning_style?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       saved_prompts: {
         Row: {
           created_at: string
@@ -387,6 +325,60 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          ADMIN: Database["public"]["Enums"]["app_role"] | null
+          assessment_answers: Json | null
+          assessment_completed: boolean | null
+          assessment_data: Json | null
+          booktext: boolean | null
+          communication_style: string | null
+          created_at: string
+          email: string
+          emotional_state: string | null
+          goals: string[] | null
+          growth_stage: string | null
+          id: string
+          last_session: string | null
+          learning_style: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ADMIN?: Database["public"]["Enums"]["app_role"] | null
+          assessment_answers?: Json | null
+          assessment_completed?: boolean | null
+          assessment_data?: Json | null
+          booktext?: boolean | null
+          communication_style?: string | null
+          created_at?: string
+          email: string
+          emotional_state?: string | null
+          goals?: string[] | null
+          growth_stage?: string | null
+          id: string
+          last_session?: string | null
+          learning_style?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ADMIN?: Database["public"]["Enums"]["app_role"] | null
+          assessment_answers?: Json | null
+          assessment_completed?: boolean | null
+          assessment_data?: Json | null
+          booktext?: boolean | null
+          communication_style?: string | null
+          created_at?: string
+          email?: string
+          emotional_state?: string | null
+          goals?: string[] | null
+          growth_stage?: string | null
+          id?: string
+          last_session?: string | null
+          learning_style?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }

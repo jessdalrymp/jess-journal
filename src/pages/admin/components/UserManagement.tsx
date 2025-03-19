@@ -5,7 +5,7 @@ import { UserTable } from "./user/UserTable";
 import { useUserManagement } from "../hooks/useUserManagement";
 
 export const UserManagement = () => {
-  const { users, loading, toggleAdminStatus, deleteUser } = useUserManagement();
+  const { users, loading, toggleAdminStatus } = useUserManagement();
 
   return (
     <Card>
@@ -22,7 +22,6 @@ export const UserManagement = () => {
           users={users}
           loading={loading}
           onToggleAdminStatus={toggleAdminStatus}
-          onDeleteUser={deleteUser}
         />
       </CardContent>
     </Card>

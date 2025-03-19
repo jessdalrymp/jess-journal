@@ -36,7 +36,7 @@ export const fetchProfile = async (userId: string | undefined): Promise<UserProf
     }
 
     const { data: userData, error } = await supabase
-      .from('profiles')
+      .from('users')
       .select('*')
       .eq('id', userId)
       .single();
@@ -97,7 +97,7 @@ export const saveProfile = async (userId: string | undefined, profileData: Parti
     };
 
     const { error } = await supabase
-      .from('profiles')
+      .from('users')
       .upsert(supabaseProfileData, { onConflict: 'id' });
 
     if (error) {

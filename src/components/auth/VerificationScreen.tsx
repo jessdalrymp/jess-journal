@@ -24,15 +24,9 @@ export const VerificationScreen = ({ email, onBackToSignIn }: VerificationScreen
             Please check your inbox (and spam folder) to verify your account.
           </p>
           <div className="space-y-4">
-            <div className="bg-yellow-50 border border-yellow-100 p-4 rounded-md text-sm text-yellow-800">
-              <p className="font-medium">Note:</p>
-              <p>If you don't receive the email within a few minutes:</p>
-              <ul className="list-disc list-inside mt-2">
-                <li>Check your spam/junk folder</li>
-                <li>Make sure you entered your email correctly</li>
-                <li>Try signing in with your credentials</li>
-              </ul>
-            </div>
+            <p className="text-sm text-jess-muted">
+              Didn't receive the email? Check your spam folder or try again in a few minutes.
+            </p>
             <button
               onClick={onBackToSignIn}
               className="text-jess-primary hover:underline text-sm transition-colors"

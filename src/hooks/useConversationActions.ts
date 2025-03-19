@@ -1,25 +1,15 @@
 
 import { useState } from 'react';
+import { ConversationSession } from '../lib/types';
 import * as conversationService from '../services/conversation';
-
-export interface ConversationParams {
-  userId: string;
-  type: 'action' | 'journal' | 'sideQuest' | 'story';
-  title: string;
-}
 
 export function useConversationActions() {
   const [loading, setLoading] = useState(false);
 
-  const startConversation = async (userId: string, type: 'story' | 'sideQuest' | 'action' | 'journal'): Promise<any> => {
+  const startConversation = async (userId: string, type: 'story' | 'sideQuest' | 'action' | 'journal'): Promise<ConversationSession> => {
     setLoading(true);
     try {
-      // Create a conversation with a default title
-      const title = `New ${type} - ${new Date().toLocaleDateString()}`;
-      const conversationParams: ConversationParams = { userId, type, title };
-      
-      const result = await conversationService.createConversation(conversationParams);
-      return result;
+      return await conversationService.startConversation(userId, type);
     } catch (error) {
       console.error('Error starting conversation:', error);
       throw error;
@@ -28,14 +18,10 @@ export function useConversationActions() {
     }
   };
 
-  const addMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<void> => {
+  const addMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant', userId?: string): Promise<void> => {
     setLoading(true);
     try {
-      await conversationService.addMessageToConversation(
-        conversationId, {
-        role,
-        content
-      });
+      await conversationService.addMessageToConversation(conversationId, content, role, userId);
     } catch (error) {
       console.error('Error adding message to conversation:', error);
       throw error;
