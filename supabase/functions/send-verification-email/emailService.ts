@@ -36,24 +36,18 @@ export function validateApiKey(): EmailResponse | null {
     };
   }
   
-  // Log masked API key for debugging (just first/last few chars)
-  const keyLength = RESEND_API_KEY.length;
-  if (keyLength > 8) {
-    const maskedKey = RESEND_API_KEY.substring(0, 4) + '...' + RESEND_API_KEY.substring(keyLength - 4);
-    console.log(`Using Resend API key (masked): ${maskedKey}`);
-  } else {
-    console.log("API key present but too short to display safely");
-  }
+  console.log("Resend API key is present");
   
-  // Test the API key with a simple validation call (optional)
-  try {
-    console.log("Attempting to validate Resend API key integrity...");
-    // You could make a lightweight call to the Resend API here
-    // For example: await resend.domains.list();
-    console.log("API key format appears valid (note: this doesn't guarantee it works)");
-  } catch (error) {
-    console.error("Error during API key validation check:", error);
-    // We don't fail here, just log the error
+  // Basic validation to check API key format
+  if (!RESEND_API_KEY.startsWith('re_')) {
+    console.error("CRITICAL ERROR: RESEND_API_KEY does not have the expected format (should start with 're_')");
+    return { 
+      success: false, 
+      error: { 
+        message: "Email service configuration error", 
+        details: "API key has invalid format" 
+      }
+    };
   }
   
   return null;
@@ -81,7 +75,7 @@ export async function sendHtmlEmail(email: string, verificationUrl: string): Pro
       `,
     });
     
-    console.log("Resend API HTML email response:", JSON.stringify(response, null, 2));
+    console.log("Resend API response:", JSON.stringify(response, null, 2));
     
     if (response.error) {
       console.error("Error returned from Resend API:", response.error);
@@ -91,15 +85,25 @@ export async function sendHtmlEmail(email: string, verificationUrl: string): Pro
     return response;
   } catch (error) {
     console.error("Exception in sendHtmlEmail:", error);
-    console.error("Error details:", error.stack || "No stack trace available");
     
-    // Log more details about the error for better debugging
-    if (error.response) {
-      console.error("Error response from Resend API:", error.response);
+    // Check if it's an API key error
+    if (error.message && (
+        error.message.includes("api_key") || 
+        error.message.includes("API key") || 
+        error.message.includes("authentication")
+    )) {
+      console.error("API KEY ERROR: The Resend API key appears to be invalid, expired, or unauthorized");
+      throw new Error("Email service authentication failed. Please check your Resend API key.");
     }
     
-    if (error.message && error.message.includes("api_key")) {
-      console.error("API key related error detected. Check if your Resend API key is valid and active.");
+    // Check if it's a sender domain error
+    if (error.message && (
+        error.message.includes("domain") || 
+        error.message.includes("sender") ||
+        error.message.includes("from")
+    )) {
+      console.error("SENDER DOMAIN ERROR: The sender domain may not be verified in Resend");
+      throw new Error("Email sender domain not verified. Please check your Resend domain settings.");
     }
     
     throw error;
@@ -129,7 +133,7 @@ The Jess Journal Team
       `,
     });
     
-    console.log("Resend API text-only email response:", JSON.stringify(response, null, 2));
+    console.log("Resend API response:", JSON.stringify(response, null, 2));
     
     if (response.error) {
       console.error("Error returned from Resend API:", response.error);
@@ -139,15 +143,25 @@ The Jess Journal Team
     return response;
   } catch (error) {
     console.error("Exception in sendTextOnlyEmail:", error);
-    console.error("Error details:", error.stack || "No stack trace available");
     
-    // Log more details about the error for better debugging
-    if (error.response) {
-      console.error("Error response from Resend API:", error.response);
+    // Check if it's an API key error
+    if (error.message && (
+        error.message.includes("api_key") || 
+        error.message.includes("API key") || 
+        error.message.includes("authentication")
+    )) {
+      console.error("API KEY ERROR: The Resend API key appears to be invalid, expired, or unauthorized");
+      throw new Error("Email service authentication failed. Please check your Resend API key.");
     }
     
-    if (error.message && error.message.includes("api_key")) {
-      console.error("API key related error detected. Check if your Resend API key is valid and active.");
+    // Check if it's a sender domain error
+    if (error.message && (
+        error.message.includes("domain") || 
+        error.message.includes("sender") ||
+        error.message.includes("from")
+    )) {
+      console.error("SENDER DOMAIN ERROR: The sender domain may not be verified in Resend");
+      throw new Error("Email sender domain not verified. Please check your Resend domain settings.");
     }
     
     throw error;
@@ -160,7 +174,6 @@ export function createErrorResponse(error: any, details?: string): Response {
   const errorDetails = details || "Exception caught in send-verification-email function";
   
   console.error(`Creating error response: ${errorMessage} - ${errorDetails}`);
-  console.error("Error stack:", error.stack || "No stack trace available");
   
   return new Response(
     JSON.stringify({ 

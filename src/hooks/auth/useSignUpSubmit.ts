@@ -42,53 +42,13 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
       
       // If no session was created, assume verification is required
       if (result?.user && result.emailVerificationRequired) {
-        console.log("Email verification required, attempting different methods to send verification");
+        console.log("Email verification required, sending verification email");
         
-        // First check if the built-in Supabase email was sent successfully
-        if (result.emailSent) {
-          console.log("Supabase verification email sent successfully");
-          toast({
-            title: "Account created",
-            description: "Please check your email to verify your account. If you don't see it, check your spam folder.",
-            duration: 6000,
-          });
-          onVerificationSent(email);
-          return;
-        }
-        
-        // If Supabase email failed, try our custom email sender
-        console.log("Trying custom verification email sender");
-        let attemptCount = 0;
-        let maxAttempts = 3; // Increase max attempts
-        let emailSent = false;
-        
-        // Try multiple times with a short delay between attempts
-        while (attemptCount < maxAttempts && !emailSent) {
-          try {
-            console.log(`Custom email attempt ${attemptCount + 1} of ${maxAttempts}`);
-            emailSent = await sendCustomVerificationEmail(email);
-            
-            if (emailSent) {
-              console.log(`Attempt ${attemptCount + 1} succeeded!`);
-              break;
-            } else {
-              console.log(`Attempt ${attemptCount + 1} failed. Will retry.`);
-            }
-            
-            // Wait a short while before retrying, increasing the delay each time
-            if (attemptCount < maxAttempts - 1) {
-              const delayMs = 1000 * (attemptCount + 1); // Increase delay with each attempt
-              console.log(`Waiting ${delayMs}ms before retry...`);
-              await new Promise(resolve => setTimeout(resolve, delayMs));
-            }
-          } catch (error) {
-            console.error(`Attempt ${attemptCount + 1} failed with exception:`, error);
-          }
-          attemptCount++;
-        }
+        // Send verification email using our custom sender
+        const emailSent = await sendCustomVerificationEmail(email);
         
         if (emailSent) {
-          console.log("Custom verification email sent successfully");
+          console.log("Verification email sent successfully");
           toast({
             title: "Account created",
             description: "Please check your email to verify your account. If you don't see it, check your spam folder.",
@@ -96,11 +56,10 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
           });
           onVerificationSent(email);
         } else {
-          console.log("All verification email methods failed");
-          // Still redirect to verification screen, but with a warning
+          console.log("Failed to send verification email");
           toast({
             title: "Account created, but...",
-            description: "We had trouble sending the verification email. Please check your spam folder or try signing in after a few minutes.",
+            description: "We had trouble sending the verification email. Check your spam folder or try signing in after a few minutes.",
             duration: 8000,
             variant: "destructive",
           });

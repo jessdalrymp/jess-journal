@@ -20,31 +20,7 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
     console.log("Sending verification email to:", email);
     console.log("Verification URL:", verificationUrl);
     
-    // First, try to use built-in Supabase auth email functionality
-    try {
-      console.log("Attempting to use Supabase built-in email verification...");
-      const { error: resendError } = await supabase.auth.resend({
-        type: 'signup',
-        email: email,
-        options: {
-          emailRedirectTo: verificationUrl,
-        }
-      });
-      
-      if (!resendError) {
-        console.log("Successfully sent verification email using Supabase auth.resend");
-        return true;
-      }
-      
-      console.warn("Supabase resend failed, error:", resendError);
-      console.log("Falling back to custom function...");
-    } catch (resendError) {
-      console.warn("Exception in Supabase resend:", resendError);
-      console.log("Falling back to custom function...");
-    }
-    
-    // If Supabase email fails, fall back to our custom email function
-    // Get the Supabase project URL - use full URL to avoid CORS issues
+    // Get the Supabase project URL
     const supabaseProjectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://uobvlrobwohdlfbhniho.supabase.co';
     
     // Construct the edge function URL
