@@ -27,9 +27,24 @@ export const useUserFetching = () => {
         return;
       }
       
+      if (!userData || !Array.isArray(userData)) {
+        console.error('Invalid user data returned:', userData);
+        toast({
+          title: "Error fetching users",
+          description: "Received invalid user data format",
+          variant: "destructive"
+        });
+        setUsers([]);
+        return;
+      }
+      
+      console.log("Fetched user data:", userData);
+      console.log("Fetched role data:", roleData);
+      console.log("Fetched subscription data:", subscriptionData);
+      
       // Create a map of user_id to admin status
       const adminMap = new Map();
-      if (roleData) {
+      if (roleData && Array.isArray(roleData)) {
         roleData.forEach((role: any) => {
           if (role.role === 'admin') {
             adminMap.set(role.user_id, true);
@@ -39,7 +54,7 @@ export const useUserFetching = () => {
       
       // Create a map of user_id to subscription data
       const subscriptionMap = new Map();
-      if (subscriptionData) {
+      if (subscriptionData && Array.isArray(subscriptionData)) {
         subscriptionData.forEach((sub: any) => {
           subscriptionMap.set(sub.user_id, {
             status: sub.status,
@@ -61,7 +76,7 @@ export const useUserFetching = () => {
         subscription: subscriptionMap.get(user.id) || null
       }));
       
-      console.log("Users with subscription data:", mappedUsers);
+      console.log("Mapped users:", mappedUsers);
       setUsers(mappedUsers);
     } catch (error: any) {
       console.error('Error in fetchUsers:', error);

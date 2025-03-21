@@ -3,7 +3,15 @@ import React, { useState } from 'react';
 import { Badge } from "../../../../components/ui/badge";
 import { Switch } from "../../../../components/ui/switch";
 import { Button } from "../../../../components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, AlertCircle } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../../../components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,11 +50,22 @@ export const UserTable = ({ users, loading, onToggleAdminStatus, onDeleteUser }:
   const [userToDelete, setUserToDelete] = useState<UserType | null>(null);
   
   if (loading) {
-    return <div className="text-center py-4">Loading users...</div>;
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin w-6 h-6 border-t-2 border-jess-primary border-r-2 rounded-full mx-auto mb-2"></div>
+        <p>Loading users...</p>
+      </div>
+    );
   }
   
-  if (users.length === 0) {
-    return <div className="text-center py-4 text-jess-muted">No users found.</div>;
+  if (!users || users.length === 0) {
+    return (
+      <div className="text-center py-8 border border-dashed rounded-md">
+        <AlertCircle className="w-8 h-8 mx-auto mb-2 text-jess-muted" />
+        <p className="text-jess-muted">No users found.</p>
+        <p className="text-sm text-jess-muted mt-1">This could be due to permission issues or no users in the system.</p>
+      </div>
+    );
   }
   
   const handleToggleAdmin = async (userId: string, currentStatus: boolean) => {
@@ -104,33 +123,33 @@ export const UserTable = ({ users, loading, onToggleAdminStatus, onDeleteUser }:
   
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="bg-jess-subtle">
-            <th className="px-4 py-2 text-left">Email</th>
-            <th className="px-4 py-2 text-left">Joined</th>
-            <th className="px-4 py-2 text-left">Last Login</th>
-            <th className="px-4 py-2 text-left">Role</th>
-            <th className="px-4 py-2 text-left">Subscription</th>
-            <th className="px-4 py-2 text-left">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Email</TableHead>
+            <TableHead>Joined</TableHead>
+            <TableHead>Last Login</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Subscription</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {users.map(user => (
-            <tr key={user.id} className="border-b border-jess-subtle">
-              <td className="px-4 py-3">{user.email}</td>
-              <td className="px-4 py-3">
+            <TableRow key={user.id}>
+              <TableCell className="font-medium">{user.email}</TableCell>
+              <TableCell>
                 {new Date(user.created_at).toLocaleDateString()}
-              </td>
-              <td className="px-4 py-3">
+              </TableCell>
+              <TableCell>
                 {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never'}
-              </td>
-              <td className="px-4 py-3">
+              </TableCell>
+              <TableCell>
                 <Badge variant={user.is_admin ? "default" : "outline"}>
                   {user.is_admin ? 'Admin' : 'User'}
                 </Badge>
-              </td>
-              <td className="px-4 py-3">
+              </TableCell>
+              <TableCell>
                 <Badge variant={getSubscriptionBadgeVariant(user.subscription?.status)}>
                   {formatSubscriptionStatus(user)}
                 </Badge>
@@ -144,8 +163,8 @@ export const UserTable = ({ users, loading, onToggleAdminStatus, onDeleteUser }:
                     Trial ends: {new Date(user.subscription.trial_ends_at).toLocaleDateString()}
                   </div>
                 )}
-              </td>
-              <td className="px-4 py-3">
+              </TableCell>
+              <TableCell>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
                     <Switch 
@@ -167,11 +186,11 @@ export const UserTable = ({ users, loading, onToggleAdminStatus, onDeleteUser }:
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
 
       <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && cancelDelete()}>
         <AlertDialogContent>
