@@ -19,7 +19,7 @@ export const fetchPlansFromDB = async (): Promise<{
       console.error('Error checking admin status:', adminCheckError);
       return { 
         data: null, 
-        error: new Error("Failed to verify admin privileges."), 
+        error: new Error(`Failed to verify admin privileges. ${adminCheckError.message}`), 
         connectionError: true 
       };
     }
@@ -33,32 +33,7 @@ export const fetchPlansFromDB = async (): Promise<{
       };
     }
     
-    // Check if the table exists and user has permissions
-    const { count, error: countError } = await supabase
-      .from('payment_plans')
-      .select('*', { count: 'exact', head: true });
-    
-    if (countError) {
-      console.error('Error checking payment_plans table:', countError);
-      
-      // Check if this is a permission error (common for non-admin users)
-      const isPermissionError = 
-        countError.message.includes('permission denied') || 
-        countError.message.includes('not found') ||
-        countError.message === "";  // Empty error message often indicates permission issue
-      
-      return { 
-        data: null, 
-        error: new Error(
-          isPermissionError 
-            ? "Permission denied. Admin access required to view payment plans." 
-            : countError.message
-        ), 
-        connectionError: true 
-      };
-    }
-    
-    // If we get here, the user is an admin and has access to the table
+    // If we get here, the user is an admin and should have access to the table
     const { data, error } = await supabase
       .from('payment_plans')
       .select('*')
