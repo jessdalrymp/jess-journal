@@ -8,16 +8,31 @@ export const useUserFetching = () => {
   const { toast } = useToast();
   const [users, setUsers] = useState<UserType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [permissionError, setPermissionError] = useState(false);
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      setError(null);
+      setPermissionError(false);
       console.log("Fetching users...");
       
       const { userData, roleData, subscriptionData, error, connectionError } = await fetchUsersFromDB();
       
       if (connectionError || error) {
         console.error('Error fetching users:', error);
+        
+        // Check if it's a permissions error
+        if (error?.message?.includes('permission denied') || 
+            error?.message?.includes('additional permissions') ||
+            error?.message?.includes('access')) {
+          setPermissionError(true);
+          setError("You don't have sufficient permissions to view user data.");
+        } else {
+          setError(error?.message || "Could not retrieve user data");
+        }
+        
         toast({
           title: "Error fetching users",
           description: error?.message || "Could not retrieve user data",
@@ -29,6 +44,7 @@ export const useUserFetching = () => {
       
       if (!userData || !Array.isArray(userData)) {
         console.error('Invalid user data returned:', userData);
+        setError("Received invalid user data format");
         toast({
           title: "Error fetching users",
           description: "Received invalid user data format",
@@ -80,12 +96,13 @@ export const useUserFetching = () => {
       setUsers(mappedUsers);
     } catch (error: any) {
       console.error('Error in fetchUsers:', error);
+      setError("Could not retrieve user data");
+      setUsers([]);
       toast({
         title: "Error fetching users",
         description: "Could not retrieve user data",
         variant: "destructive"
       });
-      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -98,6 +115,8 @@ export const useUserFetching = () => {
   return {
     users,
     loading,
+    error,
+    permissionError,
     fetchUsers
   };
 };
