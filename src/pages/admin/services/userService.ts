@@ -1,3 +1,4 @@
+
 import { supabase } from "../../../integrations/supabase/client";
 
 /**
@@ -6,10 +7,9 @@ import { supabase } from "../../../integrations/supabase/client";
  */
 export const fetchUsersFromDB = async () => {
   try {
-    // Get basic user data from public.profiles table
+    // Get user data directly from auth.users via admin functions
     const { data: userData, error: userError } = await supabase
-      .from('profiles')
-      .select('id, email, created_at, last_session');
+      .rpc('get_users_with_details');
         
     if (userError) {
       console.error('User query failed:', userError);
@@ -17,17 +17,36 @@ export const fetchUsersFromDB = async () => {
       // Check if it's a permission error
       if (userError.message.includes('permission denied') || userError.code === '42501') {
         return { 
-          data: null, 
+          userData: null, 
           error: new Error("Permission denied. Admin access required to view user data."), 
           connectionError: true 
         };
       }
       
       return { 
-        data: null, 
+        userData: null, 
         error: userError, 
         connectionError: true 
       };
+    }
+    
+    // If no special function exists, try getting user data from profiles
+    if (!userData || userData.length === 0) {
+      console.log("Falling back to profiles table for user data");
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, email, created_at, last_session');
+        
+      if (profileError) {
+        console.error('Profile query failed:', profileError);
+        return { 
+          userData: null, 
+          error: profileError, 
+          connectionError: true 
+        };
+      }
+      
+      userData = profileData;
     }
       
     // Get admin role data
@@ -60,7 +79,7 @@ export const fetchUsersFromDB = async () => {
   } catch (error: any) {
     console.error('Error in fetchUsersFromDB:', error);
     return { 
-      data: null, 
+      userData: null, 
       error: new Error(error.message || "Unknown error occurred"), 
       connectionError: true 
     };

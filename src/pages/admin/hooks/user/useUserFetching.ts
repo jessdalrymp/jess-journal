@@ -8,10 +8,12 @@ export const useUserFetching = () => {
   const { toast } = useToast();
   const [users, setUsers] = useState<UserType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      setError(null);
       console.log("Fetching users...");
       
       const { userData, roleData, subscriptionData, error, connectionError } = await fetchUsersFromDB();
@@ -24,6 +26,7 @@ export const useUserFetching = () => {
           variant: "destructive"
         });
         setUsers([]);
+        setError(error || new Error("Connection error"));
         return;
       }
       
@@ -35,6 +38,7 @@ export const useUserFetching = () => {
           variant: "destructive"
         });
         setUsers([]);
+        setError(new Error("Invalid user data format"));
         return;
       }
       
@@ -80,6 +84,7 @@ export const useUserFetching = () => {
       setUsers(mappedUsers);
     } catch (error: any) {
       console.error('Error in fetchUsers:', error);
+      setError(error);
       toast({
         title: "Error fetching users",
         description: "Could not retrieve user data",
@@ -98,6 +103,7 @@ export const useUserFetching = () => {
   return {
     users,
     loading,
+    error,
     fetchUsers
   };
 };

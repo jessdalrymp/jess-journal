@@ -4,10 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../..
 import { UserTable } from "./user/UserTable";
 import { useUserManagement } from "../hooks/useUserManagement";
 import { Button } from "../../../components/ui/button";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "../../../components/ui/alert";
 
 export const UserManagement = () => {
-  const { users, loading, fetchUsers, toggleAdminStatus, deleteUser } = useUserManagement();
+  const { users, loading, error, fetchUsers, toggleAdminStatus, deleteUser } = useUserManagement();
 
   useEffect(() => {
     fetchUsers();
@@ -33,6 +34,15 @@ export const UserManagement = () => {
         </div>
       </CardHeader>
       <CardContent>
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error fetching users</AlertTitle>
+            <AlertDescription>
+              {error.message || "There was an error loading user data. Please try again."}
+            </AlertDescription>
+          </Alert>
+        )}
         <UserTable 
           users={users}
           loading={loading}
