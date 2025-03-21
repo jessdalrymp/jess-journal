@@ -6,6 +6,8 @@ import { Button } from "../../../components/ui/button";
 import { CouponTable } from "./coupon/CouponTable";
 import { CouponFormDialog } from "./coupon/CouponFormDialog";
 import { useCouponManagement } from "../hooks/useCouponManagement";
+import { Alert, AlertDescription, AlertTitle } from "../../../components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 export const CouponManagement = () => {
   const {
@@ -25,7 +27,9 @@ export const CouponManagement = () => {
     durationValue,
     setDurationValue,
     durationType,
-    setDurationType
+    setDurationType,
+    isAdmin,
+    connectionError
   } = useCouponManagement();
 
   return (
@@ -36,18 +40,44 @@ export const CouponManagement = () => {
             <CardTitle>Coupon Management</CardTitle>
             <CardDescription>Manage discount coupons</CardDescription>
           </div>
-          <Button onClick={handleAdd} size="sm">
+          <Button 
+            onClick={handleAdd} 
+            size="sm" 
+            disabled={isAdmin === false || connectionError}
+          >
             <Plus size={16} className="mr-2" />
             Add Coupon
           </Button>
         </div>
       </CardHeader>
       <CardContent>
+        {isAdmin === false && !connectionError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Admin Access Required</AlertTitle>
+            <AlertDescription>
+              You must be an administrator to create, update, or delete coupons.
+              You can still view existing coupons.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {connectionError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Connection Error</AlertTitle>
+            <AlertDescription>
+              Unable to connect to the coupons table. This could be due to permission issues.
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <CouponTable 
           coupons={coupons}
           onEdit={handleEdit}
           onDelete={handleDelete}
           loading={loading}
+          isAdmin={isAdmin}
         />
 
         <CouponFormDialog

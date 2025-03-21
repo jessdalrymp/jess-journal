@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from "../../../integrations/supabase/client";
 import { useToast } from "../../../hooks/use-toast";
 import { addDays, addWeeks, addMonths } from "date-fns";
+import { useAdminStatus } from './useAdminStatus';
 
 export interface CouponType {
   id: string;
@@ -19,6 +19,7 @@ export interface CouponType {
 
 export const useCouponManagement = () => {
   const { toast } = useToast();
+  const { isAdmin, loading: adminLoading } = useAdminStatus();
   const [coupons, setCoupons] = useState<CouponType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -26,6 +27,7 @@ export const useCouponManagement = () => {
   const [expiryType, setExpiryType] = useState<"fixed" | "duration">("fixed");
   const [durationValue, setDurationValue] = useState<number>(30);
   const [durationType, setDurationType] = useState<"days" | "weeks" | "months">("days");
+  const [connectionError, setConnectionError] = useState(false);
   
   const [formData, setFormData] = useState({
     code: '',
@@ -45,15 +47,28 @@ export const useCouponManagement = () => {
   const fetchCoupons = async () => {
     try {
       setLoading(true);
+      setConnectionError(false);
+      
       const { data, error } = await supabase
         .from('coupons')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching coupons:', error);
+        setConnectionError(true);
+        toast({
+          title: "Error fetching coupons",
+          description: error.message || "Please try again later",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       setCoupons(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching coupons:', error);
+      setConnectionError(true);
       toast({
         title: "Error fetching coupons",
         description: "Please try again later",
@@ -78,6 +93,15 @@ export const useCouponManagement = () => {
   };
 
   const handleEdit = (coupon: CouponType) => {
+    if (!isAdmin) {
+      toast({
+        title: "Permission denied",
+        description: "Only administrators can edit coupons",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setEditingCoupon(coupon);
     setFormData({
       code: coupon.code,
@@ -94,6 +118,15 @@ export const useCouponManagement = () => {
   };
 
   const handleAdd = () => {
+    if (!isAdmin) {
+      toast({
+        title: "Permission denied",
+        description: "Only administrators can add coupons",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setEditingCoupon(null);
     setFormData({
       code: '',
@@ -112,6 +145,15 @@ export const useCouponManagement = () => {
   };
 
   const handleDelete = async (id: string) => {
+    if (!isAdmin) {
+      toast({
+        title: "Permission denied",
+        description: "Only administrators can delete coupons",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (!confirm('Are you sure you want to delete this coupon?')) return;
     
     try {
@@ -120,7 +162,15 @@ export const useCouponManagement = () => {
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Delete operation error:', error);
+        toast({
+          title: "Error deleting coupon",
+          description: error.message || "Please try again later",
+          variant: "destructive"
+        });
+        return;
+      }
       
       toast({
         title: "Coupon deleted",
@@ -128,11 +178,11 @@ export const useCouponManagement = () => {
       });
       
       fetchCoupons();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting coupon:', error);
       toast({
         title: "Error deleting coupon",
-        description: "Please try again later",
+        description: error.message || "Please try again later",
         variant: "destructive"
       });
     }
@@ -166,6 +216,15 @@ export const useCouponManagement = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!isAdmin) {
+      toast({
+        title: "Permission denied",
+        description: "Only administrators can modify coupons",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     try {
       const expiryDate = calculateExpiryDate();
       
@@ -187,7 +246,15 @@ export const useCouponManagement = () => {
           .update(couponData)
           .eq('id', editingCoupon.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Update operation error:', error);
+          toast({
+            title: "Error updating coupon",
+            description: error.message || "Please try again later",
+            variant: "destructive"
+          });
+          return;
+        }
         
         toast({
           title: "Coupon updated",
@@ -199,7 +266,15 @@ export const useCouponManagement = () => {
           .from('coupons')
           .insert(couponData);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Insert operation error:', error);
+          toast({
+            title: "Error adding coupon",
+            description: error.message || "Please try again later",
+            variant: "destructive"
+          });
+          return;
+        }
         
         toast({
           title: "Coupon added",
@@ -209,11 +284,11 @@ export const useCouponManagement = () => {
       
       setIsDialogOpen(false);
       fetchCoupons();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving coupon:', error);
       toast({
         title: "Error saving coupon",
-        description: "Please try again later",
+        description: error.message || "Please try again later",
         variant: "destructive"
       });
     }
@@ -236,6 +311,8 @@ export const useCouponManagement = () => {
     durationValue,
     setDurationValue,
     durationType,
-    setDurationType
+    setDurationType,
+    isAdmin,
+    connectionError
   };
 };

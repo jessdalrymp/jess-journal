@@ -21,9 +21,10 @@ interface CouponTableProps {
   onEdit: (coupon: CouponType) => void;
   onDelete: (id: string) => void;
   loading: boolean;
+  isAdmin: boolean | null;
 }
 
-export const CouponTable = ({ coupons, onEdit, onDelete, loading }: CouponTableProps) => {
+export const CouponTable = ({ coupons, onEdit, onDelete, loading, isAdmin }: CouponTableProps) => {
   if (loading) {
     return <div className="text-center py-4">Loading coupons...</div>;
   }
@@ -71,10 +72,22 @@ export const CouponTable = ({ coupons, onEdit, onDelete, loading }: CouponTableP
               </td>
               <td className="px-4 py-3">
                 <div className="flex space-x-2">
-                  <Button variant="ghost" size="sm" onClick={() => onEdit(coupon)}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => onEdit(coupon)}
+                    disabled={isAdmin === false}
+                    title={isAdmin === false ? "Admin permission required" : "Edit coupon"}
+                  >
                     <Pencil size={16} />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => onDelete(coupon.id)}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => onDelete(coupon.id)}
+                    disabled={isAdmin === false}
+                    title={isAdmin === false ? "Admin permission required" : "Delete coupon"}
+                  >
                     <Trash2 size={16} />
                   </Button>
                 </div>
