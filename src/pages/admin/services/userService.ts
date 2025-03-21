@@ -88,34 +88,18 @@ export const fetchUsersFromDB = async () => {
  */
 export const toggleUserAdminStatusInDB = async (userId: string, currentAdminStatus: boolean) => {
   try {
-    if (!currentAdminStatus) {
-      // Add admin role
-      const { error } = await supabase
-        .from('user_roles')
-        .insert({ user_id: userId, role: 'admin' });
-        
-      if (error) {
-        console.error('Error adding admin role:', error);
-        return { 
-          success: false, 
-          error
-        };
-      }
-    } else {
-      // Remove admin role
-      const { error } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId)
-        .eq('role', 'admin');
-        
-      if (error) {
-        console.error('Error removing admin role:', error);
-        return { 
-          success: false, 
-          error
-        };
-      }
+    // Call the RPC function to toggle admin status
+    const { data, error } = await supabase.rpc('toggle_user_admin_status', {
+      p_user_id: userId,
+      p_admin_status: !currentAdminStatus
+    });
+    
+    if (error) {
+      console.error('Error toggling admin status:', error);
+      return { 
+        success: false, 
+        error
+      };
     }
     
     return {
@@ -139,32 +123,16 @@ export const toggleUserAdminStatusInDB = async (userId: string, currentAdminStat
  */
 export const deleteUserInDB = async (userId: string) => {
   try {
-    // Delete from auth is no longer available without admin access,
-    // but we can delete the profile which is often sufficient
-    const { error } = await supabase
-      .from('profiles')
-      .delete()
-      .eq('id', userId);
+    // Call Supabase to delete the user
+    const { error } = await supabase.auth.admin.deleteUser(userId);
     
     if (error) {
-      console.error('Error deleting user profile:', error);
+      console.error('Error deleting user:', error);
       return { 
         success: false, 
         error
       };
     }
-    
-    // Also clean up any roles
-    await supabase
-      .from('user_roles')
-      .delete()
-      .eq('user_id', userId);
-      
-    // And any subscriptions
-    await supabase
-      .from('subscriptions')
-      .delete()
-      .eq('user_id', userId);
     
     return {
       success: true,
