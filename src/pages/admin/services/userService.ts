@@ -1,4 +1,3 @@
-
 import { supabase } from "../../../integrations/supabase/client";
 
 /**
@@ -7,27 +6,6 @@ import { supabase } from "../../../integrations/supabase/client";
  */
 export const fetchUsersFromDB = async () => {
   try {
-    // First check if the user is an admin using RPC
-    const { data: isAdmin, error: adminCheckError } = await supabase.rpc('check_is_admin');
-    
-    if (adminCheckError) {
-      console.error('Error checking admin status:', adminCheckError);
-      return { 
-        data: null, 
-        error: new Error(`Failed to verify admin privileges. ${adminCheckError.message}`), 
-        connectionError: true 
-      };
-    }
-    
-    if (!isAdmin) {
-      console.warn('Non-admin user attempted to access user data');
-      return { 
-        data: null, 
-        error: new Error("Permission denied. Admin access required to view user data."), 
-        connectionError: true 
-      };
-    }
-    
     // Get basic user data from public.profiles table
     const { data: userData, error: userError } = await supabase
       .from('profiles')
@@ -35,6 +13,16 @@ export const fetchUsersFromDB = async () => {
         
     if (userError) {
       console.error('User query failed:', userError);
+      
+      // Check if it's a permission error
+      if (userError.message.includes('permission denied') || userError.code === '42501') {
+        return { 
+          data: null, 
+          error: new Error("Permission denied. Admin access required to view user data."), 
+          connectionError: true 
+        };
+      }
+      
       return { 
         data: null, 
         error: userError, 
