@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from "../../../hooks/use-toast";
 import { useAdminStatus } from './useAdminStatus';
@@ -8,7 +7,7 @@ import { useCouponOperations } from './coupons/useCouponOperations';
 import { useCouponFetching } from './coupons/useCouponFetching';
 import { CouponType } from '../types/coupons';
 
-export { CouponType } from '../types/coupons';
+export type { CouponType } from '../types/coupons';
 
 export const useCouponManagement = () => {
   const { toast } = useToast();
