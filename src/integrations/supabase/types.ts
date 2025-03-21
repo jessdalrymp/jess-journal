@@ -306,6 +306,30 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_prompts: {
+        Row: {
+          created_at: string
+          favorite: boolean
+          id: string
+          prompt_data: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          favorite?: boolean
+          id?: string
+          prompt_data: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          favorite?: boolean
+          id?: string
+          prompt_data?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           coupon_code: string | null
