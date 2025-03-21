@@ -1,4 +1,3 @@
-
 import { supabase } from "../../../integrations/supabase/client";
 
 /**
@@ -8,7 +7,7 @@ import { supabase } from "../../../integrations/supabase/client";
 export const fetchUsersFromDB = async () => {
   try {
     // Get user data directly from auth.users via admin functions
-    const { data: userData, error: userError } = await supabase
+    const { data: originalUserData, error: userError } = await supabase
       .rpc('get_users_with_details');
         
     if (userError) {
@@ -31,7 +30,8 @@ export const fetchUsersFromDB = async () => {
     }
     
     // If no special function exists, try getting user data from profiles
-    if (!userData || userData.length === 0) {
+    let finalUserData = originalUserData;
+    if (!finalUserData || finalUserData.length === 0) {
       console.log("Falling back to profiles table for user data");
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -46,7 +46,7 @@ export const fetchUsersFromDB = async () => {
         };
       }
       
-      userData = profileData;
+      finalUserData = profileData;
     }
       
     // Get admin role data
@@ -70,7 +70,7 @@ export const fetchUsersFromDB = async () => {
     }
       
     return { 
-      userData,
+      userData: finalUserData,
       roleData: roleData || [],
       subscriptionData: subscriptionData || [],
       error: null, 
