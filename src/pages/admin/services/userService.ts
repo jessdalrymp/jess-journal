@@ -7,56 +7,41 @@ import { supabase } from "../../../integrations/supabase/client";
  */
 export const fetchUsersFromDB = async () => {
   try {
-    // Get user data directly from auth.users via admin functions
-    const { data: originalUserData, error: userError } = await supabase
-      .rpc('get_users_with_details');
-        
-    if (userError) {
-      console.error('User query failed:', userError);
+    // Get user data directly from profiles since public.users doesn't exist
+    console.log("Fetching user data from profiles table");
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, email, created_at, last_session');
       
-      // Check if it's a permission error
-      if (userError.message.includes('permission denied') || userError.code === '42501') {
-        return { 
-          userData: null, 
-          error: new Error("Permission denied. Admin access required to view user data."), 
-          connectionError: true 
-        };
-      }
-      
+    if (profileError) {
+      console.error('Profile query failed:', profileError);
       return { 
         userData: null, 
-        error: userError, 
+        error: profileError, 
         connectionError: true 
       };
     }
     
-    // If no special function exists, try getting user data from profiles
-    let finalUserData = originalUserData;
-    if (!finalUserData || finalUserData.length === 0) {
-      console.log("Falling back to profiles table for user data");
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, email, created_at, last_session');
-        
-      if (profileError) {
-        console.error('Profile query failed:', profileError);
-        return { 
-          userData: null, 
-          error: profileError, 
-          connectionError: true 
-        };
-      }
-      
-      // Map profile data to match the expected structure
-      finalUserData = profileData?.map(profile => ({
-        id: profile.id,
-        email: profile.email || '',
-        created_at: profile.created_at,
-        profile_data: {},
-        subscription_data: {},
-        is_admin: false
-      })) || [];
+    if (!profileData || profileData.length === 0) {
+      console.log("No user profiles found");
+      return {
+        userData: [],
+        roleData: [],
+        subscriptionData: [],
+        error: null,
+        connectionError: false
+      };
     }
+    
+    // Map profile data to match the expected structure
+    const mappedUserData = profileData.map(profile => ({
+      id: profile.id,
+      email: profile.email || '',
+      created_at: profile.created_at,
+      profile_data: {},
+      subscription_data: {},
+      is_admin: false
+    }));
       
     // Get admin role data
     const { data: roleData, error: roleError } = await supabase
@@ -79,7 +64,7 @@ export const fetchUsersFromDB = async () => {
     }
       
     return { 
-      userData: finalUserData,
+      userData: mappedUserData,
       roleData: roleData || [],
       subscriptionData: subscriptionData || [],
       error: null, 
