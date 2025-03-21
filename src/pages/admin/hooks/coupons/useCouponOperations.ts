@@ -13,12 +13,52 @@ export const useCouponOperations = (
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   
+  // Check if user is admin before executing operations
+  const checkAdminStatus = async (): Promise<boolean> => {
+    try {
+      const { data: isAdmin, error } = await supabase.rpc('check_is_admin');
+      
+      if (error) {
+        console.error('Error checking admin status:', error);
+        showErrorNotification(
+          toast,
+          "Admin verification failed",
+          "Unable to verify administrative privileges"
+        );
+        return false;
+      }
+      
+      if (!isAdmin) {
+        showErrorNotification(
+          toast,
+          "Permission denied",
+          "Only administrators can modify coupons"
+        );
+        return false;
+      }
+      
+      return true;
+    } catch (error: any) {
+      console.error('Error in checkAdminStatus:', error);
+      showErrorNotification(
+        toast,
+        "Admin verification failed",
+        error.message || "An unknown error occurred"
+      );
+      return false;
+    }
+  };
+  
   const addCoupon = async (
     couponData: CouponFormData, 
     expiryDate: string | null
   ) => {
     try {
       setLoading(true);
+      
+      // Check admin status first
+      const isAdmin = await checkAdminStatus();
+      if (!isAdmin) return false;
       
       const { error } = await supabase
         .from('coupons')
@@ -72,6 +112,10 @@ export const useCouponOperations = (
     try {
       setLoading(true);
       
+      // Check admin status first
+      const isAdmin = await checkAdminStatus();
+      if (!isAdmin) return false;
+      
       const { error } = await supabase
         .from('coupons')
         .update({
@@ -120,6 +164,10 @@ export const useCouponOperations = (
   const deleteCoupon = async (id: string) => {
     try {
       setLoading(true);
+      
+      // Check admin status first
+      const isAdmin = await checkAdminStatus();
+      if (!isAdmin) return false;
       
       const { error } = await supabase
         .from('coupons')

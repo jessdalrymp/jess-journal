@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { supabase } from "../../../integrations/supabase/client";
 import { useToast } from "../../../hooks/use-toast";
 import { PlanType, PlanFormData } from "../types/plans";
+import { showErrorNotification } from "../utils/notificationUtils";
 
 export const usePlanOperations = (
   fetchPlans: () => Promise<void>,
@@ -11,6 +12,7 @@ export const usePlanOperations = (
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<PlanType | null>(null);
+  const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState<PlanFormData>({
     name: '',
@@ -19,6 +21,42 @@ export const usePlanOperations = (
     interval: 'month',
     is_active: true
   });
+
+  // Check admin status before executing operations
+  const checkAdminStatus = async (): Promise<boolean> => {
+    try {
+      const { data: isAdminCheck, error } = await supabase.rpc('check_is_admin');
+      
+      if (error) {
+        console.error('Error checking admin status:', error);
+        showErrorNotification(
+          toast,
+          "Admin verification failed",
+          "Unable to verify administrative privileges"
+        );
+        return false;
+      }
+      
+      if (!isAdminCheck) {
+        showErrorNotification(
+          toast,
+          "Permission denied",
+          "Only administrators can modify payment plans"
+        );
+        return false;
+      }
+      
+      return true;
+    } catch (error: any) {
+      console.error('Error in checkAdminStatus:', error);
+      showErrorNotification(
+        toast,
+        "Admin verification failed",
+        error.message || "An unknown error occurred"
+      );
+      return false;
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
@@ -88,6 +126,12 @@ export const usePlanOperations = (
     if (!confirm('Are you sure you want to delete this plan?')) return;
     
     try {
+      setLoading(true);
+      
+      // Double-check admin status
+      const isAdminConfirmed = await checkAdminStatus();
+      if (!isAdminConfirmed) return;
+      
       const { error } = await supabase
         .from('payment_plans')
         .delete()
@@ -111,6 +155,8 @@ export const usePlanOperations = (
         description: error.message || "Please try again later",
         variant: "destructive"
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -127,6 +173,12 @@ export const usePlanOperations = (
     }
     
     try {
+      setLoading(true);
+      
+      // Double-check admin status
+      const isAdminConfirmed = await checkAdminStatus();
+      if (!isAdminConfirmed) return;
+      
       if (editingPlan) {
         // Update existing plan
         const { error } = await supabase
@@ -181,6 +233,8 @@ export const usePlanOperations = (
         description: error.message || "Please try again later",
         variant: "destructive"
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -193,6 +247,7 @@ export const usePlanOperations = (
     handleEdit,
     handleAdd,
     handleDelete,
-    handleSubmit
+    handleSubmit,
+    loading
   };
 };

@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from "../../../../integrations/supabase/client";
 import { useToast } from "../../../../hooks/use-toast";
 import { CouponType } from '../../types/coupons';
 import { showErrorNotification } from '../../utils/notificationUtils';
+import { fetchCouponsFromDB } from '../../services/couponService';
 
 export const useCouponFetching = () => {
   const [coupons, setCoupons] = useState<CouponType[]>([]);
@@ -16,14 +16,23 @@ export const useCouponFetching = () => {
       setLoading(true);
       setConnectionError(false);
       
-      const { data, error } = await supabase
-        .from('coupons')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching coupons:', error);
+      const { data, error, connectionError } = await fetchCouponsFromDB();
+      
+      if (connectionError) {
         setConnectionError(true);
+        
+        // Only show error message if it's not a standard permission issue
+        if (error && !error.message.includes("Permission denied")) {
+          showErrorNotification(
+            toast,
+            "Error accessing coupons",
+            error.message || "Please try again later"
+          );
+        }
+        return;
+      }
+      
+      if (error) {
         showErrorNotification(
           toast,
           "Error fetching coupons",
@@ -34,12 +43,12 @@ export const useCouponFetching = () => {
       
       setCoupons(data || []);
     } catch (error: any) {
-      console.error('Error fetching coupons:', error);
+      console.error('Error in fetchCoupons:', error);
       setConnectionError(true);
       showErrorNotification(
         toast,
         "Error fetching coupons",
-        "Please try again later"
+        error.message || "Please try again later"
       );
     } finally {
       setLoading(false);

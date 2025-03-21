@@ -1,13 +1,13 @@
 
 import { supabase } from "../../../integrations/supabase/client";
-import { PlanType } from "../types/plans";
+import { CouponType } from "../types/coupons";
 
 /**
- * Fetches all payment plans from the database
- * @returns An object containing plans data and any error that occurred
+ * Fetches all coupons from the database
+ * @returns An object containing coupons data and any error that occurred
  */
-export const fetchPlansFromDB = async (): Promise<{
-  data: PlanType[] | null;
+export const fetchCouponsFromDB = async (): Promise<{
+  data: CouponType[] | null;
   error: Error | null;
   connectionError: boolean;
 }> => {
@@ -25,23 +25,23 @@ export const fetchPlansFromDB = async (): Promise<{
     }
     
     if (!isAdmin) {
-      console.warn('Non-admin user attempted to access payment_plans table');
+      console.warn('Non-admin user attempted to access coupons table');
       return { 
         data: null, 
-        error: new Error("Permission denied. Admin access required to view payment plans."), 
+        error: new Error("Permission denied. Admin access required to view coupons."), 
         connectionError: true 
       };
     }
     
     // Check if the table exists and user has permissions
     const { count, error: countError } = await supabase
-      .from('payment_plans')
+      .from('coupons')
       .select('*', { count: 'exact', head: true });
     
     if (countError) {
-      console.error('Error checking payment_plans table:', countError);
+      console.error('Error checking coupons table:', countError);
       
-      // Check if this is a permission error (common for non-admin users)
+      // Determine if this is a permission error
       const isPermissionError = 
         countError.message.includes('permission denied') || 
         countError.message.includes('not found') ||
@@ -51,7 +51,7 @@ export const fetchPlansFromDB = async (): Promise<{
         data: null, 
         error: new Error(
           isPermissionError 
-            ? "Permission denied. Admin access required to view payment plans." 
+            ? "Permission denied. Admin access required to view coupons." 
             : countError.message
         ), 
         connectionError: true 
@@ -60,12 +60,12 @@ export const fetchPlansFromDB = async (): Promise<{
     
     // If we get here, the user is an admin and has access to the table
     const { data, error } = await supabase
-      .from('payment_plans')
+      .from('coupons')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching plans:', error);
+      console.error('Error fetching coupons:', error);
       return { 
         data: null, 
         error, 
@@ -75,7 +75,7 @@ export const fetchPlansFromDB = async (): Promise<{
     
     return { data, error: null, connectionError: false };
   } catch (error: any) {
-    console.error('Error in fetchPlansFromDB:', error);
+    console.error('Error in fetchCouponsFromDB:', error);
     return { 
       data: null, 
       error: new Error(error.message || "Unknown error occurred"), 
