@@ -59,7 +59,7 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
           console.log("Failed to send verification email");
           toast({
             title: "Account created, but...",
-            description: "We had trouble sending the verification email. Check your spam folder or try signing in after a few minutes.",
+            description: "We had trouble sending the verification email. Please try signing in after a few minutes or contact support if the issue persists.",
             duration: 8000,
             variant: "destructive",
           });

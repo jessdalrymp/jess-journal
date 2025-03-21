@@ -6,7 +6,7 @@ import { corsHeaders } from "./cors.ts";
 import { VerificationRequest, EmailResponse } from "./types.ts";
 
 // Get API key from environment variable
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "re_br8VdTu1_B7Mvr846YvJ6CYRyBgip2kUR";
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
 // Initialize Resend with the API key
 const resend = new Resend(RESEND_API_KEY);

@@ -20,19 +20,18 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
     console.log("Sending verification email to:", email);
     console.log("Verification URL:", verificationUrl);
     
-    // Get the Supabase project URL
+    // Get the Supabase project URL from environment variables or use the default
     const supabaseProjectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://uobvlrobwohdlfbhniho.supabase.co';
     
     // Construct the edge function URL
-    const functionEndpoint = '/functions/v1/send-verification-email';
-    const functionUrl = `${supabaseProjectUrl}${functionEndpoint}`;
+    const functionUrl = `${supabaseProjectUrl}/functions/v1/send-verification-email`;
     
     console.log("Calling verification email function at:", functionUrl);
     
     // Get the session token for authentication
     const { data: sessionData } = await supabase.auth.getSession();
     const accessToken = sessionData?.session?.access_token;
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvYnZscm9id29oZGxmYmhuaWhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4Mzg4MjcsImV4cCI6MjA1NTQxNDgyN30.72SrWrfSrHhZ_hCcj5slTml4BABh-z_du8v9LGI8bsc';
     
     // Prepare authentication header
     let authHeader = '';
@@ -47,16 +46,12 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
       return false;
     }
     
-    console.log("Auth header type:", authHeader ? "Bearer token present" : "No bearer token");
-    
     // Prepare the request body
     const requestBody = JSON.stringify({
       email,
       verificationUrl,
       retryCount: 0
     });
-    
-    console.log("Request body:", requestBody);
     
     // Make the request with authorization headers
     console.log("Sending request to edge function...");

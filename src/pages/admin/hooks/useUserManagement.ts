@@ -20,13 +20,14 @@ export interface UserType {
 }
 
 export const useUserManagement = () => {
-  const { users, loading, fetchUsers } = useUserFetching();
+  const { users, loading, error, fetchUsers } = useUserFetching();
   const { toggleAdminStatus } = useUserAdminStatus(fetchUsers);
   const { deleteUser } = useUserDeletion(fetchUsers);
 
   return {
     users,
     loading,
+    error,
     fetchUsers,
     toggleAdminStatus,
     deleteUser

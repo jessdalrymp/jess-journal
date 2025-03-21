@@ -70,6 +70,7 @@ const handler = async (req: Request): Promise<Response> => {
       
       // Validate the email response - sometimes API returns success but with error details
       if (emailResponse && emailResponse.error) {
+        console.log("Email API returned an error:", emailResponse.error);
         throw new Error(emailResponse.error.message || "Error in Resend API response");
       }
     } catch (emailError: any) {
@@ -82,7 +83,8 @@ const handler = async (req: Request): Promise<Response> => {
           console.log("First attempt failed, trying with text-only email...");
           emailResponse = await sendTextOnlyEmail(email, verificationUrl);
           
-          if (emailResponse.error) {
+          if (emailResponse && emailResponse.error) {
+            console.log("Text-only email also returned an error:", emailResponse.error);
             throw new Error(emailResponse.error.message || "Unknown error with simplified email");
           }
           
@@ -118,22 +120,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
     
     console.log("Verification email API response:", JSON.stringify(emailResponse, null, 2));
-    
-    // Check if there was an error in the response
-    if (emailResponse && emailResponse.error) {
-      console.error("Error from Resend API:", emailResponse.error);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: emailResponse.error.message || "Unknown API error",
-          details: "Failed to send verification email through Resend API" 
-        }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
     
     // Return success response
     return new Response(
