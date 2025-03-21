@@ -47,7 +47,15 @@ export const fetchUsersFromDB = async () => {
         };
       }
       
-      finalUserData = profileData;
+      // Map profile data to match the expected structure
+      finalUserData = profileData?.map(profile => ({
+        id: profile.id,
+        email: profile.email || '',
+        created_at: profile.created_at,
+        profile_data: {},
+        subscription_data: {},
+        is_admin: false
+      })) || [];
     }
       
     // Get admin role data
