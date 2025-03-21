@@ -25,9 +25,12 @@ export const usePaymentManagement = () => {
   const fetchPayments = async () => {
     setLoading(true);
     try {
+      console.log("Fetching payments...");
+      
+      // Simple query that doesn't try to join with payment_plans
       const { data, error } = await supabase
         .from('payments')
-        .select('*, payment_plans(name, price)');
+        .select('*');
       
       if (error) {
         throw error;
@@ -44,6 +47,7 @@ export const usePaymentManagement = () => {
             };
           })
         );
+        console.log("Fetched payments:", paymentsWithEmail);
         setPayments(paymentsWithEmail);
       } else {
         setPayments([]);
