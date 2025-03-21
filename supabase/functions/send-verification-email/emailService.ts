@@ -73,6 +73,7 @@ export async function sendHtmlEmail(email: string, verificationUrl: string): Pro
         <p>This link will expire in 24 hours.</p>
         <p>Best regards,<br>The Jess Journal Team</p>
       `,
+      text: `Welcome to Jess Journal! Thank you for signing up. Please verify your email address by visiting this link: ${verificationUrl}. This link will expire in 24 hours. Best regards, The Jess Journal Team`,
     });
     
     console.log("Resend API response:", JSON.stringify(response, null, 2));

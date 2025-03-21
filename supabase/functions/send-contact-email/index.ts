@@ -38,6 +38,7 @@ const handler = async (req: Request): Promise<Response> => {
         <h3>Message:</h3>
         <p>${message.replace(/\n/g, "<br>")}</p>
       `,
+      text: `New message from Contact Form\nFrom: ${email}\nSubject: ${subject}\nMessage: ${message}`,
       reply_to: email,
     });
 
@@ -52,6 +53,7 @@ const handler = async (req: Request): Promise<Response> => {
         <p>Our team will review your inquiry and get back to you as soon as possible.</p>
         <p>Best regards,<br>The Jess Journal Team</p>
       `,
+      text: `Thank you for contacting Jess Journal!\nWe have received your message with the subject: "${subject}".\nOur team will review your inquiry and get back to you as soon as possible.\nBest regards,\nThe Jess Journal Team`,
     });
 
     console.log("Email sent successfully:", emailResponse);
