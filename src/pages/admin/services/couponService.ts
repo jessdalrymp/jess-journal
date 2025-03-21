@@ -34,6 +34,7 @@ export const fetchCouponsFromDB = async (): Promise<{
     }
     
     // If we get here, the user is an admin and should have access to the table
+    // Use a more permissive access method with the service role (if available)
     const { data, error } = await supabase
       .from('coupons')
       .select('*')
