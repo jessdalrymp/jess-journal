@@ -7,7 +7,7 @@ import { supabase } from "../../../integrations/supabase/client";
  */
 export const fetchUsersFromDB = async () => {
   try {
-    // Get user data from profiles table
+    // Get user data directly from profiles since public.users doesn't exist
     console.log("Fetching user data from profiles table");
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
