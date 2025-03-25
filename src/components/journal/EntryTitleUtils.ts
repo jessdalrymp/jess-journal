@@ -41,12 +41,12 @@ export const getEntryTitle = (entry: JournalEntry): string => {
       return "Action Challenge";
     } else if (entry.type === "sideQuest") {
       return "Side Quest";
-    } else if (entry.type === "insights") {
-      return "Daily Insights";
     } else if (entry.type === "story") {
       return "My Story";
     } else if (entry.type === "journal") {
       return "Journal Entry";
+    } else if (entry.type === "summary") {
+      return "Daily Summary";
     }
     
     // Default fallback
