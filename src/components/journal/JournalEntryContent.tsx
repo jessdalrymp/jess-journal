@@ -1,6 +1,6 @@
 
 import { JournalEntry } from "@/lib/types";
-import { parseEntryContent } from "@/utils/contentParser";
+import { parseEntryContent, extractFormattedContent } from "@/utils/contentParser";
 
 interface JournalEntryContentProps {
   entry: JournalEntry;
@@ -33,8 +33,11 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
       displayContent = displayContent.replace(/^[\s\n]*[Q|A][:.]?\s*/im, '').trim();
     }
     
+    // Clean up any JSON code blocks in the content
+    const cleanedContent = extractFormattedContent(displayContent);
+    
     // Render the content with newlines
-    return displayContent.split('\n').map((paragraph, index) => {
+    return cleanedContent.split('\n').map((paragraph, index) => {
       if (!paragraph.trim()) {
         return <br key={index} />;
       }

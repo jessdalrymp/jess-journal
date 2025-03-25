@@ -4,7 +4,7 @@ import { Calendar, Clock } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon } from '@/components/journal/JournalHistoryUtils';
 import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
-import { getContentPreview } from '@/utils/contentParser';
+import { getContentPreview, extractFormattedContent } from '@/utils/contentParser';
 
 interface HistoryEntryItemProps {
   entry: JournalEntry;
@@ -35,6 +35,9 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   const content = getContentPreview(entry);
   const isConversationSummary = !!entry.conversation_id;
   
+  // Process content to handle JSON formatting if present
+  const displayContent = extractFormattedContent(content);
+  
   // Always link to journal entry page
   const linkPath = `/journal-entry/${entry.id}`;
   
@@ -58,7 +61,7 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
         </p>
       </div>
       <div className="mt-1 text-xs text-jess-muted line-clamp-2 bg-gray-50 p-1.5 rounded">
-        {content}
+        {displayContent}
       </div>
     </Link>
   );
