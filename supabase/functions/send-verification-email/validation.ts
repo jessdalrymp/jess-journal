@@ -8,6 +8,9 @@ import { VerificationRequest, EmailResponse } from "./types.ts";
 export function validateRequest(requestData: VerificationRequest): EmailResponse | null {
   const { email, verificationUrl } = requestData;
   
+  // Log the received request data for debugging
+  console.log("Validating request data:", JSON.stringify(requestData, null, 2));
+  
   if (!email || !verificationUrl) {
     console.error("Missing required parameters: email or verificationUrl");
     return { 
@@ -51,12 +54,25 @@ export async function parseRequestBody(req: Request): Promise<{ data: Verificati
   try {
     const rawBody = await req.text();
     console.log("Raw request body:", rawBody.substring(0, 200) + (rawBody.length > 200 ? "..." : ""));
-    return { data: JSON.parse(rawBody), error: null };
+    
+    // Parse the JSON body
+    const parsedBody = JSON.parse(rawBody);
+    console.log("Parsed request body:", JSON.stringify(parsedBody, null, 2));
+    
+    // Ensure we have a valid VerificationRequest object
+    const verificationRequest: VerificationRequest = {
+      email: parsedBody.email,
+      verificationUrl: parsedBody.verificationUrl,
+      useTextOnly: parsedBody.useTextOnly || false,
+      retryCount: parsedBody.retryCount || 0
+    };
+    
+    return { data: verificationRequest, error: null };
   } catch (parseError) {
     console.error("Error parsing request body:", parseError);
     return { 
       data: null, 
-      error: "Could not parse JSON body"
+      error: "Could not parse JSON body: " + (parseError instanceof Error ? parseError.message : String(parseError))
     };
   }
 }
@@ -66,8 +82,10 @@ export function createValidationErrorResponse(errorMessage: string, details?: st
   return new Response(
     JSON.stringify({ 
       success: false, 
-      error: errorMessage,
-      details: details
+      error: {
+        message: errorMessage,
+        details: details
+      }
     }),
     {
       status: 400,

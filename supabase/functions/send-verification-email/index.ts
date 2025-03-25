@@ -94,8 +94,10 @@ const handler = async (req: Request): Promise<Response> => {
           return new Response(
             JSON.stringify({ 
               success: false, 
-              error: "Email sending failed after multiple attempts", 
-              details: retryError.message || emailError.message || "Unknown error occurred while sending email"
+              error: { 
+                message: "Email sending failed after multiple attempts", 
+                details: retryError.message || emailError.message || "Unknown error occurred while sending email" 
+              }
             }),
             {
               status: 500,
@@ -108,8 +110,10 @@ const handler = async (req: Request): Promise<Response> => {
         return new Response(
           JSON.stringify({ 
             success: false, 
-            error: "Email sending failed", 
-            details: emailError.message || "Unknown error occurred while sending email"
+            error: { 
+              message: "Email sending failed", 
+              details: emailError.message || "Unknown error occurred while sending email" 
+            }
           }),
           {
             status: 500,

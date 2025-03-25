@@ -46,7 +46,7 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
       return false;
     }
     
-    // Update: Fix the request body structure - remove schema and only include required fields
+    // Send a simplified request body that matches the expected format in the edge function
     const requestBody = JSON.stringify({
       email,
       verificationUrl,
@@ -55,6 +55,8 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
     
     // Make the request with authorization headers
     console.log("Sending request to edge function...");
+    console.log("Request body:", requestBody);
+    
     const response = await fetch(functionUrl, {
       method: 'POST',
       headers: {
