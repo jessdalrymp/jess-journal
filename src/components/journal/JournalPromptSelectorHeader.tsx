@@ -11,9 +11,6 @@ export const JournalPromptSelectorHeader = ({ onSkip }: JournalPromptSelectorHea
       <h2 className="text-xl font-semibold text-jess-foreground">
         Choose a Journaling Prompt
       </h2>
-      <Button variant="ghost" onClick={onSkip}>
-        Skip and write freely
-      </Button>
     </div>
   );
 };
