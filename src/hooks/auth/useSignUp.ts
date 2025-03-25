@@ -33,8 +33,7 @@ export const useSignUp = () => {
         id: userId,
         email: email,
         created_at: new Date().toISOString(),
-        assessment_completed: false,
-        // We can set name in user_metadata but not in profiles directly since there's no name column
+        assessment_completed: false
       });
       
       if (error) {
@@ -74,16 +73,16 @@ export const useSignUp = () => {
       const isDevelopment = origin.includes('localhost') || origin.includes('127.0.0.1');
       console.log("Is development environment:", isDevelopment);
       
+      // Let Supabase handle the signup process including password hashing
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { 
             name,
-            isNewUser: true // Add flag to identify new users
+            isNewUser: true
           },
           emailRedirectTo: `${origin}/auth/callback`,
-          // If testing in development, consider disabling this in the Supabase dashboard
         },
       });
 

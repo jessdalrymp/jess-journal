@@ -39,7 +39,7 @@ export const ensureUserExists = async (
     // User doesn't exist, create a new one
     console.log('Creating new user:', email);
     
-    // Sign up the user with Supabase Auth
+    // Sign up the user with Supabase Auth - this handles password hashing automatically
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
@@ -48,7 +48,7 @@ export const ensureUserExists = async (
           name: name || email.split('@')[0],
           isNewUser: true
         },
-        // In development, you might want to disable email verification
+        // Send email verification
         emailRedirectTo: `${window.location.origin}/auth/callback`
       }
     });
@@ -65,13 +65,14 @@ export const ensureUserExists = async (
 
     console.log('Auth user created successfully:', data.user.id);
 
-    // If skipEmailVerification is true and we're in development
+    // For development environments, we can optionally skip email verification
     if (skipEmailVerification && 
         (window.location.origin.includes('localhost') || 
          window.location.origin.includes('127.0.0.1'))) {
       console.log('Skipping email verification in development');
       
-      // Create a record in the profiles table
+      // When skipping email verification, we need to manually ensure the profile exists
+      // Note that the auth.users trigger should handle this automatically, but we're being explicit here
       const { error: insertError } = await supabase.from('profiles').upsert({
         id: data.user.id,
         email: email,
