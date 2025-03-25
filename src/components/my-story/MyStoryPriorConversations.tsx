@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Conversation } from '@/services/conversation/types';
 import { Button } from "@/components/ui/button";
 import { Loader2, Clock, ChevronRight, BookOpen } from "lucide-react";
@@ -19,6 +19,21 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
   onSelectConversation,
   currentConversationId
 }) => {
+  // Log conversations for debugging
+  useEffect(() => {
+    console.log(`MyStoryPriorConversations - Rendering ${conversations.length} story conversations`);
+    if (conversations.length > 0) {
+      console.log("MyStoryPriorConversations - First 3 conversations:", 
+        conversations.slice(0, 3).map(c => ({
+          id: c.id,
+          title: c.title,
+          date: c.updatedAt,
+          messageCount: c.messages?.length || 0
+        }))
+      );
+    }
+  }, [conversations]);
+
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-sm h-full p-4 flex flex-col">
@@ -37,7 +52,7 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
 
   // Handle conversation selection with better touch support
   const handleSelectConversation = (conversationId: string) => {
-    console.log(`Mobile: Selecting conversation: ${conversationId}`);
+    console.log(`MyStoryPriorConversations - Selecting conversation: ${conversationId}`);
     onSelectConversation(conversationId);
   };
 
@@ -86,9 +101,7 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
                 
                 <div className="flex items-center text-xs text-gray-500 mt-1">
                   <Clock className="h-3 w-3 mr-1" />
-                  <span>
-                    {formatTimeAgo(conversation.updatedAt)}
-                  </span>
+                  <span>{formatTimeAgo(conversation.updatedAt)}</span>
                 </div>
                 
                 {conversation.summary && (

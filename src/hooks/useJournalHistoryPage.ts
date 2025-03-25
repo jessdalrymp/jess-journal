@@ -37,39 +37,71 @@ export const useJournalHistoryPage = () => {
       setIsLoading(true);
       if (user) {
         console.log("JournalHistory - Loading journal entries, retry:", retryCount);
-        await fetchJournalEntries();
+        try {
+          await fetchJournalEntries();
+          console.log("JournalHistory - Successfully loaded entries");
+        } catch (error) {
+          console.error("JournalHistory - Error loading entries:", error);
+          toast({
+            title: "Error loading entries",
+            description: "Please try refreshing the page",
+            variant: "destructive",
+          });
+        }
       }
       setIsLoading(false);
     };
     
     loadEntries();
-  }, [user, retryCount, fetchJournalEntries]);
+  }, [user, retryCount, fetchJournalEntries, toast]);
 
   // Sort entries by date (newest first)
   useEffect(() => {
-    const sorted = [...journalEntries].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-    setSortedEntries(sorted);
-    console.log(`JournalHistory - Sorted ${sorted.length} entries`);
+    try {
+      const sorted = [...journalEntries].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      
+      console.log(`JournalHistory - Sorted ${sorted.length} entries including ${sorted.filter(e => e.conversation_id).length} conversation entries`);
+      
+      // Log the first few entries for debugging
+      if (sorted.length > 0) {
+        console.log("JournalHistory - First 3 entries:", sorted.slice(0, 3).map(e => ({
+          id: e.id,
+          type: e.type,
+          title: e.title?.substring(0, 30) + '...',
+          conversationId: e.conversation_id,
+          date: e.createdAt
+        })));
+      }
+      
+      setSortedEntries(sorted);
+    } catch (error) {
+      console.error("JournalHistory - Error sorting entries:", error);
+      setSortedEntries([...journalEntries]);
+    }
   }, [journalEntries]);
 
   const handleEntryClick = (entry: JournalEntry) => {
+    console.log("JournalHistory - Entry clicked:", entry.id);
     navigate(`/journal-entry/${entry.id}`, { state: { entry } });
   };
 
   const handleEditClick = (e: React.MouseEvent, entry: JournalEntry) => {
     e.stopPropagation();
+    console.log("JournalHistory - Edit entry:", entry.id);
     navigate(`/journal-entry/${entry.id}`, { state: { entry, isEditing: true } });
   };
 
   const handleDeleteClick = (e: React.MouseEvent, entry: JournalEntry) => {
     e.stopPropagation();
+    console.log("JournalHistory - Delete entry dialog:", entry.id);
     setEntryToDelete(entry);
     setDeleteDialogOpen(true);
   };
 
   const handleRefreshEntries = () => {
+    console.log("JournalHistory - Manual refresh triggered");
     setRetryCount(prev => prev + 1);
     toast({
       title: "Refreshing entries",
@@ -78,21 +110,26 @@ export const useJournalHistoryPage = () => {
   };
 
   const handleNewEntry = () => {
+    console.log("JournalHistory - New entry");
     setShowJournalChat(true);
     setSkipPrompt(false);
   };
 
   const handleWriteFreely = () => {
+    console.log("JournalHistory - Write freely");
     setShowJournalChat(true);
     setSkipPrompt(true);
   };
 
   const handleJournalChatBack = () => {
+    console.log("JournalHistory - Back from chat");
     setShowJournalChat(false);
   };
 
   const handleJournalChatSave = () => {
+    console.log("JournalHistory - Chat saved");
     setShowJournalChat(false);
+    // Refresh entries after a short delay to ensure the new entry is saved
     setTimeout(() => {
       setRetryCount(prev => prev + 1);
     }, 1000);
@@ -101,6 +138,7 @@ export const useJournalHistoryPage = () => {
   const confirmDelete = async () => {
     if (!entryToDelete) return;
     
+    console.log("JournalHistory - Confirming delete for entry:", entryToDelete.id);
     const success = await deleteJournalEntry(entryToDelete.id);
     if (success) {
       toast({

@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useUserData } from '@/context/UserDataContext';
@@ -23,22 +24,23 @@ export const useMyStoryState = () => {
   const { fetchJournalEntries } = useUserData();
   const { toast } = useToast();
 
+  // Load existing conversation from storage if available
   useEffect(() => {
     if (user) {
       try {
         const existingConversation = getCurrentConversationFromStorage('story');
         
         if (existingConversation) {
-          console.log('Found existing story conversation:', existingConversation.id);
+          console.log('MyStoryState - Found existing story conversation:', existingConversation.id);
           setExistingConversationId(existingConversation.id);
         } else {
-          console.log('No existing story conversation found');
+          console.log('MyStoryState - No existing story conversation found');
           // Check user preference for welcome modal
           const hideWelcomeModal = localStorage.getItem('hideMyStoryWelcome') === 'true';
           setShowWelcomeModal(!hideWelcomeModal);
         }
       } catch (error) {
-        console.error('Error retrieving conversation from storage:', error);
+        console.error('MyStoryState - Error retrieving conversation from storage:', error);
       }
       
       setIsLoading(false);
@@ -54,40 +56,51 @@ export const useMyStoryState = () => {
     }
   };
 
-  useEffect(() => {
-    const loadPriorConversations = async () => {
-      if (!user) return;
-      
-      try {
-        setLoadingPriorConversations(true);
-        const conversations = await fetchConversations(user.id);
-        
-        const storyConversations = conversations.filter(conv => conv.type === 'story');
-        
-        console.log(`Loaded ${storyConversations.length} prior story conversations:`, storyConversations);
-        setPriorConversations(storyConversations);
-      } catch (error) {
-        console.error('Error fetching prior conversations:', error);
-        toast({
-          title: "Error loading conversations",
-          description: "Could not load your previous conversations.",
-          variant: "destructive"
-        });
-      } finally {
-        setLoadingPriorConversations(false);
-      }
-    };
+  // Load prior conversations for the user
+  const loadPriorConversations = useCallback(async () => {
+    if (!user) return;
     
-    loadPriorConversations();
+    try {
+      setLoadingPriorConversations(true);
+      console.log('MyStoryState - Loading prior conversations for user:', user.id);
+      
+      const conversations = await fetchConversations(user.id);
+      const storyConversations = conversations.filter(conv => conv.type === 'story');
+      
+      console.log(`MyStoryState - Loaded ${storyConversations.length} prior story conversations`);
+      if (storyConversations.length > 0) {
+        console.log('MyStoryState - First conversation sample:', {
+          id: storyConversations[0].id,
+          title: storyConversations[0].title,
+          updated: storyConversations[0].updatedAt
+        });
+      }
+      
+      setPriorConversations(storyConversations);
+    } catch (error) {
+      console.error('MyStoryState - Error fetching prior conversations:', error);
+      toast({
+        title: "Error loading conversations",
+        description: "Could not load your previous conversations.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingPriorConversations(false);
+    }
   }, [user, toast]);
+
+  // Load prior conversations when component mounts or user changes
+  useEffect(() => {
+    loadPriorConversations();
+  }, [loadPriorConversations]);
 
   const handleBack = async () => {
     if (user) {
-      console.log('Refreshing journal entries before navigating back to dashboard');
+      console.log('MyStoryState - Refreshing journal entries before navigating back to dashboard');
       try {
         await fetchJournalEntries();
       } catch (error) {
-        console.error('Error refreshing journal entries:', error);
+        console.error('MyStoryState - Error refreshing journal entries:', error);
       }
     }
     navigate('/dashboard');
@@ -100,6 +113,7 @@ export const useMyStoryState = () => {
 
   const handleStartFresh = async () => {
     if (existingConversationId) {
+      console.log('MyStoryState - Starting fresh conversation');
       clearCurrentConversationFromStorage('story');
       
       try {
@@ -109,7 +123,7 @@ export const useMyStoryState = () => {
           description: "Your previous story was saved and a new conversation has been started.",
         });
       } catch (error) {
-        console.error('Error refreshing journal entries:', error);
+        console.error('MyStoryState - Error refreshing journal entries:', error);
       }
       
       setExistingConversationId(null);
@@ -128,13 +142,13 @@ export const useMyStoryState = () => {
     }
     
     if (existingConversationId === conversationId) {
-      console.log('Conversation already loaded');
+      console.log('MyStoryState - Conversation already loaded');
       return;
     }
     
     try {
       setIsLoadingConversation(true);
-      console.log(`Loading conversation with ID: ${conversationId}`);
+      console.log(`MyStoryState - Loading conversation with ID: ${conversationId}`);
       
       const conversation = await fetchConversation(conversationId, user.id);
       
@@ -142,11 +156,15 @@ export const useMyStoryState = () => {
         throw new Error("Conversation not found");
       }
       
-      console.log('Loading conversation:', conversation);
+      console.log('MyStoryState - Loading conversation:', {
+        id: conversation.id,
+        title: conversation.title,
+        messageCount: conversation.messages?.length || 0
+      });
       
       // Verify we have messages before proceeding
       if (!conversation.messages || conversation.messages.length === 0) {
-        console.error("Conversation has no messages");
+        console.error("MyStoryState - Conversation has no messages");
         toast({
           title: "Error loading conversation",
           description: "This conversation appears to be empty.",
@@ -172,7 +190,10 @@ export const useMyStoryState = () => {
         updatedAt: conversation.updatedAt
       };
       
-      console.log('Saving conversation to storage:', conversationToSave);
+      console.log('MyStoryState - Saving conversation to storage:', {
+        id: conversationToSave.id,
+        messageCount: conversationToSave.messages.length
+      });
       saveCurrentConversationToStorage(conversationToSave);
       
       setExistingConversationId(conversationId);
@@ -185,7 +206,7 @@ export const useMyStoryState = () => {
       // Force reload to ensure everything is fresh
       window.location.reload();
     } catch (error) {
-      console.error('Error loading conversation:', error);
+      console.error('MyStoryState - Error loading conversation:', error);
       toast({
         title: "Error loading conversation",
         description: "Could not load the selected conversation. Please try again.",

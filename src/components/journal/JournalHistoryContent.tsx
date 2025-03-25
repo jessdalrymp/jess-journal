@@ -27,6 +27,18 @@ export const JournalHistoryContent = ({
   onRefresh,
   onBackClick
 }: JournalHistoryContentProps) => {
+  // Log entries for debugging
+  console.log(`JournalHistory - Rendering ${entries.length} entries`);
+  console.log('JournalHistory - Types breakdown:', 
+    entries.reduce((acc, entry) => {
+      acc[entry.type] = (acc[entry.type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>)
+  );
+  console.log('JournalHistory - Conversation entries:', 
+    entries.filter(e => e.conversation_id).length
+  );
+  
   return (
     <>
       <div className="flex justify-between items-center mb-6">
