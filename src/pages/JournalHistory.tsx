@@ -11,7 +11,7 @@ import { EntryList } from "@/components/journal/EntryList";
 import { DeleteEntryDialog } from "@/components/journal/DeleteEntryDialog";
 import { JournalHistoryHeader } from "@/components/journal/JournalHistoryHeader";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Plus } from "lucide-react";
+import { RefreshCw, Plus, Pencil } from "lucide-react";
 import { JournalChatContainer } from "@/components/journal/JournalChatContainer";
 
 const JournalHistory = () => {
@@ -23,6 +23,7 @@ const JournalHistory = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const [showJournalChat, setShowJournalChat] = useState(false);
+  const [skipPrompt, setSkipPrompt] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const location = useLocation();
@@ -30,6 +31,9 @@ const JournalHistory = () => {
   useEffect(() => {
     if (location.state?.showJournalChat) {
       setShowJournalChat(true);
+      if (location.state?.skipPrompt) {
+        setSkipPrompt(true);
+      }
     }
   }, [location.state]);
 
@@ -79,6 +83,12 @@ const JournalHistory = () => {
 
   const handleNewEntry = () => {
     setShowJournalChat(true);
+    setSkipPrompt(false);
+  };
+
+  const handleWriteFreely = () => {
+    setShowJournalChat(true);
+    setSkipPrompt(true);
   };
 
   const handleJournalChatBack = () => {
@@ -124,6 +134,7 @@ const JournalHistory = () => {
           <JournalChatContainer 
             onBack={handleJournalChatBack}
             onSave={handleJournalChatSave}
+            skipPrompt={skipPrompt}
           />
         </main>
         <DisclaimerBanner />
@@ -145,6 +156,14 @@ const JournalHistory = () => {
             >
               <Plus size={16} />
               New Entry
+            </Button>
+            <Button 
+              onClick={handleWriteFreely} 
+              variant="default" 
+              className="flex items-center gap-2 bg-jess-primary hover:bg-jess-primary/90"
+            >
+              <Pencil size={16} />
+              Write Freely
             </Button>
             <Button 
               onClick={handleRefreshEntries} 

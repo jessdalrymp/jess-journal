@@ -10,12 +10,14 @@ interface JournalChatContainerProps {
   onBack: () => void;
   onSave?: () => void;
   initialPrompt?: string;
+  skipPrompt?: boolean;
 }
 
 export const JournalChatContainer = ({ 
   onBack, 
   onSave,
-  initialPrompt
+  initialPrompt,
+  skipPrompt = false
 }: JournalChatContainerProps) => {
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,10 +62,14 @@ export const JournalChatContainer = ({
     window.location.reload();
   };
 
-  // Use custom initial message if provided
-  const customInitialMessage = initialPrompt 
-    ? initialPrompt 
-    : getInitialMessage('journal');
+  // Use custom initial message if provided, otherwise use a general initial message
+  // If skipPrompt is true, use a message that bypasses the normal journal prompting flow
+  const getCustomInitialMessage = () => {
+    if (skipPrompt) {
+      return "I'd like to write a journal entry freely. Please start with a blank canvas.";
+    }
+    return initialPrompt ? initialPrompt : getInitialMessage('journal');
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm flex-1 flex flex-col overflow-hidden">
@@ -94,7 +100,7 @@ export const JournalChatContainer = ({
         <ChatInterface 
           type="journal" 
           onBack={onBack}
-          initialMessage={customInitialMessage}
+          initialMessage={getCustomInitialMessage()}
           onEndChat={handleEndChat}
           onError={handleError}
           saveChat={true}
