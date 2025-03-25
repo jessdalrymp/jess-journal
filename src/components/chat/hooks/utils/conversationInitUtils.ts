@@ -5,7 +5,7 @@ import { getInitialMessage } from '../../chatUtils';
 import { fetchConversation } from '@/services/conversation';
 
 /**
- * Load a specific conversation by ID with improved error handling
+ * Load a specific conversation by ID
  */
 export const loadExistingConversation = async (
   conversationId: string, 
@@ -14,25 +14,19 @@ export const loadExistingConversation = async (
   try {
     if (!userId) {
       console.error('Cannot load conversation: No user ID provided');
-      throw new Error('User authentication required to load conversation');
+      return null;
     }
     
     if (!conversationId) {
       console.error('Cannot load conversation: No conversation ID provided');
-      throw new Error('Conversation ID is required');
+      return null;
     }
     
     console.log(`Attempting to load specific conversation ID: ${conversationId} for user: ${userId}`);
     
-    // Attempt to fetch the conversation with proper error handling
-    try {
-      const conversation = await fetchConversation(conversationId, userId);
-      
-      if (!conversation) {
-        console.error(`Conversation ${conversationId} not found or not accessible`);
-        throw new Error(`Conversation ${conversationId} not found or not accessible`);
-      }
-      
+    const conversation = await fetchConversation(conversationId, userId);
+    
+    if (conversation) {
       console.log(`Successfully loaded conversation ${conversationId} with ${conversation.messages.length} messages`);
       
       // Ensure messages is always an array
@@ -40,7 +34,7 @@ export const loadExistingConversation = async (
         console.error(`Conversation ${conversationId} has no messages or invalid message format`);
         throw new Error("Invalid conversation format: messages missing or not an array");
       }
-  
+
       // Convert to ConversationSession format
       const conversationSession: ConversationSession = {
         id: conversation.id,
@@ -57,27 +51,11 @@ export const loadExistingConversation = async (
         updatedAt: conversation.updatedAt
       };
       
-      // Verify we have at least one message
-      if (conversationSession.messages.length === 0) {
-        console.warn(`Conversation ${conversationId} has no messages, adding initial message`);
-        
-        // Add a default initial message if the conversation is empty
-        const initialMessage = getInitialMessage(conversationSession.type);
-        conversationSession.messages = [
-          {
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: initialMessage,
-            timestamp: new Date(),
-          }
-        ];
-      }
-      
       saveCurrentConversationToStorage(conversationSession);
       return conversationSession;
-    } catch (fetchError) {
-      console.error(`Error fetching conversation ${conversationId}:`, fetchError);
-      throw fetchError;
+    } else {
+      console.log(`Conversation ${conversationId} not found or not accessible`);
+      throw new Error(`Conversation ${conversationId} not found or not accessible`);
     }
   } catch (err) {
     console.error(`Error loading conversation ${conversationId}:`, err);

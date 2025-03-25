@@ -80,13 +80,6 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           console.error(`Failed to load existing conversation ${conversationId}:`, error);
           // Clear conversation from storage to avoid loading it again
           clearCurrentConversationFromStorage(type);
-          
-          // Provide a user-friendly error message
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          const userErrorMessage = errorMessage.includes("not found") || errorMessage.includes("not accessible")
-            ? `Failed to load conversation: The conversation could not be found or is no longer accessible.`
-            : `Failed to load conversation: ${errorMessage}`;
-            
           toast({
             title: "Error loading conversation",
             description: "Previous conversation could not be loaded. Starting a new conversation.",
@@ -94,8 +87,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
             variant: "destructive"
           });
           
-          setError(userErrorMessage);
-          throw new Error(userErrorMessage);
+          setError(`Failed to load conversation: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }
       

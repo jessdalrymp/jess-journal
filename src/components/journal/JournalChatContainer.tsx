@@ -36,21 +36,11 @@ export const JournalChatContainer = ({
   const handleError = (errorMessage: string) => {
     console.error("Journal chat error:", errorMessage);
     setError(errorMessage);
-    
-    // If the error is related to conversation not found, show a specific toast
-    if (errorMessage.includes("not found") || errorMessage.includes("not accessible")) {
-      toast({
-        variant: "destructive",
-        title: "Conversation not found",
-        description: "The requested journal conversation could not be found. Starting a new session.",
-      });
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Error starting journal session",
-        description: errorMessage || "Failed to start journal session. Please try again.",
-      });
-    }
+    toast({
+      variant: "destructive",
+      title: "Error starting journal session",
+      description: errorMessage || "Failed to start journal session. Please try again.",
+    });
   };
 
   const handleEndChat = () => {
@@ -99,20 +89,12 @@ export const JournalChatContainer = ({
           </div>
           <p className="text-gray-700 font-medium mb-2">Unable to start journal session</p>
           <p className="text-gray-500 text-center mb-4">{error}</p>
-          <div className="flex gap-3">
-            <button
-              onClick={onBack}
-              className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
-            >
-              Go Back
-            </button>
-            <button
-              onClick={handleReloadPage}
-              className="px-4 py-2 bg-jess-primary text-white rounded-md hover:bg-jess-primary/90 transition-colors"
-            >
-              Try Again
-            </button>
-          </div>
+          <button
+            onClick={handleReloadPage}
+            className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+          >
+            Try Again
+          </button>
         </div>
       ) : (
         <ChatInterface 

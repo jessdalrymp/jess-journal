@@ -1,3 +1,4 @@
+
 import { supabase } from '../../integrations/supabase/client';
 import { Conversation } from './types';
 import { getCachedConversation, cacheConversation } from './conversationCache';
@@ -19,10 +20,10 @@ export const fetchConversations = async (userId: string): Promise<Conversation[]
 
     if (error) {
       console.error('Error fetching conversations:', error);
-      throw new Error(`Failed to fetch conversations: ${error.message}`);
+      return [];
     }
 
-    console.log('Fetched conversations count:', data?.length || 0);
+    console.log('Fetched conversations:', data);
 
     if (!data || data.length === 0) {
       console.log('No conversations found for user:', userId);
@@ -41,7 +42,7 @@ export const fetchConversations = async (userId: string): Promise<Conversation[]
     }));
   } catch (error) {
     console.error('Error in fetchConversations:', error);
-    throw error;
+    return [];
   }
 };
 
@@ -75,12 +76,12 @@ export const fetchConversation = async (conversationId: string, userId: string):
 
     if (error) {
       console.error('Error fetching conversation:', error);
-      throw new Error(`Failed to fetch conversation: ${error.message}`);
+      return null;
     }
 
     if (!data) {
       console.log(`No conversation found with id ${conversationId}`);
-      throw new Error(`Conversation ${conversationId} not found or not accessible`);
+      return null;
     }
 
     // Fetch messages for this conversation
@@ -88,12 +89,22 @@ export const fetchConversation = async (conversationId: string, userId: string):
       .from('messages')
       .select('*')
       .eq('conversation_id', conversationId)
-      .order('timestamp', { ascending: true })
-      .limit(500); // Increased limit to get more messages
+      .order('timestamp', { ascending: true });
 
     if (messagesError) {
       console.error('Error fetching messages:', messagesError);
-      throw new Error(`Failed to fetch messages: ${messagesError.message}`);
+      // Return conversation without messages if we can't fetch them
+      const emptyConversation: Conversation = {
+        id: data.id,
+        userId: data.profile_id,
+        type: data.type,
+        title: data.title,
+        messages: [],
+        summary: data.summary || '',
+        createdAt: new Date(data.created_at),
+        updatedAt: new Date(data.updated_at)
+      };
+      return emptyConversation;
     }
 
     console.log(`Fetched ${messages?.length || 0} messages for conversation ${conversationId}`);
@@ -120,6 +131,6 @@ export const fetchConversation = async (conversationId: string, userId: string):
     return conversation;
   } catch (error) {
     console.error('Error in fetchConversation:', error);
-    throw error;
+    return null;
   }
 };
