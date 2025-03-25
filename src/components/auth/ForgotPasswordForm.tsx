@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Mail } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -8,6 +7,7 @@ import { Input } from '../ui/input';
 import { ActionButton } from '../ui/ActionButton';
 import { ErrorMessage } from './ErrorMessage';
 import { usePasswordReset } from '../../hooks/auth/usePasswordReset';
+import { isRateLimited } from '../../utils/email/rateLimitDetection';
 
 interface ForgotPasswordFormProps {
   onSuccess: (email: string) => void;
@@ -36,42 +36,23 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
     try {
       console.log("Attempting to send reset email to:", email);
       // Use the direct hook implementation rather than going through context
-      await resetPassword(email);
-      console.log("Reset email sent successfully");
-      onSuccess(email);
+      const result = await resetPassword(email);
+      
+      if (result) {
+        console.log("Reset email sent successfully");
+        onSuccess(email);
+      } 
+      // If result is false, the hook already displayed an appropriate toast
     } catch (error: any) {
       console.error("Password reset error:", error);
       
-      // Expanded rate limit detection
-      const isRateLimited = 
-        error.message && (
-          error.message.includes("rate limit") || 
-          error.message.includes("429") || 
-          error.message.includes("too many") ||
-          error.message.includes("try again later") ||
-          error.message.includes("exceeded")
-        );
-      
-      // Set error message based on the type of error
-      if (isRateLimited) {
-        setError("Too many requests. Please try again after a few minutes.");
-        
-        toast({
-          title: "Rate limit reached",
-          description: "You've made too many password reset attempts. Please wait a few minutes before trying again.",
-          duration: 8000,
-          variant: "destructive",
-        });
+      // Use improved rate limit detection
+      if (isRateLimited(error.message)) {
+        setError("Please wait a moment before requesting another password reset.");
       } else if (error.message?.includes("sending email") || error.message?.includes("smtp") || error.message?.includes("host")) {
-        setError("We're having trouble sending emails right now. Please try again later or contact support.");
+        setError("We're having trouble sending emails right now. Please try again later.");
       } else {
         setError(error.message || "Failed to send reset email. Please try again.");
-        
-        toast({
-          title: "Error",
-          description: error.message || "Failed to send reset email. Please try again.",
-          variant: "destructive",
-        });
       }
     } finally {
       setLoading(false);

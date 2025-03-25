@@ -18,11 +18,26 @@ export const isRateLimited = (errorMessage?: string, statusCode?: number): boole
   }
   
   // Check for common rate limit phrases in the error message
-  return (
-    errorMessage.includes('rate limit') || 
-    errorMessage.includes('429') || 
-    errorMessage.includes('too many') ||
-    errorMessage.includes('try again later') ||
-    errorMessage.includes('exceeded')
-  );
+  const rateLimitPhrases = [
+    'rate limit',
+    'ratelimit',
+    '429',
+    'too many',
+    'try again later',
+    'exceeded',
+    'too many attempts',
+    'too many requests',
+    'attempt limit',
+    'request limit',
+    'limit reached',
+    'throttled',
+    'slow down',
+    'wait',
+    'cool down',
+    'timeout',
+    'maximum attempts'
+  ];
+  
+  const lowerCaseMessage = errorMessage.toLowerCase();
+  return rateLimitPhrases.some(phrase => lowerCaseMessage.includes(phrase));
 };

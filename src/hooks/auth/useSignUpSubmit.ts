@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useSignUp } from './useSignUp';
@@ -59,20 +60,22 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
           onVerificationSent(email);
         } else if (emailResult.rateLimit) {
           console.log("Rate limit detected when sending verification email");
+          
+          // More user-friendly message
           toast({
-            title: "Too many verification attempts",
-            description: "You've made too many verification attempts. Please wait a few minutes before trying again.",
+            title: "Account created",
+            description: "Your account has been created. Please check your email for the verification link or try signing in after a few minutes.",
             duration: 8000,
-            variant: "destructive",
           });
-          setError("Too many verification attempts. Please wait a few minutes before trying again.");
+          
+          // Still redirect to verification screen
+          onVerificationSent(email);
         } else {
           console.log("Failed to send verification email");
           toast({
-            title: "Account created, but...",
-            description: "We had trouble sending the verification email. Please try signing in after a few minutes or contact support if the issue persists.",
+            title: "Account created",
+            description: "We had trouble sending the verification email. Please try signing in after a few minutes to resend the verification link.",
             duration: 8000,
-            variant: "destructive",
           });
           onVerificationSent(email);
         }
@@ -89,23 +92,23 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
       
       let errorMessage = "An unexpected error occurred. Please try again.";
       
-      // Expanded rate limit detection
-      const isRateLimited = 
-        error.message && (
-          error.message.includes("rate limit") || 
-          error.message.includes("429") || 
-          error.message.includes("too many") ||
-          error.message.includes("try again later") ||
-          error.message.includes("exceeded")
-        );
+      // Use the improved rate limit detection
+      const rateLimited = isRateLimited(error.message);
       
       if (error.message) {
         if (error.message.includes("User already registered")) {
           errorMessage = "An account with this email already exists. Try signing in instead.";
-        } else if (isRateLimited) {
-          errorMessage = "Too many attempts. Please try again after a few minutes.";
+        } else if (rateLimited) {
+          errorMessage = "Please wait a moment before creating another account.";
+          
+          // Don't show toasts for rate limits - use a more friendly approach
+          toast({
+            title: "Please wait a moment",
+            description: "For security reasons, please wait a few minutes before trying again.",
+            duration: 8000,
+          });
         } else if (error.message.includes("sending email") || error.message.includes("smtp")) {
-          errorMessage = "There was an issue with our email service. Your account has been created, but you may need to try signing in to verify your email.";
+          errorMessage = "We're having trouble with our email service. Please try again later.";
         } else {
           errorMessage = error.message;
         }
@@ -114,17 +117,10 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
       setError(errorMessage);
       
       // Only show toast for non-rate limit errors to avoid double notifications
-      if (!isRateLimited) {
+      if (!rateLimited) {
         toast({
           title: "Registration issue",
           description: errorMessage,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Too many attempts",
-          description: "You've made too many attempts. Please wait a few minutes before trying again.",
-          duration: 8000,
           variant: "destructive",
         });
       }

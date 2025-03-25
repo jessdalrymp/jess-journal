@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -7,6 +6,7 @@ import { ActionButton } from '../ui/ActionButton';
 import { ForgotPasswordLink } from './ForgotPasswordLink';
 import { ErrorMessage } from './ErrorMessage';
 import { validateEmail, validatePassword } from '../../utils/authValidation';
+import { isRateLimited } from '../../utils/email/rateLimitDetection';
 
 interface LoginFormProps {
   onForgotPassword: () => void;
@@ -60,45 +60,28 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
     } catch (error: any) {
       console.error('Authentication error:', error);
       
-      let errorMessage = "An unexpected error occurred. Please try again.";
+      // Use the improved rate limit detection
+      const rateLimited = isRateLimited(error.message);
       
-      // Expanded rate limit detection
-      const isRateLimited = 
-        error.message && (
-          error.message.includes("rate limit") || 
-          error.message.includes("429") || 
-          error.message.includes("too many attempts") ||
-          error.message.includes("try again later") ||
-          error.message.includes("exceeded")
-        );
-      
-      if (error.message) {
-        if (error.message.includes("Invalid login credentials")) {
-          errorMessage = "Invalid email or password. Please check your credentials and try again.";
-        } else if (error.message.includes("Email not confirmed")) {
-          errorMessage = "Please check your email to confirm your account before signing in.";
-          onVerificationSent(email);
-        } else if (isRateLimited) {
-          errorMessage = "Too many attempts. Please try again after a few minutes.";
-          
-          toast({
-            title: "Rate limit reached",
-            description: "You've made too many login attempts. Please wait a few minutes before trying again.",
-            duration: 8000,
-            variant: "destructive",
-          });
-        } else {
-          errorMessage = error.message;
-        }
-      }
-      
-      setError(errorMessage);
-      
-      // Only show toast for non-rate limit errors to avoid double notifications
-      if (!isRateLimited && !errorMessage.includes("Email not confirmed")) {
+      if (rateLimited) {
+        setError("Your account is temporarily locked due to multiple login attempts. Please wait a few minutes before trying again, or use the 'Forgot Password' option.");
+        
+        toast({
+          title: "Account temporarily locked",
+          description: "For your security, please wait a few minutes before trying again or reset your password.",
+          duration: 8000,
+        });
+      } else if (error.message?.includes("Invalid login credentials")) {
+        setError("Invalid email or password. Please check your credentials and try again.");
+      } else if (error.message?.includes("Email not confirmed")) {
+        setError("Please check your email to confirm your account before signing in.");
+        onVerificationSent(email);
+      } else {
+        setError(error.message || "An unexpected error occurred. Please try again.");
+        
         toast({
           title: "Login failed",
-          description: errorMessage,
+          description: error.message || "An unexpected error occurred. Please try again.",
           variant: "destructive",
         });
       }

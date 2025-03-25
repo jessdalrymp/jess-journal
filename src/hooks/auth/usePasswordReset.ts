@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '../../integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { isRateLimited } from '../../utils/email/rateLimitDetection';
 
 export const usePasswordReset = () => {
   const [loading, setLoading] = useState(false);
@@ -27,23 +28,26 @@ export const usePasswordReset = () => {
       if (error) {
         console.error("Password reset error:", error);
         
-        // Expanded rate limit detection
-        const isRateLimited = 
-          error.message && (
-            error.message.includes("rate limit") || 
-            error.message.includes("429") || 
-            error.message.includes("too many") ||
-            error.message.includes("try again later") ||
-            error.message.includes("exceeded")
-          );
+        // Use the improved rate limit detection
+        if (isRateLimited(error.message)) {
+          // Don't throw the error, instead show a user-friendly message
+          toast({
+            title: "Please wait a moment",
+            description: "You've recently requested a password reset. Please check your email or wait a few minutes before trying again.",
+            duration: 8000,
+          });
+          return false;
+        }
         
         // Check for specific types of errors
         if (error.message?.includes("sending email") || error.message?.includes("smtp") || error.message?.includes("host")) {
-          throw new Error("Unable to send email at this time. This may be a temporary issue with our email service. Please try again later or contact support if the problem persists.");
-        }
-        
-        if (isRateLimited) {
-          throw new Error("Too many password reset requests. Please try again after a few minutes.");
+          toast({
+            title: "Email service issue",
+            description: "We're having trouble sending emails right now. Please try again later or contact support if the problem persists.",
+            duration: 8000,
+            variant: "destructive", 
+          });
+          return false;
         }
         
         throw error;
@@ -59,7 +63,15 @@ export const usePasswordReset = () => {
       return true;
     } catch (error: any) {
       console.error('Password reset error:', error);
-      throw error;
+      
+      // Default error handling
+      toast({
+        title: "Reset request failed",
+        description: error.message || "Failed to send reset email. Please try again.",
+        variant: "destructive",
+      });
+      
+      return false;
     } finally {
       setLoading(false);
     }
