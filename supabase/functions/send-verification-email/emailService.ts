@@ -1,4 +1,3 @@
-
 // Email service for sending verification emails
 
 import { Resend } from "npm:resend@2.0.0";
@@ -65,13 +64,96 @@ export async function sendHtmlEmail(email: string, verificationUrl: string): Pro
       to: [email],
       subject: "Verify your email - Jess Journal",
       html: `
-        <h2>Welcome to Jess Journal!</h2>
-        <p>Thank you for signing up. Please verify your email address by clicking the link below:</p>
-        <p><a href="${verificationUrl}" style="display: inline-block; background-color: #8247e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
-        <p>If the button above doesn't work, you can also copy and paste this link into your browser:</p>
-        <p>${verificationUrl}</p>
-        <p>This link will expire in 24 hours.</p>
-        <p>Best regards,<br>The Jess Journal Team</p>
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Email Confirmation</title>
+          <style>
+              body {
+                  font-family: 'Open Sans', Arial, sans-serif;
+                  line-height: 1.6;
+                  color: #333;
+                  max-width: 600px;
+                  margin: 0 auto;
+                  padding: 20px;
+              }
+              h1, h2 {
+                  font-family: 'Cormorant Garamond', Georgia, serif;
+                  font-weight: 600;
+              }
+              .email-container {
+                  border: 1px solid #e0d5cc;
+                  border-radius: 5px;
+                  padding: 20px;
+                  background-color: #fcfaf8;
+              }
+              .header {
+                  border-bottom: 2px solid #e0d5cc;
+                  padding-bottom: 10px;
+                  margin-bottom: 20px;
+              }
+              .journal-title {
+                  text-align: center;
+                  margin-bottom: 15px;
+                  font-family: 'Cormorant Garamond', Georgia, serif;
+                  font-weight: 700;
+                  font-size: 32px;
+                  color: #8d7160;
+                  letter-spacing: 1px;
+              }
+              h2 {
+                  color: #8d7160;
+                  margin-top: 0;
+              }
+              p {
+                  font-family: 'Open Sans', Arial, sans-serif;
+              }
+              .button {
+                  display: inline-block;
+                  background-color: #8d7160;
+                  color: white;
+                  padding: 10px 20px;
+                  text-decoration: none;
+                  border-radius: 4px;
+                  margin: 20px 0;
+                  font-family: 'Open Sans', Arial, sans-serif;
+              }
+              .footer {
+                  margin-top: 30px;
+                  font-size: 12px;
+                  color: #8d7160;
+                  text-align: center;
+                  border-top: 1px solid #e0d5cc;
+                  padding-top: 15px;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="email-container">
+              <div class="header">
+                  <div class="journal-title">JESS Journal</div>
+              </div>
+              
+              <h2>Confirm your sign up to JESS Journal</h2>
+              
+              <p>Follow this link to confirm your user:</p>
+              
+              <p><a href="${verificationUrl}" class="button">Confirm your mail</a></p>
+              
+              <p>If the button above doesn't work, you can also copy and paste the following link into your browser:</p>
+              <p>${verificationUrl}</p>
+              
+              <p>If you didn't request this email, please ignore it.</p>
+              
+              <div class="footer">
+                  <p>&copy; 2025 JESS Journal. All rights reserved.</p>
+                  <p>This email was sent to you because someone signed up for JESS Journal using this email address.</p>
+              </div>
+          </div>
+      </body>
+      </html>
       `,
       text: `Welcome to Jess Journal! Thank you for signing up. Please verify your email address by visiting this link: ${verificationUrl}. This link will expire in 24 hours. Best regards, The Jess Journal Team`,
     });
@@ -122,15 +204,17 @@ export async function sendTextOnlyEmail(email: string, verificationUrl: string):
       to: [email],
       subject: "Verify your email - Jess Journal",
       text: `
-Welcome to Jess Journal!
+JESS Journal - Email Verification
 
-Thank you for signing up. Please verify your email address by visiting this link:
+Confirm your sign up to JESS Journal
+
+Follow this link to confirm your user:
 ${verificationUrl}
 
-This link will expire in 24 hours.
+If you didn't request this email, please ignore it.
 
-Best regards,
-The Jess Journal Team
+© 2025 JESS Journal. All rights reserved.
+This email was sent to you because someone signed up for JESS Journal using this email address.
       `,
     });
     
