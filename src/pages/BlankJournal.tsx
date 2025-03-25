@@ -51,33 +51,18 @@ const BlankJournal = () => {
     try {
       const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
       let contentToSave = content;
-      let entryType = "journal"; // Default type
       
       if (jsonMatch && jsonMatch[1]) {
         try {
           const parsedJson = JSON.parse(jsonMatch[1].trim());
           parsedJson.title = title;
-          
+          // Add type if selected from a prompt category
           if (selectedCategory) {
             parsedJson.type = selectedCategory.id;
-            entryType = selectedCategory.id;
           }
-          
           contentToSave = `\`\`\`json\n${JSON.stringify(parsedJson, null, 2)}\n\`\`\``;
         } catch (e) {
           console.error("Error updating title in JSON content", e);
-        }
-      } else {
-        const freewritingJson = {
-          title: title,
-          summary: content,
-          type: selectedCategory ? selectedCategory.id : "journal"
-        };
-        
-        contentToSave = `\`\`\`json\n${JSON.stringify(freewritingJson, null, 2)}\n\`\`\``;
-        
-        if (selectedCategory) {
-          entryType = selectedCategory.id;
         }
       }
       
@@ -86,8 +71,7 @@ const BlankJournal = () => {
       const newEntry = await saveJournalEntry(
         user.id,
         promptText,
-        contentToSave,
-        entryType
+        contentToSave
       );
       
       if (!newEntry) {
