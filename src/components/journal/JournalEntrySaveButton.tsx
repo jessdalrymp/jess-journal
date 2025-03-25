@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 
 interface JournalEntrySaveButtonProps {
-  onSave: () => Promise<void>;
+  onSave: () => Promise<void | boolean>;
   isSaving: boolean;
-  onSaveAndClose?: () => Promise<void>;
+  onSaveAndClose?: () => Promise<void | boolean>;
 }
 
 export const JournalEntrySaveButton = ({ 

@@ -140,8 +140,8 @@ const JournalHistory = () => {
           <div className="flex items-center gap-3">
             <Button 
               onClick={handleNewEntry} 
-              variant="primary" 
-              className="flex items-center gap-2"
+              variant="default" 
+              className="flex items-center gap-2 bg-jess-primary hover:bg-jess-primary/90"
             >
               <Plus size={16} />
               New Entry

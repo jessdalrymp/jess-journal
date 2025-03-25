@@ -18,8 +18,8 @@ interface JournalEntryViewProps {
   editableContent: string;
   setEditableTitle: (title: string) => void;
   setEditableContent: (content: string) => void;
-  handleSaveClick: () => Promise<boolean>;
-  handleSaveAndCloseClick?: () => Promise<boolean>;
+  handleSaveClick: () => Promise<boolean | void>;
+  handleSaveAndCloseClick?: () => Promise<boolean | void>;
   isSaving: boolean;
 }
 

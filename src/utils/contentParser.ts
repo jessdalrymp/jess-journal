@@ -29,11 +29,14 @@ export const parseEntryContent = (content: string) => {
 
 /**
  * Extracts a content preview from a journal entry
- * @param content Raw content of the journal entry 
+ * @param entry JournalEntry or string content of the entry 
  * @param maxLength Maximum length of the preview
  * @returns A plain text preview of the content
  */
-export const getContentPreview = (content: string, maxLength: number = 100): string => {
+export const getContentPreview = (entry: string | { content: string }, maxLength: number = 100): string => {
+  // Handle when entry is a JournalEntry object
+  const content = typeof entry === 'string' ? entry : entry.content;
+  
   // First try to parse JSON content
   const parsedContent = parseEntryContent(content);
   
