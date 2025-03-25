@@ -55,6 +55,7 @@ export const ensureUserExists = async (
 
     if (signUpError) {
       console.error('Error creating user:', signUpError);
+      console.error('Error details:', JSON.stringify(signUpError, null, 2));
       return { success: false, error: signUpError };
     }
 
@@ -82,6 +83,7 @@ export const ensureUserExists = async (
       
       if (insertError) {
         console.error('Error inserting user data:', insertError);
+        console.error('Error details:', JSON.stringify(insertError, null, 2));
         return { success: false, error: insertError };
       }
     }

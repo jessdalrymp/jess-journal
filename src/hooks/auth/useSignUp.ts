@@ -29,6 +29,8 @@ export const useSignUp = () => {
 
   const createUserRecord = async (userId: string, email: string, name?: string) => {
     try {
+      console.log("Creating user profile record for:", userId, email);
+      
       const { error } = await supabase.from('profiles').upsert({
         id: userId,
         email: email,
@@ -38,12 +40,15 @@ export const useSignUp = () => {
       
       if (error) {
         console.error("Error creating user record:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
         throw error;
       }
       
+      console.log("Profile record created successfully");
       return true;
     } catch (error) {
       console.error("Exception creating user record:", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
       throw error;
     }
   };
@@ -99,7 +104,13 @@ export const useSignUp = () => {
         
         // Insert the new user into the profiles table
         if (data.user) {
-          await createUserRecord(data.user.id, email, name);
+          try {
+            await createUserRecord(data.user.id, email, name);
+            console.log("User profile created successfully after signup");
+          } catch (profileError) {
+            console.error("Failed to create user profile:", profileError);
+            // Continue anyway since the auth user was created
+          }
         }
         
         toast({
@@ -160,6 +171,17 @@ export const useSignUp = () => {
           // For development environments or when email verification is disabled
           if (isDevelopment) {
             console.log("Development environment detected - email verification might be disabled in Supabase dashboard");
+            
+            // Try to create a profile record manually for development environments
+            if (data.user) {
+              try {
+                await createUserRecord(data.user.id, email, name);
+                console.log("User profile manually created in development environment");
+              } catch (profileError) {
+                console.error("Failed to manually create profile in development:", profileError);
+              }
+            }
+            
             toast({
               title: "Development notice",
               description: "For local testing, consider disabling email verification in the Supabase dashboard",
