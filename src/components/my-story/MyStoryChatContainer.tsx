@@ -55,13 +55,8 @@ export const MyStoryChatContainer = ({
     });
     
     // Call the parent's onSave function and pass true to indicate need for refresh
+    // Let the parent component handle navigation
     onSave(true);
-    
-    // Add a short delay before navigating to ensure the save operation completes
-    setTimeout(() => {
-      console.log("Navigating to dashboard after saving story");
-      navigate('/dashboard');
-    }, 1000);
   };
 
   const handleReloadPage = () => {

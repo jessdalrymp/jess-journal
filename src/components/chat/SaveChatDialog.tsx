@@ -81,11 +81,12 @@ export function SaveChatDialog({
         description: message,
       });
       
-      // Add a delay before navigating to ensure the save operation completes
+      // Use window.location.href instead of navigate to force a full page reload
+      // This ensures all state is reset properly
       setTimeout(() => {
         console.log("Navigating to dashboard after saving story");
-        navigate('/dashboard');
-      }, 1000);
+        window.location.href = '/dashboard';
+      }, 1500);
     } catch (error) {
       console.error("Error saving conversation:", error);
       toast({
