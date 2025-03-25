@@ -11,7 +11,6 @@ interface JournalHistoryContentProps {
   onEditClick: (e: React.MouseEvent, entry: JournalEntry) => void;
   onDeleteClick: (e: React.MouseEvent, entry: JournalEntry) => void;
   onNewEntry: () => void;
-  onWriteFreely: () => void;
   onRefresh: () => void;
   onBackClick: () => void;
 }
@@ -23,7 +22,6 @@ export const JournalHistoryContent = ({
   onEditClick,
   onDeleteClick,
   onNewEntry,
-  onWriteFreely,
   onRefresh,
   onBackClick
 }: JournalHistoryContentProps) => {
@@ -56,7 +54,6 @@ export const JournalHistoryContent = ({
         <JournalHistoryHeader onBackClick={onBackClick} />
         <JournalActions 
           onNewEntry={onNewEntry} 
-          onWriteFreely={onWriteFreely} 
           onRefresh={onRefresh}
           isLoading={isLoading} 
         />

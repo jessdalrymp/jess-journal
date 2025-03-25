@@ -14,13 +14,11 @@ const JournalHistory = () => {
     setDeleteDialogOpen,
     entryToDelete,
     showJournalChat,
-    skipPrompt,
     handleEntryClick,
     handleEditClick,
     handleDeleteClick,
     handleRefreshEntries,
     handleNewEntry,
-    handleWriteFreely,
     handleJournalChatBack,
     handleJournalChatSave,
     confirmDelete
@@ -34,7 +32,6 @@ const JournalHistory = () => {
           <JournalChatContainer 
             onBack={handleJournalChatBack}
             onSave={handleJournalChatSave}
-            skipPrompt={skipPrompt}
           />
         </main>
         <DisclaimerBanner />
@@ -53,7 +50,6 @@ const JournalHistory = () => {
           onEditClick={handleEditClick}
           onDeleteClick={handleDeleteClick}
           onNewEntry={handleNewEntry}
-          onWriteFreely={handleWriteFreely}
           onRefresh={handleRefreshEntries}
           onBackClick={() => window.history.back()}
         />

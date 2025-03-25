@@ -16,7 +16,6 @@ export const useJournalHistoryPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const [showJournalChat, setShowJournalChat] = useState(false);
-  const [skipPrompt, setSkipPrompt] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const location = useLocation();
@@ -25,9 +24,6 @@ export const useJournalHistoryPage = () => {
   useEffect(() => {
     if (location.state?.showJournalChat) {
       setShowJournalChat(true);
-      if (location.state?.skipPrompt) {
-        setSkipPrompt(true);
-      }
     }
   }, [location.state]);
 
@@ -112,13 +108,6 @@ export const useJournalHistoryPage = () => {
   const handleNewEntry = () => {
     console.log("JournalHistory - New entry");
     setShowJournalChat(true);
-    setSkipPrompt(false);
-  };
-
-  const handleWriteFreely = () => {
-    console.log("JournalHistory - Write freely");
-    setShowJournalChat(true);
-    setSkipPrompt(true);
   };
 
   const handleJournalChatBack = () => {
@@ -168,13 +157,11 @@ export const useJournalHistoryPage = () => {
     setDeleteDialogOpen,
     entryToDelete,
     showJournalChat,
-    skipPrompt,
     handleEntryClick,
     handleEditClick,
     handleDeleteClick,
     handleRefreshEntries,
     handleNewEntry,
-    handleWriteFreely,
     handleJournalChatBack,
     handleJournalChatSave,
     confirmDelete
