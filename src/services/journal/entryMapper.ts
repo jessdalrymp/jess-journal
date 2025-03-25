@@ -81,9 +81,13 @@ export const mapDatabaseEntryToJournalEntry = (
       messageCount: conversationData.messages?.length || 0
     });
     
-    // If we have a conversation title, use it
-    if (conversationData.title) {
-      title = conversationData.title;
+    // If the title is generic, use conversation title if available
+    if (title === 'Untitled Entry' || title === 'Conversation Summary') {
+      if (conversationData.title) {
+        title = conversationData.title;
+      } else {
+        title = `Conversation: ${new Date(entry.created_at).toLocaleDateString()}`;
+      }
     }
     
     // If we have a conversation summary from the conversation record, use it

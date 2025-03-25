@@ -39,6 +39,17 @@ export const JournalHistoryContent = ({
     entries.filter(e => e.conversation_id).length
   );
   
+  // Filter to ensure we have all entries with conversation_id
+  const conversationEntries = entries.filter(e => e.conversation_id);
+  console.log('JournalHistory - Conversation entries details:', 
+    conversationEntries.map(e => ({
+      id: e.id,
+      type: e.type,
+      title: e.title,
+      conversationId: e.conversation_id
+    }))
+  );
+  
   return (
     <>
       <div className="flex justify-between items-center mb-6">

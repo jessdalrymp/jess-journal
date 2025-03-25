@@ -1,5 +1,5 @@
 
-import { MessageSquare, FileText } from "lucide-react";
+import { MessageSquare, FileText, MessageCircle } from "lucide-react";
 
 interface EntryTagsProps {
   isConversation: boolean;
@@ -8,10 +8,10 @@ interface EntryTagsProps {
 
 export const EntryTags = ({ isConversation, isSummary }: EntryTagsProps) => {
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-1 flex-wrap">
       {isConversation && (
         <span className="inline-flex items-center text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-          <MessageSquare size={12} className="mr-1" />
+          <MessageCircle size={12} className="mr-1" />
           Conversation
         </span>
       )}

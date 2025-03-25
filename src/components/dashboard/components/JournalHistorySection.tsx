@@ -27,6 +27,21 @@ export const JournalHistorySection = () => {
   console.log('Journal History - entries count:', journalEntries?.length);
   console.log('Journal History - entries with conversation_id:', 
     journalEntries?.filter(e => e.conversation_id)?.length);
+  
+  // Log conversations specifically to debug
+  const conversationEntries = journalEntries?.filter(e => e.conversation_id) || [];
+  console.log('Journal History - conversation entries:', conversationEntries.length);
+  if (conversationEntries.length > 0) {
+    console.log('Journal History - conversation entries sample:', 
+      conversationEntries.slice(0, 2).map(e => ({
+        id: e.id,
+        title: e.title,
+        type: e.type,
+        conversationId: e.conversation_id
+      }))
+    );
+  }
+  
   console.log('Journal History - recent entries sample:', recentEntries?.slice(0, 2));
   
   // Force refresh when the component mounts to ensure latest entries

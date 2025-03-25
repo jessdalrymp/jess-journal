@@ -1,6 +1,6 @@
 
 import { JournalEntry } from "@/lib/types";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, MessageCircle } from "lucide-react";
 import { getEntryIcon } from "./JournalHistoryUtils";
 import { getEntryTitle } from "./EntryTitleUtils";
 import { getContentPreview } from "@/utils/contentParser";
@@ -56,6 +56,12 @@ export const EntryItem = ({
       <div className="text-sm line-clamp-3 bg-gray-50 p-2 rounded">
         {content}
       </div>
+      {isConversationSummary && (
+        <div className="mt-2 text-xs text-blue-600 flex items-center">
+          <MessageCircle size={14} className="mr-1" />
+          <span>From conversation</span>
+        </div>
+      )}
     </div>
   );
 };
