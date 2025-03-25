@@ -43,19 +43,26 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
       console.error("Password reset error:", error);
       
       // Set error message based on the type of error
-      if (error.message?.includes("rate limit") || error.message?.includes("429")) {
+      if (error.message?.includes("rate limit") || error.message?.includes("429") || error.message?.includes("too many attempts")) {
         setError("Too many requests. Please try again after a few minutes.");
+        
+        toast({
+          title: "Rate limit reached",
+          description: "You've made too many password reset attempts. Please wait a few minutes before trying again.",
+          duration: 8000,
+          variant: "destructive",
+        });
       } else if (error.message?.includes("sending email") || error.message?.includes("smtp") || error.message?.includes("host")) {
         setError("We're having trouble sending emails right now. Please try again later or contact support.");
       } else {
         setError(error.message || "Failed to send reset email. Please try again.");
+        
+        toast({
+          title: "Error",
+          description: error.message || "Failed to send reset email. Please try again.",
+          variant: "destructive",
+        });
       }
-      
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send reset email. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setLoading(false);
     }

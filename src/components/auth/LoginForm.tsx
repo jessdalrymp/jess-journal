@@ -68,8 +68,15 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
         } else if (error.message.includes("Email not confirmed")) {
           errorMessage = "Please check your email to confirm your account before signing in.";
           onVerificationSent(email);
-        } else if (error.message.includes("rate limit") || error.message.includes("429")) {
+        } else if (error.message.includes("rate limit") || error.message.includes("429") || error.message.includes("too many attempts")) {
           errorMessage = "Too many attempts. Please try again after a few minutes.";
+          
+          toast({
+            title: "Rate limit reached",
+            description: "You've made too many login attempts. Please wait a few minutes before trying again.",
+            duration: 8000,
+            variant: "destructive",
+          });
         } else {
           errorMessage = error.message;
         }
@@ -77,11 +84,13 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
       
       setError(errorMessage);
       
-      toast({
-        title: "Login failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      if (!errorMessage.includes("rate limit") && !errorMessage.includes("too many attempts")) {
+        toast({
+          title: "Login failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }

@@ -45,9 +45,9 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
         console.log("Email verification required, sending verification email");
         
         // Send verification email using our custom sender
-        const emailSent = await sendCustomVerificationEmail(email);
+        const emailResult = await sendCustomVerificationEmail(email);
         
-        if (emailSent) {
+        if (emailResult.success) {
           console.log("Verification email sent successfully");
           toast({
             title: "Account created",
@@ -55,6 +55,15 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
             duration: 6000,
           });
           onVerificationSent(email);
+        } else if (emailResult.rateLimit) {
+          console.log("Rate limit detected when sending verification email");
+          toast({
+            title: "Too many verification attempts",
+            description: "You've made too many verification attempts. Please wait a few minutes before trying again.",
+            duration: 8000,
+            variant: "destructive",
+          });
+          setError("Too many verification attempts. Please wait a few minutes before trying again.");
         } else {
           console.log("Failed to send verification email");
           toast({

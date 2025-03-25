@@ -1,4 +1,3 @@
-
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '../integrations/supabase/client';
 
@@ -71,6 +70,12 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
       const errorText = await response.text().catch(() => 'Unknown error');
       console.error(`Network error (${response.status}): ${errorText}`);
       
+      // Handle rate limiting specifically
+      if (response.status === 429 || errorText.includes('rate limit') || errorText.includes('too many attempts')) {
+        console.log("Rate limit detected - advising user to wait");
+        return { success: false, rateLimit: true };
+      }
+      
       // If this is the first attempt and we got a 500 error, try again with text-only email format
       if (response.status === 500) {
         console.log("Attempting to retry with text-only format...");
@@ -93,7 +98,12 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
           console.log("Retry with text-only format successful");
           const responseData = await retryResponse.json();
           console.log("Response data:", responseData);
-          return true;
+          return { success: true };
+        }
+        
+        // Check if retry hit rate limit
+        if (retryResponse.status === 429) {
+          return { success: false, rateLimit: true };
         }
         
         console.error("Retry also failed");
@@ -105,7 +115,7 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
         }
       }
       
-      return false;
+      return { success: false };
     }
     
     // Parse the response
@@ -115,22 +125,36 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
       console.log("Verification email API response:", responseData);
     } catch (parseError) {
       console.error('Error parsing response:', parseError);
-      return false;
+      return { success: false };
     }
     
     if (!responseData.success) {
       console.error('Error in verification email response:', responseData.error);
-      return false;
+      
+      // Check if the error is related to rate limiting
+      if (responseData.error?.message?.includes('rate limit') || 
+          responseData.error?.message?.includes('too many attempts') ||
+          responseData.error?.details?.includes('rate limit')) {
+        return { success: false, rateLimit: true };
+      }
+      
+      return { success: false };
     }
     
     console.log("Verification email sent successfully via custom function");
     console.log("======= VERIFICATION EMAIL PROCESS COMPLETED SUCCESSFULLY =======");
-    return true;
+    return { success: true };
   } catch (error: any) {
     console.error('Error sending verification email:', error);
     console.error('Error details:', error.stack || 'No stack trace available');
     console.log("======= VERIFICATION EMAIL PROCESS FAILED =======");
-    return false;
+    
+    // Check if the error is related to rate limiting
+    if (error.message && (error.message.includes('rate limit') || error.message.includes('too many attempts'))) {
+      return { success: false, rateLimit: true };
+    }
+    
+    return { success: false };
   }
 };
 
