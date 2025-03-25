@@ -53,6 +53,11 @@ const MyStory = () => {
     return <MyStoryUnauthenticated />;
   }
 
+  const handleSaveChatDialogOpenChange = (open: boolean) => {
+    console.log("SaveChatDialog open change:", open);
+    setShowSaveChatDialog(open);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
@@ -94,7 +99,7 @@ const MyStory = () => {
 
       <SaveChatDialog
         open={showSaveChatDialog}
-        onOpenChange={setShowSaveChatDialog}
+        onOpenChange={handleSaveChatDialogOpenChange}
         refreshData={refreshDataOnSave}
         persistConversation={true}
       />

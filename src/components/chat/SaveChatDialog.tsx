@@ -1,3 +1,4 @@
+
 import {
   Dialog,
   DialogContent,
@@ -84,11 +85,11 @@ export function SaveChatDialog({
       
       setSaveComplete(true);
       
-      console.log("Preparing to navigate to dashboard after saving story");
+      // Delay navigation to ensure toast is seen and dialog closes properly
       setTimeout(() => {
         console.log("Navigating to dashboard after save");
         window.location.href = '/dashboard';
-      }, 2000);
+      }, 1500);
     } catch (error) {
       console.error("Error saving conversation:", error);
       toast({
@@ -96,11 +97,8 @@ export function SaveChatDialog({
         description: "There was a problem saving your story. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsSaving(false);
-      if (!saveComplete) {
-        onOpenChange(false);
-      }
+      onOpenChange(false);
     }
   };
 
