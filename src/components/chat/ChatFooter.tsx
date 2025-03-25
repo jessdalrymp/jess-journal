@@ -46,7 +46,7 @@ export const ChatFooter = ({
         <Button 
           onClick={onEndChat} 
           variant={saveChat ? "default" : "outline"}
-          className="text-sm bg-jess-primary hover:bg-jess-primary/90"
+          className={`text-sm ${saveChat ? "bg-jess-primary hover:bg-jess-primary/90" : ""}`}
         >
           {saveChat ? (
             <>

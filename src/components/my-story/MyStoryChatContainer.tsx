@@ -90,7 +90,7 @@ export const MyStoryChatContainer = ({
           initialMessage={getInitialMessage('story')} 
           onEndChat={handleEndChat}
           onError={handleError}
-          saveChat
+          saveChat={true}
           persistConversation={true} // Keep conversation after saving
           conversationId={conversationId}
         />
