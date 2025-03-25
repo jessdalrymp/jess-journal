@@ -135,6 +135,7 @@ export const usePriorStories = () => {
   return {
     priorConversations,
     loadingPriorConversations,
-    handleLoadConversation
+    handleLoadConversation,
+    user // Explicitly expose the user from Auth context
   };
 };

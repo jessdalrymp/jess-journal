@@ -32,7 +32,8 @@ export const useMyStoryState = () => {
   const {
     priorConversations,
     loadingPriorConversations,
-    handleLoadConversation: loadConversation
+    handleLoadConversation: loadConversation,
+    user
   } = usePriorStories();
 
   // Initial loading
@@ -85,8 +86,8 @@ export const useMyStoryState = () => {
     priorConversations,
     loadingPriorConversations,
     
-    // User data (from context)
-    user: usePriorStories().user,
+    // User data (from prior stories hook)
+    user,
     
     // Actions
     handleBack,
