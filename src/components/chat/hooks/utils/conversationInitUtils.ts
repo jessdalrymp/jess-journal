@@ -26,37 +26,37 @@ export const loadExistingConversation = async (
     
     const conversation = await fetchConversation(conversationId, userId);
     
-    if (conversation) {
-      console.log(`Successfully loaded conversation ${conversationId} with ${conversation.messages.length} messages`);
-      
-      // Ensure messages is always an array
-      if (!conversation.messages || !Array.isArray(conversation.messages)) {
-        console.error(`Conversation ${conversationId} has no messages or invalid message format`);
-        throw new Error("Invalid conversation format: messages missing or not an array");
-      }
-
-      // Convert to ConversationSession format
-      const conversationSession: ConversationSession = {
-        id: conversation.id,
-        userId: conversation.userId,
-        type: conversation.type as 'story' | 'sideQuest' | 'action' | 'journal',
-        title: conversation.title,
-        messages: conversation.messages.map(msg => ({
-          id: msg.id,
-          role: msg.role as 'user' | 'assistant',
-          content: msg.content,
-          timestamp: msg.createdAt
-        })),
-        createdAt: conversation.createdAt,
-        updatedAt: conversation.updatedAt
-      };
-      
-      saveCurrentConversationToStorage(conversationSession);
-      return conversationSession;
-    } else {
-      console.log(`Conversation ${conversationId} not found or not accessible`);
+    if (!conversation) {
+      console.error(`Conversation ${conversationId} not found or not accessible`);
       throw new Error(`Conversation ${conversationId} not found or not accessible`);
     }
+    
+    console.log(`Successfully loaded conversation ${conversationId} with ${conversation.messages.length} messages`);
+    
+    // Ensure messages is always an array
+    if (!conversation.messages || !Array.isArray(conversation.messages)) {
+      console.error(`Conversation ${conversationId} has no messages or invalid message format`);
+      throw new Error("Invalid conversation format: messages missing or not an array");
+    }
+
+    // Convert to ConversationSession format
+    const conversationSession: ConversationSession = {
+      id: conversation.id,
+      userId: conversation.userId,
+      type: conversation.type as 'story' | 'sideQuest' | 'action' | 'journal',
+      title: conversation.title,
+      messages: conversation.messages.map(msg => ({
+        id: msg.id,
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+        timestamp: msg.createdAt
+      })),
+      createdAt: conversation.createdAt,
+      updatedAt: conversation.updatedAt
+    };
+    
+    saveCurrentConversationToStorage(conversationSession);
+    return conversationSession;
   } catch (err) {
     console.error(`Error loading conversation ${conversationId}:`, err);
     throw err;
