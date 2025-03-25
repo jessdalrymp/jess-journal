@@ -11,12 +11,10 @@ import { MyStoryHeader } from "../components/my-story/MyStoryHeader";
 import { MyStoryChatContainer } from "../components/my-story/MyStoryChatContainer";
 import { useMyStoryState } from "../components/my-story/useMyStoryState";
 import { MyStoryPriorConversations } from "../components/my-story/MyStoryPriorConversations";
-import { useToast } from "@/hooks/use-toast";
 
 const MyStory = () => {
   const [searchParams] = useSearchParams();
   const urlConversationId = searchParams.get("conversationId");
-  const { toast } = useToast();
   
   const {
     showWelcomeModal,
@@ -44,14 +42,7 @@ const MyStory = () => {
       console.log("Found conversation ID in URL:", urlConversationId);
       handleLoadConversation(urlConversationId);
     }
-  }, [urlConversationId, user, isLoading]);
-  
-  // Refresh prior conversations when loading is complete
-  useEffect(() => {
-    if (!isLoading && !userLoading && !isLoadingConversation) {
-      console.log("MyStory: Loading complete, priorConversations:", priorConversations.length);
-    }
-  }, [isLoading, userLoading, isLoadingConversation, priorConversations]);
+  }, [urlConversationId, user, isLoading, handleLoadConversation]);
   
   if (userLoading || isLoading || isLoadingConversation) {
     return <MyStoryLoading />;
