@@ -1,3 +1,4 @@
+
 import { JournalEntry } from "@/lib/types";
 
 /**
@@ -126,4 +127,54 @@ export const parseEntryContent = (content: string): { title?: string; summary?: 
   
   // For plain text content with no JSON structure
   return null;
+};
+
+/**
+ * Format content for editing based on its structure
+ * This extracts the editable part from structured content
+ */
+export const formatContentForEditing = (content: string): string => {
+  if (!content) return '';
+  
+  try {
+    // Check if the content is in a JSON code block
+    const jsonRegex = /```(?:json)?\s*([\s\S]*?)```/;
+    const match = content.match(jsonRegex);
+    
+    if (match && match[1]) {
+      // We have a JSON code block, extract and parse it
+      const jsonContent = JSON.parse(match[1].trim());
+      
+      // If there's a summary field, that's what we want to edit
+      if (jsonContent.summary) {
+        return jsonContent.summary;
+      }
+      
+      // If no summary but has content, return that
+      if (jsonContent.content) {
+        return jsonContent.content;
+      }
+    }
+    
+    // Try parsing the content directly as JSON
+    if (content.includes('{') && content.includes('}')) {
+      try {
+        const parsedContent = JSON.parse(content);
+        if (parsedContent.summary) {
+          return parsedContent.summary;
+        }
+        if (parsedContent.content) {
+          return parsedContent.content;
+        }
+      } catch (e) {
+        // If parsing fails, just return the original content
+      }
+    }
+    
+    // If we get here, just return the original content
+    return content;
+  } catch (e) {
+    console.error('Error formatting content for editing:', e);
+    return content;
+  }
 };

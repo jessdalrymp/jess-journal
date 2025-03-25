@@ -37,14 +37,18 @@ export const getEntryTitle = (entry: JournalEntry): string => {
     }
     
     // Generic titles by type if all else fails
-    if (entry.type === "action") {
+    const entryType = entry.type as string; // Cast to string to allow comparison with all possible types
+    
+    if (entryType === "action") {
       return "Action Challenge";
-    } else if (entry.type === "sideQuest") {
+    } else if (entryType === "sideQuest") {
       return "Side Quest";
-    } else if (entry.type === "insights") {
+    } else if (entryType === "insights") {
       return "Daily Insights";
-    } else if (entry.type === "story") {
+    } else if (entryType === "story") {
       return "My Story";
+    } else if (entryType === "summary") {
+      return "Conversation Summary";
     }
     
     // Default fallback
