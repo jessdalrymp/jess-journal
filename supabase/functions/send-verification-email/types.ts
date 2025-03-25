@@ -1,5 +1,5 @@
 
-// Type definitions for the verification email function
+// Types for the verification email function
 
 export interface VerificationRequest {
   email: string;
@@ -8,13 +8,13 @@ export interface VerificationRequest {
   retryCount?: number;
 }
 
+export interface EmailError {
+  message: string;
+  details?: string;
+}
+
 export interface EmailResponse {
   success: boolean;
+  error?: EmailError;
   data?: any;
-  error?: {
-    message: string;
-    details?: string;
-  };
-  textOnly?: boolean;
-  message?: string;
 }

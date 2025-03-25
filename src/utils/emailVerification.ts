@@ -46,7 +46,7 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
       return false;
     }
     
-    // Prepare the request body
+    // Update: Fix the request body structure - remove schema and only include required fields
     const requestBody = JSON.stringify({
       email,
       verificationUrl,
