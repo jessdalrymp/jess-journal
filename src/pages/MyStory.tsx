@@ -29,6 +29,7 @@ const MyStory = () => {
     handleSaveChat,
     handleStartFresh,
     refreshDataOnSave,
+    setRefreshDataOnSave,
     priorConversations,
     loadingPriorConversations,
     handleLoadConversation,

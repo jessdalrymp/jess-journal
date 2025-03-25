@@ -14,6 +14,7 @@ export const useMyStoryState = () => {
     showSaveChatDialog,
     setShowSaveChatDialog,
     refreshDataOnSave,
+    setRefreshDataOnSave,
     handleDontShowWelcomeAgain,
     handleSaveChat
   } = useStoryModal();
@@ -75,6 +76,7 @@ export const useMyStoryState = () => {
     showSaveChatDialog,
     setShowSaveChatDialog,
     refreshDataOnSave,
+    setRefreshDataOnSave,
     
     // Loading state
     isLoading,

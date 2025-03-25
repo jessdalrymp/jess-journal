@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -8,13 +7,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 import { Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { clearCurrentConversationFromStorage, getCurrentConversationFromStorage } from "@/lib/storageUtils";
 import { useUserData } from "@/context/UserDataContext";
 import { useGenerateSummary } from "./hooks/useGenerateSummary";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface SaveChatDialogProps {
   open: boolean;
@@ -29,21 +27,26 @@ export function SaveChatDialog({
   refreshData = false,
   persistConversation = false
 }: SaveChatDialogProps) {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const { fetchJournalEntries } = useUserData();
   const { generateSummary, loading: summaryLoading } = useGenerateSummary();
   const [isSaving, setIsSaving] = useState(false);
+  const [saveComplete, setSaveComplete] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setSaveComplete(false);
+    }
+  }, [open]);
 
   const handleSave = async () => {
+    console.log("Save button clicked in SaveChatDialog");
     setIsSaving(true);
     try {
-      // Get the current conversation from storage
       const currentConversation = getCurrentConversationFromStorage('story');
       
       if (currentConversation && currentConversation.messages.length > 1) {
         console.log("Generating summary for story conversation before saving...");
-        // Generate summary to save to journal
         await generateSummary({
           id: currentConversation.id,
           userId: currentConversation.userId,
@@ -57,12 +60,10 @@ export function SaveChatDialog({
         console.log("Story conversation summarized and saved to journal");
       }
       
-      // Only clear current conversation if not persisting
       if (!persistConversation) {
         clearCurrentConversationFromStorage('story');
       }
       
-      // If refresh is needed, fetch latest entries before navigating
       if (refreshData) {
         try {
           await fetchJournalEntries();
@@ -81,12 +82,13 @@ export function SaveChatDialog({
         description: message,
       });
       
-      // Use window.location.href instead of navigate to force a full page reload
-      // This ensures all state is reset properly
+      setSaveComplete(true);
+      
+      console.log("Preparing to navigate to dashboard after saving story");
       setTimeout(() => {
-        console.log("Navigating to dashboard after saving story");
+        console.log("Navigating to dashboard after save");
         window.location.href = '/dashboard';
-      }, 1500);
+      }, 2000);
     } catch (error) {
       console.error("Error saving conversation:", error);
       toast({
@@ -96,7 +98,9 @@ export function SaveChatDialog({
       });
     } finally {
       setIsSaving(false);
-      onOpenChange(false); // Close the dialog after saving
+      if (!saveComplete) {
+        onOpenChange(false);
+      }
     }
   };
 
@@ -105,7 +109,11 @@ export function SaveChatDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      if (!isSaving && !saveComplete) {
+        onOpenChange(newOpen);
+      }
+    }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Save your story chat</DialogTitle>
@@ -126,12 +134,16 @@ export function SaveChatDialog({
           </ul>
         </div>
         <DialogFooter className="flex space-x-2 sm:justify-between sm:space-x-0">
-          <Button variant="outline" onClick={handleCancel} disabled={isSaving || summaryLoading}>
+          <Button variant="outline" onClick={handleCancel} disabled={isSaving || summaryLoading || saveComplete}>
             Keep Chatting
           </Button>
-          <Button onClick={handleSave} disabled={isSaving || summaryLoading}>
+          <Button 
+            onClick={handleSave} 
+            disabled={isSaving || summaryLoading || saveComplete}
+            className="bg-jess-primary text-white hover:bg-jess-primary/90"
+          >
             <Save className="w-4 h-4 mr-2" />
-            {(isSaving || summaryLoading) ? "Saving..." : "Save and Exit"}
+            {(isSaving || summaryLoading) ? "Saving..." : (saveComplete ? "Saved" : "Save and Exit")}
           </Button>
         </DialogFooter>
       </DialogContent>

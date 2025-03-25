@@ -19,6 +19,7 @@ export const useStoryModal = () => {
   };
 
   const handleSaveChat = (refreshData: boolean = false) => {
+    console.log("handleSaveChat called with refreshData:", refreshData);
     setRefreshDataOnSave(refreshData);
     setShowSaveChatDialog(true);
   };
@@ -29,6 +30,7 @@ export const useStoryModal = () => {
     showSaveChatDialog,
     setShowSaveChatDialog,
     refreshDataOnSave,
+    setRefreshDataOnSave,
     handleDontShowWelcomeAgain,
     handleSaveChat
   };

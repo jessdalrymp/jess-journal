@@ -18,6 +18,11 @@ export const ChatFooter = ({
   onNewChallenge,
   saveChat = false
 }: ChatFooterProps) => {
+  const handleEndChatClick = () => {
+    console.log("End chat button clicked in ChatFooter, saveChat =", saveChat);
+    onEndChat();
+  };
+
   return (
     <div className="p-3 bg-white border-t border-jess-subtle flex justify-between">
       {(type === 'action') && onAcceptChallenge && (
@@ -44,7 +49,7 @@ export const ChatFooter = ({
       
       <div className="ml-auto">
         <Button 
-          onClick={onEndChat} 
+          onClick={handleEndChatClick}
           variant={saveChat ? "default" : "outline"}
           className={`text-sm ${saveChat ? "bg-jess-primary hover:bg-jess-primary/90" : ""}`}
         >
