@@ -48,7 +48,8 @@ export const getEntryTitle = (entry: JournalEntry): string => {
   }
 
   // For entries with a type but no title or prompt
-  switch (entry.type) {
+  const entryType = entry.type as string;
+  switch (entryType) {
     case 'story':
       return 'Story Journey';
     case 'sideQuest':

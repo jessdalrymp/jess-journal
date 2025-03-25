@@ -12,8 +12,6 @@ import { MyStoryChatContainer } from "../components/my-story/MyStoryChatContaine
 import { useMyStoryState } from "../components/my-story/useMyStoryState";
 import { MyStoryPriorConversations } from "../components/my-story/MyStoryPriorConversations";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Save } from "lucide-react";
 
 const MyStory = () => {
   const [searchParams] = useSearchParams();
@@ -63,10 +61,6 @@ const MyStory = () => {
     return <MyStoryUnauthenticated />;
   }
 
-  const handleSaveAndClose = () => {
-    handleSaveChat(true); // true indicates we want to refresh data after saving
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
@@ -84,18 +78,7 @@ const MyStory = () => {
               conversationId={existingConversationId}
             />
             
-            {/* Save and Close button */}
-            {existingConversationId && (
-              <div className="mt-4 flex justify-end">
-                <Button 
-                  onClick={handleSaveAndClose}
-                  className="flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  Save & Close
-                </Button>
-              </div>
-            )}
+            {/* Removed Save and Close button */}
           </div>
           <div className="md:col-span-1">
             <MyStoryPriorConversations
