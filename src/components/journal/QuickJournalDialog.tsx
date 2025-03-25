@@ -23,19 +23,30 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
   const { toast } = useToast();
 
   const handleSave = async () => {
-    if (!user || !content.trim() || !prompt || !category) return;
+    if (!user || !prompt || !category) return;
+    
+    // Validate content is not empty
+    const trimmedContent = content.trim();
+    if (!trimmedContent) {
+      toast({
+        title: "Cannot save empty entry",
+        description: "Please write something before saving your journal entry.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setIsSaving(true);
     
     try {
       // Generate a title based on the user's response, not the prompt
-      const contentPreview = content.trim().substring(0, 40) + (content.length > 40 ? '...' : '');
+      const contentPreview = trimmedContent.substring(0, 40) + (trimmedContent.length > 40 ? '...' : '');
       const entryTitle = `${category.name}: ${contentPreview}`;
       
       const journalContent = JSON.stringify({
         title: entryTitle,
         prompt: prompt, // Store the original prompt for reference
-        summary: content,
+        summary: trimmedContent,
         type: category.id
       });
       

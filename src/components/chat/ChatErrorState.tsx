@@ -12,12 +12,13 @@ interface ChatErrorStateProps {
 }
 
 export const ChatErrorState = ({ type, onBack, error }: ChatErrorStateProps) => {
-  console.log(`Chat error state shown for ${type}:`, error);
+  console.error(`Chat error state shown for ${type}:`, error);
   const navigate = useNavigate();
   
   const isConversationNotFound = error.includes("not found") || error.includes("not accessible");
   const isNetworkError = error.includes("network") || error.includes("Failed to fetch");
   const isPermissionError = error.includes("permission") || error.includes("401") || error.includes("403");
+  const isJournalError = error.includes("journal") || error.includes("entries");
   
   const handleTryAgain = () => {
     window.location.reload();
@@ -39,6 +40,9 @@ export const ChatErrorState = ({ type, onBack, error }: ChatErrorStateProps) => 
   } else if (isPermissionError) {
     errorTitle = "Access denied";
     errorMessage = "You don't have permission to view this conversation. If you believe this is an error, please try signing out and back in.";
+  } else if (isJournalError) {
+    errorTitle = "Unable to load journal entries";
+    errorMessage = "There was a problem loading your journal entries. Please try refreshing the page.";
   }
   
   return (
