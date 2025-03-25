@@ -1,15 +1,17 @@
 
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw } from "lucide-react";
+import { Plus, Pencil, RefreshCw } from "lucide-react";
 
 interface JournalActionsProps {
   onNewEntry: () => void;
+  onWriteFreely: () => void;
   onRefresh: () => void;
   isLoading: boolean;
 }
 
 export const JournalActions = ({
   onNewEntry,
+  onWriteFreely,
   onRefresh,
   isLoading
 }: JournalActionsProps) => {
@@ -22,6 +24,14 @@ export const JournalActions = ({
       >
         <Plus size={16} />
         New Entry
+      </Button>
+      <Button 
+        onClick={onWriteFreely} 
+        variant="default" 
+        className="flex items-center gap-2 bg-jess-primary hover:bg-jess-primary/90"
+      >
+        <Pencil size={16} />
+        Write Freely
       </Button>
       <Button 
         onClick={onRefresh} 

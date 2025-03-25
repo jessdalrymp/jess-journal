@@ -115,6 +115,12 @@ export const useJournalHistoryPage = () => {
     setSkipPrompt(false);
   };
 
+  const handleWriteFreely = () => {
+    console.log("JournalHistory - Write freely");
+    setShowJournalChat(true);
+    setSkipPrompt(true);
+  };
+
   const handleJournalChatBack = () => {
     console.log("JournalHistory - Back from chat");
     setShowJournalChat(false);
@@ -168,6 +174,7 @@ export const useJournalHistoryPage = () => {
     handleDeleteClick,
     handleRefreshEntries,
     handleNewEntry,
+    handleWriteFreely,
     handleJournalChatBack,
     handleJournalChatSave,
     confirmDelete

@@ -20,6 +20,7 @@ const JournalHistory = () => {
     handleDeleteClick,
     handleRefreshEntries,
     handleNewEntry,
+    handleWriteFreely,
     handleJournalChatBack,
     handleJournalChatSave,
     confirmDelete
@@ -52,6 +53,7 @@ const JournalHistory = () => {
           onEditClick={handleEditClick}
           onDeleteClick={handleDeleteClick}
           onNewEntry={handleNewEntry}
+          onWriteFreely={handleWriteFreely}
           onRefresh={handleRefreshEntries}
           onBackClick={() => window.history.back()}
         />
