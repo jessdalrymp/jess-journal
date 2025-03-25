@@ -1,43 +1,56 @@
 
-import { JournalEntry } from '@/lib/types';
-import { parseContentWithJsonCodeBlock } from '@/services/journal/contentParser';
+import { JournalEntry } from "@/lib/types";
+import { parseEntryContent } from "@/utils/contentParser";
 
+/**
+ * Get a display title for an entry based on its content and metadata
+ */
 export const getEntryTitle = (entry: JournalEntry): string => {
-  // If the entry has a title, use it
-  if (entry.title) {
-    return entry.title;
-  }
-
-  // For summary entries, create a formatted title
-  if (entry.type === 'summary') {
-    // Try to extract a title from content if it's JSON
-    try {
-      const parsedContent = parseContentWithJsonCodeBlock(entry.content);
+  try {
+    // Check if this is a conversation summary
+    if (entry.conversation_id) {
+      const parsedContent = parseEntryContent(entry.content);
       if (parsedContent && parsedContent.title) {
         return parsedContent.title;
       }
-    } catch (e) {
-      // Ignore parsing errors
+      return "Conversation Summary";
     }
     
-    // Fall back to a date-based title
-    return `Daily Summary: ${new Date(entry.createdAt).toLocaleDateString()}`;
-  }
-  
-  // For entries with a prompt, use that as the title
-  if (entry.prompt) {
-    return entry.prompt.substring(0, 50) + (entry.prompt.length > 50 ? '...' : '');
-  }
-
-  // For entries with a type but no title or prompt
-  switch (entry.type) {
-    case 'story':
-      return 'Story Journey';
-    case 'sideQuest':
-      return 'Side Quest Adventure';
-    case 'action':
-      return 'Action Plan';
-    default:
-      return 'Journal Entry';
+    // First try to parse the content for structured entries
+    const parsedContent = parseEntryContent(entry.content);
+    if (parsedContent && parsedContent.title) {
+      return parsedContent.title;
+    }
+    
+    // For entries with a title field
+    if (entry.title) {
+      return entry.title;
+    }
+    
+    // Use the prompt as a title for freewriting entries
+    if (entry.prompt) {
+      // Truncate long prompts
+      const maxLength = 50;
+      return entry.prompt.length > maxLength 
+        ? entry.prompt.substring(0, maxLength) + "..." 
+        : entry.prompt;
+    }
+    
+    // Generic titles by type if all else fails
+    if (entry.type === "action") {
+      return "Action Challenge";
+    } else if (entry.type === "sideQuest") {
+      return "Side Quest";
+    } else if (entry.type === "insights") {
+      return "Daily Insights";
+    } else if (entry.type === "story") {
+      return "My Story";
+    }
+    
+    // Default fallback
+    return "Journal Entry";
+  } catch (e) {
+    console.error("Error getting entry title:", e);
+    return "Journal Entry";
   }
 };
