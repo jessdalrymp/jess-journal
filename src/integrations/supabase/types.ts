@@ -268,7 +268,6 @@ export type Database = {
           id: string
           last_session: string | null
           learning_style: string | null
-          new_column_name: string | null
           updated_at: string | null
         }
         Insert: {
@@ -286,7 +285,6 @@ export type Database = {
           id: string
           last_session?: string | null
           learning_style?: string | null
-          new_column_name?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -304,7 +302,6 @@ export type Database = {
           id?: string
           last_session?: string | null
           learning_style?: string | null
-          new_column_name?: string | null
           updated_at?: string | null
         }
         Relationships: []

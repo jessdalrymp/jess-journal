@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -6,9 +5,8 @@ import { AuthFormInput } from './AuthFormInput';
 import { ActionButton } from '../ui/ActionButton';
 import { ForgotPasswordLink } from './ForgotPasswordLink';
 import { ErrorMessage } from './ErrorMessage';
-import { RateLimitError } from './RateLimitError';
 import { validateEmail, validatePassword } from '../../utils/authValidation';
-import { isRateLimited, getRateLimitMessage } from '../../utils/email/rateLimitDetection';
+import { isRateLimited } from '../../utils/email/rateLimitDetection';
 
 interface LoginFormProps {
   onForgotPassword: () => void;
@@ -20,15 +18,12 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isRateLimitError, setIsRateLimitError] = useState(false);
-  const [attemptCount, setAttemptCount] = useState(1);
   
   const { signIn } = useAuth();
   const { toast } = useToast();
 
   const validateForm = (): boolean => {
     setError(null);
-    setIsRateLimitError(false);
     
     if (!email || !password) {
       setError("Please fill in all required fields.");
@@ -52,7 +47,6 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setIsRateLimitError(false);
     
     try {
       if (!validateForm()) {
@@ -66,14 +60,11 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
     } catch (error: any) {
       console.error('Authentication error:', error);
       
-      // Track failed attempts for rate limit messaging
-      setAttemptCount(prev => prev + 1);
-      
       // Use the improved rate limit detection
       const rateLimited = isRateLimited(error.message);
       
       if (rateLimited) {
-        setIsRateLimitError(true);
+        setError("Your account is temporarily locked due to multiple login attempts. Please wait a few minutes before trying again, or use the 'Forgot Password' option.");
         
         toast({
           title: "Account temporarily locked",
@@ -88,13 +79,11 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
       } else {
         setError(error.message || "An unexpected error occurred. Please try again.");
         
-        if (!rateLimited) {
-          toast({
-            title: "Login failed",
-            description: error.message || "An unexpected error occurred. Please try again.",
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: "Login failed",
+          description: error.message || "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
       }
     } finally {
       setLoading(false);
@@ -121,14 +110,7 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
         placeholder="••••••••"
       />
       
-      {isRateLimitError ? (
-        <RateLimitError 
-          message={getRateLimitMessage('login')}
-          attempts={attemptCount}
-        />
-      ) : (
-        <ErrorMessage error={error} />
-      )}
+      <ErrorMessage error={error} />
       
       <ForgotPasswordLink onForgotPassword={onForgotPassword} />
       
@@ -136,7 +118,7 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
         <ActionButton 
           type="primary" 
           className="w-full py-3"
-          disabled={loading || isRateLimitError}
+          disabled={loading}
         >
           {loading ? 'Processing...' : 'Sign In'}
         </ActionButton>

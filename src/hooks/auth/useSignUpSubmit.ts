@@ -6,7 +6,7 @@ import {
   sendCustomVerificationEmail, 
   EmailVerificationResult 
 } from '../../utils/email';
-import { isRateLimited, getRateLimitMessage } from '../../utils/email/rateLimitDetection';
+import { isRateLimited } from '../../utils/email/rateLimitDetection';
 
 interface UseSignUpSubmitProps {
   onVerificationSent: (email: string) => void;
@@ -14,7 +14,6 @@ interface UseSignUpSubmitProps {
 
 export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [attemptCount, setAttemptCount] = useState(1);
   const { signUp, loading } = useSignUp();
   const { toast } = useToast();
 
@@ -24,12 +23,10 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
     password: string, 
     name: string,
     validateForm: () => boolean,
-    setError: (error: string | null) => void,
-    setIsRateLimitError?: (isRateLimited: boolean) => void
+    setError: (error: string | null) => void
   ) => {
     e.preventDefault();
     setError(null);
-    if (setIsRateLimitError) setIsRateLimitError(false);
     
     try {
       if (!validateForm()) {
@@ -94,9 +91,6 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
     } catch (error: any) {
       console.error('Authentication error:', error);
       
-      // Track failed attempts
-      setAttemptCount(prev => prev + 1);
-      
       let errorMessage = "An unexpected error occurred. Please try again.";
       
       // Use the improved rate limit detection
@@ -106,12 +100,7 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
         if (error.message.includes("User already registered")) {
           errorMessage = "An account with this email already exists. Try signing in instead.";
         } else if (rateLimited) {
-          errorMessage = getRateLimitMessage('signup');
-          
-          // Set rate limit error state if the callback is provided
-          if (setIsRateLimitError) {
-            setIsRateLimitError(true);
-          }
+          errorMessage = "Please wait a moment before creating another account.";
           
           // Don't show toasts for rate limits - use a more friendly approach
           toast({
@@ -144,7 +133,6 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
   return {
     handleSubmit,
     isProcessing,
-    loading,
-    attemptCount
+    loading
   };
 };

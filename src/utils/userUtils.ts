@@ -18,9 +18,6 @@ export const ensureUserExists = async (
   skipEmailVerification = false
 ) => {
   try {
-    console.log('=== Starting ensureUserExists ===');
-    console.log('Checking if user exists:', email);
-    
     // Check if user exists in the profiles table
     const { data: existingUser, error: fetchError } = await supabase
       .from('profiles')
@@ -30,7 +27,6 @@ export const ensureUserExists = async (
 
     if (fetchError && fetchError.code !== 'PGRST116') {
       console.error('Error checking if user exists:', fetchError);
-      console.error('Error details:', JSON.stringify(fetchError, null, 2));
       return { success: false, error: fetchError };
     }
 
@@ -43,7 +39,7 @@ export const ensureUserExists = async (
     // User doesn't exist, create a new one
     console.log('Creating new user:', email);
     
-    // Sign up the user with Supabase Auth - this handles password hashing automatically
+    // Sign up the user with Supabase Auth
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
@@ -52,16 +48,13 @@ export const ensureUserExists = async (
           name: name || email.split('@')[0],
           isNewUser: true
         },
-        // Send email verification
+        // In development, you might want to disable email verification
         emailRedirectTo: `${window.location.origin}/auth/callback`
       }
     });
 
     if (signUpError) {
       console.error('Error creating user:', signUpError);
-      console.error('Error details:', JSON.stringify(signUpError, null, 2));
-      console.error('Error code:', signUpError.code);
-      console.error('Error message:', signUpError.message);
       return { success: false, error: signUpError };
     }
 
@@ -71,17 +64,14 @@ export const ensureUserExists = async (
     }
 
     console.log('Auth user created successfully:', data.user.id);
-    console.log('User data:', JSON.stringify(data.user, null, 2));
 
-    // For development environments, we can optionally skip email verification
+    // If skipEmailVerification is true and we're in development
     if (skipEmailVerification && 
         (window.location.origin.includes('localhost') || 
          window.location.origin.includes('127.0.0.1'))) {
       console.log('Skipping email verification in development');
       
-      // When skipping email verification, we need to manually ensure the profile exists
-      // Note that the auth.users trigger should handle this automatically, but we're being explicit here
-      console.log('Manually creating profile for user:', data.user.id);
+      // Create a record in the profiles table
       const { error: insertError } = await supabase.from('profiles').upsert({
         id: data.user.id,
         email: email,
@@ -91,18 +81,10 @@ export const ensureUserExists = async (
       
       if (insertError) {
         console.error('Error inserting user data:', insertError);
-        console.error('Error details:', JSON.stringify(insertError, null, 2));
-        console.error('Error code:', insertError.code);
-        console.error('Error message:', insertError.message);
         return { success: false, error: insertError };
       }
-      
-      console.log('Profile created successfully for user:', data.user.id);
-    } else {
-      console.log('Email verification required, profile will be created after verification');
     }
 
-    console.log('=== Completed ensureUserExists ===');
     return { 
       success: true, 
       user: data.user,
