@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
@@ -11,7 +12,7 @@ import { EntryList } from "@/components/journal/EntryList";
 import { DeleteEntryDialog } from "@/components/journal/DeleteEntryDialog";
 import { JournalHistoryHeader } from "@/components/journal/JournalHistoryHeader";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Plus } from "lucide-react";
+import { RefreshCw, Plus, Pencil } from "lucide-react";
 import { JournalChatContainer } from "@/components/journal/JournalChatContainer";
 
 const JournalHistory = () => {
@@ -81,6 +82,10 @@ const JournalHistory = () => {
     setShowJournalChat(true);
   };
 
+  const handleWriteFreely = () => {
+    navigate('/journal');
+  };
+
   const handleJournalChatBack = () => {
     setShowJournalChat(false);
   };
@@ -138,6 +143,14 @@ const JournalHistory = () => {
         <div className="flex justify-between items-center mb-6">
           <JournalHistoryHeader onBackClick={() => window.history.back()} />
           <div className="flex items-center gap-3">
+            <Button 
+              onClick={handleWriteFreely} 
+              variant="outline" 
+              className="flex items-center gap-2"
+            >
+              <Pencil size={16} />
+              Write Freely
+            </Button>
             <Button 
               onClick={handleNewEntry} 
               variant="default" 

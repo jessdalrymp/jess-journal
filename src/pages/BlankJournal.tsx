@@ -99,6 +99,10 @@ const BlankJournal = () => {
     setShowPromptSelector(false);
   };
 
+  const handleSkipPrompts = () => {
+    setShowPromptSelector(false);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
@@ -116,7 +120,7 @@ const BlankJournal = () => {
         
         {showPromptSelector ? (
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <JournalPromptSelector onPromptSelect={handlePromptSelect} onSkip={() => setShowPromptSelector(false)} />
+            <JournalPromptSelector onPromptSelect={handlePromptSelect} onSkip={handleSkipPrompts} />
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm p-6">
