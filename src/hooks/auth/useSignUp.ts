@@ -9,6 +9,7 @@ export const useSignUp = () => {
 
   const checkUserExists = async (email: string): Promise<boolean> => {
     try {
+      console.log('Checking if user exists in profiles table:', email);
       const { data, error } = await supabase
         .from('profiles')
         .select('id')
@@ -17,6 +18,7 @@ export const useSignUp = () => {
 
       if (error) {
         console.error("Error checking if user exists:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
         return false;
       }
 
@@ -41,6 +43,8 @@ export const useSignUp = () => {
       if (error) {
         console.error("Error creating user record:", error);
         console.error("Error details:", JSON.stringify(error, null, 2));
+        console.error("Error code:", error.code);
+        console.error("Error message:", error.message);
         throw error;
       }
       
@@ -56,10 +60,12 @@ export const useSignUp = () => {
   const signUp = async (email: string, password: string, name?: string, checkExists = false): Promise<{ user?: any; session?: any; exists?: boolean; emailVerificationRequired?: boolean; emailSent?: boolean }> => {
     setLoading(true);
     try {
+      console.log('=== Starting signup process ===');
       // Optionally check if user exists first
       if (checkExists) {
         const exists = await checkUserExists(email);
         if (exists) {
+          console.log('User already exists, aborting signup');
           toast({
             title: "User exists",
             description: "An account with this email already exists. Try signing in instead.",
@@ -93,10 +99,13 @@ export const useSignUp = () => {
 
       if (error) {
         console.error("Signup error:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
+        console.error("Error code:", error.code);
+        console.error("Error message:", error.message);
         throw error;
       }
 
-      console.log("Sign-up response:", data);
+      console.log("Sign-up response:", JSON.stringify(data, null, 2));
       
       // If we have a session, it means email confirmation is disabled
       if (data?.session) {
@@ -146,6 +155,7 @@ export const useSignUp = () => {
               
               if (resendError) {
                 console.error("Error resending verification email:", resendError);
+                console.error("Error details:", JSON.stringify(resendError, null, 2));
               } else {
                 console.log("Manual verification email sent successfully");
                 emailSent = true;
@@ -179,6 +189,7 @@ export const useSignUp = () => {
                 console.log("User profile manually created in development environment");
               } catch (profileError) {
                 console.error("Failed to manually create profile in development:", profileError);
+                console.error("Error details:", JSON.stringify(profileError, null, 2));
               }
             }
             
@@ -195,6 +206,7 @@ export const useSignUp = () => {
             duration: 6000,
           });
         }
+        console.log('=== Completed signup process ===');
         return { user: data.user, emailVerificationRequired: true, emailSent };
       } else {
         console.error("No user or session returned after sign up");
@@ -202,6 +214,7 @@ export const useSignUp = () => {
       }
     } catch (error: any) {
       console.error('Registration error:', error);
+      console.error('Error stack:', error.stack);
       
       // Add specific handling for email sending errors
       if (error.message && error.message.includes("sending email")) {
