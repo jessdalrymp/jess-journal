@@ -16,13 +16,49 @@ export const useConversationHandling = (
 ) => {
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [showJournalingDialog, setShowJournalingDialog] = useState(false);
-  const { user, authLoading } = useAuth();
+  const [session, setSession] = useState<ConversationSession | null>(null);
+  const { user, loading: authLoading } = useAuth();
   
   // Initialize chat session
-  const { session, loading, error, setSession } = useInitializeChat(type, initialMessage, conversationId);
+  const { initializeChat, loading, error } = useInitializeChat(type);
+  
+  // Initialize the chat session
+  useEffect(() => {
+    const loadSession = async () => {
+      if (user && !session) {
+        try {
+          const newSession = await initializeChat(conversationId);
+          if (newSession) {
+            setSession(newSession);
+          }
+        } catch (err) {
+          console.error("Failed to initialize chat:", err);
+        }
+      }
+    };
+
+    loadSession();
+  }, [user, conversationId, initializeChat, session]);
   
   // Configure message sending
-  const sendMessage = useSendMessage(session, setSession, type);
+  const { sendMessage: sendMessageToApi, loading: sendLoading } = useSendMessage(type);
+  
+  // Wrapper for sending messages that updates the local session
+  const sendMessage = useCallback((message: string, options?: { brevity?: 'short' | 'detailed' }) => {
+    if (!session) return;
+    
+    const actualMessage = options?.brevity 
+      ? JSON.stringify({ message, brevity: options.brevity })
+      : message;
+      
+    sendMessageToApi(actualMessage, session)
+      .then(updatedSession => {
+        if (updatedSession) {
+          setSession(updatedSession);
+        }
+      })
+      .catch(err => console.error("Error sending message:", err));
+  }, [session, sendMessageToApi]);
   
   // Handle opening the end dialog
   const openEndDialog = useCallback((saveChat: boolean = false) => {
@@ -68,7 +104,7 @@ export const useConversationHandling = (
   return {
     user,
     session,
-    loading,
+    loading: loading || sendLoading,
     error,
     authLoading,
     sendMessage,

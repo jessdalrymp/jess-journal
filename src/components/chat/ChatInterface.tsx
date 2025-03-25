@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useConversationHandling } from './hooks/useConversationHandling';
 import { 
   ChatLoadingState, 
@@ -61,7 +61,7 @@ export const ChatInterface = ({
   );
   
   // Report errors back to parent if needed
-  React.useEffect(() => {
+  useEffect(() => {
     if (error && onError) {
       onError(error);
     }
