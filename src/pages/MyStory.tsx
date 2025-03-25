@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Header } from "../components/Header";
@@ -38,7 +37,6 @@ const MyStory = () => {
     clearConversationError
   } = useMyStoryState();
   
-  // Load conversation from URL parameter if present
   useEffect(() => {
     if (urlConversationId && user && !isLoading) {
       console.log("Found conversation ID in URL:", urlConversationId);
@@ -53,7 +51,6 @@ const MyStory = () => {
     }
   }, [urlConversationId, user, isLoading, handleLoadConversation, toast]);
   
-  // Refresh prior conversations when loading is complete
   useEffect(() => {
     if (!isLoading && !userLoading && !isLoadingConversation) {
       console.log("MyStory: Loading complete, priorConversations:", priorConversations.length);
@@ -68,7 +65,6 @@ const MyStory = () => {
     return <MyStoryUnauthenticated />;
   }
 
-  // Show error state if there's a conversation loading error
   if (conversationError) {
     return (
       <div className="min-h-screen flex flex-col bg-jess-background">
