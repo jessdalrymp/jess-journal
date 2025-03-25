@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { CheckCheck, Save, Sparkles } from 'lucide-react';
+import { CheckCheck, Save, X, Sparkles } from 'lucide-react';
 
 interface ChatFooterProps {
   onEndChat: () => void;
@@ -45,16 +45,19 @@ export const ChatFooter = ({
       <div className="ml-auto">
         <Button 
           onClick={onEndChat} 
-          variant="outline"
-          className="text-sm"
+          variant={saveChat ? "default" : "outline"}
+          className="text-sm bg-jess-primary hover:bg-jess-primary/90"
         >
           {saveChat ? (
             <>
               <Save size={16} className="mr-1" />
-              Save Chat
+              Save & Close
             </>
           ) : (
-            <>End Chat</>
+            <>
+              <X size={16} className="mr-1" />
+              Close
+            </>
           )}
         </Button>
       </div>

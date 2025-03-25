@@ -9,7 +9,7 @@ export const getEntryTitle = (entry: JournalEntry): string => {
   }
 
   // For summary entries, create a formatted title
-  if (entry.type === 'summary') {
+  if ((entry.type as string) === 'summary') {
     // Try to extract a title from content if it's JSON
     try {
       const parsedContent = parseContentWithJsonCodeBlock(entry.content);
@@ -30,13 +30,15 @@ export const getEntryTitle = (entry: JournalEntry): string => {
   }
 
   // For entries with a type but no title or prompt
-  switch (entry.type) {
+  switch (entry.type as string) {
     case 'story':
       return 'Story Journey';
     case 'sideQuest':
       return 'Side Quest Adventure';
     case 'action':
       return 'Action Plan';
+    case 'journal':
+      return 'Journal Entry';
     default:
       return 'Journal Entry';
   }

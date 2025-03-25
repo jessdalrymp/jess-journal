@@ -19,6 +19,7 @@ interface JournalEntryViewProps {
   setEditableTitle: (title: string) => void;
   setEditableContent: (content: string) => void;
   handleSaveClick: () => Promise<boolean>;
+  handleSaveAndCloseClick?: () => Promise<boolean>;
   isSaving: boolean;
 }
 
@@ -31,6 +32,7 @@ export const JournalEntryView = ({
   setEditableTitle,
   setEditableContent,
   handleSaveClick,
+  handleSaveAndCloseClick,
   isSaving,
 }: JournalEntryViewProps) => {
   const isConversationSummary = !!entry.conversation_id;
@@ -42,19 +44,21 @@ export const JournalEntryView = ({
         <JournalEntryEditor
           title={editableTitle}
           content={editableContent}
-          setTitle={setEditableTitle}
-          setContent={setEditableContent}
+          onChange={setEditableContent}
+          onTitleChange={setEditableTitle}
         />
-        <div className="flex justify-end mt-6">
-          <JournalEntrySaveButton onClick={handleSaveClick} isSaving={isSaving} />
-        </div>
+        <JournalEntrySaveButton 
+          onSave={handleSaveClick} 
+          isSaving={isSaving}
+          onSaveAndClose={handleSaveAndCloseClick}
+        />
       </div>
     );
   }
 
   return (
     <div className="p-6">
-      <JournalEntryMeta entry={entry} />
+      <JournalEntryMeta entry={entry} title={editableTitle} />
       
       <h1 className="text-2xl font-semibold mt-4 mb-6">
         {editableTitle}
