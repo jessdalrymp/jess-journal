@@ -45,6 +45,8 @@ export const getEntryTitle = (entry: JournalEntry): string => {
       return "Daily Insights";
     } else if (entry.type === "story") {
       return "My Story";
+    } else if (entry.type === "journal") {
+      return "Journal Entry";
     }
     
     // Default fallback

@@ -1,3 +1,4 @@
+
 import { JournalEntry } from "@/lib/types";
 
 /**
@@ -126,4 +127,35 @@ export const parseEntryContent = (content: string): { title?: string; summary?: 
   
   // For plain text content with no JSON structure
   return null;
+};
+
+/**
+ * Format entry content for editing, extracting the appropriate content
+ * based on whether it's structured or freewriting
+ */
+export const formatContentForEditing = (content: string): string => {
+  try {
+    // Check if this is JSON content
+    if (content.includes('```json')) {
+      return content;
+    }
+    
+    // Check if this might be direct JSON
+    if (content.includes('{') && content.includes('}')) {
+      try {
+        // Try parsing as direct JSON
+        JSON.parse(content);
+        // If successful, it's already valid JSON, return as is
+        return content;
+      } catch (e) {
+        // Not valid JSON, treat as freewriting
+      }
+    }
+    
+    // For freewriting content, return as is
+    return content;
+  } catch (e) {
+    console.error('Error formatting content for editing:', e);
+    return content;
+  }
 };
