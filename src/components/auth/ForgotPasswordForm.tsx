@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Mail } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -6,8 +7,9 @@ import { validateEmail } from '../../utils/authValidation';
 import { Input } from '../ui/input';
 import { ActionButton } from '../ui/ActionButton';
 import { ErrorMessage } from './ErrorMessage';
+import { RateLimitError } from './RateLimitError';
 import { usePasswordReset } from '../../hooks/auth/usePasswordReset';
-import { isRateLimited } from '../../utils/email/rateLimitDetection';
+import { isRateLimited, getRateLimitMessage } from '../../utils/email/rateLimitDetection';
 
 interface ForgotPasswordFormProps {
   onSuccess: (email: string) => void;
@@ -17,6 +19,8 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isRateLimitError, setIsRateLimitError] = useState(false);
+  const [attemptCount, setAttemptCount] = useState(1);
   
   const { resetPassword: authResetPassword } = useAuth();
   const { resetPassword, loading: resetLoading } = usePasswordReset();
@@ -25,6 +29,7 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsRateLimitError(false);
     
     if (!validateEmail(email)) {
       setError("Please enter a valid email address.");
@@ -41,14 +46,18 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
       if (result) {
         console.log("Reset email sent successfully");
         onSuccess(email);
-      } 
-      // If result is false, the hook already displayed an appropriate toast
+      } else {
+        // If result is false, the hook already displayed an appropriate toast
+        // Track any failed attempts for rate limit messaging
+        setAttemptCount(prev => prev + 1);
+      }
     } catch (error: any) {
       console.error("Password reset error:", error);
+      setAttemptCount(prev => prev + 1);
       
       // Use improved rate limit detection
       if (isRateLimited(error.message)) {
-        setError("Please wait a moment before requesting another password reset.");
+        setIsRateLimitError(true);
       } else if (error.message?.includes("sending email") || error.message?.includes("smtp") || error.message?.includes("host")) {
         setError("We're having trouble sending emails right now. Please try again later.");
       } else {
@@ -70,17 +79,25 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
           className="pl-10 bg-jess-subtle text-jess-foreground"
           placeholder="you@example.com"
           required
+          disabled={isRateLimitError}
         />
         <Mail className="absolute left-3 top-3 h-4 w-4 text-jess-muted" />
       </div>
       
-      <ErrorMessage error={error} />
+      {isRateLimitError ? (
+        <RateLimitError 
+          message={getRateLimitMessage('reset')}
+          attempts={attemptCount}
+        />
+      ) : (
+        <ErrorMessage error={error} />
+      )}
       
       <div className="pt-2">
         <ActionButton 
           type="primary" 
           className="w-full py-3"
-          disabled={loading || resetLoading}
+          disabled={loading || resetLoading || isRateLimitError}
         >
           {loading || resetLoading ? 'Sending...' : 'Send Reset Link'}
         </ActionButton>

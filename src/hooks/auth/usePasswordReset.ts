@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '../../integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { isRateLimited } from '../../utils/email/rateLimitDetection';
+import { isRateLimited, getRateLimitMessage } from '../../utils/email/rateLimitDetection';
 
 export const usePasswordReset = () => {
   const [loading, setLoading] = useState(false);
@@ -33,7 +33,7 @@ export const usePasswordReset = () => {
           // Don't throw the error, instead show a user-friendly message
           toast({
             title: "Please wait a moment",
-            description: "You've recently requested a password reset. Please check your email or wait a few minutes before trying again.",
+            description: getRateLimitMessage('reset'),
             duration: 8000,
           });
           return false;
