@@ -79,8 +79,15 @@ export const sendCustomVerificationEmail = async (email: string): Promise<EmailV
       const errorText = await response.text().catch(() => 'Unknown error');
       console.error(`Network error (${response.status}): ${errorText}`);
       
-      // Handle rate limiting specifically
-      if (response.status === 429 || errorText.includes('rate limit') || errorText.includes('too many attempts')) {
+      // Improved rate limiting detection - look for specific status codes and text patterns
+      const isRateLimited = 
+        response.status === 429 || 
+        errorText.includes('rate limit') || 
+        errorText.includes('too many') || 
+        errorText.includes('try again later') ||
+        errorText.includes('exceeded');
+      
+      if (isRateLimited) {
         console.log("Rate limit detected - advising user to wait");
         return { success: false, rateLimit: true };
       }
@@ -110,14 +117,21 @@ export const sendCustomVerificationEmail = async (email: string): Promise<EmailV
           return { success: true };
         }
         
-        // Check if retry hit rate limit
-        if (retryResponse.status === 429) {
+        // Check if retry hit rate limit - improved detection
+        const retryErrorText = await retryResponse.text().catch(() => 'Unknown error');
+        const isRetryRateLimited = 
+          retryResponse.status === 429 || 
+          retryErrorText.includes('rate limit') || 
+          retryErrorText.includes('too many') || 
+          retryErrorText.includes('try again later') ||
+          retryErrorText.includes('exceeded');
+          
+        if (isRetryRateLimited) {
           return { success: false, rateLimit: true };
         }
         
         console.error("Retry also failed");
         try {
-          const retryErrorText = await retryResponse.text();
           console.error("Retry error details:", retryErrorText);
         } catch (e) {
           console.error("Could not extract retry error details");
@@ -140,10 +154,15 @@ export const sendCustomVerificationEmail = async (email: string): Promise<EmailV
     if (!responseData.success) {
       console.error('Error in verification email response:', responseData.error);
       
-      // Check if the error is related to rate limiting
-      if (responseData.error?.message?.includes('rate limit') || 
-          responseData.error?.message?.includes('too many attempts') ||
-          responseData.error?.details?.includes('rate limit')) {
+      // Better check for rate limiting in the success=false response
+      const isResponseRateLimited = 
+        responseData.error?.message?.includes('rate limit') || 
+        responseData.error?.message?.includes('too many') || 
+        responseData.error?.details?.includes('rate limit') ||
+        responseData.error?.message?.includes('exceeded') ||
+        responseData.error?.details?.includes('exceeded');
+        
+      if (isResponseRateLimited) {
         return { success: false, rateLimit: true };
       }
       
@@ -158,8 +177,17 @@ export const sendCustomVerificationEmail = async (email: string): Promise<EmailV
     console.error('Error details:', error.stack || 'No stack trace available');
     console.log("======= VERIFICATION EMAIL PROCESS FAILED =======");
     
-    // Check if the error is related to rate limiting
-    if (error.message && (error.message.includes('rate limit') || error.message.includes('too many attempts'))) {
+    // Check if the error is related to rate limiting - more comprehensive check
+    const isErrorRateLimited = 
+      error.message && (
+        error.message.includes('rate limit') || 
+        error.message.includes('too many') || 
+        error.message.includes('try again later') ||
+        error.message.includes('429') ||
+        error.message.includes('exceeded')
+      );
+      
+    if (isErrorRateLimited) {
       return { success: false, rateLimit: true };
     }
     

@@ -87,10 +87,20 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
       
       let errorMessage = "An unexpected error occurred. Please try again.";
       
+      // Expanded rate limit detection
+      const isRateLimited = 
+        error.message && (
+          error.message.includes("rate limit") || 
+          error.message.includes("429") || 
+          error.message.includes("too many") ||
+          error.message.includes("try again later") ||
+          error.message.includes("exceeded")
+        );
+      
       if (error.message) {
         if (error.message.includes("User already registered")) {
           errorMessage = "An account with this email already exists. Try signing in instead.";
-        } else if (error.message.includes("rate limit") || error.message.includes("429")) {
+        } else if (isRateLimited) {
           errorMessage = "Too many attempts. Please try again after a few minutes.";
         } else if (error.message.includes("sending email") || error.message.includes("smtp")) {
           errorMessage = "There was an issue with our email service. Your account has been created, but you may need to try signing in to verify your email.";
@@ -101,11 +111,21 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
       
       setError(errorMessage);
       
-      toast({
-        title: "Registration issue",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      // Only show toast for non-rate limit errors to avoid double notifications
+      if (!isRateLimited) {
+        toast({
+          title: "Registration issue",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Too many attempts",
+          description: "You've made too many attempts. Please wait a few minutes before trying again.",
+          duration: 8000,
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsProcessing(false);
     }

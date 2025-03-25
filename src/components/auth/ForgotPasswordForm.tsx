@@ -42,8 +42,18 @@ export const ForgotPasswordForm = ({ onSuccess }: ForgotPasswordFormProps) => {
     } catch (error: any) {
       console.error("Password reset error:", error);
       
+      // Expanded rate limit detection
+      const isRateLimited = 
+        error.message && (
+          error.message.includes("rate limit") || 
+          error.message.includes("429") || 
+          error.message.includes("too many") ||
+          error.message.includes("try again later") ||
+          error.message.includes("exceeded")
+        );
+      
       // Set error message based on the type of error
-      if (error.message?.includes("rate limit") || error.message?.includes("429") || error.message?.includes("too many attempts")) {
+      if (isRateLimited) {
         setError("Too many requests. Please try again after a few minutes.");
         
         toast({

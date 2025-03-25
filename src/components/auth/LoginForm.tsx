@@ -62,13 +62,23 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
       
       let errorMessage = "An unexpected error occurred. Please try again.";
       
+      // Expanded rate limit detection
+      const isRateLimited = 
+        error.message && (
+          error.message.includes("rate limit") || 
+          error.message.includes("429") || 
+          error.message.includes("too many attempts") ||
+          error.message.includes("try again later") ||
+          error.message.includes("exceeded")
+        );
+      
       if (error.message) {
         if (error.message.includes("Invalid login credentials")) {
           errorMessage = "Invalid email or password. Please check your credentials and try again.";
         } else if (error.message.includes("Email not confirmed")) {
           errorMessage = "Please check your email to confirm your account before signing in.";
           onVerificationSent(email);
-        } else if (error.message.includes("rate limit") || error.message.includes("429") || error.message.includes("too many attempts")) {
+        } else if (isRateLimited) {
           errorMessage = "Too many attempts. Please try again after a few minutes.";
           
           toast({
@@ -84,7 +94,8 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
       
       setError(errorMessage);
       
-      if (!errorMessage.includes("rate limit") && !errorMessage.includes("too many attempts")) {
+      // Only show toast for non-rate limit errors to avoid double notifications
+      if (!isRateLimited && !errorMessage.includes("Email not confirmed")) {
         toast({
           title: "Login failed",
           description: errorMessage,
