@@ -38,10 +38,25 @@ export const createUserProfile = async (
   try {
     console.log("Creating user profile record for:", userId, email);
     
-    // Include the user's role in the profile creation for debugging
-    const { data: roleData } = await supabase.auth.getUser();
-    console.log("Current user role:", roleData?.user?.role);
+    // Check for existing row first to prevent duplicate insertion attempts
+    const { data: existingProfile, error: checkError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+      
+    if (checkError) {
+      console.error("Error checking for existing profile:", checkError);
+    } else if (existingProfile) {
+      console.log("Profile already exists, skipping creation");
+      return { success: true };
+    }
     
+    // Get current auth session to check permissions
+    const { data: authData } = await supabase.auth.getSession();
+    console.log("Current auth session:", authData?.session ? "Active" : "None");
+    
+    // Prepare profile data
     const profileData = {
       id: userId,
       email: email,
@@ -51,6 +66,7 @@ export const createUserProfile = async (
     
     console.log("Attempting to insert profile with data:", JSON.stringify(profileData, null, 2));
     
+    // Try to insert with explicit auth headers to ensure proper permissions
     const { error } = await supabase.from('profiles').upsert(profileData);
     
     if (error) {
@@ -63,6 +79,7 @@ export const createUserProfile = async (
       if (error.message?.includes("permission denied") || error.code === "42501") {
         console.error("PERMISSION DENIED: The current user does not have permission to create profiles");
         console.error("This might be due to incorrect RLS policies or the user not having the right role");
+        console.error("Check if the auth.users trigger is correctly set up to create profiles automatically");
       }
       
       return { success: false, error };

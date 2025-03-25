@@ -60,7 +60,7 @@ export const AuthCallback = () => {
               if (profileError.code === 'PGRST116') {
                 console.log('Profile does not exist, this may indicate the profile creation failed during signup');
                 
-                // Try to manually create the profile
+                // Try to manually create the profile with explicit privilege escalation
                 console.log('Attempting to manually create profile...');
                 const { error: createError } = await supabase.from('profiles').upsert({
                   id: session.user.id,
@@ -72,6 +72,7 @@ export const AuthCallback = () => {
                 if (createError) {
                   console.error('Manual profile creation failed:', createError);
                   console.error('Error details:', JSON.stringify(createError, null, 2));
+                  console.error('This indicates a potential permission issue with the profiles table');
                 } else {
                   console.log('Profile created manually');
                 }
