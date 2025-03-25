@@ -46,3 +46,22 @@ export const parseEntryContent = (content: string): any => {
     return null;
   }
 };
+
+/**
+ * Format content for editing in the journal entry editor
+ * Removes prompts and handles JSON content
+ */
+export const formatContentForEditing = (entry: JournalEntry | string): string => {
+  // Handle string input case (for backward compatibility)
+  if (typeof entry === 'string') {
+    return entry;
+  }
+  
+  // Remove any prompt prefixes from the content if entry is JournalEntry
+  if (entry.prompt && entry.content.startsWith(entry.prompt)) {
+    return entry.content.substring(entry.prompt.length).trim();
+  }
+  
+  return entry.content;
+};
+

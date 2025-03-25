@@ -50,14 +50,3 @@ export const getEntryTitle = (entry: JournalEntry): string => {
   }
 };
 
-/**
- * Format content for editing in the journal entry editor
- */
-export const formatContentForEditing = (entry: JournalEntry): string => {
-  // Remove any prompt prefixes from the content
-  if (entry.prompt && entry.content.startsWith(entry.prompt)) {
-    return entry.content.substring(entry.prompt.length).trim();
-  }
-  
-  return entry.content;
-};
