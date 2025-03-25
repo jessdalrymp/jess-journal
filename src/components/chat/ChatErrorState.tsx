@@ -2,8 +2,9 @@
 import React from 'react';
 import { ChatHeader } from './ChatHeader';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw, ArrowLeft, Home } from 'lucide-react';
+import { AlertTriangle, RefreshCw, ArrowLeft, Home, Trash } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { clearCurrentConversationFromStorage } from '@/lib/storageUtils';
 
 interface ChatErrorStateProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
@@ -26,6 +27,15 @@ export const ChatErrorState = ({ type, onBack, error }: ChatErrorStateProps) => 
   
   const handleGoHome = () => {
     navigate('/dashboard');
+  };
+  
+  const handleClearAndReload = () => {
+    // Clear the current conversation from storage to force a new one to be created
+    clearCurrentConversationFromStorage(type);
+    console.log(`Cleared ${type} conversation from storage`);
+    
+    // Reload the page to start fresh
+    window.location.reload();
   };
   
   let errorTitle = "Unable to load conversation";
@@ -68,6 +78,12 @@ export const ChatErrorState = ({ type, onBack, error }: ChatErrorStateProps) => 
               <RefreshCw size={16} />
               Try Again
             </Button>
+            {isConversationNotFound && (
+              <Button onClick={handleClearAndReload} size="sm" variant="destructive" className="flex items-center gap-1">
+                <Trash size={16} />
+                Start Fresh
+              </Button>
+            )}
             <Button onClick={handleGoHome} size="sm" variant="secondary" className="flex items-center gap-1">
               <Home size={16} />
               Dashboard

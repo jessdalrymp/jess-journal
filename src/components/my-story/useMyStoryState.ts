@@ -18,6 +18,7 @@ export const useMyStoryState = () => {
   const [priorConversations, setPriorConversations] = useState<Conversation[]>([]);
   const [loadingPriorConversations, setLoadingPriorConversations] = useState(false);
   const [isLoadingConversation, setIsLoadingConversation] = useState(false);
+  const [conversationError, setConversationError] = useState<string | null>(null);
   
   const navigate = useNavigate();
   const { user, loading: userLoading } = useAuth();
@@ -46,6 +47,11 @@ export const useMyStoryState = () => {
       setIsLoading(false);
     }
   }, [user]);
+
+  // Clear any conversation error
+  const clearConversationError = useCallback(() => {
+    setConversationError(null);
+  }, []);
 
   // Handle "Don't show again" preference
   const handleDontShowWelcomeAgain = (dontShow: boolean) => {
@@ -112,9 +118,10 @@ export const useMyStoryState = () => {
   };
 
   const handleStartFresh = async () => {
-    if (existingConversationId) {
+    if (existingConversationId || conversationError) {
       console.log('MyStoryState - Starting fresh conversation');
       clearCurrentConversationFromStorage('story');
+      setConversationError(null);
       
       try {
         await fetchJournalEntries();
@@ -148,6 +155,7 @@ export const useMyStoryState = () => {
     
     try {
       setIsLoadingConversation(true);
+      setConversationError(null);
       console.log(`MyStoryState - Loading conversation with ID: ${conversationId}`);
       
       const conversation = await fetchConversation(conversationId, user.id);
@@ -165,12 +173,12 @@ export const useMyStoryState = () => {
       // Verify we have messages before proceeding
       if (!conversation.messages || conversation.messages.length === 0) {
         console.error("MyStoryState - Conversation has no messages");
+        setConversationError("This conversation appears to be empty.");
         toast({
           title: "Error loading conversation",
           description: "This conversation appears to be empty.",
           variant: "destructive"
         });
-        setIsLoadingConversation(false);
         return;
       }
       
@@ -207,11 +215,20 @@ export const useMyStoryState = () => {
       window.location.reload();
     } catch (error) {
       console.error('MyStoryState - Error loading conversation:', error);
+      
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Could not load the selected conversation.";
+      
+      setConversationError(errorMessage);
+      
       toast({
         title: "Error loading conversation",
         description: "Could not load the selected conversation. Please try again.",
         variant: "destructive"
       });
+      
+      throw error;
     } finally {
       setIsLoadingConversation(false);
     }
@@ -234,6 +251,8 @@ export const useMyStoryState = () => {
     loadingPriorConversations,
     handleLoadConversation,
     isLoadingConversation,
-    handleDontShowWelcomeAgain
+    handleDontShowWelcomeAgain,
+    conversationError,
+    clearConversationError
   };
 };
