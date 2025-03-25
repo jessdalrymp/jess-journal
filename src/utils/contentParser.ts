@@ -24,7 +24,7 @@ export const extractFormattedContent = (content: string): string => {
       const jsonMatch = content.match(/```json\n([\s\S]*?)```/);
       
       if (jsonMatch && jsonMatch[1]) {
-        const jsonContent = JSON.parse(jsonMatch[1]);
+        const jsonContent = JSON.parse(jsonMatch[1].trim());
         
         // If there's a content or summary field, use that
         if (jsonContent.content) {
@@ -44,10 +44,12 @@ export const extractFormattedContent = (content: string): string => {
     }
     
     // If no JSON or parsing failed, return the raw content
-    return content;
+    // But first, clean up any markdown-style JSON code blocks
+    return content.replace(/```json\n[\s\S]*?```/g, '').trim();
   } catch (error) {
     console.error('Error parsing content:', error);
-    return content;
+    // If JSON parsing fails, strip out the JSON code block syntax
+    return content.replace(/```json|```/g, '').trim();
   }
 };
 
@@ -58,7 +60,7 @@ export const parseEntryContent = (content: string) => {
   try {
     const jsonMatch = content.match(/```json\n([\s\S]*?)```/);
     if (jsonMatch && jsonMatch[1]) {
-      return JSON.parse(jsonMatch[1]);
+      return JSON.parse(jsonMatch[1].trim());
     }
     return null;
   } catch (error) {
