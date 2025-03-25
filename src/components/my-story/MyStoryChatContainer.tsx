@@ -4,8 +4,6 @@ import { ChatInterface } from "../../components/chat/ChatInterface";
 import { getInitialMessage } from "../../components/chat/chatUtils";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Save } from "lucide-react";
 
 interface MyStoryChatContainerProps {
   onBack: () => void;
@@ -60,11 +58,6 @@ export const MyStoryChatContainer = ({
     window.location.reload();
   };
 
-  const handleSaveAndClose = () => {
-    console.log("Save and close clicked in chat container");
-    onSave(true); // true indicates we want to refresh data after saving
-  };
-
   return (
     <div className="bg-white rounded-lg shadow-sm flex-1 flex flex-col overflow-hidden">
       {initializing ? (
@@ -91,30 +84,16 @@ export const MyStoryChatContainer = ({
           </button>
         </div>
       ) : (
-        <>
-          <ChatInterface 
-            type="story" 
-            onBack={onBack} 
-            initialMessage={getInitialMessage('story')} 
-            onEndChat={handleEndChat}
-            onError={handleError}
-            saveChat
-            persistConversation={true} // Keep conversation after saving
-            conversationId={conversationId}
-          />
-          {conversationId && (
-            <div className="p-4 border-t border-gray-200">
-              <Button 
-                onClick={handleSaveAndClose}
-                className="w-full flex items-center justify-center gap-2"
-                variant="outline"
-              >
-                <Save className="w-4 h-4" />
-                Save & Close
-              </Button>
-            </div>
-          )}
-        </>
+        <ChatInterface 
+          type="story" 
+          onBack={onBack} 
+          initialMessage={getInitialMessage('story')} 
+          onEndChat={handleEndChat}
+          onError={handleError}
+          saveChat
+          persistConversation={true} // Keep conversation after saving
+          conversationId={conversationId}
+        />
       )}
     </div>
   );

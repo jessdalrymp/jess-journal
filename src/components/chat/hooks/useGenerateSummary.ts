@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 import { formatMessagesForSummary } from '../chatUtils';
 import { generateDeepseekResponse, DeepseekMessage } from '../../../utils/deepseekApi';
 import { saveConversationSummary } from '@/services/conversation';
-import { convertToSecondPerson } from '@/utils/contentParser';
 
 export const useGenerateSummary = () => {
   const [loading, setLoading] = useState(false);
@@ -32,13 +31,12 @@ export const useGenerateSummary = () => {
       const aiMessages = formatMessagesForSummary(session.messages);
       
       console.log("Requesting AI summary with prompt to create very brief summary...");
-      // Modify the request to specifically ask for a very brief summary in second person
+      // Modify the request to specifically ask for a very brief summary
       const systemPrompt: DeepseekMessage = {
         role: 'system',
         content: `Create a very brief summary of this conversation in JSON format with a title and summary. 
         Focus only on the main topics discussed. Keep it extremely concise (max 50 words) and in this format:
-        {"title": "Short descriptive title", "summary": "Brief overview of what was discussed"}
-        Use second-person ("you") language instead of third-person ("the user", "they", etc.)`
+        {"title": "Short descriptive title", "summary": "Brief overview of what was discussed"}`
       };
       
       // Add the system prompt to guide the AI to generate proper summaries
@@ -64,7 +62,7 @@ export const useGenerateSummary = () => {
         const jsonSummary = JSON.parse(summaryText);
         if (jsonSummary.title && jsonSummary.summary) {
           title = jsonSummary.title;
-          summary = convertToSecondPerson(jsonSummary.summary);
+          summary = jsonSummary.summary;
           console.log("Parsed JSON summary:", { title, summary });
         }
       } catch (e) {
@@ -73,7 +71,7 @@ export const useGenerateSummary = () => {
         const lines = summaryText.split('\n').filter(line => line.trim());
         if (lines.length > 1) {
           title = lines[0].replace(/^#|Title:|topic:/i, '').trim();
-          summary = convertToSecondPerson(lines.slice(1).join('\n').trim());
+          summary = lines.slice(1).join('\n').trim();
         }
       }
       

@@ -35,15 +35,15 @@ export async function generateDailySummary(userId: string, entriesContent: Journ
       return `Entry ${new Date(entry.created_at).toLocaleTimeString()}: ${entry.prompt}\n${entry.content.substring(0, 300)}${entry.content.length > 300 ? '...' : ''}`;
     }).join('\n\n');
     
-    // Construct a message for the AI model with emphasis on brevity and second-person language
+    // Construct a message for the AI model with emphasis on brevity
     const messages = [
       {
         role: "system", 
-        content: "You are a journal summary assistant. Create an extremely brief summary of the user's journal entries for the day, mentioning only the key topics discussed. Format your response as JSON with fields for 'title' and 'summary'. Keep the summary under 50 words. Use second-person (you/your) language instead of third-person (the user/they/their) for a more personal tone."
+        content: "You are a journal summary assistant. Create an extremely brief summary of the user's journal entries for the day, mentioning only the key topics discussed. Format your response as JSON with fields for 'title' and 'summary'. Keep the summary under 50 words."
       },
       {
         role: "user",
-        content: `Here are my journal entries for today:\n\n${formattedEntries}\n\nPlease create a very brief daily summary that captures only the main topics discussed. Address me directly using 'you' instead of 'the user'.`
+        content: `Here are my journal entries for today:\n\n${formattedEntries}\n\nPlease create a very brief daily summary that captures only the main topics discussed.`
       }
     ];
 

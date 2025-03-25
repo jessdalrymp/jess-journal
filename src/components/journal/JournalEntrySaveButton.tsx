@@ -3,18 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 
 interface JournalEntrySaveButtonProps {
-  onClick: () => Promise<void | boolean>;
+  onSave: () => Promise<void>;
   isSaving: boolean;
 }
 
 export const JournalEntrySaveButton = ({ 
-  onClick, 
+  onSave, 
   isSaving 
 }: JournalEntrySaveButtonProps) => {
   return (
     <div className="mt-6 flex justify-end">
       <Button 
-        onClick={onClick} 
+        onClick={onSave} 
         disabled={isSaving}
         className="flex items-center gap-2 bg-jess-primary hover:bg-jess-primary/90"
       >

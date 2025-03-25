@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
@@ -43,7 +44,7 @@ const BlankJournal = () => {
   const handleSave = async () => {
     if (!user) {
       toast.error("You need to be logged in to save an entry");
-      return false;
+      return;
     }
 
     setIsSaving(true);
@@ -51,33 +52,18 @@ const BlankJournal = () => {
     try {
       const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
       let contentToSave = content;
-      let entryType = "journal"; // Default type
       
       if (jsonMatch && jsonMatch[1]) {
         try {
           const parsedJson = JSON.parse(jsonMatch[1].trim());
           parsedJson.title = title;
-          
+          // Add type if selected from a prompt category
           if (selectedCategory) {
             parsedJson.type = selectedCategory.id;
-            entryType = selectedCategory.id;
           }
-          
           contentToSave = `\`\`\`json\n${JSON.stringify(parsedJson, null, 2)}\n\`\`\``;
         } catch (e) {
           console.error("Error updating title in JSON content", e);
-        }
-      } else {
-        const freewritingJson = {
-          title: title,
-          summary: content,
-          type: selectedCategory ? selectedCategory.id : "journal"
-        };
-        
-        contentToSave = `\`\`\`json\n${JSON.stringify(freewritingJson, null, 2)}\n\`\`\``;
-        
-        if (selectedCategory) {
-          entryType = selectedCategory.id;
         }
       }
       
@@ -86,33 +72,23 @@ const BlankJournal = () => {
       const newEntry = await saveJournalEntry(
         user.id,
         promptText,
-        contentToSave,
-        entryType
+        contentToSave
       );
       
       if (!newEntry) {
         toast.error("Failed to save journal entry");
-        setIsSaving(false);
-        return false;
+        return;
       }
       
       fetchJournalEntries();
       
       toast.success("Journal entry saved successfully");
-      return true;
+      navigate(`/dashboard`);
     } catch (error) {
       console.error("Error saving journal entry:", error);
       toast.error("Failed to save journal entry");
-      return false;
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const handleSaveAndClose = async () => {
-    const success = await handleSave();
-    if (success) {
-      navigate('/dashboard');
     }
   };
 
@@ -169,23 +145,14 @@ const BlankJournal = () => {
               promptText={selectedPrompt || undefined}
             />
 
-            <div className="mt-6 flex justify-end gap-2">
+            <div className="mt-6 flex justify-end">
               <Button 
-                onClick={handleSaveAndClose} 
+                onClick={handleSave} 
                 disabled={isSaving}
                 className="flex items-center gap-2 bg-jess-primary hover:bg-jess-primary/90"
               >
                 <Save size={16} />
-                {isSaving ? "Saving..." : "Save & Close"}
-              </Button>
-              <Button 
-                onClick={async () => await handleSave()} 
-                disabled={isSaving}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Save size={16} />
-                {isSaving ? "Saving..." : "Save"}
+                {isSaving ? "Saving..." : "Save Entry"}
               </Button>
             </div>
           </div>
