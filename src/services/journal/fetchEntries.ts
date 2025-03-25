@@ -57,7 +57,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
               .from('messages')
               .select('*')
               .eq('conversation_id', entryData.conversation_id)
-              .order('timestamp', { ascending: true });
+              .order('timestamp', { ascending: false });
               
             if (messagesData && messagesData.length > 0) {
               console.log(`Found ${messagesData.length} messages for conversation ${entryData.conversation_id}`);
@@ -77,7 +77,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
           userId: entryData.user_id,
           title: entryData.prompt || 'Untitled Entry',
           content: 'Content could not be loaded',
-          type: (entryData.type as 'journal' | 'story' | 'sideQuest' | 'action' | 'summary') || 'journal',
+          type: (entryData.type as 'journal' | 'story' | 'sideQuest' | 'action') || 'journal',
           createdAt: new Date(entryData.created_at),
           prompt: entryData.prompt || null,
           conversation_id: entryData.conversation_id || null

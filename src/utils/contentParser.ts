@@ -1,160 +1,129 @@
+import { JournalEntry } from "@/lib/types";
 
 /**
- * Attempts to parse journal entry content as JSON, handling code blocks
- */
-export const parseEntryContent = (content: string): { title?: string; summary?: string } | null => {
-  try {
-    if (!content) return null;
-    
-    // First, try to detect if this is a JSON string inside code blocks
-    let contentToProcess = content;
-    
-    // Remove code block markers if present
-    const jsonRegex = /```(?:json)?\s*([\s\S]*?)```/;
-    const match = content.match(jsonRegex);
-    if (match && match[1]) {
-      contentToProcess = match[1].trim();
-    }
-    
-    // Try to parse as JSON
-    const parsed = JSON.parse(contentToProcess);
-    if (parsed && (parsed.title || parsed.summary)) {
-      console.log("Successfully parsed JSON content:", parsed);
-      return parsed;
-    } else {
-      console.log("Parsed JSON but no title/summary found");
-      return null;
-    }
-  } catch (e) {
-    // If not valid JSON, try to extract title/summary with regex
-    try {
-      const titleMatch = content.match(/"title"\s*:\s*"([^"]+)"/);
-      const summaryMatch = content.match(/"summary"\s*:\s*"([^"]+)"/);
-      
-      if (titleMatch?.[1] || summaryMatch?.[1]) {
-        const result = {
-          title: titleMatch?.[1],
-          summary: summaryMatch?.[1]
-        };
-        console.log("Extracted title/summary with regex:", result);
-        return result;
-      }
-    } catch (regexError) {
-      console.log("Regex extraction failed:", regexError);
-    }
-    
-    console.log("Content is not valid JSON or doesn't have the expected format");
-    return null;
-  }
-};
-
-/**
- * Formats content for editing, ensuring proper code block formatting for JSON
- */
-export const formatContentForEditing = (content: string): string => {
-  // Check if it's already properly formatted with code blocks
-  if (content.trim().startsWith('```json') && content.trim().endsWith('```')) {
-    return content;
-  }
-  
-  // Check if it's valid JSON but not in code blocks
-  try {
-    const parsed = JSON.parse(content);
-    if (parsed && (parsed.title || parsed.summary)) {
-      // It's valid JSON, format it with code blocks
-      return "```json\n" + JSON.stringify(parsed, null, 2) + "\n```";
-    }
-  } catch (e) {
-    // Not valid JSON, return as is
-  }
-  
-  return content;
-};
-
-/**
- * Parse content specifically for conversation-based journal entries
- */
-export const parseContentWithJsonCodeBlock = (content: string): any => {
-  if (!content) return null;
-  
-  try {
-    // Check if the content contains a JSON code block
-    const jsonCodeBlockRegex = /```json\s*([\s\S]*?)```/;
-    const match = content.match(jsonCodeBlockRegex);
-    
-    if (match && match[1]) {
-      // Parse the JSON content inside the code block
-      return JSON.parse(match[1].trim());
-    }
-    
-    // Try parsing the content as raw JSON
-    return JSON.parse(content);
-  } catch (e) {
-    console.error('Error parsing content with JSON code block:', e);
-    return null;
-  }
-};
-
-/**
- * Converts third-person references to second-person for a more personal tone
+ * Converts third-person language to second-person in a given text.
+ * @param {string} text - The input text to convert.
+ * @returns {string} The converted text with second-person language.
  */
 export const convertToSecondPerson = (text: string): string => {
-  if (!text) return text;
+  if (!text) return '';
   
-  return text
-    .replace(/\bthe user\b/gi, "you")
-    .replace(/\bthey (are|were|have|had|will|would|can|could|should|might|must)\b/gi, "you $1")
-    .replace(/\btheir\b/gi, "your")
-    .replace(/\bthem\b/gi, "you")
-    .replace(/\bthemselves\b/gi, "yourself");
+  // Basic replacements for common pronouns and possessive adjectives
+  let convertedText = text.replace(/\bI\b/g, 'you');
+  convertedText = convertedText.replace(/\bme\b/g, 'you');
+  convertedText = convertedText.replace(/\bmy\b/g, 'your');
+  convertedText = convertedText.replace(/\bmine\b/g, 'yours');
+  convertedText = convertedText.replace(/\bmyself\b/g, 'yourself');
+  
+  // Handle third-person pronouns
+  convertedText = convertedText.replace(/\bhe\b/gi, 'you');
+  convertedText = convertedText.replace(/\bshe\b/gi, 'you');
+  convertedText = convertedText.replace(/\bhim\b/gi, 'you');
+  convertedText = convertedText.replace(/\bher\b/gi, 'you');
+  convertedText = convertedText.replace(/\bhers\b/gi, 'yours');
+  convertedText = convertedText.replace(/\bhisself\b/gi, 'yourself');
+  convertedText = convertedText.replace(/\bherself\b/gi, 'yourself');
+  
+  // Handle "one" and "oneself"
+  convertedText = convertedText.replace(/\bone\b/gi, 'you');
+  convertedText = convertedText.replace(/\boneself\b/gi, 'yourself');
+
+  // Convert "we" to "you" in most contexts, but be cautious
+  convertedText = convertedText.replace(/\bwe\b/gi, 'you');
+  convertedText = convertedText.replace(/\bour\b/gi, 'your');
+  convertedText = convertedText.replace(/\bourselves\b/gi, 'yourselves');
+  convertedText = convertedText.replace(/\bus\b/gi, 'you');
+  
+  // Convert "they" and related pronouns to "you"
+  convertedText = convertedText.replace(/\bthey\b/gi, 'you');
+  convertedText = convertedText.replace(/\bthem\b/gi, 'you');
+  convertedText = convertedText.replace(/\btheir\b/gi, 'your');
+  convertedText = convertedText.replace(/\btheirs\b/gi, 'yours');
+  convertedText = convertedText.replace(/\bthemselves\b/gi, 'yourselves');
+  
+  // Convert "the user" to "you"
+  convertedText = convertedText.replace(/\bthe user\b/gi, 'you');
+  
+  return convertedText;
 };
 
 /**
- * Get a readable preview of content from a journal entry
+ * Extract a preview of content, handling different formats
  */
-export const getContentPreview = (entry: any): string => {
-  if (!entry) return '';
-  
-  try {
-    // For entries with conversation_id, handle them as conversation summaries
-    if (entry.conversation_id) {
-      // Try to extract the summary from JSON content
-      const parsedContent = parseEntryContent(entry.content);
-      if (parsedContent && parsedContent.summary) {
-        return parsedContent.summary;
-      }
-      return entry.content || 'Conversation Summary';
-    }
-    
-    // For summary entries, handle them specially
-    if (entry.type === 'summary') {
-      // Try to extract the summary from JSON content
-      const parsedContent = parseEntryContent(entry.content);
-      if (parsedContent && parsedContent.summary) {
-        return parsedContent.summary;
-      }
-    }
-    
-    // For entries with JSON content
-    if (entry.content && (entry.content.includes('{') || entry.content.includes('```'))) {
-      const parsedContent = parseEntryContent(entry.content);
-      if (parsedContent) {
-        // For content with a summary field
-        if (parsedContent.summary) {
-          return parsedContent.summary;
-        }
-        // For content with other fields
-        if (typeof parsedContent === 'object') {
-          // Try to convert the object to a string representation
-          return JSON.stringify(parsedContent);
+export const getContentPreview = (entry: JournalEntry): string => {
+  // Try to parse as JSON if it appears to be in JSON format
+  if (entry.content.includes('{') && entry.content.includes('}')) {
+    try {
+      // Check for JSON code blocks
+      const jsonRegex = /```(?:json)?\s*([\s\S]*?)```/;
+      const match = entry.content.match(jsonRegex);
+      
+      if (match && match[1]) {
+        const parsedJson = JSON.parse(match[1].trim());
+        if (parsedJson.summary) {
+          return convertToSecondPerson(parsedJson.summary);
         }
       }
+
+      // Try parsing directly if no code blocks
+      const parsedContent = JSON.parse(entry.content);
+      if (parsedContent.summary) {
+        return convertToSecondPerson(parsedContent.summary);
+      }
+    } catch (e) {
+      // If parsing fails, continue to normal text processing
     }
-    
-    // For regular content, just return it
-    return entry.content;
-  } catch (e) {
-    console.error('Error parsing content for preview:', e);
-    return entry.content || '';
   }
+
+  // For freewriting entries or when JSON parsing fails
+  // Remove the prompt from the content if it exists
+  let displayContent = entry.content;
+  if (entry.prompt && displayContent.includes(entry.prompt)) {
+    displayContent = displayContent.replace(entry.prompt, '').trim();
+    
+    // Also remove any Q: or A: prefixes that might remain
+    displayContent = displayContent.replace(/^[\s\n]*[Q|A][:.]?\s*/im, '').trim();
+  }
+  
+  // Apply second-person language conversion
+  displayContent = convertToSecondPerson(displayContent);
+  
+  // Return a limited preview
+  return displayContent.length > 150 ? displayContent.substring(0, 150) + '...' : displayContent;
+};
+
+/**
+ * Parse entry content to extract structured information
+ */
+export const parseEntryContent = (content: string): { title?: string; summary?: string } | null => {
+  // Check if it might be in JSON format
+  if (content.includes('{') && content.includes('}')) {
+    try {
+      // First check for JSON code blocks
+      const jsonRegex = /```(?:json)?\s*([\s\S]*?)```/;
+      const match = content.match(jsonRegex);
+      
+      if (match && match[1]) {
+        const parsedJson = JSON.parse(match[1].trim());
+        return {
+          title: parsedJson.title,
+          summary: parsedJson.summary ? convertToSecondPerson(parsedJson.summary) : undefined
+        };
+      }
+      
+      // If no code blocks, try parsing directly
+      const parsedContent = JSON.parse(content);
+      return {
+        title: parsedContent.title,
+        summary: parsedContent.summary ? convertToSecondPerson(parsedContent.summary) : undefined
+      };
+    } catch (e) {
+      // If JSON parsing fails, return null to use the default processing
+      console.error('Error parsing entry content:', e);
+      return null;
+    }
+  }
+  
+  // For plain text content with no JSON structure
+  return null;
 };

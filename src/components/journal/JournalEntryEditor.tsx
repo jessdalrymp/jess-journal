@@ -1,81 +1,92 @@
 
-import { useEffect, useState } from "react";
-import { Textarea } from "@/components/ui/textarea";
-import { useIsMobile } from "@/hooks/use-mobile";
+import React from 'react';
+import { Textarea } from '@/components/ui/textarea';
 
 interface JournalEntryEditorProps {
   content: string;
-  onChange: (value: string) => void;
+  onChange: (content: string) => void;
   title: string;
-  onTitleChange: (value: string) => void;
+  onTitleChange?: (title: string) => void;
   promptText?: string;
 }
 
 export const JournalEntryEditor = ({ 
   content, 
-  onChange,
+  onChange, 
   title,
   onTitleChange,
-  promptText
+  promptText 
 }: JournalEntryEditorProps) => {
-  const [cleanedContent, setCleanedContent] = useState("");
-  const isMobile = useIsMobile();
-
-  useEffect(() => {
-    const jsonCodeBlockRegex = /^```json\s*([\s\S]*?)```$/;
-    const match = content.match(jsonCodeBlockRegex);
+  // Check if content is a structured JSON entry
+  const isJsonContent = content.includes('```json');
+  
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
     
-    if (match && match[1]) {
+    if (isJsonContent) {
+      // If we have structured JSON content, update it properly
       try {
-        const parsedJson = JSON.parse(match[1].trim());
+        const jsonRegex = /```json\s*([\s\S]*?)```/;
+        const match = content.match(jsonRegex);
         
-        let formattedContent = '';
-        if (parsedJson.summary) {
-          formattedContent += parsedJson.summary;
+        if (match && match[1]) {
+          const jsonContent = JSON.parse(match[1].trim());
+          
+          // Update the summary in the JSON
+          jsonContent.summary = newContent;
+          
+          // If we're also updating title and have a handler
+          if (onTitleChange && title !== jsonContent.title) {
+            jsonContent.title = title;
+          }
+          
+          // Reconstruct the content with updated JSON
+          const updatedContent = `\`\`\`json\n${JSON.stringify(jsonContent, null, 2)}\n\`\`\``;
+          onChange(updatedContent);
+          return;
         }
-        
-        setCleanedContent(formattedContent);
       } catch (e) {
-        setCleanedContent(match[1].trim());
+        console.error('Error updating JSON content:', e);
       }
-    } else {
-      setCleanedContent(content);
     }
-  }, [content]);
-
-  const handleChange = (newValue: string) => {
-    setCleanedContent(newValue);
     
-    try {
-      const jsonObj = {
-        title: title,
-        summary: newValue.trim()
-      };
-      
-      Object.keys(jsonObj).forEach(key => 
-        jsonObj[key] === undefined && delete jsonObj[key]
-      );
-      
-      const jsonString = JSON.stringify(jsonObj, null, 2);
-      onChange(`\`\`\`json\n${jsonString}\n\`\`\``);
-    } catch (e) {
-      onChange(newValue);
+    // For freewriting entries or if JSON parsing failed, just update content directly
+    onChange(newContent);
+  };
+  
+  // Extract the editable content from JSON if needed
+  const getEditableContent = (): string => {
+    if (isJsonContent) {
+      try {
+        const jsonRegex = /```json\s*([\s\S]*?)```/;
+        const match = content.match(jsonRegex);
+        
+        if (match && match[1]) {
+          const jsonContent = JSON.parse(match[1].trim());
+          // Return the summary field for editing
+          return jsonContent.summary || '';
+        }
+      } catch (e) {
+        console.error('Error parsing JSON content:', e);
+      }
     }
+    
+    // For freewriting or parsing failures, return the raw content
+    return content;
   };
 
   return (
-    <div className="w-full space-y-4">
+    <div className="relative">
       {promptText && (
-        <div className="bg-jess-subtle p-4 rounded-md text-gray-700">
-          <p className="font-medium font-sourcesans">Prompt: {promptText}</p>
+        <div className="mb-4 p-4 bg-jess-subtle rounded-lg">
+          <p className="italic text-gray-600">{promptText}</p>
         </div>
       )}
-      
-      <Textarea 
-        value={cleanedContent} 
-        onChange={(e) => handleChange(e.target.value)}
-        className="w-full min-h-[300px] font-sourcesans text-sm bg-white"
-        placeholder="Write your journal entry here..."
+      <Textarea
+        value={getEditableContent()}
+        onChange={handleContentChange}
+        className="min-h-[300px] p-4 text-base"
+        placeholder="Start writing your journal entry here..."
       />
     </div>
   );
