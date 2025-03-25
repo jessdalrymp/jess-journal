@@ -1,3 +1,4 @@
+
 /**
  * Attempts to parse journal entry content as JSON, handling code blocks
  */
@@ -71,6 +72,30 @@ export const formatContentForEditing = (content: string): string => {
 };
 
 /**
+ * Parse content specifically for conversation-based journal entries
+ */
+export const parseContentWithJsonCodeBlock = (content: string): any => {
+  if (!content) return null;
+  
+  try {
+    // Check if the content contains a JSON code block
+    const jsonCodeBlockRegex = /```json\s*([\s\S]*?)```/;
+    const match = content.match(jsonCodeBlockRegex);
+    
+    if (match && match[1]) {
+      // Parse the JSON content inside the code block
+      return JSON.parse(match[1].trim());
+    }
+    
+    // Try parsing the content as raw JSON
+    return JSON.parse(content);
+  } catch (e) {
+    console.error('Error parsing content with JSON code block:', e);
+    return null;
+  }
+};
+
+/**
  * Converts third-person references to second-person for a more personal tone
  */
 export const convertToSecondPerson = (text: string): string => {
@@ -91,6 +116,16 @@ export const getContentPreview = (entry: any): string => {
   if (!entry) return '';
   
   try {
+    // For entries with conversation_id, handle them as conversation summaries
+    if (entry.conversation_id) {
+      // Try to extract the summary from JSON content
+      const parsedContent = parseEntryContent(entry.content);
+      if (parsedContent && parsedContent.summary) {
+        return parsedContent.summary;
+      }
+      return entry.content || 'Conversation Summary';
+    }
+    
     // For summary entries, handle them specially
     if (entry.type === 'summary') {
       // Try to extract the summary from JSON content

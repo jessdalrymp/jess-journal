@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, MessageSquare } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon } from '@/components/journal/JournalHistoryUtils';
 import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
@@ -50,6 +50,12 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
         <span>{formatDate(new Date(entry.createdAt))}</span>
         <Clock size={12} className="ml-2 mr-1" />
         <span>{formatTime(new Date(entry.createdAt))}</span>
+        {isConversationSummary && (
+          <span className="ml-2 inline-flex items-center">
+            <MessageSquare size={12} className="mr-1 text-blue-500" />
+            <span className="text-blue-500">Conversation</span>
+          </span>
+        )}
       </div>
       <div className="flex items-center">
         <span className="mr-2">{getEntryIcon(entryType)}</span>

@@ -8,6 +8,24 @@ export const getEntryTitle = (entry: JournalEntry): string => {
     return entry.title;
   }
 
+  // For entries with a conversation_id, create a conversation title
+  if (entry.conversation_id) {
+    const conversationType = entry.type || 'journal';
+    
+    switch (conversationType) {
+      case 'story':
+        return 'Story Journey';
+      case 'sideQuest':
+        return 'Side Quest Adventure';
+      case 'action':
+        return 'Action Plan';
+      case 'journal':
+        return 'Journal Conversation';
+      default:
+        return `${conversationType.charAt(0).toUpperCase() + conversationType.slice(1)} Conversation`;
+    }
+  }
+
   // For summary entries, create a formatted title
   if (entry.type === 'summary') {
     // Try to extract a title from content if it's JSON
@@ -37,6 +55,8 @@ export const getEntryTitle = (entry: JournalEntry): string => {
       return 'Side Quest Adventure';
     case 'action':
       return 'Action Plan';
+    case 'summary':
+      return 'Daily Summary';
     default:
       return 'Journal Entry';
   }
