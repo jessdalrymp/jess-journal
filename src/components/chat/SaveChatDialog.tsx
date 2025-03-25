@@ -57,8 +57,6 @@ export function SaveChatDialog({
         });
         
         console.log("Story conversation summarized and saved to journal");
-      } else {
-        console.warn("No conversation or empty conversation found to save");
       }
       
       // Only clear current conversation if not persisting
@@ -69,7 +67,6 @@ export function SaveChatDialog({
       // If refresh is needed, fetch latest entries before navigating
       if (refreshData) {
         try {
-          console.log("Refreshing journal entries after saving story");
           await fetchJournalEntries();
           console.log("Journal entries refreshed after saving story");
         } catch (error) {
@@ -88,14 +85,9 @@ export function SaveChatDialog({
 
       // If there's a callback function for saving, call it
       if (onSave) {
-        console.log("Calling onSave callback with refreshData:", refreshData);
         onSave(refreshData);
       } else {
-        console.log("No onSave callback provided, navigating to dashboard directly");
-        // Use direct window.location navigation for more reliable redirect
-        setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 800);
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error("Error saving conversation:", error);
@@ -106,9 +98,8 @@ export function SaveChatDialog({
       });
     } finally {
       setIsSaving(false);
-      // Only close the dialog if there's no custom onSave handler
       if (!onSave) {
-        onOpenChange(false);
+        onOpenChange(false); // Only close the dialog if there's no onSave handler
       }
     }
   };

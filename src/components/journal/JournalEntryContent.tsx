@@ -70,7 +70,6 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
         );
       } catch (e) {
         // If parsing fails, just display the prompt as text
-        console.error("Error parsing prompt JSON:", e);
         return (
           <div className="bg-jess-subtle rounded-lg p-4 mb-6">
             <h4 className="text-lg font-medium mb-2">Journal Prompt:</h4>
