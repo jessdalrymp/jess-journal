@@ -1,4 +1,3 @@
-
 import { supabase } from '../../integrations/supabase/client';
 import { Conversation } from './types';
 import { getCachedConversation, cacheConversation } from './conversationCache';
@@ -90,7 +89,7 @@ export const fetchConversation = async (conversationId: string, userId: string):
       .select('*')
       .eq('conversation_id', conversationId)
       .order('timestamp', { ascending: true })
-      .limit(1000); // Increased limit to get more messages
+      .limit(500); // Increased limit to get more messages
 
     if (messagesError) {
       console.error('Error fetching messages:', messagesError);
@@ -98,12 +97,6 @@ export const fetchConversation = async (conversationId: string, userId: string):
     }
 
     console.log(`Fetched ${messages?.length || 0} messages for conversation ${conversationId}`);
-
-    if (!messages || messages.length === 0) {
-      console.warn(`No messages found for conversation ${conversationId}`);
-      // Instead of failing, we'll return the conversation without messages
-      // and let the calling code handle this case
-    }
 
     // Build conversation object
     const conversation: Conversation = {

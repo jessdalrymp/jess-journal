@@ -17,8 +17,6 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const initializationInProgress = useRef(false);
-  const maxRetries = 2;
-  const retryCount = useRef(0);
 
   const { startConversation, addMessageToConversation } = useUserData();
   const { user: authUser } = useAuth();
@@ -30,7 +28,6 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
     if (!authUser) {
       setIsInitialized(false);
       initializationInProgress.current = false;
-      retryCount.current = 0;
     }
   }, [authUser, type]);
 
@@ -81,33 +78,24 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           }
         } catch (error) {
           console.error(`Failed to load existing conversation ${conversationId}:`, error);
+          // Clear conversation from storage to avoid loading it again
+          clearCurrentConversationFromStorage(type);
           
-          // Only clear from storage if we've exceeded max retries
-          if (retryCount.current >= maxRetries) {
-            // Clear conversation from storage to avoid loading it again
-            clearCurrentConversationFromStorage(type);
-            retryCount.current = 0;
+          // Provide a user-friendly error message
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          const userErrorMessage = errorMessage.includes("not found") || errorMessage.includes("not accessible")
+            ? `Failed to load conversation: The conversation could not be found or is no longer accessible.`
+            : `Failed to load conversation: ${errorMessage}`;
             
-            // Provide a user-friendly error message
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            const userErrorMessage = errorMessage.includes("not found") || errorMessage.includes("not accessible")
-              ? `Failed to load conversation: The conversation could not be found or is no longer accessible.`
-              : `Failed to load conversation: ${errorMessage}`;
-              
-            toast({
-              title: "Error loading conversation",
-              description: "Previous conversation could not be loaded. Starting a new conversation.",
-              duration: 5000,
-              variant: "destructive"
-            });
-            
-            setError(userErrorMessage);
-            throw new Error(userErrorMessage);
-          } else {
-            // Increment retry count
-            retryCount.current += 1;
-            console.log(`Retry attempt ${retryCount.current} of ${maxRetries}`);
-          }
+          toast({
+            title: "Error loading conversation",
+            description: "Previous conversation could not be loaded. Starting a new conversation.",
+            duration: 5000,
+            variant: "destructive"
+          });
+          
+          setError(userErrorMessage);
+          throw new Error(userErrorMessage);
         }
       }
       
@@ -172,7 +160,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       setLoading(false);
       initializationInProgress.current = false;
     }
-  }, [type, authUser, addMessageToConversation, startConversation, toast, isInitialized, loading, getCachedConversation, maxRetries]);
+  }, [type, authUser, addMessageToConversation, startConversation, toast, isInitialized, loading, getCachedConversation]);
 
   return {
     initializeChat,

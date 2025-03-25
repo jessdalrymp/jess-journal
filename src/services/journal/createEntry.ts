@@ -15,23 +15,6 @@ export const saveJournalEntry = async (
   type = 'journal'
 ): Promise<JournalEntry | null> => {
   if (!userId) return null;
-  
-  // Check if content is empty
-  let contentToCheck = content;
-  try {
-    const parsedContent = parseContentWithJsonCodeBlock(content);
-    if (parsedContent && parsedContent.summary) {
-      contentToCheck = parsedContent.summary;
-    }
-  } catch (e) {
-    console.error('Error parsing content:', e);
-  }
-  
-  // Don't save if the content is empty
-  if (!contentToCheck.trim()) {
-    console.log('Skipping save for empty journal entry');
-    return null;
-  }
 
   try {
     // Encrypt the content before saving

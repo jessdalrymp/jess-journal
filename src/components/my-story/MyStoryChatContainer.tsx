@@ -4,8 +4,6 @@ import { ChatInterface } from "../../components/chat/ChatInterface";
 import { getInitialMessage } from "../../components/chat/chatUtils";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { SaveChatDialog } from "../chat/SaveChatDialog";
-import { useNavigate } from "react-router-dom";
 
 interface MyStoryChatContainerProps {
   onBack: () => void;
@@ -20,9 +18,7 @@ export const MyStoryChatContainer = ({
 }: MyStoryChatContainerProps) => {
   const [initializing, setInitializing] = useState(!!conversationId);
   const [error, setError] = useState<string | null>(null);
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
   
   // Give a short delay when loading existing conversations to allow initialization
   useEffect(() => {
@@ -51,28 +47,11 @@ export const MyStoryChatContainer = ({
 
   const handleEndChat = () => {
     console.log("Ending chat and saving to journal...");
-    setShowSaveDialog(true);
-  };
-
-  const handleSaveDialogClose = (open: boolean) => {
-    setShowSaveDialog(open);
-    if (!open) {
-      // If dialog was closed, but not by saving, do nothing
-      console.log("Save dialog closed without saving");
-    }
-  };
-
-  const handleSaveAndClose = (refreshData: boolean = true) => {
-    console.log("Save and close called with refreshData:", refreshData);
-    // Ensure we call the parent's onSave function with the refreshData parameter
-    onSave(refreshData);
-    setShowSaveDialog(false);
-    
-    // Add a short delay before navigating to ensure save completes
-    setTimeout(() => {
-      console.log("Navigating to dashboard after save");
-      navigate('/dashboard');
-    }, 800);
+    toast({
+      title: "Saving your story",
+      description: "We're preparing to save your story conversation to your journal",
+    });
+    onSave(true); // Pass true to indicate need for refresh
   };
 
   const handleReloadPage = () => {
@@ -105,26 +84,16 @@ export const MyStoryChatContainer = ({
           </button>
         </div>
       ) : (
-        <>
-          <ChatInterface 
-            type="story" 
-            onBack={onBack} 
-            initialMessage={getInitialMessage('story')} 
-            onEndChat={handleEndChat}
-            onError={handleError}
-            saveChat={true}
-            persistConversation={true} // Keep conversation after saving
-            conversationId={conversationId}
-          />
-          
-          <SaveChatDialog
-            open={showSaveDialog}
-            onOpenChange={handleSaveDialogClose}
-            onSave={handleSaveAndClose}
-            refreshData={true}
-            persistConversation={true}
-          />
-        </>
+        <ChatInterface 
+          type="story" 
+          onBack={onBack} 
+          initialMessage={getInitialMessage('story')} 
+          onEndChat={handleEndChat}
+          onError={handleError}
+          saveChat={true}
+          persistConversation={true} // Keep conversation after saving
+          conversationId={conversationId}
+        />
       )}
     </div>
   );

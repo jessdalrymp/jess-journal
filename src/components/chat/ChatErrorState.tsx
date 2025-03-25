@@ -2,9 +2,8 @@
 import React from 'react';
 import { ChatHeader } from './ChatHeader';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw, ArrowLeft, Home, Trash } from 'lucide-react';
+import { AlertTriangle, RefreshCw, ArrowLeft, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { clearCurrentConversationFromStorage } from '@/lib/storageUtils';
 
 interface ChatErrorStateProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
@@ -13,13 +12,12 @@ interface ChatErrorStateProps {
 }
 
 export const ChatErrorState = ({ type, onBack, error }: ChatErrorStateProps) => {
-  console.error(`Chat error state shown for ${type}:`, error);
+  console.log(`Chat error state shown for ${type}:`, error);
   const navigate = useNavigate();
   
   const isConversationNotFound = error.includes("not found") || error.includes("not accessible");
   const isNetworkError = error.includes("network") || error.includes("Failed to fetch");
   const isPermissionError = error.includes("permission") || error.includes("401") || error.includes("403");
-  const isJournalError = error.includes("journal") || error.includes("entries");
   
   const handleTryAgain = () => {
     window.location.reload();
@@ -27,15 +25,6 @@ export const ChatErrorState = ({ type, onBack, error }: ChatErrorStateProps) => 
   
   const handleGoHome = () => {
     navigate('/dashboard');
-  };
-  
-  const handleClearAndReload = () => {
-    // Clear the current conversation from storage to force a new one to be created
-    clearCurrentConversationFromStorage(type);
-    console.log(`Cleared ${type} conversation from storage`);
-    
-    // Reload the page to start fresh
-    window.location.reload();
   };
   
   let errorTitle = "Unable to load conversation";
@@ -50,9 +39,6 @@ export const ChatErrorState = ({ type, onBack, error }: ChatErrorStateProps) => 
   } else if (isPermissionError) {
     errorTitle = "Access denied";
     errorMessage = "You don't have permission to view this conversation. If you believe this is an error, please try signing out and back in.";
-  } else if (isJournalError) {
-    errorTitle = "Unable to load journal entries";
-    errorMessage = "There was a problem loading your journal entries. Please try refreshing the page.";
   }
   
   return (
@@ -78,12 +64,6 @@ export const ChatErrorState = ({ type, onBack, error }: ChatErrorStateProps) => 
               <RefreshCw size={16} />
               Try Again
             </Button>
-            {isConversationNotFound && (
-              <Button onClick={handleClearAndReload} size="sm" variant="destructive" className="flex items-center gap-1">
-                <Trash size={16} />
-                Start Fresh
-              </Button>
-            )}
             <Button onClick={handleGoHome} size="sm" variant="secondary" className="flex items-center gap-1">
               <Home size={16} />
               Dashboard

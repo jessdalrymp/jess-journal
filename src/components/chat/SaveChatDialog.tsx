@@ -19,7 +19,6 @@ import { useState } from "react";
 interface SaveChatDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave?: (refreshData: boolean) => void;
   refreshData?: boolean;
   persistConversation?: boolean;
 }
@@ -27,7 +26,6 @@ interface SaveChatDialogProps {
 export function SaveChatDialog({ 
   open, 
   onOpenChange, 
-  onSave,
   refreshData = false,
   persistConversation = false
 }: SaveChatDialogProps) {
@@ -82,17 +80,8 @@ export function SaveChatDialog({
         title: "Conversation saved",
         description: message,
       });
-
-      // If there's a callback function for saving, call it
-      if (onSave) {
-        console.log("Calling onSave callback with refreshData:", refreshData);
-        onSave(refreshData);
-      } else {
-        console.log("No onSave callback provided, navigating to dashboard directly");
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 500);
-      }
+      
+      navigate('/dashboard');
     } catch (error) {
       console.error("Error saving conversation:", error);
       toast({
@@ -102,9 +91,7 @@ export function SaveChatDialog({
       });
     } finally {
       setIsSaving(false);
-      if (!onSave) {
-        onOpenChange(false); // Only close the dialog if there's no onSave handler
-      }
+      onOpenChange(false); // Close the dialog after saving
     }
   };
 

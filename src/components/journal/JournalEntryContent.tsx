@@ -50,31 +50,25 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
     if (!entry.prompt) return null;
     
     // Check if the prompt contains JSON
-    let jsonMatch = entry.prompt.match(/```json\n([\s\S]*?)\n```/);
-    
-    // If no match found with new lines, try without new lines
-    if (!jsonMatch) {
-      jsonMatch = entry.prompt.match(/```json([\s\S]*?)```/);
-    }
+    const jsonMatch = entry.prompt.match(/```json\n([\s\S]*?)\n```/);
     
     if (jsonMatch && jsonMatch[1]) {
       try {
         // Try to parse the JSON
-        const jsonContent = JSON.parse(jsonMatch[1].trim());
+        const parsedJson = JSON.parse(jsonMatch[1]);
         
         return (
           <div className="bg-jess-subtle rounded-lg p-4 mb-6">
             <h4 className="text-lg font-medium mb-2">Journal Prompt:</h4>
-            {jsonContent.title && (
-              <h5 className="font-medium text-jess-primary mb-2">{jsonContent.title}</h5>
+            {parsedJson.title && (
+              <h5 className="font-medium text-jess-primary mb-2">{parsedJson.title}</h5>
             )}
-            {jsonContent.summary && (
-              <p className="text-sm">{jsonContent.summary}</p>
+            {parsedJson.summary && (
+              <p className="text-sm">{parsedJson.summary}</p>
             )}
           </div>
         );
       } catch (e) {
-        console.error("Error parsing JSON prompt:", e);
         // If parsing fails, just display the prompt as text
         return (
           <div className="bg-jess-subtle rounded-lg p-4 mb-6">

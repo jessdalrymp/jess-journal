@@ -12,16 +12,6 @@ export function useJournalCreate() {
   const { toast } = useToast();
 
   const saveJournalEntry = async (userId: string, prompt: string, content: string, type = 'journal') => {
-    // Validate that content is not empty
-    if (!content || content.trim() === '') {
-      toast({
-        title: "Cannot save empty entry",
-        description: "Please enter some content before saving",
-        variant: "destructive"
-      });
-      return null;
-    }
-    
     try {
       setLoading(true);
       console.log(`Saving journal entry of type: ${type}`);

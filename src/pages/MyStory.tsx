@@ -4,11 +4,13 @@ import { useSearchParams } from "react-router-dom";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { WelcomeModal } from "../components/chat/WelcomeModal";
+import { SaveChatDialog } from "../components/chat/SaveChatDialog";
 import { MyStoryLoading } from "../components/my-story/MyStoryLoading";
 import { MyStoryUnauthenticated } from "../components/my-story/MyStoryUnauthenticated";
-import { MyStoryErrorState } from "../components/my-story/MyStoryErrorState";
-import { MyStoryContent } from "../components/my-story/MyStoryContent";
+import { MyStoryHeader } from "../components/my-story/MyStoryHeader";
+import { MyStoryChatContainer } from "../components/my-story/MyStoryChatContainer";
 import { useMyStoryState } from "../components/my-story/useMyStoryState";
+import { MyStoryPriorConversations } from "../components/my-story/MyStoryPriorConversations";
 import { useToast } from "@/hooks/use-toast";
 
 const MyStory = () => {
@@ -19,6 +21,8 @@ const MyStory = () => {
   const {
     showWelcomeModal,
     setShowWelcomeModal,
+    showSaveChatDialog,
+    setShowSaveChatDialog,
     isLoading,
     userLoading,
     existingConversationId,
@@ -26,29 +30,23 @@ const MyStory = () => {
     handleBack,
     handleSaveChat,
     handleStartFresh,
+    refreshDataOnSave,
     priorConversations,
     loadingPriorConversations,
     handleLoadConversation,
     isLoadingConversation,
-    handleDontShowWelcomeAgain,
-    conversationError,
-    clearConversationError
+    handleDontShowWelcomeAgain
   } = useMyStoryState();
   
+  // Load conversation from URL parameter if present
   useEffect(() => {
     if (urlConversationId && user && !isLoading) {
       console.log("Found conversation ID in URL:", urlConversationId);
-      handleLoadConversation(urlConversationId).catch(error => {
-        console.error("Error loading conversation from URL:", error);
-        toast({
-          title: "Error loading conversation",
-          description: "The requested conversation could not be loaded. Starting a new conversation.",
-          variant: "destructive"
-        });
-      });
+      handleLoadConversation(urlConversationId);
     }
-  }, [urlConversationId, user, isLoading, handleLoadConversation, toast]);
+  }, [urlConversationId, user, isLoading]);
   
+  // Refresh prior conversations when loading is complete
   useEffect(() => {
     if (!isLoading && !userLoading && !isLoadingConversation) {
       console.log("MyStory: Loading complete, priorConversations:", priorConversations.length);
@@ -67,26 +65,28 @@ const MyStory = () => {
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
       <main className="flex-1 container mx-auto flex flex-col">
-        {conversationError ? (
-          <div className="flex-1 flex items-center justify-center p-4">
-            <MyStoryErrorState 
-              errorMessage={conversationError}
-              onBack={handleBack}
-              onStartFresh={handleStartFresh}
-              onTryAgain={clearConversationError}
+        <MyStoryHeader 
+          existingConversationId={existingConversationId} 
+          onStartFresh={handleStartFresh} 
+        />
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div className="md:col-span-3">
+            <MyStoryChatContainer 
+              onBack={handleBack} 
+              onSave={handleSaveChat}
+              conversationId={existingConversationId}
             />
           </div>
-        ) : (
-          <MyStoryContent
-            existingConversationId={existingConversationId}
-            onStartFresh={handleStartFresh}
-            onBack={handleBack}
-            onSave={handleSaveChat}
-            priorConversations={priorConversations}
-            loadingPriorConversations={loadingPriorConversations}
-            handleLoadConversation={handleLoadConversation}
-          />
-        )}
+          <div className="md:col-span-1">
+            <MyStoryPriorConversations
+              conversations={priorConversations}
+              loading={loadingPriorConversations}
+              onSelectConversation={handleLoadConversation}
+              currentConversationId={existingConversationId}
+            />
+          </div>
+        </div>
       </main>
       <DisclaimerBanner />
       
@@ -98,6 +98,13 @@ const MyStory = () => {
         buttonText="Let's Begin"
         type="story"
         onDontShowAgain={handleDontShowWelcomeAgain}
+      />
+
+      <SaveChatDialog
+        open={showSaveChatDialog}
+        onOpenChange={setShowSaveChatDialog}
+        refreshData={refreshDataOnSave}
+        persistConversation={true}
       />
     </div>
   );

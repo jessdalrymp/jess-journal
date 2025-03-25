@@ -55,24 +55,6 @@ const BlankJournal = () => {
       return;
     }
 
-    // Extract the content to check if it's empty
-    let contentSummary = "";
-    try {
-      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
-      if (jsonMatch && jsonMatch[1]) {
-        const parsedJson = JSON.parse(jsonMatch[1].trim());
-        contentSummary = parsedJson.summary || "";
-      }
-    } catch (e) {
-      console.error("Error parsing JSON content", e);
-    }
-
-    // Validate content is not empty
-    if (!contentSummary.trim()) {
-      toast.error("Please write something before saving your journal entry");
-      return;
-    }
-
     setIsSaving(true);
     
     try {

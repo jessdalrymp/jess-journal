@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -60,29 +59,18 @@ export const JournalingDialog = ({
   };
 
   const handleSaveAndClose = async () => {
-    if (!user) return;
-    
-    // Validate content is not empty
-    const trimmedContent = journalContent.trim();
-    if (!trimmedContent) {
-      toast({
-        title: "Cannot save empty entry",
-        description: "Please write something before saving your journal entry.",
-        variant: "destructive"
-      });
-      return;
-    }
+    if (!user || !journalContent.trim()) return;
     
     try {
       setIsSaving(true);
       
-      const contentPreview = trimmedContent.substring(0, 40) + (trimmedContent.length > 40 ? '...' : '');
+      const contentPreview = journalContent.trim().substring(0, 40) + (journalContent.length > 40 ? '...' : '');
       const titlePrefix = challengeType === 'action' ? 'Action' : 'Journal';
       const entryTitle = `${titlePrefix} Challenge: ${contentPreview}`;
       
       const jsonContent = JSON.stringify({
         title: entryTitle,
-        summary: trimmedContent,
+        summary: journalContent.trim(),
         timeSpent: timeSpent,
         prompt: promptText || ""
       }, null, 2);
