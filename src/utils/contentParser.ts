@@ -1,3 +1,4 @@
+
 import { JournalEntry } from "@/lib/types";
 
 /**
@@ -51,9 +52,9 @@ export const extractFormattedContent = (content: string): string => {
 };
 
 /**
- * Tries to parse JSON content from a code block in the content string
+ * Parses content that might contain JSON code blocks and returns the parsed object
  */
-export const parseContentWithJsonCodeBlock = (content: string) => {
+export const parseEntryContent = (content: string) => {
   try {
     const jsonMatch = content.match(/```json\n([\s\S]*?)```/);
     if (jsonMatch && jsonMatch[1]) {
@@ -64,4 +65,43 @@ export const parseContentWithJsonCodeBlock = (content: string) => {
     console.error('Error parsing JSON content:', error);
     return null;
   }
+};
+
+/**
+ * Formats content for the editor to ensure it's editable
+ */
+export const formatContentForEditing = (entry: JournalEntry): string => {
+  try {
+    // If there's no content, return empty string
+    if (!entry || !entry.content) {
+      return '';
+    }
+    
+    // Return the raw content if it doesn't have a JSON code block
+    if (!entry.content.includes('```json')) {
+      return entry.content;
+    }
+    
+    // Parse the JSON content
+    const parsedContent = parseEntryContent(entry.content);
+    
+    // If parsing failed, return the raw content
+    if (!parsedContent) {
+      return entry.content;
+    }
+    
+    // Build a clean version for editing
+    return entry.content;
+  } catch (error) {
+    console.error('Error formatting content for editing:', error);
+    return entry.content || '';
+  }
+};
+
+/**
+ * Tries to parse JSON content from a code block in the content string
+ * Alias of parseEntryContent for backward compatibility
+ */
+export const parseContentWithJsonCodeBlock = (content: string) => {
+  return parseEntryContent(content);
 };
