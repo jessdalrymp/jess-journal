@@ -55,6 +55,27 @@ export const AuthCallback = () => {
             if (profileError) {
               console.error('Error fetching profile after auth:', profileError);
               console.error('Error details:', JSON.stringify(profileError, null, 2));
+              
+              // Check if the error is due to missing profile
+              if (profileError.code === 'PGRST116') {
+                console.log('Profile does not exist, this may indicate the profile creation failed during signup');
+                
+                // Try to manually create the profile
+                console.log('Attempting to manually create profile...');
+                const { error: createError } = await supabase.from('profiles').upsert({
+                  id: session.user.id,
+                  email: session.user.email,
+                  created_at: new Date().toISOString(),
+                  assessment_completed: false
+                });
+                
+                if (createError) {
+                  console.error('Manual profile creation failed:', createError);
+                  console.error('Error details:', JSON.stringify(createError, null, 2));
+                } else {
+                  console.log('Profile created manually');
+                }
+              }
             } else {
               console.log('Profile after auth:', profile ? 'Found' : 'Not found');
             }

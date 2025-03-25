@@ -38,18 +38,33 @@ export const createUserProfile = async (
   try {
     console.log("Creating user profile record for:", userId, email);
     
-    const { error } = await supabase.from('profiles').upsert({
+    // Include the user's role in the profile creation for debugging
+    const { data: roleData } = await supabase.auth.getUser();
+    console.log("Current user role:", roleData?.user?.role);
+    
+    const profileData = {
       id: userId,
       email: email,
       created_at: new Date().toISOString(),
       assessment_completed: false
-    });
+    };
+    
+    console.log("Attempting to insert profile with data:", JSON.stringify(profileData, null, 2));
+    
+    const { error } = await supabase.from('profiles').upsert(profileData);
     
     if (error) {
       console.error("Error creating user profile:", error);
       console.error("Error details:", JSON.stringify(error, null, 2));
       console.error("Error code:", error.code);
       console.error("Error message:", error.message);
+      
+      // Check for specific permission errors
+      if (error.message?.includes("permission denied") || error.code === "42501") {
+        console.error("PERMISSION DENIED: The current user does not have permission to create profiles");
+        console.error("This might be due to incorrect RLS policies or the user not having the right role");
+      }
+      
       return { success: false, error };
     }
     

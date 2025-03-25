@@ -42,6 +42,19 @@ export const useSignUpCore = () => {
       const isDevelopment = origin.includes('localhost') || origin.includes('127.0.0.1');
       console.log("Is development environment:", isDevelopment);
       
+      // Check for database connection before signup
+      try {
+        const { error: testError } = await supabase.from('profiles').select('count').limit(1);
+        if (testError) {
+          console.error("Database connection test failed:", testError);
+          console.error("Error details:", JSON.stringify(testError, null, 2));
+        } else {
+          console.log("Database connection test successful");
+        }
+      } catch (testError) {
+        console.error("Exception testing database connection:", testError);
+      }
+      
       // Let Supabase handle the signup process including password hashing
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -74,6 +87,11 @@ export const useSignUpCore = () => {
           try {
             const profileResult = await createUserProfile(data.user.id, email, name);
             console.log("Profile creation result:", profileResult);
+            
+            if (!profileResult.success) {
+              console.error("Failed to create profile but proceeding with auth success");
+              // Don't throw error here, continue with successful auth
+            }
           } catch (profileError) {
             console.error("Failed to create user profile:", profileError);
             // Continue anyway since the auth user was created
@@ -145,6 +163,12 @@ export const useSignUpCore = () => {
               try {
                 const profileResult = await createUserProfile(data.user.id, email, name);
                 console.log("Profile manually created in development environment:", profileResult.success);
+                
+                if (!profileResult.success) {
+                  console.error("Failed to create profile in development environment");
+                  console.error("This might indicate a permissions issue with the profiles table");
+                  console.error("Check if RLS policies are configured correctly");
+                }
               } catch (profileError) {
                 console.error("Failed to manually create profile in development:", profileError);
                 console.error("Error details:", JSON.stringify(profileError, null, 2));
@@ -177,6 +201,13 @@ export const useSignUpCore = () => {
       // Add specific handling for email sending errors
       if (error.message && error.message.includes("sending email")) {
         console.error("Email sending error detected, might be an SMTP configuration issue");
+      }
+      
+      // Additional diagnostics for database errors
+      if (error.message && error.message.includes("database error saving new user")) {
+        console.error("DATABASE ERROR: Failed to save user to the database");
+        console.error("This error typically occurs when the user is created in auth.users but the profiles table insert fails");
+        console.error("Check Supabase logs and RLS policies for the profiles table");
       }
       
       throw error;
