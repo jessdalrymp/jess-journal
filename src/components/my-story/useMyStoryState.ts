@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -34,7 +33,9 @@ export const useMyStoryState = () => {
           setExistingConversationId(existingConversation.id);
         } else {
           console.log('No existing story conversation found');
-          setShowWelcomeModal(true);
+          // Check user preference for welcome modal
+          const hideWelcomeModal = localStorage.getItem('hideMyStoryWelcome') === 'true';
+          setShowWelcomeModal(!hideWelcomeModal);
         }
       } catch (error) {
         console.error('Error retrieving conversation from storage:', error);
@@ -43,6 +44,15 @@ export const useMyStoryState = () => {
       setIsLoading(false);
     }
   }, [user]);
+
+  // Handle "Don't show again" preference
+  const handleDontShowWelcomeAgain = (dontShow: boolean) => {
+    if (dontShow) {
+      localStorage.setItem('hideMyStoryWelcome', 'true');
+    } else {
+      localStorage.removeItem('hideMyStoryWelcome');
+    }
+  };
 
   useEffect(() => {
     const loadPriorConversations = async () => {
@@ -202,6 +212,7 @@ export const useMyStoryState = () => {
     priorConversations,
     loadingPriorConversations,
     handleLoadConversation,
-    isLoadingConversation
+    isLoadingConversation,
+    handleDontShowWelcomeAgain
   };
 };

@@ -34,7 +34,8 @@ const MyStory = () => {
     priorConversations,
     loadingPriorConversations,
     handleLoadConversation,
-    isLoadingConversation
+    isLoadingConversation,
+    handleDontShowWelcomeAgain
   } = useMyStoryState();
   
   // Load conversation from URL parameter if present
@@ -96,6 +97,7 @@ const MyStory = () => {
         description="Let's get to know you better"
         buttonText="Let's Begin"
         type="story"
+        onDontShowAgain={handleDontShowWelcomeAgain}
       />
 
       <SaveChatDialog
