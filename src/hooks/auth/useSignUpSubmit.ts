@@ -1,8 +1,10 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useSignUp } from './useSignUp';
-import { sendCustomVerificationEmail, EmailVerificationResult } from '../../utils/emailVerification';
+import { 
+  sendCustomVerificationEmail, 
+  EmailVerificationResult 
+} from '../../utils/email';
 
 interface UseSignUpSubmitProps {
   onVerificationSent: (email: string) => void;
