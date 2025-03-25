@@ -46,9 +46,13 @@ export const MyStoryChatContainer = ({
   };
 
   const handleEndChat = () => {
-    console.log("Ending chat and saving to journal from MyStoryChatContainer...");
+    console.log("Ending chat and saving to journal from MyStoryChatContainer");
+    toast({
+      title: "Saving your story",
+      description: "Preparing to save your conversation to your journal"
+    });
     
-    // Always pass true to indicate need for refresh
+    // Call onSave with true to indicate refresh is needed
     onSave(true);
   };
 

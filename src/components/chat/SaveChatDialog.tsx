@@ -37,17 +37,25 @@ export function SaveChatDialog({
   useEffect(() => {
     if (open) {
       setSaveComplete(false);
+      setIsSaving(false);
     }
   }, [open]);
 
   const handleSave = async () => {
     console.log("Save button clicked in SaveChatDialog");
+    if (isSaving || saveComplete) {
+      console.log("Already saving or save completed, ignoring duplicate click");
+      return;
+    }
+    
     setIsSaving(true);
+    
     try {
       const currentConversation = getCurrentConversationFromStorage('story');
+      console.log("Current conversation retrieved:", currentConversation?.id);
       
       if (currentConversation && currentConversation.messages.length > 1) {
-        console.log("Generating summary for story conversation before saving...");
+        console.log("Generating summary for story conversation...");
         await generateSummary({
           id: currentConversation.id,
           userId: currentConversation.userId,
@@ -58,7 +66,7 @@ export function SaveChatDialog({
           updatedAt: new Date(currentConversation.updatedAt),
         });
         
-        console.log("Story conversation summarized and saved to journal");
+        console.log("Summary successfully generated");
       }
       
       if (!persistConversation) {
@@ -67,8 +75,9 @@ export function SaveChatDialog({
       
       if (refreshData) {
         try {
+          console.log("Refreshing journal entries after saving");
           await fetchJournalEntries();
-          console.log("Journal entries refreshed after saving story");
+          console.log("Journal entries refreshed successfully");
         } catch (error) {
           console.error("Error refreshing journal entries:", error);
         }
@@ -85,7 +94,7 @@ export function SaveChatDialog({
       
       setSaveComplete(true);
       
-      // Delay navigation to ensure toast is seen and dialog closes properly
+      // Delay navigation to ensure toast is seen
       setTimeout(() => {
         console.log("Navigating to dashboard after save");
         window.location.href = '/dashboard';
@@ -98,11 +107,14 @@ export function SaveChatDialog({
         variant: "destructive",
       });
       setIsSaving(false);
-      onOpenChange(false);
     }
   };
 
   const handleCancel = () => {
+    if (isSaving || saveComplete) {
+      console.log("Cannot cancel while saving or after save completed");
+      return;
+    }
     onOpenChange(false);
   };
 
@@ -132,7 +144,11 @@ export function SaveChatDialog({
           </ul>
         </div>
         <DialogFooter className="flex space-x-2 sm:justify-between sm:space-x-0">
-          <Button variant="outline" onClick={handleCancel} disabled={isSaving || summaryLoading || saveComplete}>
+          <Button 
+            variant="outline" 
+            onClick={handleCancel} 
+            disabled={isSaving || summaryLoading || saveComplete}
+          >
             Keep Chatting
           </Button>
           <Button 
