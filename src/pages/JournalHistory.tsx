@@ -1,18 +1,18 @@
-
 import { useEffect, useState } from "react";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { useAuth } from "../context/AuthContext";
 import { useUserData } from "../context/UserDataContext";
 import { JournalEntry } from "../lib/types";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { deleteJournalEntry } from "@/services/journal";
 import { useToast } from "@/hooks/use-toast";
 import { EntryList } from "@/components/journal/EntryList";
 import { DeleteEntryDialog } from "@/components/journal/DeleteEntryDialog";
 import { JournalHistoryHeader } from "@/components/journal/JournalHistoryHeader";
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Plus } from "lucide-react";
+import { JournalChatContainer } from "@/components/journal/JournalChatContainer";
 
 const JournalHistory = () => {
   const { user } = useAuth();
@@ -22,11 +22,18 @@ const JournalHistory = () => {
   const [entryToDelete, setEntryToDelete] = useState<JournalEntry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
+  const [showJournalChat, setShowJournalChat] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const location = useLocation();
 
   useEffect(() => {
-    // Load entries only once when component mounts or when retry is triggered
+    if (location.state?.showJournalChat) {
+      setShowJournalChat(true);
+    }
+  }, [location.state]);
+
+  useEffect(() => {
     const loadEntries = async () => {
       setIsLoading(true);
       if (user) {
@@ -40,7 +47,6 @@ const JournalHistory = () => {
   }, [user, retryCount, fetchJournalEntries]);
 
   useEffect(() => {
-    // Sort entries by date (newest first)
     const sorted = [...journalEntries].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
@@ -71,6 +77,21 @@ const JournalHistory = () => {
     });
   };
 
+  const handleNewEntry = () => {
+    setShowJournalChat(true);
+  };
+
+  const handleJournalChatBack = () => {
+    setShowJournalChat(false);
+  };
+
+  const handleJournalChatSave = () => {
+    setShowJournalChat(false);
+    setTimeout(() => {
+      setRetryCount(prev => prev + 1);
+    }, 1000);
+  };
+
   const confirmDelete = async () => {
     if (!entryToDelete) return;
     
@@ -80,7 +101,6 @@ const JournalHistory = () => {
         title: "Entry deleted",
         description: "Journal entry has been deleted successfully",
       });
-      // Refresh entries list
       if (user) {
         fetchJournalEntries();
       }
@@ -96,21 +116,46 @@ const JournalHistory = () => {
     setEntryToDelete(null);
   };
 
+  if (showJournalChat) {
+    return (
+      <div className="min-h-screen flex flex-col bg-jess-background">
+        <Header />
+        <main className="flex-1 py-6 container mx-auto">
+          <JournalChatContainer 
+            onBack={handleJournalChatBack}
+            onSave={handleJournalChatSave}
+          />
+        </main>
+        <DisclaimerBanner />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
       <main className="flex-1 py-6 container mx-auto">
         <div className="flex justify-between items-center mb-6">
           <JournalHistoryHeader onBackClick={() => window.history.back()} />
-          <Button 
-            onClick={handleRefreshEntries} 
-            variant="outline" 
-            className="flex items-center gap-2"
-            disabled={isLoading}
-          >
-            <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button 
+              onClick={handleNewEntry} 
+              variant="primary" 
+              className="flex items-center gap-2"
+            >
+              <Plus size={16} />
+              New Entry
+            </Button>
+            <Button 
+              onClick={handleRefreshEntries} 
+              variant="outline" 
+              className="flex items-center gap-2"
+              disabled={isLoading}
+            >
+              <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
+              Refresh
+            </Button>
+          </div>
         </div>
         
         <div className="bg-white rounded-lg shadow-sm p-6">

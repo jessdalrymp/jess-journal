@@ -8,11 +8,13 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { HistoryViewAllLink } from './journal/HistoryViewAllLink';
+import { useNavigate } from 'react-router-dom';
 
 export const JournalHistorySection = () => {
   const { journalEntries, loading, fetchJournalEntries } = useUserData();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Filter and sort recent entries
   const recentEntries = journalEntries 
@@ -61,6 +63,10 @@ export const JournalHistorySection = () => {
     } finally {
       setIsRefreshing(false);
     }
+  };
+
+  const handleNewJournal = () => {
+    navigate('/journal-history', { state: { showJournalChat: true } });
   };
   
   return (

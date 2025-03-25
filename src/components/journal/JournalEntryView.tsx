@@ -1,22 +1,24 @@
 
-import { JournalEntry } from "@/lib/types";
-import { JournalEntryMeta } from "./JournalEntryMeta";
-import { JournalEntryContent } from "./JournalEntryContent";
-import { JournalEntryEditor } from "./JournalEntryEditor";
-import { JournalEntrySaveButton } from "./JournalEntrySaveButton";
-import { Button } from "@/components/ui/button";
-import { MessageSquare } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { JournalEntry } from '@/lib/types';
+import { parseEntryContent } from '@/utils/contentParser';
+import { JournalEntryContent } from './JournalEntryContent';
+import { JournalEntryMeta } from './JournalEntryMeta';
+import { JournalEntrySaveButton } from './JournalEntrySaveButton';
+import { JournalEntryEditor } from './JournalEntryEditor';
+import { Button } from '@/components/ui/button';
+import { MessageSquare } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface JournalEntryViewProps {
   entry: JournalEntry;
-  parsedContent: { title?: string; summary?: string } | null;
+  parsedContent: ReturnType<typeof parseEntryContent>;
   isEditing: boolean;
   editableTitle: string;
   editableContent: string;
   setEditableTitle: (title: string) => void;
   setEditableContent: (content: string) => void;
-  handleSaveClick: () => Promise<void>;
+  handleSaveClick: () => Promise<boolean>;
   isSaving: boolean;
 }
 
@@ -32,49 +34,44 @@ export const JournalEntryView = ({
   isSaving,
 }: JournalEntryViewProps) => {
   const isConversationSummary = !!entry.conversation_id;
+  
+  // View for a regular journal entry
+  if (isEditing) {
+    return (
+      <div className="p-6">
+        <JournalEntryEditor
+          title={editableTitle}
+          content={editableContent}
+          setTitle={setEditableTitle}
+          setContent={setEditableContent}
+        />
+        <div className="flex justify-end mt-6">
+          <JournalEntrySaveButton onClick={handleSaveClick} isSaving={isSaving} />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto max-w-3xl px-4">
-      <article className="bg-white rounded-xl shadow-sm p-6 mb-6">
-        {isEditing ? (
-          <>
-            <JournalEntryEditor
-              title={editableTitle}
-              content={editableContent}
-              onTitleChange={setEditableTitle}
-              onChange={setEditableContent}
-            />
-            <div className="mt-6">
-              <JournalEntrySaveButton onSave={handleSaveClick} isSaving={isSaving} />
-            </div>
-          </>
-        ) : (
-          <>
-            <header className="mb-6">
-              <h1 className="text-2xl font-semibold text-jess-foreground mb-2">
-                {parsedContent?.title || entry.title || "Journal Entry"}
-              </h1>
-              <JournalEntryMeta 
-                entry={entry} 
-                title={parsedContent?.title || entry.title || "Journal Entry"} 
-              />
-            </header>
-            
-            <JournalEntryContent entry={entry} parsedContent={parsedContent} />
-            
-            {isConversationSummary && (
-              <div className="mt-6">
-                <Link to={`/my-story?conversationId=${entry.conversation_id}`}>
-                  <Button variant="secondary" className="flex items-center gap-2">
-                    <MessageSquare size={16} />
-                    View Full Conversation
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </>
-        )}
-      </article>
+    <div className="p-6">
+      <JournalEntryMeta entry={entry} />
+      
+      <h1 className="text-2xl font-semibold mt-4 mb-6">
+        {editableTitle}
+      </h1>
+      
+      <JournalEntryContent entry={entry} parsedContent={parsedContent} />
+      
+      {isConversationSummary && (
+        <div className="mt-8 mb-6">
+          <Link to={`/my-story?conversationId=${entry.conversation_id}`}>
+            <Button variant="secondary" className="flex items-center gap-2">
+              <MessageSquare size={16} />
+              View Full Conversation
+            </Button>
+          </Link>
+        </div>
+      )}
     </div>
   );
 };
