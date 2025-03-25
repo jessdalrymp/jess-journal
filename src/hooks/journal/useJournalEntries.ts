@@ -10,11 +10,11 @@ const journalEntriesCache: Record<string, {
   timestamp: number;
 }> = {};
 
-// Cache expiration time (5 minutes)
-const CACHE_EXPIRATION = 5 * 60 * 1000;
+// Cache expiration time (2 minutes - shortened to ensure fresher data)
+const CACHE_EXPIRATION = 2 * 60 * 1000;
 
 /**
- * Hook for fetching journal entries with caching
+ * Hook for fetching journal entries with improved error handling
  */
 export function useJournalEntries() {
   const [loading, setLoading] = useState(false);
@@ -29,39 +29,81 @@ export function useJournalEntries() {
     }
     
     try {
+      setLoading(true);
+      isFetching.current = true;
+      
       // Check if we have a valid cache entry
       const cachedData = journalEntriesCache[userId];
-      if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_EXPIRATION) {
+      const now = Date.now();
+      const useCache = cachedData && (now - cachedData.timestamp) < CACHE_EXPIRATION;
+      
+      if (useCache) {
         console.log('Using cached journal entries');
+        setLoading(false);
         return cachedData.entries;
       }
       
-      setLoading(true);
-      isFetching.current = true;
       console.log('Fetching journal entries for user:', userId);
       
       // Attempt to fetch entries
       const entries = await journalService.fetchJournalEntries(userId);
       
-      // Update cache even if we get empty entries (to prevent constant retries)
+      console.log(`Successfully fetched ${entries.length} journal entries`);
+      
+      // Always update cache with latest data
+      journalEntriesCache[userId] = {
+        entries,
+        timestamp: now
+      };
+      
+      return entries;
+    } catch (error) {
+      console.error('Error fetching journal entries:', error);
+      
+      // Show error toast
+      toast({
+        title: "Error loading journal entries",
+        description: "Please try refreshing the page",
+        variant: "destructive"
+      });
+      
+      // Return cached entries if available, otherwise empty array
+      return journalEntriesCache[userId]?.entries || [];
+    } finally {
+      setLoading(false);
+      isFetching.current = false;
+    }
+  }, [toast]);
+
+  // Force refresh method to bypass cache
+  const forceRefreshEntries = useCallback(async (userId: string) => {
+    if (!userId) return [];
+    
+    // Delete cache entry to force fresh fetch
+    delete journalEntriesCache[userId];
+    
+    try {
+      setLoading(true);
+      isFetching.current = true;
+      
+      console.log('Force refreshing journal entries for user:', userId);
+      const entries = await journalService.fetchJournalEntries(userId);
+      
+      // Update cache with fresh data
       journalEntriesCache[userId] = {
         entries,
         timestamp: Date.now()
       };
       
-      console.log(`Successfully fetched ${entries.length} journal entries`);
+      console.log(`Successfully refreshed ${entries.length} journal entries`);
       return entries;
     } catch (error) {
-      console.error('Error fetching journal entries:', error);
-      // Don't show error toast if we have cached entries
-      if (!journalEntriesCache[userId] || journalEntriesCache[userId].entries.length === 0) {
-        toast({
-          title: "Error loading journal entries",
-          description: "Please try refreshing the page",
-          variant: "destructive"
-        });
-      }
-      // Return cached entries if available, otherwise empty array
+      console.error('Error force refreshing journal entries:', error);
+      toast({
+        title: "Error refreshing journal entries",
+        description: "Please try again later",
+        variant: "destructive"
+      });
       return journalEntriesCache[userId]?.entries || [];
     } finally {
       setLoading(false);
@@ -72,5 +114,6 @@ export function useJournalEntries() {
   return {
     loading,
     fetchJournalEntries,
+    forceRefreshEntries
   };
 }

@@ -5,7 +5,7 @@ import { getInitialMessage } from '../../chatUtils';
 import { fetchConversation } from '@/services/conversation';
 
 /**
- * Load a specific conversation by ID
+ * Load a specific conversation by ID with improved error handling
  */
 export const loadExistingConversation = async (
   conversationId: string, 
@@ -14,49 +14,71 @@ export const loadExistingConversation = async (
   try {
     if (!userId) {
       console.error('Cannot load conversation: No user ID provided');
-      return null;
+      throw new Error('User authentication required to load conversation');
     }
     
     if (!conversationId) {
       console.error('Cannot load conversation: No conversation ID provided');
-      return null;
+      throw new Error('Conversation ID is required');
     }
     
     console.log(`Attempting to load specific conversation ID: ${conversationId} for user: ${userId}`);
     
-    const conversation = await fetchConversation(conversationId, userId);
-    
-    if (!conversation) {
-      console.error(`Conversation ${conversationId} not found or not accessible`);
-      throw new Error(`Conversation ${conversationId} not found or not accessible`);
+    // Attempt to fetch the conversation with proper error handling
+    try {
+      const conversation = await fetchConversation(conversationId, userId);
+      
+      if (!conversation) {
+        console.error(`Conversation ${conversationId} not found or not accessible`);
+        throw new Error(`Conversation ${conversationId} not found or not accessible`);
+      }
+      
+      console.log(`Successfully loaded conversation ${conversationId} with ${conversation.messages.length} messages`);
+      
+      // Ensure messages is always an array
+      if (!conversation.messages || !Array.isArray(conversation.messages)) {
+        console.error(`Conversation ${conversationId} has no messages or invalid message format`);
+        throw new Error("Invalid conversation format: messages missing or not an array");
+      }
+  
+      // Convert to ConversationSession format
+      const conversationSession: ConversationSession = {
+        id: conversation.id,
+        userId: conversation.userId,
+        type: conversation.type as 'story' | 'sideQuest' | 'action' | 'journal',
+        title: conversation.title,
+        messages: conversation.messages.map(msg => ({
+          id: msg.id,
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content,
+          timestamp: msg.createdAt
+        })),
+        createdAt: conversation.createdAt,
+        updatedAt: conversation.updatedAt
+      };
+      
+      // Verify we have at least one message
+      if (conversationSession.messages.length === 0) {
+        console.warn(`Conversation ${conversationId} has no messages, adding initial message`);
+        
+        // Add a default initial message if the conversation is empty
+        const initialMessage = getInitialMessage(conversationSession.type);
+        conversationSession.messages = [
+          {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: initialMessage,
+            timestamp: new Date(),
+          }
+        ];
+      }
+      
+      saveCurrentConversationToStorage(conversationSession);
+      return conversationSession;
+    } catch (fetchError) {
+      console.error(`Error fetching conversation ${conversationId}:`, fetchError);
+      throw fetchError;
     }
-    
-    console.log(`Successfully loaded conversation ${conversationId} with ${conversation.messages.length} messages`);
-    
-    // Ensure messages is always an array
-    if (!conversation.messages || !Array.isArray(conversation.messages)) {
-      console.error(`Conversation ${conversationId} has no messages or invalid message format`);
-      throw new Error("Invalid conversation format: messages missing or not an array");
-    }
-
-    // Convert to ConversationSession format
-    const conversationSession: ConversationSession = {
-      id: conversation.id,
-      userId: conversation.userId,
-      type: conversation.type as 'story' | 'sideQuest' | 'action' | 'journal',
-      title: conversation.title,
-      messages: conversation.messages.map(msg => ({
-        id: msg.id,
-        role: msg.role as 'user' | 'assistant',
-        content: msg.content,
-        timestamp: msg.createdAt
-      })),
-      createdAt: conversation.createdAt,
-      updatedAt: conversation.updatedAt
-    };
-    
-    saveCurrentConversationToStorage(conversationSession);
-    return conversationSession;
   } catch (err) {
     console.error(`Error loading conversation ${conversationId}:`, err);
     throw err;

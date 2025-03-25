@@ -12,7 +12,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
   try {
     console.log('Fetching journal entries for user:', userId);
     
-    // Fetch all journal entries
+    // Fetch all journal entries with no limit
     const { data: entriesData, error: entriesError } = await supabase
       .from('journal_entries')
       .select('*')
@@ -21,7 +21,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
 
     if (entriesError) {
       console.error('Error fetching journal entries:', entriesError);
-      return [];
+      throw new Error(`Failed to fetch journal entries: ${entriesError.message}`);
     }
 
     if (!entriesData || entriesData.length === 0) {
@@ -43,21 +43,30 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
           console.log(`Fetching conversation data for entry ${entryData.id} with conversation_id ${entryData.conversation_id}`);
           
           // First get the conversation
-          const { data: conversationResult } = await supabase
+          const { data: conversationResult, error: conversationError } = await supabase
             .from('conversations')
             .select('*')
             .eq('id', entryData.conversation_id)
             .single();
             
+          if (conversationError) {
+            console.error(`Error fetching conversation for entry ${entryData.id}:`, conversationError);
+          }
+            
           if (conversationResult) {
             conversationData = conversationResult;
             
             // Then get messages for this conversation
-            const { data: messagesData } = await supabase
+            const { data: messagesData, error: messagesError } = await supabase
               .from('messages')
               .select('*')
               .eq('conversation_id', entryData.conversation_id)
-              .order('timestamp', { ascending: false });
+              .order('timestamp', { ascending: true })
+              .limit(100); // Increased limit to get more messages
+              
+            if (messagesError) {
+              console.error(`Error fetching messages for conversation ${entryData.conversation_id}:`, messagesError);
+            }
               
             if (messagesData && messagesData.length > 0) {
               console.log(`Found ${messagesData.length} messages for conversation ${entryData.conversation_id}`);
@@ -89,6 +98,6 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     return entries;
   } catch (error) {
     console.error('Error processing journal entries:', error);
-    return [];
+    throw error;
   }
 };
