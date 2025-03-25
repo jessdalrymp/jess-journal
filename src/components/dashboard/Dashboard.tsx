@@ -49,14 +49,17 @@ export const Dashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 relative">
-      {/* First section - Core Actions */}
-      <div className="mb-6 relative z-10">
-        <div className="core-actions-section">
+      {/* Core Actions and Journal History in a flex layout on desktop */}
+      <div className="flex flex-col lg:flex-row gap-6 mb-6 relative z-10">
+        <div className="lg:w-1/2">
           <CoreActionsSection />
+        </div>
+        <div className="lg:w-1/2">
+          <JournalHistorySection />
         </div>
       </div>
       
-      {/* Growth Insights - Now positioned between CoreActions and JournalHistory */}
+      {/* Growth Insights - Now positioned below both sections */}
       {user && profile && !isLoading && (
         <div className="mb-6">
           <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-jess-subtle/50 transition-all duration-300 hover:shadow-xl relative overflow-hidden group">
@@ -68,13 +71,6 @@ export const Dashboard = () => {
           </div>
         </div>
       )}
-      
-      {/* Journal History Section */}
-      <div className="mb-6 relative z-10">
-        <div className="journal-history-section">
-          <JournalHistorySection />
-        </div>
-      </div>
       
       {/* Account Section */}
       <div className="relative z-10">
