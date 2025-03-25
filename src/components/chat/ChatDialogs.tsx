@@ -2,6 +2,7 @@
 import React from 'react';
 import { ChatEndDialog } from './ChatEndDialog';
 import { JournalingDialog } from '../challenges/JournalingDialog';
+import { SaveChatDialog } from './SaveChatDialog';
 
 interface ChatDialogsProps {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
@@ -28,7 +29,15 @@ export const ChatDialogs = ({
 }: ChatDialogsProps) => {
   return (
     <>
-      {!saveChat && (
+      {type === 'story' && saveChat ? (
+        <SaveChatDialog 
+          open={showEndDialog} 
+          onOpenChange={setShowEndDialog} 
+          refreshData={true}
+          persistConversation={persistConversation}
+          onSave={() => onEndConversation()}
+        />
+      ) : (
         <ChatEndDialog 
           open={showEndDialog} 
           onOpenChange={setShowEndDialog} 

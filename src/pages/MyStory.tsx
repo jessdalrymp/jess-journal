@@ -4,7 +4,6 @@ import { useSearchParams } from "react-router-dom";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { WelcomeModal } from "../components/chat/WelcomeModal";
-import { SaveChatDialog } from "../components/chat/SaveChatDialog";
 import { MyStoryLoading } from "../components/my-story/MyStoryLoading";
 import { MyStoryUnauthenticated } from "../components/my-story/MyStoryUnauthenticated";
 import { MyStoryHeader } from "../components/my-story/MyStoryHeader";
@@ -21,8 +20,6 @@ const MyStory = () => {
   const {
     showWelcomeModal,
     setShowWelcomeModal,
-    showSaveChatDialog,
-    setShowSaveChatDialog,
     isLoading,
     userLoading,
     existingConversationId,
@@ -30,7 +27,6 @@ const MyStory = () => {
     handleBack,
     handleSaveChat,
     handleStartFresh,
-    refreshDataOnSave,
     priorConversations,
     loadingPriorConversations,
     handleLoadConversation,
@@ -98,13 +94,6 @@ const MyStory = () => {
         buttonText="Let's Begin"
         type="story"
         onDontShowAgain={handleDontShowWelcomeAgain}
-      />
-
-      <SaveChatDialog
-        open={showSaveChatDialog}
-        onOpenChange={setShowSaveChatDialog}
-        refreshData={refreshDataOnSave}
-        persistConversation={true}
       />
     </div>
   );
