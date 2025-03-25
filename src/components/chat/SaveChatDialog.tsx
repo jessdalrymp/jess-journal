@@ -92,10 +92,10 @@ export function SaveChatDialog({
         onSave(refreshData);
       } else {
         console.log("No onSave callback provided, navigating to dashboard directly");
-        // Add a slight delay to ensure toast is shown
+        // Use direct window.location navigation for more reliable redirect
         setTimeout(() => {
-          navigate('/dashboard');
-        }, 100);
+          window.location.href = '/dashboard';
+        }, 800);
       }
     } catch (error) {
       console.error("Error saving conversation:", error);

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ChatInterface } from "../../components/chat/ChatInterface";
 import { getInitialMessage } from "../../components/chat/chatUtils";
@@ -64,10 +65,11 @@ export const MyStoryChatContainer = ({
     onSave(refreshData);
     setShowSaveDialog(false);
     
+    // Force navigation to dashboard after a short delay to ensure state updates
     setTimeout(() => {
       console.log("Navigating to dashboard after saving");
-      navigate('/dashboard');
-    }, 500);
+      window.location.href = '/dashboard';
+    }, 800);
   };
 
   const handleReloadPage = () => {

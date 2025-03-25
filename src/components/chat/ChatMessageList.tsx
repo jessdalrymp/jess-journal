@@ -36,6 +36,29 @@ export const ChatMessageList = memo(({ messages }: ChatMessageListProps) => {
   const processMessageContent = (content: string, isAssistant: boolean) => {
     // For assistant messages, try to render markdown
     if (isAssistant) {
+      // Check for JSON code blocks in assistant messages
+      if (content.includes('```json') && content.includes('```')) {
+        try {
+          // Try to extract the JSON content to display it more cleanly
+          const jsonMatch = content.match(/```json\n([\s\S]*?)```/);
+          if (jsonMatch && jsonMatch[1]) {
+            const jsonData = JSON.parse(jsonMatch[1]);
+            if (jsonData.summary) {
+              // Create a clean version with the prompt title and summary
+              return (
+                <div className="prose prose-sm max-w-none dark:prose-invert">
+                  {jsonData.title && <h4>{jsonData.title}</h4>}
+                  <ReactMarkdown>{addSpacesBetweenNumbers(jsonData.summary)}</ReactMarkdown>
+                </div>
+              );
+            }
+          }
+        } catch (e) {
+          // If JSON parsing fails, use the regular markdown rendering
+          console.error("Error parsing JSON in message:", e);
+        }
+      }
+      
       return (
         <ReactMarkdown 
           className="prose prose-sm max-w-none dark:prose-invert leading-tight"
@@ -55,6 +78,7 @@ export const ChatMessageList = memo(({ messages }: ChatMessageListProps) => {
           return <div className="whitespace-pre-wrap">{addSpacesBetweenNumbers(parsedJson.message)}</div>;
         }
       } catch (e) {
+        console.error("Error parsing JSON in user message:", e);
         // If parsing fails, just display the regular content
       }
     }

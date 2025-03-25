@@ -43,6 +43,28 @@ export const extractFormattedContent = (content: string): string => {
       }
     }
     
+    // Handle nested JSON code blocks in prompts or content
+    if (content.includes('```json\n```json')) {
+      // Fix the nested JSON issue by extracting the innermost JSON block
+      const cleanedContent = content.replace(/```json\n```json\n/, '```json\n');
+      return extractFormattedContent(cleanedContent);
+    }
+    
+    // Handle case where prompt JSON is incorrectly displayed
+    const promptJsonPattern = /Journal Prompt:\s*```json\s*([\s\S]*?)\s*```/;
+    const promptMatch = content.match(promptJsonPattern);
+    
+    if (promptMatch && promptMatch[1]) {
+      try {
+        const promptJson = JSON.parse(promptMatch[1]);
+        if (promptJson.summary) {
+          return promptJson.summary;
+        }
+      } catch (e) {
+        // If parsing fails, continue with regular content
+      }
+    }
+    
     // If no JSON or parsing failed, return the raw content
     return content;
   } catch (error) {
@@ -56,6 +78,12 @@ export const extractFormattedContent = (content: string): string => {
  */
 export const parseEntryContent = (content: string) => {
   try {
+    // Handle nested JSON code blocks
+    if (content.includes('```json\n```json')) {
+      const cleanedContent = content.replace(/```json\n```json\n/, '```json\n');
+      return parseEntryContent(cleanedContent);
+    }
+    
     const jsonMatch = content.match(/```json\n([\s\S]*?)```/);
     if (jsonMatch && jsonMatch[1]) {
       return JSON.parse(jsonMatch[1]);
