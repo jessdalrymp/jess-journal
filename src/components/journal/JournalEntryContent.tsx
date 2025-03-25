@@ -1,6 +1,6 @@
 
 import { JournalEntry } from "@/lib/types";
-import { parseEntryContent } from "@/utils/contentParser";
+import { parseEntryContent, convertToSecondPerson } from "@/utils/contentParser";
 
 interface JournalEntryContentProps {
   entry: JournalEntry;
@@ -15,7 +15,10 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
   const renderContent = () => {
     // If we have parsed JSON content, use the summary
     if (contentData && contentData.summary) {
-      return contentData.summary.split('\n').map((paragraph, index) => {
+      // Apply second-person language conversion to the summary
+      const formattedSummary = convertToSecondPerson(contentData.summary);
+      
+      return formattedSummary.split('\n').map((paragraph, index) => {
         if (!paragraph.trim()) {
           return <br key={index} />;
         }
@@ -32,6 +35,9 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
       // Also remove any Q: or A: prefixes that might remain
       displayContent = displayContent.replace(/^[\s\n]*[Q|A][:.]?\s*/im, '').trim();
     }
+    
+    // Apply second-person language conversion
+    displayContent = convertToSecondPerson(displayContent);
     
     // Render the content with newlines
     return displayContent.split('\n').map((paragraph, index) => {
