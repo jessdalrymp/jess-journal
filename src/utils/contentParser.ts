@@ -20,11 +20,14 @@ export const getContentPreview = (entry: JournalEntry): string => {
 export const extractFormattedContent = (content: string): string => {
   try {
     // Check if content contains a JSON code block
-    if (content.includes('```json') && content.includes('```')) {
-      const jsonMatch = content.match(/```json\n([\s\S]*?)```/);
-      
-      if (jsonMatch && jsonMatch[1]) {
-        const jsonContent = JSON.parse(jsonMatch[1].trim());
+    const jsonRegex = /```json\s*([\s\S]*?)```/g;
+    const matches = [...content.matchAll(jsonRegex)];
+    
+    if (matches.length > 0) {
+      // Process the first match (assuming it's the main content)
+      const jsonString = matches[0][1].trim();
+      try {
+        const jsonContent = JSON.parse(jsonString);
         
         // If there's a content or summary field, use that
         if (jsonContent.content) {
@@ -40,12 +43,16 @@ export const extractFormattedContent = (content: string): string => {
           .filter(([key]) => key !== 'title' && key !== 'type')
           .map(([key, value]) => `${key}: ${value}`)
           .join('\n');
+      } catch (innerError) {
+        console.error('Error parsing JSON content block:', innerError);
+        // Return the raw JSON string if parsing fails
+        return jsonString;
       }
     }
     
     // If no JSON or parsing failed, return the raw content
     // But first, clean up any markdown-style JSON code blocks
-    return content.replace(/```json\n[\s\S]*?```/g, '').trim();
+    return content.replace(/```json\s*[\s\S]*?```/g, '').trim();
   } catch (error) {
     console.error('Error parsing content:', error);
     // If JSON parsing fails, strip out the JSON code block syntax
@@ -57,10 +64,14 @@ export const extractFormattedContent = (content: string): string => {
  * Parses content that might contain JSON code blocks and returns the parsed object
  */
 export const parseEntryContent = (content: string) => {
+  if (!content) return null;
+  
   try {
-    const jsonMatch = content.match(/```json\n([\s\S]*?)```/);
+    // Use a more flexible regex that can handle any whitespace between ```json and the content
+    const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
     if (jsonMatch && jsonMatch[1]) {
-      return JSON.parse(jsonMatch[1].trim());
+      const jsonString = jsonMatch[1].trim();
+      return JSON.parse(jsonString);
     }
     return null;
   } catch (error) {

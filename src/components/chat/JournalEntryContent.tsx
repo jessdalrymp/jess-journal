@@ -30,7 +30,7 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
       displayContent = displayContent.replace(entry.prompt, '').trim();
       
       // Also remove any Q: or A: prefixes that might remain
-      displayContent = displayContent.replace(/^[\s\n]*[Q|A][:.]?\s*/im, '').trim();
+      displayContent = displayContent.replace(/^[\s\S]*?[Q|A][:.]?\s*/im, '').trim();
     }
     
     // Clean up any JSON code blocks in the content
@@ -49,13 +49,14 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
   const renderPrompt = () => {
     if (!entry.prompt) return null;
     
-    // Check if the prompt contains JSON
-    const jsonMatch = entry.prompt.match(/```json\s*([\s\S]*?)```/);
+    // Improved regex to handle any whitespace between markers
+    const jsonMatch = entry.prompt.match(/```json\s*([\s\S]*?)\s*```/);
     
     if (jsonMatch && jsonMatch[1]) {
       try {
         // Try to parse the JSON
-        const parsedJson = JSON.parse(jsonMatch[1].trim());
+        const jsonString = jsonMatch[1].trim();
+        const parsedJson = JSON.parse(jsonString);
         
         return (
           <div className="bg-jess-subtle rounded-lg p-4 mb-6">
@@ -69,11 +70,12 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
           </div>
         );
       } catch (e) {
-        // If parsing fails, just display the prompt as text
+        console.error('Error parsing JSON in prompt:', e);
+        // If parsing fails, display raw content without the json markers
         return (
           <div className="bg-jess-subtle rounded-lg p-4 mb-6">
             <h4 className="text-lg font-medium mb-2">Journal Prompt:</h4>
-            <p>{entry.prompt.replace(/```json|```/g, '')}</p>
+            <p>{entry.prompt.replace(/```json\s*|```/g, '').trim()}</p>
           </div>
         );
       }
