@@ -54,8 +54,12 @@ export const JournalChatContainer = ({
       onSave();
     }
     
-    // Navigate to journal history to see the saved entry
-    navigate('/journal-history');
+    // Add a short delay before navigating to ensure the save operation completes
+    setTimeout(() => {
+      // Navigate to journal history to see the saved entry
+      console.log("Navigating to dashboard after saving journal entry");
+      navigate('/dashboard');
+    }, 1000);
   };
 
   const handleReloadPage = () => {

@@ -81,7 +81,11 @@ export function SaveChatDialog({
         description: message,
       });
       
-      navigate('/dashboard');
+      // Add a delay before navigating to ensure the save operation completes
+      setTimeout(() => {
+        console.log("Navigating to dashboard after saving story");
+        navigate('/dashboard');
+      }, 1000);
     } catch (error) {
       console.error("Error saving conversation:", error);
       toast({

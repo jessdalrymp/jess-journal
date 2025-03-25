@@ -4,6 +4,7 @@ import { ChatInterface } from "../../components/chat/ChatInterface";
 import { getInitialMessage } from "../../components/chat/chatUtils";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface MyStoryChatContainerProps {
   onBack: () => void;
@@ -19,6 +20,7 @@ export const MyStoryChatContainer = ({
   const [initializing, setInitializing] = useState(!!conversationId);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Give a short delay when loading existing conversations to allow initialization
   useEffect(() => {
@@ -51,7 +53,15 @@ export const MyStoryChatContainer = ({
       title: "Saving your story",
       description: "We're preparing to save your story conversation to your journal",
     });
-    onSave(true); // Pass true to indicate need for refresh
+    
+    // Call the parent's onSave function and pass true to indicate need for refresh
+    onSave(true);
+    
+    // Add a short delay before navigating to ensure the save operation completes
+    setTimeout(() => {
+      console.log("Navigating to dashboard after saving story");
+      navigate('/dashboard');
+    }, 1000);
   };
 
   const handleReloadPage = () => {
@@ -97,4 +107,4 @@ export const MyStoryChatContainer = ({
       )}
     </div>
   );
-};
+}
