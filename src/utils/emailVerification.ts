@@ -1,13 +1,22 @@
+
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '../integrations/supabase/client';
+
+/**
+ * Result of sending a verification email
+ */
+export interface EmailVerificationResult {
+  success: boolean;
+  rateLimit?: boolean;
+}
 
 /**
  * Sends a custom verification email using the Supabase Edge Function
  * 
  * @param email Email address to send verification to
- * @returns Promise resolving to boolean indicating success
+ * @returns Promise resolving to EmailVerificationResult
  */
-export const sendCustomVerificationEmail = async (email: string): Promise<boolean> => {
+export const sendCustomVerificationEmail = async (email: string): Promise<EmailVerificationResult> => {
   try {
     console.log("======= VERIFICATION EMAIL PROCESS STARTING =======");
     // Get the domain origin
@@ -42,7 +51,7 @@ export const sendCustomVerificationEmail = async (email: string): Promise<boolea
       authHeader = `Bearer ${anonKey}`;
     } else {
       console.error("No authentication method available");
-      return false;
+      return { success: false };
     }
     
     // Send a simplified request body that matches the expected format in the edge function

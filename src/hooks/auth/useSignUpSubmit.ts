@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useSignUp } from './useSignUp';
-import { sendCustomVerificationEmail } from '../../utils/emailVerification';
+import { sendCustomVerificationEmail, EmailVerificationResult } from '../../utils/emailVerification';
 
 interface UseSignUpSubmitProps {
   onVerificationSent: (email: string) => void;
@@ -45,7 +45,7 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
         console.log("Email verification required, sending verification email");
         
         // Send verification email using our custom sender
-        const emailResult = await sendCustomVerificationEmail(email);
+        const emailResult: EmailVerificationResult = await sendCustomVerificationEmail(email);
         
         if (emailResult.success) {
           console.log("Verification email sent successfully");
