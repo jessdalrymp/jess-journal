@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { useUserData } from "../context/UserDataContext";
@@ -17,7 +17,6 @@ import { Button } from "@/components/ui/button";
 
 const BlankJournal = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { user } = useAuth();
   const { fetchJournalEntries } = useUserData();
   const [content, setContent] = useState('```json\n{\n  "title": "Untitled Entry",\n  "summary": ""\n}\n```');
@@ -27,15 +26,6 @@ const BlankJournal = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<PromptCategory | null>(null);
   const [showPromptSelector, setShowPromptSelector] = useState(true);
-  
-  // Check if writeFreely is in the URL query parameters
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const writeFreely = searchParams.get('writeFreely');
-    if (writeFreely === 'true') {
-      setShowPromptSelector(false);
-    }
-  }, [location]);
 
   useEffect(() => {
     try {

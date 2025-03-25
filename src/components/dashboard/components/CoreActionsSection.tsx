@@ -34,20 +34,20 @@ export const CoreActionsSection = () => {
             </div>
           </Link>
           
-          <Link to="/journal?writeFreely=true" className="block aspect-square">
+          <Link to="/journal" className="block aspect-square">
             <div className="bg-gradient-to-br from-jess-subtle/80 to-white rounded-lg h-full p-4 flex flex-col items-center justify-center cursor-pointer shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-gradient-to-br hover:from-jess-secondary/60 hover:to-white border border-jess-subtle/30 hover:border-jess-secondary/50">
               <div className="text-jess-primary mb-2">
-                <PenLine size={isMobile ? 20 : 24} className="transition-transform duration-300 hover:scale-110" />
+                <FilePlus size={isMobile ? 20 : 24} className="transition-transform duration-300 hover:scale-110" />
               </div>
-              <h3 className="text-center font-medium text-xl md:text-2xl">Write Freely</h3>
-              <p className="text-sm md:text-base text-center text-jess-muted mt-1 max-w-full break-words">Open journal entry</p>
+              <h3 className="text-center font-medium text-xl md:text-2xl">New Entry</h3>
+              <p className="text-sm md:text-base text-center text-jess-muted mt-1 max-w-full break-words">Write freely</p>
             </div>
           </Link>
           
           <Link to="/journal-challenge" className="block aspect-square">
             <div className="bg-gradient-to-br from-jess-subtle/80 to-white rounded-lg h-full p-4 flex flex-col items-center justify-center cursor-pointer shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-gradient-to-br hover:from-jess-secondary/60 hover:to-white border border-jess-subtle/30 hover:border-jess-secondary/50">
               <div className="text-jess-primary mb-2">
-                <FilePlus size={isMobile ? 20 : 24} className="transition-transform duration-300 hover:scale-110" />
+                <PenLine size={isMobile ? 20 : 24} className="transition-transform duration-300 hover:scale-110" />
               </div>
               <h3 className="text-center font-medium text-xl md:text-2xl">Journal</h3>
               <p className="text-sm md:text-base text-center text-jess-muted mt-1 max-w-full break-words">Guided prompt</p>

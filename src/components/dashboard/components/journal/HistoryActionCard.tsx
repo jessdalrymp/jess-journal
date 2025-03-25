@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserData } from '@/context/UserDataContext';
 
@@ -10,6 +10,11 @@ export const HistoryActionCard = () => {
   
   const handleNewJournal = () => {
     navigate('/journal-history', { state: { showJournalChat: true } });
+  };
+  
+  const handleWriteFreely = () => {
+    // Navigate to the same page, but with a parameter to skip prompt selection
+    navigate('/journal-history', { state: { showJournalChat: true, skipPrompt: true } });
   };
   
   return (
@@ -26,6 +31,14 @@ export const HistoryActionCard = () => {
         >
           <Plus size={16} />
           <span>New Journal Entry</span>
+        </Button>
+        <Button 
+          onClick={handleWriteFreely}
+          variant="outline" 
+          className="w-full bg-white hover:bg-jess-subtle/60 border-jess-subtle flex items-center justify-center gap-2"
+        >
+          <Pencil size={16} />
+          <span>Write Freely</span>
         </Button>
       </div>
     </div>
