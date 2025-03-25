@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ChatInterface } from "../../components/chat/ChatInterface";
 import { getInitialMessage } from "../../components/chat/chatUtils";
@@ -24,7 +23,6 @@ export const MyStoryChatContainer = ({
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Give a short delay when loading existing conversations to allow initialization
   useEffect(() => {
     if (conversationId) {
       console.log("Initializing with existing conversation ID:", conversationId);
@@ -57,24 +55,19 @@ export const MyStoryChatContainer = ({
   const handleSaveDialogClose = (open: boolean) => {
     setShowSaveDialog(open);
     if (!open) {
-      // If dialog was closed, but not by saving, do nothing
       console.log("Save dialog closed without saving");
     }
   };
 
-  // Modified handleSaveAndClose to ensure onSave is called with refreshData
-  // This makes sure journal entries are refreshed after saving
   const handleSaveAndClose = (refreshData: boolean = true) => {
     console.log("Save and close called with refreshData:", refreshData);
-    // Call onSave with explicit refreshData=true to ensure it refreshes the journal entries
     onSave(refreshData);
     setShowSaveDialog(false);
     
-    // Wait a brief moment to allow the save operation to complete before navigating
     setTimeout(() => {
       console.log("Navigating to dashboard after saving");
       navigate('/dashboard');
-    }, 100);
+    }, 500);
   };
 
   const handleReloadPage = () => {

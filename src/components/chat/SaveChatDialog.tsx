@@ -92,7 +92,10 @@ export function SaveChatDialog({
         onSave(refreshData);
       } else {
         console.log("No onSave callback provided, navigating to dashboard directly");
-        navigate('/dashboard');
+        // Add a slight delay to ensure toast is shown
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 100);
       }
     } catch (error) {
       console.error("Error saving conversation:", error);
@@ -103,8 +106,9 @@ export function SaveChatDialog({
       });
     } finally {
       setIsSaving(false);
+      // Only close the dialog if there's no custom onSave handler
       if (!onSave) {
-        onOpenChange(false); // Only close the dialog if there's no onSave handler
+        onOpenChange(false);
       }
     }
   };
