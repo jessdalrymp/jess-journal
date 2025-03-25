@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -21,7 +20,6 @@ export const useJournalHistoryPage = () => {
   const { toast } = useToast();
   const location = useLocation();
 
-  // Check location state for any parameters passed
   useEffect(() => {
     if (location.state?.showJournalChat) {
       setShowJournalChat(true);
@@ -31,7 +29,6 @@ export const useJournalHistoryPage = () => {
     }
   }, [location.state]);
 
-  // Load journal entries when user is available or when retry is triggered
   useEffect(() => {
     const loadEntries = async () => {
       setIsLoading(true);
@@ -55,7 +52,6 @@ export const useJournalHistoryPage = () => {
     loadEntries();
   }, [user, retryCount, fetchJournalEntries, toast]);
 
-  // Sort entries by date (newest first)
   useEffect(() => {
     try {
       const sorted = [...journalEntries].sort(
@@ -64,7 +60,6 @@ export const useJournalHistoryPage = () => {
       
       console.log(`JournalHistory - Sorted ${sorted.length} entries including ${sorted.filter(e => e.conversation_id).length} conversation entries`);
       
-      // Log the first few entries for debugging
       if (sorted.length > 0) {
         console.log("JournalHistory - First 3 entries:", sorted.slice(0, 3).map(e => ({
           id: e.id,
@@ -115,12 +110,6 @@ export const useJournalHistoryPage = () => {
     setSkipPrompt(false);
   };
 
-  const handleWriteFreely = () => {
-    console.log("JournalHistory - Write freely");
-    setShowJournalChat(true);
-    setSkipPrompt(true);
-  };
-
   const handleJournalChatBack = () => {
     console.log("JournalHistory - Back from chat");
     setShowJournalChat(false);
@@ -129,7 +118,6 @@ export const useJournalHistoryPage = () => {
   const handleJournalChatSave = () => {
     console.log("JournalHistory - Chat saved");
     setShowJournalChat(false);
-    // Refresh entries after a short delay to ensure the new entry is saved
     setTimeout(() => {
       setRetryCount(prev => prev + 1);
     }, 1000);
@@ -174,7 +162,6 @@ export const useJournalHistoryPage = () => {
     handleDeleteClick,
     handleRefreshEntries,
     handleNewEntry,
-    handleWriteFreely,
     handleJournalChatBack,
     handleJournalChatSave,
     confirmDelete

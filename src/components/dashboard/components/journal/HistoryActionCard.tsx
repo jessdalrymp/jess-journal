@@ -13,8 +13,8 @@ export const HistoryActionCard = () => {
   };
   
   const handleWriteFreely = () => {
-    // Navigate to the same page, but with a parameter to skip prompt selection
-    navigate('/journal-history', { state: { showJournalChat: true, skipPrompt: true } });
+    // Navigate to the new journal page instead
+    navigate('/journal', { state: { skipPrompt: true } });
   };
   
   return (
