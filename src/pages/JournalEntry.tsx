@@ -41,7 +41,7 @@ const JournalEntry = () => {
     }
   }, [location.state, startEditing]);
 
-  const handleSaveClick = async () => {
+  const handleSaveClick = async (): Promise<boolean> => {
     const success = await handleSave();
     if (success) {
       toast({
