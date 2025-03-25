@@ -1,8 +1,8 @@
 
 import { JournalEntry } from "@/lib/types";
-import { EntryList } from "@/components/journal/EntryList";
 import { JournalHistoryHeader } from "@/components/journal/JournalHistoryHeader";
 import { JournalActions } from "@/components/journal/JournalActions";
+import { JournalEntryGrid } from "@/components/journal/JournalEntryGrid";
 
 interface JournalHistoryContentProps {
   entries: JournalEntry[];
@@ -51,15 +51,13 @@ export const JournalHistoryContent = ({
         />
       </div>
       
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <EntryList 
-          entries={entries}
-          onEntryClick={onEntryClick}
-          onEditClick={onEditClick}
-          onDeleteClick={onDeleteClick}
-          isLoading={isLoading}
-        />
-      </div>
+      <JournalEntryGrid
+        entries={entries}
+        onEntryClick={onEntryClick}
+        onEditClick={onEditClick}
+        onDeleteClick={onDeleteClick}
+        isLoading={isLoading}
+      />
     </>
   );
 };
