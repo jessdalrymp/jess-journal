@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { JournalEntry } from '@/lib/types';
 import { parseEntryContent } from '@/utils/contentParser';
@@ -37,6 +36,18 @@ export const JournalEntryView = ({
 }: JournalEntryViewProps) => {
   const isConversationSummary = !!entry.conversation_id;
   
+  const handleSave = async (): Promise<void> => {
+    const result = await handleSaveClick();
+    // Consume the boolean result but don't return it
+    return;
+  };
+
+  const handleSaveAndClose = async (): Promise<void> => {
+    const result = await handleSaveAndCloseClick();
+    // Consume the boolean result but don't return it
+    return;
+  };
+
   // View for a regular journal entry
   if (isEditing) {
     return (
@@ -48,9 +59,9 @@ export const JournalEntryView = ({
           onTitleChange={setEditableTitle}
         />
         <JournalEntrySaveButton 
-          onSave={handleSaveClick} 
+          onSave={handleSave} 
           isSaving={isSaving}
-          onSaveAndClose={handleSaveAndCloseClick}
+          onSaveAndClose={handleSaveAndClose}
         />
       </div>
     );

@@ -22,7 +22,7 @@ export const mapDatabaseEntryToJournalEntry = (
   } catch (error) {
     console.error('Error decrypting content:', error);
     // Use raw content if decryption fails or a fallback message
-    content = entry.raw_content || entry.content || 'Content could not be decrypted';
+    content = entry.content || 'Content could not be decrypted';
   }
   
   // Try to parse the content as JSON
@@ -124,6 +124,6 @@ export const mapDatabaseEntryToJournalEntry = (
     type: entryType as 'journal' | 'story' | 'sideQuest' | 'action' | 'summary',
     createdAt: new Date(entry.created_at),
     prompt: prompt,
-    conversation_id: conversationId // Add the conversation_id to the journal entry
+    conversation_id: conversationId // Include the conversation_id in the journal entry
   };
 };

@@ -1,45 +1,63 @@
 
 import { JournalEntry } from '@/lib/types';
-import { parseContentWithJsonCodeBlock } from '@/services/journal/contentParser';
 
+/**
+ * Get a title for the journal entry
+ * Handles both standard journal entries and conversation summaries
+ */
 export const getEntryTitle = (entry: JournalEntry): string => {
-  // If the entry has a title, use it
-  if (entry.title) {
+  // If the entry already has a title, use it
+  if (entry.title && entry.title !== 'Untitled Entry') {
     return entry.title;
   }
-
-  // For summary entries, create a formatted title
-  if ((entry.type as string) === 'summary') {
-    // Try to extract a title from content if it's JSON
-    try {
-      const parsedContent = parseContentWithJsonCodeBlock(entry.content);
-      if (parsedContent && parsedContent.title) {
-        return parsedContent.title;
-      }
-    } catch (e) {
-      // Ignore parsing errors
+  
+  // For entries with a conversation, use a more descriptive title
+  if (entry.conversation_id) {
+    switch (entry.type) {
+      case 'story':
+        return 'My Story Conversation';
+      case 'sideQuest':
+        return 'Side Quest Conversation';
+      case 'action':
+        return 'Action Challenge';
+      case 'summary':
+        return `Journal Summary: ${new Date(entry.createdAt).toLocaleDateString()}`;
+      default:
+        return 'Journal Conversation';
     }
-    
-    // Fall back to a date-based title
-    return `Daily Summary: ${new Date(entry.createdAt).toLocaleDateString()}`;
   }
   
-  // For entries with a prompt, use that as the title
+  // If we have a prompt, use that as the title
   if (entry.prompt) {
-    return entry.prompt.substring(0, 50) + (entry.prompt.length > 50 ? '...' : '');
+    // Truncate long prompts
+    return entry.prompt.length > 50 
+      ? entry.prompt.substring(0, 50) + '...'
+      : entry.prompt;
   }
-
-  // For entries with a type but no title or prompt
-  switch (entry.type as string) {
+  
+  // Default title based on type
+  switch (entry.type) {
     case 'story':
-      return 'Story Journey';
+      return 'My Story';
     case 'sideQuest':
-      return 'Side Quest Adventure';
+      return 'Side Quest';
     case 'action':
-      return 'Action Plan';
-    case 'journal':
-      return 'Journal Entry';
+      return 'Action Challenge';
+    case 'summary':
+      return `Journal Summary: ${new Date(entry.createdAt).toLocaleDateString()}`;
     default:
-      return 'Journal Entry';
+      return `Journal Entry: ${new Date(entry.createdAt).toLocaleDateString()}`;
   }
+};
+
+/**
+ * Format content for editing in the journal entry editor
+ */
+export const formatContentForEditing = (entry: JournalEntry): string => {
+  // Remove any prompt prefixes from the content
+  if (entry.prompt && entry.content.startsWith(entry.prompt)) {
+    return entry.content.substring(entry.prompt.length).trim();
+  }
+  
+  return entry.content;
 };
