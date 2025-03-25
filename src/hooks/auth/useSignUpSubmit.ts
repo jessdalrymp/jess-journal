@@ -6,6 +6,7 @@ import {
   sendCustomVerificationEmail, 
   EmailVerificationResult 
 } from '../../utils/email';
+import { isRateLimited } from '../../utils/email/rateLimitDetection';
 
 interface UseSignUpSubmitProps {
   onVerificationSent: (email: string) => void;
