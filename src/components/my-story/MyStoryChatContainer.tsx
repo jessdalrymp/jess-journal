@@ -62,12 +62,19 @@ export const MyStoryChatContainer = ({
     }
   };
 
+  // Modified handleSaveAndClose to ensure onSave is called with refreshData
+  // This makes sure journal entries are refreshed after saving
   const handleSaveAndClose = (refreshData: boolean = true) => {
     console.log("Save and close called with refreshData:", refreshData);
+    // Call onSave with explicit refreshData=true to ensure it refreshes the journal entries
     onSave(refreshData);
     setShowSaveDialog(false);
-    // Navigate to dashboard after saving
-    navigate('/dashboard');
+    
+    // Wait a brief moment to allow the save operation to complete before navigating
+    setTimeout(() => {
+      console.log("Navigating to dashboard after saving");
+      navigate('/dashboard');
+    }, 100);
   };
 
   const handleReloadPage = () => {
