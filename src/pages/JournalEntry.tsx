@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { JournalEntryHeader } from "@/components/journal/JournalEntryHeader";
@@ -35,11 +35,11 @@ const JournalEntry = () => {
   } = useJournalEntryEditor(initialEntry);
 
   // Start editing if specified in navigation state
-  useState(() => {
+  useEffect(() => {
     if (location.state?.isEditing) {
       startEditing();
     }
-  });
+  }, [location.state, startEditing]);
 
   const handleSaveClick = async () => {
     const success = await handleSave();
@@ -48,9 +48,9 @@ const JournalEntry = () => {
         title: "Journal entry saved",
         description: "Your journal entry has been saved successfully.",
       });
-      
-      navigate('/dashboard');
+      return true;
     }
+    return false;
   };
 
   if (loading) {

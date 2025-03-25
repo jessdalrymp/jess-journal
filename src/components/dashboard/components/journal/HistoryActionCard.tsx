@@ -17,6 +17,7 @@ export const HistoryActionCard = () => {
       <h3 className="text-lg font-medium mb-2">Reflect on your growth</h3>
       <p className="text-jess-muted text-sm mb-3">
         Keep track of your growth by journaling your reflections, insights, and breakthroughs.
+        When done, use "Save & Close" to add to your journal.
       </p>
       <Button 
         onClick={handleNewJournal}

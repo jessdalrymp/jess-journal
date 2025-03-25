@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
@@ -44,7 +43,7 @@ const BlankJournal = () => {
   const handleSave = async () => {
     if (!user) {
       toast.error("You need to be logged in to save an entry");
-      return;
+      return false;
     }
 
     setIsSaving(true);
@@ -77,18 +76,27 @@ const BlankJournal = () => {
       
       if (!newEntry) {
         toast.error("Failed to save journal entry");
-        return;
+        setIsSaving(false);
+        return false;
       }
       
       fetchJournalEntries();
       
       toast.success("Journal entry saved successfully");
-      navigate(`/dashboard`);
+      return true;
     } catch (error) {
       console.error("Error saving journal entry:", error);
       toast.error("Failed to save journal entry");
+      return false;
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    const success = await handleSave();
+    if (success) {
+      navigate('/dashboard');
     }
   };
 
@@ -145,14 +153,23 @@ const BlankJournal = () => {
               promptText={selectedPrompt || undefined}
             />
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex justify-end gap-2">
               <Button 
-                onClick={handleSave} 
+                onClick={handleSaveAndClose} 
                 disabled={isSaving}
                 className="flex items-center gap-2 bg-jess-primary hover:bg-jess-primary/90"
               >
                 <Save size={16} />
-                {isSaving ? "Saving..." : "Save Entry"}
+                {isSaving ? "Saving..." : "Save & Close"}
+              </Button>
+              <Button 
+                onClick={async () => await handleSave()} 
+                disabled={isSaving}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Save size={16} />
+                {isSaving ? "Saving..." : "Save"}
               </Button>
             </div>
           </div>

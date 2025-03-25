@@ -7,8 +7,8 @@ import { JournalEntryMeta } from './JournalEntryMeta';
 import { JournalEntrySaveButton } from './JournalEntrySaveButton';
 import { JournalEntryEditor } from './JournalEntryEditor';
 import { Button } from '@/components/ui/button';
-import { MessageSquare } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { MessageSquare, Save } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface JournalEntryViewProps {
   entry: JournalEntry;
@@ -34,6 +34,14 @@ export const JournalEntryView = ({
   isSaving,
 }: JournalEntryViewProps) => {
   const isConversationSummary = !!entry.conversation_id;
+  const navigate = useNavigate();
+  
+  const handleSaveAndClose = async () => {
+    const success = await handleSaveClick();
+    if (success) {
+      navigate('/dashboard');
+    }
+  };
   
   // View for a regular journal entry
   if (isEditing) {
@@ -42,10 +50,18 @@ export const JournalEntryView = ({
         <JournalEntryEditor
           title={editableTitle}
           content={editableContent}
-          setTitle={setEditableTitle}
-          setContent={setEditableContent}
+          onTitleChange={setEditableTitle}
+          onChange={setEditableContent}
         />
-        <div className="flex justify-end mt-6">
+        <div className="flex justify-end gap-2 mt-6">
+          <Button 
+            onClick={handleSaveAndClose}
+            disabled={isSaving} 
+            className="flex items-center gap-2"
+          >
+            <Save size={16} />
+            {isSaving ? "Saving..." : "Save & Close"}
+          </Button>
           <JournalEntrySaveButton onClick={handleSaveClick} isSaving={isSaving} />
         </div>
       </div>
@@ -62,16 +78,23 @@ export const JournalEntryView = ({
       
       <JournalEntryContent entry={entry} parsedContent={parsedContent} />
       
-      {isConversationSummary && (
-        <div className="mt-8 mb-6">
+      <div className="mt-8 mb-6 flex flex-wrap gap-4">
+        {isConversationSummary && (
           <Link to={`/my-story?conversationId=${entry.conversation_id}`}>
             <Button variant="secondary" className="flex items-center gap-2">
               <MessageSquare size={16} />
               View Full Conversation
             </Button>
           </Link>
-        </div>
-      )}
+        )}
+        
+        <Button 
+          onClick={() => navigate('/dashboard')}
+          variant="outline"
+        >
+          Close
+        </Button>
+      </div>
     </div>
   );
 };
