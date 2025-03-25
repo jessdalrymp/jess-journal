@@ -42,14 +42,52 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
     });
   };
 
+  // Process the prompt to detect and handle JSON content
+  const renderPrompt = () => {
+    if (!entry.prompt) return null;
+    
+    // Check if the prompt contains JSON
+    const jsonMatch = entry.prompt.match(/```json\n([\s\S]*?)\n```/);
+    
+    if (jsonMatch && jsonMatch[1]) {
+      try {
+        // Try to parse the JSON
+        const parsedJson = JSON.parse(jsonMatch[1]);
+        
+        return (
+          <div className="bg-jess-subtle rounded-lg p-4 mb-6">
+            <h4 className="text-lg font-medium mb-2">Journal Prompt:</h4>
+            {parsedJson.title && (
+              <h5 className="font-medium text-jess-primary mb-2">{parsedJson.title}</h5>
+            )}
+            {parsedJson.summary && (
+              <p className="text-sm">{parsedJson.summary}</p>
+            )}
+          </div>
+        );
+      } catch (e) {
+        // If parsing fails, just display the prompt as text
+        return (
+          <div className="bg-jess-subtle rounded-lg p-4 mb-6">
+            <h4 className="text-lg font-medium mb-2">Journal Prompt:</h4>
+            <p>{entry.prompt.replace(/```json|```/g, '')}</p>
+          </div>
+        );
+      }
+    }
+    
+    // Regular prompt without JSON
+    return (
+      <div className="bg-jess-subtle rounded-lg p-4 mb-6">
+        <h4 className="text-lg font-medium mb-2">Journal Prompt:</h4>
+        <p>{entry.prompt}</p>
+      </div>
+    );
+  };
+
   return (
     <div className="prose max-w-none">
-      {entry.prompt && (
-        <div className="bg-jess-subtle rounded-lg p-4 mb-6">
-          <h4 className="text-lg font-medium mb-2">Journal Prompt:</h4>
-          <p>{entry.prompt}</p>
-        </div>
-      )}
+      {entry.prompt && renderPrompt()}
       {renderContent()}
     </div>
   );
