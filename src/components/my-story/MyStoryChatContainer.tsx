@@ -5,6 +5,7 @@ import { getInitialMessage } from "../../components/chat/chatUtils";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SaveChatDialog } from "../chat/SaveChatDialog";
+import { useNavigate } from "react-router-dom";
 
 interface MyStoryChatContainerProps {
   onBack: () => void;
@@ -21,6 +22,7 @@ export const MyStoryChatContainer = ({
   const [error, setError] = useState<string | null>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Give a short delay when loading existing conversations to allow initialization
   useEffect(() => {
@@ -62,8 +64,15 @@ export const MyStoryChatContainer = ({
 
   const handleSaveAndClose = (refreshData: boolean = true) => {
     console.log("Save and close called with refreshData:", refreshData);
+    // Ensure we call the parent's onSave function with the refreshData parameter
     onSave(refreshData);
     setShowSaveDialog(false);
+    
+    // Add a short delay before navigating to ensure save completes
+    setTimeout(() => {
+      console.log("Navigating to dashboard after save");
+      navigate('/dashboard');
+    }, 800);
   };
 
   const handleReloadPage = () => {

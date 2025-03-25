@@ -21,10 +21,16 @@ export const extractFormattedContent = (content: string): string => {
   try {
     // Check if content contains a JSON code block
     if (content.includes('```json') && content.includes('```')) {
-      const jsonMatch = content.match(/```json\n([\s\S]*?)```/);
+      // Try with newlines
+      let jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
+      
+      // If that fails, try without the newlines
+      if (!jsonMatch) {
+        jsonMatch = content.match(/```json([\s\S]*?)```/);
+      }
       
       if (jsonMatch && jsonMatch[1]) {
-        const jsonContent = JSON.parse(jsonMatch[1]);
+        const jsonContent = JSON.parse(jsonMatch[1].trim());
         
         // If there's a content or summary field, use that
         if (jsonContent.content) {
@@ -56,9 +62,16 @@ export const extractFormattedContent = (content: string): string => {
  */
 export const parseEntryContent = (content: string) => {
   try {
-    const jsonMatch = content.match(/```json\n([\s\S]*?)```/);
+    // Try with newlines
+    let jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
+    
+    // If that fails, try without the newlines
+    if (!jsonMatch) {
+      jsonMatch = content.match(/```json([\s\S]*?)```/);
+    }
+    
     if (jsonMatch && jsonMatch[1]) {
-      return JSON.parse(jsonMatch[1]);
+      return JSON.parse(jsonMatch[1].trim());
     }
     return null;
   } catch (error) {

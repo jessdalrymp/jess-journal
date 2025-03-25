@@ -36,25 +36,37 @@ export const ChatMessageList = memo(({ messages }: ChatMessageListProps) => {
   const processMessageContent = (content: string, isAssistant: boolean) => {
     // For assistant messages, try to render markdown
     if (isAssistant) {
+      // Try to clean any JSON formatting first
+      let processedContent = content;
+      if (content.includes('```json')) {
+        try {
+          processedContent = extractFormattedContent(content);
+        } catch (e) {
+          // If extraction fails, use the original content
+          console.log('Failed to extract formatted content from JSON in assistant message');
+        }
+      }
+      
       return (
         <ReactMarkdown 
           className="prose prose-sm max-w-none dark:prose-invert leading-tight"
         >
-          {addSpacesBetweenNumbers(content)}
+          {addSpacesBetweenNumbers(processedContent)}
         </ReactMarkdown>
       );
     }
     
     // For user messages, handle JSON content specially
-    const jsonContent = content.match(/```json\n([\s\S]*?)\n```/);
+    const jsonContent = content.match(/```json\n([\s\S]*?)\n```/) || content.match(/```json([\s\S]*?)```/);
     if (jsonContent) {
       try {
-        const parsedJson = JSON.parse(jsonContent[1]);
+        const parsedJson = JSON.parse(jsonContent[1].trim());
         // If it's a brevity preference message, just show the actual message
         if (parsedJson.message && parsedJson.brevity) {
           return <div className="whitespace-pre-wrap">{addSpacesBetweenNumbers(parsedJson.message)}</div>;
         }
       } catch (e) {
+        console.log('Failed to parse JSON in user message:', e);
         // If parsing fails, just display the regular content
       }
     }

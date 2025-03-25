@@ -85,9 +85,13 @@ export function SaveChatDialog({
 
       // If there's a callback function for saving, call it
       if (onSave) {
+        console.log("Calling onSave callback with refreshData:", refreshData);
         onSave(refreshData);
       } else {
-        navigate('/dashboard');
+        console.log("No onSave callback provided, navigating to dashboard directly");
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 500);
       }
     } catch (error) {
       console.error("Error saving conversation:", error);
