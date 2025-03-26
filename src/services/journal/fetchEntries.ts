@@ -15,7 +15,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     // Fetch all journal entries directly
     const { data: entriesData, error: entriesError } = await supabase
       .from('journal_entries')
-      .select('*, messages(*))')
+      .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
