@@ -19,7 +19,7 @@ export const getContentPreview = (entry: JournalEntry): string => {
  */
 export const extractFormattedContent = (content: string): string => {
   try {
-    // Check if content contains a JSON code block
+    // Check if content contains a JSON code block - better regex to handle nested JSON
     const jsonRegex = /```json\s*([\s\S]*?)```/g;
     const matches = [...content.matchAll(jsonRegex)];
     
@@ -45,13 +45,13 @@ export const extractFormattedContent = (content: string): string => {
           .join('\n');
       } catch (innerError) {
         console.error('Error parsing JSON content block:', innerError);
-        // Return the raw JSON string if parsing fails
-        return jsonString;
+        // Return the raw JSON string if parsing fails, but clean up nested backticks
+        return jsonString.replace(/```json\s*|```/g, '');
       }
     }
     
     // If no JSON or parsing failed, return the raw content
-    // But first, clean up any markdown-style JSON code blocks
+    // But first, clean up any markdown-style JSON code blocks (including nested ones)
     return content.replace(/```json\s*[\s\S]*?```/g, '').trim();
   } catch (error) {
     console.error('Error parsing content:', error);
@@ -68,9 +68,10 @@ export const parseEntryContent = (content: string) => {
   
   try {
     // Use a more flexible regex that can handle any whitespace between ```json and the content
+    // and properly match nested JSON blocks
     const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
     if (jsonMatch && jsonMatch[1]) {
-      const jsonString = jsonMatch[1].trim();
+      const jsonString = jsonMatch[1].trim().replace(/```json\s*|```/g, '');
       return JSON.parse(jsonString);
     }
     return null;

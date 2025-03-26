@@ -31,12 +31,14 @@ export const useGenerateSummary = () => {
       const aiMessages = formatMessagesForSummary(session.messages);
       
       console.log("Requesting AI summary with prompt to create very brief summary...");
-      // Modify the request to specifically ask for a very brief summary
+      // Modify the request to specifically ask for a clean JSON format without nested code blocks
       const systemPrompt: DeepseekMessage = {
         role: 'system',
-        content: `Create a very brief summary of this conversation in JSON format with a title and summary. 
-        Focus only on the main topics discussed. Keep it extremely concise (max 50 words) and in this format:
-        {"title": "Short descriptive title", "summary": "Brief overview of what was discussed"}`
+        content: `Create a very brief summary of this conversation as a clean JSON object with a title and summary. 
+        Focus only on the main topics discussed. Keep it extremely concise (max 50 words) and return a plain JSON object like:
+        {"title": "Short descriptive title", "summary": "Brief overview of what was discussed"}
+        
+        IMPORTANT: Do NOT wrap your response in markdown code blocks. Just return the raw JSON object.`
       };
       
       // Add the system prompt to guide the AI to generate proper summaries
@@ -55,10 +57,14 @@ export const useGenerateSummary = () => {
       let summaryText = response.choices[0].message.content || "No summary available";
       console.log("Received summary from AI:", summaryText);
       
+      // Remove any markdown code blocks if they're present
+      summaryText = summaryText.replace(/```json\s*|\s*```/g, '');
+      
       let title = "Conversation Summary";
       let summary = summaryText;
       
       try {
+        // Try to parse as JSON
         const jsonSummary = JSON.parse(summaryText);
         if (jsonSummary.title && jsonSummary.summary) {
           title = jsonSummary.title;
@@ -83,7 +89,15 @@ export const useGenerateSummary = () => {
         type: session.type 
       });
       
-      await saveConversationSummary(user.id, title, summary, session.id, session.type);
+      // Create a clean JSON structure for storage
+      const cleanJson = JSON.stringify({
+        title,
+        summary,
+        type: session.type
+      }, null, 2);
+      
+      // Store the summary WITHOUT nested code blocks
+      await saveConversationSummary(user.id, title, summary, session.id, session.type, cleanJson);
       
       console.log("Summary saved to journal");
       

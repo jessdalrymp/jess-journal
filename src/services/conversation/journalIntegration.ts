@@ -1,129 +1,65 @@
 
-import { supabase } from '../../integrations/supabase/client';
-import { Conversation } from './types';
-import { saveJournalEntry } from '../journal';
-import { updateConversationSummary } from './manageConversations';
+import { supabase } from "@/integrations/supabase/client";
+import { encryptContent } from "../journal/encryption";
 
 /**
- * Save a journal entry from a conversation
+ * Saves a conversation summary to the journal
  */
-export const saveJournalEntryFromConversation = async (
-  userId: string, 
-  prompt: string, 
-  content: string, 
-  type = 'journal'
-): Promise<boolean> => {
-  if (!userId) {
-    console.error('No user ID provided for saveJournalEntryFromConversation');
-    return false;
-  }
-
+export const saveConversationSummary = async (
+  userId: string,
+  title: string,
+  summary: string,
+  conversationId: string,
+  conversationType: string,
+  cleanJson?: string
+) => {
   try {
-    console.log(`Saving journal entry from conversation for user ${userId}`);
-    const entry = await saveJournalEntry(userId, prompt, content, type);
-    return !!entry;
-  } catch (error) {
-    console.error('Error saving journal entry from conversation:', error);
-    return false;
-  }
-};
+    console.log(`Saving ${conversationType} conversation summary to journal for user ${userId}`);
 
-/**
- * Link an existing journal entry to a conversation
- */
-export const linkJournalEntryToConversation = async (
-  entryId: string,
-  conversationId: string
-): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('journal_entries')
-      .update({ conversation_id: conversationId })
-      .eq('id', entryId);
-
-    if (error) {
-      console.error('Error linking journal entry to conversation:', error);
-      return false;
+    // Prepare content - either use provided cleanJson or create a new JSON object
+    // This ensures we're not creating nested JSON structures
+    let content;
+    if (cleanJson) {
+      // If cleanJson is provided, use it directly without extra wrapping
+      content = cleanJson;
+    } else {
+      // Create a simple JSON structure
+      content = JSON.stringify({
+        title,
+        summary,
+        type: conversationType
+      }, null, 2);
     }
 
-    return true;
-  } catch (error) {
-    console.error('Error in linkJournalEntryToConversation:', error);
-    return false;
-  }
-};
+    // Encrypt the content for storage
+    const encryptedContent = encryptContent(`\`\`\`json\n${content}\n\`\`\``, userId);
 
-/**
- * Get all journal entries linked to a conversation
- */
-export const getJournalEntriesForConversation = async (
-  conversationId: string
-): Promise<any[]> => {
-  try {
+    // Create a prompt that's clean and doesn't contain nested JSON
+    const prompt = `Conversation Summary: ${title}`;
+
+    // Save to the journal_entries table
     const { data, error } = await supabase
       .from('journal_entries')
-      .select('*')
-      .eq('conversation_id', conversationId);
-
-    if (error) {
-      console.error('Error getting journal entries for conversation:', error);
-      return [];
-    }
-
-    return data || [];
-  } catch (error) {
-    console.error('Error in getJournalEntriesForConversation:', error);
-    return [];
-  }
-};
-
-/**
- * Get all conversations linked to a journal entry
- */
-export const getConversationForJournalEntry = async (
-  entryId: string
-): Promise<Conversation | null> => {
-  try {
-    // First get the conversation_id from the journal entry
-    const { data: entryData, error: entryError } = await supabase
-      .from('journal_entries')
-      .select('conversation_id')
-      .eq('id', entryId)
-      .single();
-
-    if (entryError || !entryData || !entryData.conversation_id) {
-      console.log('No conversation linked to this journal entry');
-      return null;
-    }
-
-    // Then get the conversation details
-    const { data, error } = await supabase
-      .from('conversations')
-      .select('*')
-      .eq('id', entryData.conversation_id)
+      .insert({
+        user_id: userId,
+        title: title, // Store the title explicitly
+        content: encryptedContent,
+        type: conversationType, // Store the conversation type
+        prompt: prompt,
+        conversation_id: conversationId // Link to the original conversation
+      })
+      .select()
       .single();
 
     if (error) {
-      console.error('Error getting conversation for journal entry:', error);
+      console.error("Error saving conversation summary to journal:", error);
       return null;
     }
 
-    if (!data) {
-      return null;
-    }
-
-    return {
-      id: data.id,
-      userId: data.profile_id,
-      type: data.type,
-      title: data.title,
-      messages: [],
-      summary: data.summary || '',
-      createdAt: new Date(data.created_at),
-      updatedAt: new Date(data.updated_at)
-    };
+    console.log("Successfully saved summary to journal:", data.id);
+    return data;
   } catch (error) {
-    console.error('Error in getConversationForJournalEntry:', error);
+    console.error("Exception saving conversation summary to journal:", error);
     return null;
   }
 };

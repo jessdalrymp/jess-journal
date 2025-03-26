@@ -33,7 +33,7 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
       displayContent = displayContent.replace(/^[\s\S]*?[Q|A][:.]?\s*/im, '').trim();
     }
     
-    // Clean up any JSON code blocks in the content
+    // Clean up any JSON code blocks in the content - improved cleaning for nested JSON
     const cleanedContent = extractFormattedContent(displayContent);
     
     // Render the content with newlines
@@ -45,47 +45,54 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
     });
   };
 
-  // Process the prompt to detect and handle JSON content
+  // Process the prompt to detect and handle JSON content - with special handling for nested JSON
   const renderPrompt = () => {
     if (!entry.prompt) return null;
     
-    // Improved regex to handle any whitespace between markers
-    const jsonMatch = entry.prompt.match(/```json\s*([\s\S]*?)\s*```/);
+    // Check if the prompt has a JSON block with nested JSON inside
+    let promptContent = entry.prompt;
+    let jsonData = null;
     
-    if (jsonMatch && jsonMatch[1]) {
-      try {
-        // Try to parse the JSON with better error handling
-        const jsonString = jsonMatch[1].trim();
-        const parsedJson = JSON.parse(jsonString);
+    // Handle case where prompt contains JSON block(s)
+    try {
+      // Try to find and parse JSON in the prompt
+      const jsonRegex = /```json\s*([\s\S]*?)```/g;
+      const matches = [...promptContent.matchAll(jsonRegex)];
+      
+      if (matches.length > 0) {
+        // Get the content of the first JSON block
+        const jsonString = matches[0][1].trim();
+        
+        // Clean the JSON string by removing any nested code blocks
+        const cleanJsonString = jsonString.replace(/```json\s*|```/g, '');
+        
+        // Parse the cleaned JSON
+        jsonData = JSON.parse(cleanJsonString);
         
         return (
           <div className="bg-jess-subtle rounded-lg p-4 mb-6">
             <h4 className="text-lg font-medium mb-2">Journal Prompt:</h4>
-            {parsedJson.title && (
-              <h5 className="font-medium text-jess-primary mb-2">{parsedJson.title}</h5>
+            {jsonData.title && (
+              <h5 className="font-medium text-jess-primary mb-2">{jsonData.title}</h5>
             )}
-            {parsedJson.summary && (
-              <p className="text-sm">{parsedJson.summary}</p>
+            {jsonData.summary && (
+              <p className="text-sm">{jsonData.summary}</p>
             )}
-          </div>
-        );
-      } catch (e) {
-        console.error('Error parsing JSON in prompt:', e);
-        // If parsing fails, just display the prompt as text without the json markers
-        return (
-          <div className="bg-jess-subtle rounded-lg p-4 mb-6">
-            <h4 className="text-lg font-medium mb-2">Journal Prompt:</h4>
-            <p>{entry.prompt.replace(/```json\s*|```/g, '').trim()}</p>
           </div>
         );
       }
+    } catch (e) {
+      console.error('Error processing prompt with JSON:', e);
     }
     
-    // Regular prompt without JSON
+    // If no valid JSON was found or parsing failed, display the prompt as text
+    // But clean up any code block markers
+    const cleanPrompt = promptContent.replace(/```json\s*|```/g, '').trim();
+    
     return (
       <div className="bg-jess-subtle rounded-lg p-4 mb-6">
         <h4 className="text-lg font-medium mb-2">Journal Prompt:</h4>
-        <p>{entry.prompt}</p>
+        <p>{cleanPrompt}</p>
       </div>
     );
   };
