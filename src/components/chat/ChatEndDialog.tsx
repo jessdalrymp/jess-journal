@@ -15,21 +15,28 @@ interface ChatEndDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAcceptChallenge?: () => void;
-  chatType: 'story' | 'sideQuest' | 'action' | 'journal';
+  onEndConversation?: () => void;
+  chatType?: 'story' | 'sideQuest' | 'action' | 'journal';
 }
 
 export function ChatEndDialog({ 
   open, 
   onOpenChange, 
   onAcceptChallenge,
-  chatType
+  onEndConversation,
+  chatType = 'story'
 }: ChatEndDialogProps) {
   const navigate = useNavigate();
 
   const handleClose = () => {
     onOpenChange(false);
-    // Navigate to the home page
-    navigate('/');
+    // Call onEndConversation if provided
+    if (onEndConversation) {
+      onEndConversation();
+    } else {
+      // Navigate to the home page as fallback
+      navigate('/');
+    }
   };
   
   return (
