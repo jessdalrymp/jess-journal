@@ -36,6 +36,7 @@ export const createConversation = async (params: {
     type: data.type,
     title: data.title,
     messages: [],
+    summary: data.summary || '',
     createdAt: new Date(data.created_at),
     updatedAt: new Date(data.updated_at)
   };

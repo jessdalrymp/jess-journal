@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessageList } from './ChatMessageList';
@@ -12,7 +13,7 @@ interface ChatContentProps {
   onBack: () => void;
   onSendMessage: (message: string) => void;
   onEndChat: () => void;
-  onSaveAndExit?: () => void; // Add this new prop
+  onSaveAndExit?: () => void;
   onAcceptChallenge?: () => void;
   onNewChallenge?: () => void;
   saveChat?: boolean;
@@ -25,7 +26,7 @@ export const ChatContent = ({
   onBack,
   onSendMessage,
   onEndChat,
-  onSaveAndExit, // Add this new prop
+  onSaveAndExit,
   onAcceptChallenge,
   onNewChallenge,
   saveChat = false
@@ -56,18 +57,17 @@ export const ChatContent = ({
       <div className="flex-1 overflow-y-auto" ref={scrollContainerRef}>
         <ChatMessageList 
           messages={session.messages} 
-          isLoading={loading} 
         />
       </div>
       <ChatInput
         onSendMessage={handleSendMessage}
-        isDisabled={loading}
+        disabled={loading}
         scrollToBottom={scrollToBottom}
       />
       <ChatFooter
         type={type}
         onEndChat={onEndChat}
-        onSaveAndExit={onSaveAndExit} // Pass the new prop
+        onSaveAndExit={onSaveAndExit}
         onAcceptChallenge={onAcceptChallenge}
         onNewChallenge={onNewChallenge}
         saveChat={saveChat}

@@ -1,94 +1,120 @@
 
 import { JournalEntry } from '@/lib/types';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '../../integrations/supabase/client';
 import { mapDatabaseEntryToJournalEntry } from './entryMapper';
+import { getConversationForJournalEntry } from '../conversation/journalIntegration';
 
 /**
  * Fetches all journal entries for a user
+ * @param userId - The user ID to fetch entries for
+ * @param limit - Optional limit of entries to return
+ * @param type - Optional filter by entry type
+ * @returns Promise<JournalEntry[]> - A promise that resolves to an array of journal entries
  */
-export const fetchJournalEntries = async (userId: string | undefined): Promise<JournalEntry[]> => {
-  if (!userId) return [];
-
+export const fetchJournalEntries = async (
+  userId: string,
+  limit?: number,
+  type?: 'journal' | 'story' | 'sideQuest' | 'action' | 'summary'
+): Promise<JournalEntry[]> => {
   try {
-    console.log('Fetching journal entries for user:', userId);
-    
-    // Fetch all journal entries
-    const { data: entriesData, error: entriesError } = await supabase
+    if (!userId) {
+      console.error('No user ID provided to fetchJournalEntries');
+      return [];
+    }
+
+    console.log(`Fetching journal entries for user ${userId}${type ? ` of type ${type}` : ''}`);
+
+    // Build the query
+    let query = supabase
       .from('journal_entries')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (entriesError) {
-      console.error('Error fetching journal entries:', entriesError);
+    // Apply type filter if specified
+    if (type) {
+      query = query.eq('type', type);
+    }
+
+    // Apply limit if specified
+    if (limit && limit > 0) {
+      query = query.limit(limit);
+    }
+
+    // Execute the query
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching journal entries:', error);
       return [];
     }
 
-    if (!entriesData || entriesData.length === 0) {
-      console.log('No journal entries found for user:', userId);
+    if (!data || data.length === 0) {
+      console.log(`No journal entries found for user ${userId}`);
       return [];
     }
-    
-    console.log(`Found ${entriesData.length} journal entries`);
-    
-    // Process entries and fetch conversations where needed
+
+    // Map database entries to JournalEntry objects
     const entries: JournalEntry[] = [];
     
-    for (const entryData of entriesData) {
+    for (const entry of data) {
       try {
-        let conversationData = null;
+        const mappedEntry = mapDatabaseEntryToJournalEntry(entry);
         
-        // If the entry has a conversation_id, fetch the conversation data
-        if (entryData.conversation_id) {
-          console.log(`Fetching conversation data for entry ${entryData.id} with conversation_id ${entryData.conversation_id}`);
-          
-          // First get the conversation
-          const { data: conversationResult } = await supabase
-            .from('conversations')
-            .select('*')
-            .eq('id', entryData.conversation_id)
-            .single();
-            
-          if (conversationResult) {
-            conversationData = conversationResult;
-            
-            // Then get messages for this conversation
-            const { data: messagesData } = await supabase
-              .from('messages')
-              .select('*')
-              .eq('conversation_id', entryData.conversation_id)
-              .order('timestamp', { ascending: false });
-              
-            if (messagesData && messagesData.length > 0) {
-              console.log(`Found ${messagesData.length} messages for conversation ${entryData.conversation_id}`);
-              conversationData.messages = messagesData;
+        // Fetch conversation data if the entry has a conversation_id
+        if (entry.conversation_id) {
+          console.log(`Fetching conversation data for entry ${entry.id} with conversation_id ${entry.conversation_id}`);
+          try {
+            const conversation = await getConversationForJournalEntry(entry.id);
+            if (conversation) {
+              // Add conversation summary if available
+              mappedEntry.conversationSummary = conversation.summary;
             }
+          } catch (error) {
+            console.error(`Error fetching conversation for entry ${entry.id}:`, error);
           }
         }
         
-        // Map the entry with any conversation data we found
-        const entry = mapDatabaseEntryToJournalEntry(entryData, userId, conversationData);
-        entries.push(entry);
-      } catch (err) {
-        console.error('Error processing journal entry:', err, entryData);
-        // Create a fallback entry with minimal information
-        const fallbackEntry: JournalEntry = {
-          id: entryData.id,
-          userId: entryData.user_id,
-          title: entryData.prompt || 'Untitled Entry',
-          content: 'Content could not be loaded',
-          type: (entryData.type as 'journal' | 'story' | 'sideQuest' | 'action') || 'journal',
-          createdAt: new Date(entryData.created_at),
-          prompt: entryData.prompt || null,
-          conversation_id: entryData.conversation_id || null
-        };
-        entries.push(fallbackEntry);
+        entries.push(mappedEntry);
+      } catch (error) {
+        console.error(`Error processing journal entry ${entry.id}:`, error);
       }
     }
-    
+
+    console.log(`Successfully fetched ${entries.length} journal entries`);
     return entries;
   } catch (error) {
-    console.error('Error processing journal entries:', error);
+    console.error('Error in fetchJournalEntries:', error);
     return [];
+  }
+};
+
+/**
+ * Fetches a single journal entry by ID
+ */
+export const fetchJournalEntryById = async (
+  entryId: string
+): Promise<JournalEntry | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('journal_entries')
+      .select('*')
+      .eq('id', entryId)
+      .single();
+
+    if (error) {
+      console.error(`Error fetching journal entry ${entryId}:`, error);
+      return null;
+    }
+
+    if (!data) {
+      console.log(`Journal entry ${entryId} not found`);
+      return null;
+    }
+
+    return mapDatabaseEntryToJournalEntry(data);
+  } catch (error) {
+    console.error(`Error in fetchJournalEntryById for ${entryId}:`, error);
+    return null;
   }
 };

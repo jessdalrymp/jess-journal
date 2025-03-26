@@ -2,7 +2,7 @@
 import { supabase } from '../../integrations/supabase/client';
 import { Conversation } from './types';
 import { saveJournalEntry } from '../journal';
-import { updateConversationSummary } from './manageConversations';
+import { updateConversationMetadata } from './manageConversations';
 
 /**
  * Save a journal entry from a conversation
