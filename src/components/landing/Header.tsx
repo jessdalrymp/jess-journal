@@ -22,7 +22,7 @@ export const Header = () => {
     <header className="container mx-auto pt-10 px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center">
         <Link to="/dashboard">
-          <AuthFormHeader />
+          <AuthFormHeader title="Jess Journal" />
         </Link>
         
         {isMobile ? (
