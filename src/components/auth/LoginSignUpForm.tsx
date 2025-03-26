@@ -83,10 +83,10 @@ export const LoginSignUpForm = ({
               className="w-full p-2 border rounded-md"
               placeholder="Your name"
               disabled={isLoading}
-              {...register('name')}
+              {...(isLogin ? {} : signupForm.register('name'))}
             />
-            {!isLogin && errors.name && (
-              <p className="text-sm text-red-500">{errors.name.message}</p>
+            {!isLogin && signupForm.formState.errors.name && (
+              <p className="text-sm text-red-500">{signupForm.formState.errors.name.message}</p>
             )}
           </div>
         )}
@@ -101,11 +101,16 @@ export const LoginSignUpForm = ({
             className="w-full p-2 border rounded-md"
             placeholder="you@example.com"
             disabled={isLoading}
-            {...register('email')}
+            {...(isLogin ? loginForm.register('email') : signupForm.register('email'))}
           />
-          {errors.email && (
-            <p className="text-sm text-red-500">{errors.email.message}</p>
-          )}
+          {isLogin 
+            ? loginForm.formState.errors.email && (
+                <p className="text-sm text-red-500">{loginForm.formState.errors.email.message}</p>
+              )
+            : signupForm.formState.errors.email && (
+                <p className="text-sm text-red-500">{signupForm.formState.errors.email.message}</p>
+              )
+          }
         </div>
         
         <div className="space-y-2">
@@ -118,11 +123,16 @@ export const LoginSignUpForm = ({
             className="w-full p-2 border rounded-md"
             placeholder="••••••••"
             disabled={isLoading}
-            {...register('password')}
+            {...(isLogin ? loginForm.register('password') : signupForm.register('password'))}
           />
-          {errors.password && (
-            <p className="text-sm text-red-500">{errors.password.message}</p>
-          )}
+          {isLogin 
+            ? loginForm.formState.errors.password && (
+                <p className="text-sm text-red-500">{loginForm.formState.errors.password.message}</p>
+              )
+            : signupForm.formState.errors.password && (
+                <p className="text-sm text-red-500">{signupForm.formState.errors.password.message}</p>
+              )
+          }
         </div>
         
         {!isLogin && (
@@ -136,10 +146,10 @@ export const LoginSignUpForm = ({
               className="w-full p-2 border rounded-md"
               placeholder="••••••••"
               disabled={isLoading}
-              {...register('confirmPassword')}
+              {...(isLogin ? {} : signupForm.register('confirmPassword'))}
             />
-            {!isLogin && errors.confirmPassword && (
-              <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
+            {!isLogin && signupForm.formState.errors.confirmPassword && (
+              <p className="text-sm text-red-500">{signupForm.formState.errors.confirmPassword.message}</p>
             )}
           </div>
         )}
