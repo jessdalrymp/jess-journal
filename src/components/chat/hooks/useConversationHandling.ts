@@ -145,6 +145,7 @@ export const useConversationHandling = (
     openEndDialog,
     handleEndConversation,
     handleJournalingComplete,
-    handleNewChallenge
+    handleNewChallenge,
+    generateSummary // Add this to expose the generateSummary function
   };
 };

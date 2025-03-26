@@ -30,13 +30,15 @@ export const useGenerateSummary = () => {
       
       const aiMessages = formatMessagesForSummary(session.messages);
       
-      console.log("Requesting AI summary with prompt to create very brief summary...");
-      // Modify the request to specifically ask for a very brief summary
+      console.log("Requesting AI summary with prompt to create very brief summary in second person...");
+      // Modify the request to specifically ask for a very brief summary in second person
       const systemPrompt: DeepseekMessage = {
         role: 'system',
         content: `Create a very brief summary of this conversation in JSON format with a title and summary. 
+        The title should be creative and descriptive.
+        Write the summary in second person (using "you" instead of "I" or "they").
         Focus only on the main topics discussed. Keep it extremely concise (max 50 words) and in this format:
-        {"title": "Short descriptive title", "summary": "Brief overview of what was discussed"}`
+        {"title": "Short descriptive title", "summary": "Brief overview of what was discussed in second person"}`
       };
       
       // Add the system prompt to guide the AI to generate proper summaries

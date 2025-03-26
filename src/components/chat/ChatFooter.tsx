@@ -5,6 +5,7 @@ import { CheckCheck, Save, Sparkles } from 'lucide-react';
 
 interface ChatFooterProps {
   onEndChat: () => void;
+  onSaveAndExit?: () => void;
   type: 'story' | 'sideQuest' | 'action' | 'journal';
   onAcceptChallenge?: () => void;
   onNewChallenge?: () => void;
@@ -13,6 +14,7 @@ interface ChatFooterProps {
 
 export const ChatFooter = ({ 
   onEndChat, 
+  onSaveAndExit,
   type, 
   onAcceptChallenge, 
   onNewChallenge,
@@ -42,7 +44,17 @@ export const ChatFooter = ({
         </Button>
       )}
       
-      <div className="ml-auto">
+      <div className="ml-auto flex gap-2">
+        {onSaveAndExit && (
+          <Button 
+            onClick={onSaveAndExit} 
+            variant="default"
+            className="text-sm"
+          >
+            <Save size={16} className="mr-1" />
+            Save & Exit
+          </Button>
+        )}
         <Button 
           onClick={onEndChat} 
           variant="outline"
