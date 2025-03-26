@@ -30,7 +30,11 @@ export function SaveChatDialog({
 }: SaveChatDialogProps) {
   const { toast } = useToast();
   const { fetchJournalEntries } = useUserData();
-  const { generateSummary, loading: summaryLoading } = useGenerateSummary();
+  const currentConversation = getCurrentConversationFromStorage('story');
+  const { generateTitleAndSummary, generating: summaryLoading } = useGenerateSummary(
+    currentConversation?.id || null,
+    'story'
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [saveComplete, setSaveComplete] = useState(false);
 
@@ -56,16 +60,7 @@ export function SaveChatDialog({
       
       if (currentConversation && currentConversation.messages.length > 1) {
         console.log("Generating summary for story conversation...");
-        await generateSummary({
-          id: currentConversation.id,
-          userId: currentConversation.userId,
-          type: 'story',
-          title: currentConversation.title || 'My Story',
-          messages: currentConversation.messages,
-          createdAt: new Date(currentConversation.createdAt),
-          updatedAt: new Date(currentConversation.updatedAt),
-        });
-        
+        await generateTitleAndSummary(currentConversation.messages);
         console.log("Summary successfully generated");
       }
       
