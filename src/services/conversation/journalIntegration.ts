@@ -1,6 +1,8 @@
 
+
 import { supabase } from '../../integrations/supabase/client';
 import { Conversation } from './types';
+import { JournalEntry } from '@/lib/types';
 
 /**
  * Fetches a conversation associated with a journal entry
@@ -59,6 +61,54 @@ export const getConversationForJournalEntry = async (conversationId: string): Pr
     };
   } catch (error) {
     console.error('Error fetching conversation for journal entry:', error);
+    return null;
+  }
+};
+
+/**
+ * Saves a journal entry from a conversation
+ */
+export const saveJournalEntryFromConversation = async (
+  userId: string,
+  title: string,
+  content: string,
+  type: 'journal' | 'story' | 'sideQuest' | 'action' = 'journal'
+): Promise<JournalEntry | null> => {
+  try {
+    // Create a default prompt if none is provided
+    const prompt = title;
+    
+    // Insert the journal entry
+    const { data, error } = await supabase
+      .from('journal_entries')
+      .insert({
+        user_id: userId,
+        prompt,
+        content,
+        type
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error creating journal entry from conversation:', error);
+      return null;
+    }
+    
+    // Map the database record to the JournalEntry type
+    return {
+      id: data.id,
+      userId: data.user_id,
+      prompt: data.prompt,
+      content: data.content,
+      title: data.title || title,
+      type: data.type || type,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.created_at),
+      conversationId: data.conversation_id
+    };
+  } catch (error) {
+    console.error('Error saving journal entry from conversation:', error);
     return null;
   }
 };

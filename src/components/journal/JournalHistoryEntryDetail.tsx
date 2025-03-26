@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { JournalEntry } from '@/lib/types';
 import { Link } from 'react-router-dom';
@@ -5,9 +6,11 @@ import { MessageSquare } from 'lucide-react';
 
 interface JournalHistoryEntryDetailProps {
   entry: JournalEntry;
+  getEntryTitle?: (entry: JournalEntry) => string;
+  onBack?: () => void;
 }
 
-export const JournalHistoryEntryDetail = ({ entry }: JournalHistoryEntryDetailProps) => {
+export const JournalHistoryEntryDetail = ({ entry, getEntryTitle, onBack }: JournalHistoryEntryDetailProps) => {
   const getEntryLink = () => {
     if (entry.type === 'story' || entry.type === 'sideQuest' || entry.type === 'action') {
       if (entry.conversationId) {
@@ -19,6 +22,15 @@ export const JournalHistoryEntryDetail = ({ entry }: JournalHistoryEntryDetailPr
 
   return (
     <div>
+      {onBack && (
+        <button 
+          onClick={onBack}
+          className="mb-4 text-sm text-gray-600 hover:text-gray-800 flex items-center"
+        >
+          ← Back to list
+        </button>
+      )}
+      
       {entry.conversationId && (
         <div className="mt-4">
           <Link 

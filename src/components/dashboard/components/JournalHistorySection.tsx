@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useUserData } from '@/context/UserDataContext';
 import { HistorySectionHeading } from './journal/HistorySectionHeading';
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { HistoryViewAllLink } from './journal/HistoryViewAllLink';
+import { JournalEntry } from '@/lib/types';
 
 export const JournalHistorySection = () => {
   const { journalEntries, loading, fetchJournalEntries } = useUserData();
