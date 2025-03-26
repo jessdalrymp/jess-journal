@@ -28,14 +28,20 @@ export const LoginSignUpForm = ({
   const { signIn, signUp } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset
-  } = useForm<LoginFormData | SignupFormData>({
-    resolver: zodResolver(isLogin ? loginSchema : signupSchema)
+  // Create separate forms for login and signup
+  const loginForm = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    mode: 'onBlur'
   });
+
+  const signupForm = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+    mode: 'onBlur'
+  });
+
+  // Use the appropriate form based on isLogin
+  const { register, handleSubmit, formState: { errors }, reset } = 
+    isLogin ? loginForm : signupForm;
 
   const onSubmit = async (data: LoginFormData | SignupFormData) => {
     setError(null);
@@ -79,7 +85,7 @@ export const LoginSignUpForm = ({
               disabled={isLoading}
               {...register('name')}
             />
-            {errors.name && (
+            {!isLogin && errors.name && (
               <p className="text-sm text-red-500">{errors.name.message}</p>
             )}
           </div>
@@ -132,7 +138,7 @@ export const LoginSignUpForm = ({
               disabled={isLoading}
               {...register('confirmPassword')}
             />
-            {errors.confirmPassword && (
+            {!isLogin && errors.confirmPassword && (
               <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
             )}
           </div>
