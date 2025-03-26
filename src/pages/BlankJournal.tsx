@@ -88,10 +88,13 @@ const BlankJournal = () => {
         return;
       }
       
-      fetchJournalEntries();
+      // Fetch latest entries to update UI
+      await fetchJournalEntries();
       
       toast.success("Journal entry saved successfully");
-      navigate(`/`);
+      
+      // Navigate back to index page
+      navigate('/');
     } catch (error) {
       console.error("Error saving journal entry:", error);
       toast.error("Failed to save journal entry");

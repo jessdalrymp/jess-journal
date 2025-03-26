@@ -19,7 +19,7 @@ export const useStoryConversation = () => {
   
   const handleBack = async () => {
     if (user) {
-      console.log('StoryConversation - Refreshing journal entries before navigating back to dashboard');
+      console.log('StoryConversation - Refreshing journal entries before navigating back to index');
       try {
         await fetchJournalEntries();
       } catch (error) {

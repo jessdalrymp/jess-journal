@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { JournalEntry } from '@/lib/types';
 import { parseEntryContent } from '@/utils/contentParser';
 import { JournalEntryContent } from './JournalEntryContent';
@@ -34,17 +35,24 @@ export const JournalEntryView = ({
   handleSaveAndCloseClick,
   isSaving,
 }: JournalEntryViewProps) => {
+  const navigate = useNavigate();
   const isConversationSummary = !!entry.conversation_id;
   
   const handleSave = async (): Promise<void> => {
-    const result = await handleSaveClick();
-    // Consume the boolean result but don't return it
+    await handleSaveClick();
     return;
   };
 
   const handleSaveAndClose = async (): Promise<void> => {
-    const result = await handleSaveAndCloseClick();
-    // Consume the boolean result but don't return it
+    if (handleSaveAndCloseClick) {
+      await handleSaveAndCloseClick();
+    } else {
+      // If no specific handler is provided, save then navigate
+      const success = await handleSaveClick();
+      if (success !== false) {
+        navigate('/');
+      }
+    }
     return;
   };
 

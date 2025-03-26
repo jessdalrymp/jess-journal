@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -59,7 +58,7 @@ const JournalEntry = () => {
         title: "Journal entry saved",
         description: "Your journal entry has been saved successfully.",
       });
-      navigate('/dashboard');
+      navigate('/');
     }
     return success;
   };
