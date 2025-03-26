@@ -26,6 +26,12 @@ export interface UserProfile {
   preferences?: Record<string, any>;
   createdAt: Date;
   updatedAt: Date;
+  completedOnboarding?: boolean;
+  email?: string;
+  communicationPreference?: string;
+  supportNeeds?: string;
+  engagementMode?: string;
+  mindsetPatterns?: string;
 }
 
 // Define the JournalEntry interface

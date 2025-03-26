@@ -11,7 +11,8 @@ export const fetchUser = async (): Promise<User | null> => {
         id: authUser.id,
         email: authUser.email || '',
         name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
-        createdAt: new Date(authUser.created_at || Date.now())
+        createdAt: new Date(authUser.created_at || Date.now()),
+        updatedAt: new Date()
       };
       return userData;
     } else {
@@ -52,15 +53,21 @@ export const fetchProfile = async (userId: string | undefined): Promise<UserProf
     const userProfile: UserProfile = {
       id: userData.id,
       userId: userId,
+      firstName: undefined,
+      lastName: undefined,
       email: userData.email || undefined,
       growthStage: userData.growth_stage || undefined,
       challenges: userData.goals || undefined,
+      goals: userData.goals || undefined,
       mindsetPatterns: undefined,
       learningStyle: userData.learning_style || undefined,
       supportNeeds: undefined,
       communicationPreference: userData.communication_style || undefined,
       engagementMode: undefined,
-      completedOnboarding: userData.assessment_completed || false
+      completedOnboarding: userData.assessment_completed || false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      preferences: {}
     };
     
     saveProfileToStorage(userProfile);
@@ -81,7 +88,9 @@ export const saveProfile = async (userId: string | undefined, profileData: Parti
     const currentProfile = await fetchProfile(userId) || { 
       id: userId,
       userId: userId,
-      completedOnboarding: false 
+      completedOnboarding: false,
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     
     const updatedProfile = { ...currentProfile, ...profileData };

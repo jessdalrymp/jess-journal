@@ -17,7 +17,7 @@ export const HistoryEntriesList = ({ entries, loading }: HistoryEntriesListProps
       console.log(`Rendering ${entries.length} entries in history list`);
       
       // Count conversation summaries
-      const summaries = entries.filter(e => e.conversation_id);
+      const summaries = entries.filter(e => e.conversationId);
       console.log(`Found ${summaries.length} conversation summaries`);
       
       // Log the first few entries with more details
@@ -26,7 +26,7 @@ export const HistoryEntriesList = ({ entries, loading }: HistoryEntriesListProps
         title: e.title,
         type: e.type,
         contentPreview: e.content?.substring(0, 50) + (e.content?.length > 50 ? '...' : ''),
-        conversation_id: e.conversation_id,
+        conversationId: e.conversationId,
         createdAt: e.createdAt
       })));
     }

@@ -24,6 +24,8 @@ export const useProfile = (userId: string | undefined) => {
         const defaultProfile: UserProfile = {
           id: '1',
           userId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
           completedOnboarding: false,
         };
         saveProfileToStorage(defaultProfile);

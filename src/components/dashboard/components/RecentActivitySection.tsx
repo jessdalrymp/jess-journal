@@ -30,7 +30,7 @@ export const RecentActivitySection = ({
   // Debug logs to check what entries are available
   console.log('Recent activity entries:', recentEntries);
   console.log('Total journal entries:', journalEntries?.length);
-  console.log('Entries with conversation_id:', journalEntries?.filter(e => e.conversation_id)?.length);
+  console.log('Entries with conversationId:', journalEntries?.filter(e => e.conversationId)?.length);
 
   const handleStartJournal = () => {
     navigate('/journal-challenge');

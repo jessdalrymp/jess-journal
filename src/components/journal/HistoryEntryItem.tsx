@@ -33,7 +33,7 @@ const formatTime = (date: Date) => {
 export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   const entryType = entry.type || 'journal';
   const content = getContentPreview(entry);
-  const isConversationSummary = !!entry.conversation_id;
+  const isConversationSummary = !!entry.conversationId;
   
   // Always link to journal entry page
   const linkPath = `/journal-entry/${entry.id}`;
