@@ -55,6 +55,13 @@ export function useJournalContext(userId: string | null | undefined) {
       
       if (entries.length > 0) {
         console.log("Successfully fetched", entries.length, "journal entries");
+        
+        // Log conversation-related entries for debugging
+        const conversationEntries = entries.filter(e => e.conversation_id);
+        if (conversationEntries.length > 0) {
+          console.log(`Found ${conversationEntries.length} entries with conversation_id`);
+        }
+        
         setJournalEntries(entries);
         setIsJournalFetched(true);
         fetchAttemptsRef.current = 0; // Reset attempts counter on success

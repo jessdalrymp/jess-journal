@@ -12,7 +12,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
   try {
     console.log('Fetching journal entries for user:', userId);
     
-    // Fetch all journal entries
+    // Fetch all journal entries directly
     const { data: entriesData, error: entriesError } = await supabase
       .from('journal_entries')
       .select('*')
@@ -31,43 +31,33 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     
     console.log(`Found ${entriesData.length} journal entries`);
     
-    // Process entries and fetch conversations where needed
+    // Process entries and fetch messages where needed
     const entries: JournalEntry[] = [];
     
     for (const entryData of entriesData) {
       try {
-        let conversationData = null;
+        let messagesData = null;
         
-        // If the entry has a conversation_id, fetch the conversation data
+        // If the entry has a conversation_id, fetch just the messages
         if (entryData.conversation_id) {
-          console.log(`Fetching conversation data for entry ${entryData.id} with conversation_id ${entryData.conversation_id}`);
+          console.log(`Fetching messages for entry ${entryData.id} with conversation_id ${entryData.conversation_id}`);
           
-          // First get the conversation
-          const { data: conversationResult } = await supabase
-            .from('conversations')
+          // Get messages for this conversation
+          const { data: messages } = await supabase
+            .from('messages')
             .select('*')
-            .eq('id', entryData.conversation_id)
-            .single();
+            .eq('conversation_id', entryData.conversation_id)
+            .order('timestamp', { ascending: true })
+            .limit(10); // Limit to most recent messages for performance
             
-          if (conversationResult) {
-            conversationData = conversationResult;
-            
-            // Then get messages for this conversation
-            const { data: messagesData } = await supabase
-              .from('messages')
-              .select('*')
-              .eq('conversation_id', entryData.conversation_id)
-              .order('timestamp', { ascending: false });
-              
-            if (messagesData && messagesData.length > 0) {
-              console.log(`Found ${messagesData.length} messages for conversation ${entryData.conversation_id}`);
-              conversationData.messages = messagesData;
-            }
+          if (messages && messages.length > 0) {
+            console.log(`Found ${messages.length} messages for conversation ${entryData.conversation_id}`);
+            messagesData = messages;
           }
         }
         
-        // Map the entry with any conversation data we found
-        const entry = mapDatabaseEntryToJournalEntry(entryData, userId, conversationData);
+        // Map the entry with any messages data we found
+        const entry = mapDatabaseEntryToJournalEntry(entryData, userId, messagesData);
         entries.push(entry);
       } catch (err) {
         console.error('Error processing journal entry:', err, entryData);

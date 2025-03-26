@@ -16,9 +16,9 @@ export const HistoryEntriesList = ({ entries, loading }: HistoryEntriesListProps
     console.log(`Rendering ${entries.length} entries in history list`);
     
     if (entries.length > 0) {
-      // Count conversation summaries
-      const summaries = entries.filter(e => e.conversation_id);
-      console.log(`Found ${summaries.length} conversation summaries`);
+      // Count entries with conversation IDs
+      const conversationEntries = entries.filter(e => e.conversation_id);
+      console.log(`Found ${conversationEntries.length} entries with conversation_id`);
       
       // Log the first few entries with more details
       console.log('First 3 entries details:', entries.slice(0, 3).map(e => ({

@@ -10,7 +10,7 @@ import { parseContentWithJsonCodeBlock } from './contentParser';
 export const mapDatabaseEntryToJournalEntry = (
   entry: any, 
   userId: string,
-  conversationData: any = null
+  messagesData: any[] | null = null
 ): JournalEntry => {
   let content = '';
   let prompt = entry.prompt || null;
@@ -71,51 +71,37 @@ export const mapDatabaseEntryToJournalEntry = (
     entryType = 'summary';
   }
 
-  // For conversation summaries, we can enhance the entry with conversation data
-  if (conversationId && conversationData) {
-    console.log('Processing conversation data for entry:', {
+  // For conversation entries, enhance with message data
+  if (conversationId && messagesData && messagesData.length > 0) {
+    console.log('Processing message data for entry:', {
       entryId: entry.id,
       conversationId,
-      hasTitle: !!conversationData.title,
-      hasSummary: !!conversationData.summary,
-      messageCount: conversationData.messages?.length || 0
+      messageCount: messagesData.length
     });
     
-    // If the title is generic, use conversation title if available
+    // If the title is generic and this is a conversation entry
     if (title === 'Untitled Entry' || title === 'Conversation Summary') {
-      if (conversationData.title) {
-        title = conversationData.title;
-      } else {
-        title = `Conversation: ${new Date(entry.created_at).toLocaleDateString()}`;
-      }
+      title = `Conversation: ${new Date(entry.created_at).toLocaleDateString()}`;
     }
     
-    // If we have a conversation summary from the conversation record, use it
-    if (conversationData.summary && (!content || content === 'No summary available')) {
-      content = conversationData.summary;
-    }
+    // Look for the most recent assistant message that could be a summary
+    const assistantMessages = messagesData
+      .filter((msg: any) => msg.role === 'assistant')
+      .sort((a: any, b: any) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
     
-    // Check for assistant messages (summaries) in the messages array
-    if (conversationData.messages && conversationData.messages.length > 0) {
-      // Look for the most recent assistant message that could be a summary
-      const assistantMessages = conversationData.messages
-        .filter((msg: any) => msg.role === 'assistant')
-        .sort((a: any, b: any) => 
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
+    if (assistantMessages.length > 0) {
+      const latestAssistantMessage = assistantMessages[0];
+      console.log('Found potential summary message:', {
+        messageId: latestAssistantMessage.id,
+        contentPreview: latestAssistantMessage.content.substring(0, 50) + '...'
+      });
       
-      if (assistantMessages.length > 0) {
-        const latestAssistantMessage = assistantMessages[0];
-        console.log('Found potential summary message:', {
-          messageId: latestAssistantMessage.id,
-          contentPreview: latestAssistantMessage.content.substring(0, 50) + '...'
-        });
-        
-        // If we don't have content yet, use the assistant message
-        if (!content || content === 'No summary available') {
-          content = latestAssistantMessage.content;
-          console.log('Using assistant message as summary content');
-        }
+      // If we don't have content yet, use the assistant message
+      if (!content || content === 'No summary available') {
+        content = latestAssistantMessage.content;
+        console.log('Using assistant message as summary content');
       }
     }
   }
@@ -128,6 +114,6 @@ export const mapDatabaseEntryToJournalEntry = (
     type: entryType as 'journal' | 'story' | 'sideQuest' | 'action' | 'summary',
     createdAt: new Date(entry.created_at),
     prompt: prompt,
-    conversation_id: conversationId // Include the conversation_id in the journal entry
+    conversation_id: conversationId
   };
 };

@@ -72,25 +72,24 @@ const getCategoryIcon = (entry: JournalEntry) => {
 export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   const entryType = entry.type || 'journal';
   const content = getContentPreview(entry);
-  const isConversationSummary = !!entry.conversation_id;
+  const isConversationEntry = !!entry.conversation_id;
   const isSummary = entry.type === 'summary';
   
   console.log('Rendering entry in history item:', { 
     id: entry.id, 
     title: getEntryTitle(entry), 
     type: entry.type,
-    isConversationSummary, 
+    isConversationEntry,
     isSummary,
     conversation_id: entry.conversation_id,
     content: content.substring(0, 50) + (content.length > 50 ? '...' : '')
   });
   
-  // Always link to journal entry for conversation summaries
+  // Always link to journal entry
   const linkPath = `/journal-entry/${entry.id}`;
   
   return (
     <Link 
-      key={entry.id} 
       to={linkPath}
       className="relative border-l-2 border-jess-subtle pl-4 pb-5 block group"
     >
@@ -100,7 +99,7 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
         <span>{formatDate(new Date(entry.createdAt))}</span>
         <Clock size={12} className="ml-2 mr-1" />
         <span>{formatTime(new Date(entry.createdAt))}</span>
-        {isConversationSummary && (
+        {isConversationEntry && (
           <span className="ml-2 inline-flex items-center">
             <MessageSquare size={12} className="mr-1 text-blue-500" />
             <span className="text-blue-500">Conversation</span>
@@ -109,7 +108,7 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
         {isSummary && (
           <span className="ml-2 inline-flex items-center">
             <FileText size={12} className="mr-1 text-green-500" />
-            <span className="text-green-500">Daily Summary</span>
+            <span className="text-green-500">Summary</span>
           </span>
         )}
       </div>
