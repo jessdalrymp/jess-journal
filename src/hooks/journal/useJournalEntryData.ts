@@ -20,8 +20,8 @@ export const useJournalEntryData = () => {
       setIsLoading(true);
       console.log("JournalHistory - Loading journal entries, retry count:", retryCount);
       try {
-        // Force refresh when loading entries to ensure we get the latest data
-        await fetchJournalEntries(true);
+        // Force refresh without arguments, using retry count to trigger
+        await fetchJournalEntries();
         console.log("JournalHistory - Successfully loaded entries");
       } catch (error) {
         console.error("JournalHistory - Error loading entries:", error);
@@ -44,9 +44,12 @@ export const useJournalEntryData = () => {
     try {
       // Log raw entries dates for debugging
       if (journalEntries.length > 0) {
+        // Ensure all dates are Date objects
+        const dates = journalEntries.map(e => new Date(e.createdAt).getTime());
+        
         console.log("JournalHistory - Raw entries date range:", {
-          newest: new Date(Math.max(...journalEntries.map(e => new Date(e.createdAt).getTime()))).toISOString(),
-          oldest: new Date(Math.min(...journalEntries.map(e => new Date(e.createdAt).getTime()))).toISOString()
+          newest: new Date(Math.max(...dates)).toISOString(),
+          oldest: new Date(Math.min(...dates)).toISOString()
         });
       }
       

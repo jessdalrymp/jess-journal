@@ -10,8 +10,8 @@ const journalEntriesCache: Record<string, {
   timestamp: number;
 }> = {};
 
-// Cache expiration time (1 minute to ensure we get fresh data more frequently)
-const CACHE_EXPIRATION = 60 * 1000;
+// Cache expiration time (30 seconds to ensure we get fresh data frequently)
+const CACHE_EXPIRATION = 30 * 1000;
 
 /**
  * Hook for fetching journal entries with caching
@@ -31,7 +31,12 @@ export function useJournalEntries() {
     try {
       // Check if we have a valid cache entry and aren't forcing a refresh
       const cachedData = journalEntriesCache[userId];
-      if (!forceRefresh && cachedData && (Date.now() - cachedData.timestamp) < CACHE_EXPIRATION) {
+      const now = Date.now();
+      const cacheExpired = !cachedData || (now - cachedData.timestamp) >= CACHE_EXPIRATION;
+      
+      if (forceRefresh) {
+        console.log('Force fetch enabled - bypassing cache');
+      } else if (!cacheExpired && cachedData) {
         console.log('Using cached journal entries');
         return cachedData.entries;
       }
@@ -44,15 +49,26 @@ export function useJournalEntries() {
       // Attempt to fetch entries
       const entries = await journalService.fetchJournalEntries(userId);
       
-      console.log(`Fetched ${entries.length} journal entries from service`);
+      console.log(`Successfully fetched ${entries.length} journal entries`);
+      
+      // Log date range of entries for debugging
+      if (entries.length > 0) {
+        const dates = entries.map(entry => new Date(entry.createdAt).getTime());
+        const newest = new Date(Math.max(...dates));
+        const oldest = new Date(Math.min(...dates));
+        
+        console.log('Sorted entries date range:', {
+          newest: newest.toISOString(),
+          oldest: oldest.toISOString()
+        });
+      }
       
       // Update cache even if we get empty entries (to prevent constant retries)
       journalEntriesCache[userId] = {
         entries,
-        timestamp: Date.now()
+        timestamp: now
       };
       
-      console.log(`Successfully cached ${entries.length} journal entries`);
       return entries;
     } catch (error) {
       console.error('Error fetching journal entries:', error);

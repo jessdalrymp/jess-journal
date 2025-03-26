@@ -34,6 +34,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     
     // Log date range of fetched entries to debug date filtering issues
     if (entriesData.length > 0) {
+      // Sort by timestamp to get oldest and newest
       const oldestEntry = [...entriesData].sort((a, b) => 
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       )[0];
@@ -105,8 +106,11 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         // Map the entry with any messages data we found
         const entry = mapDatabaseEntryToJournalEntry(entryData, userId, messagesData);
         
+        // Normalize createdAt to ensure it's a Date object
+        entry.createdAt = new Date(entry.createdAt);
+        
         // Log the entry's date for debugging
-        console.log(`Processed entry: ${entry.id}, date: ${new Date(entry.createdAt).toISOString()}, type: ${entry.type}`);
+        console.log(`Processed entry: ${entry.id}, date: ${entry.createdAt.toISOString()}, type: ${entry.type}`);
         
         entries.push(entry);
       } catch (err) {
@@ -129,9 +133,12 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     // Log the final processed entries for debugging
     console.log(`Successfully processed ${entries.length} entries`);
     if (entries.length > 0) {
+      // Get actual date values from entries
+      const dates = entries.map(e => new Date(e.createdAt).getTime());
+      
       console.log('Date range of processed entries:', {
-        oldest: new Date(Math.min(...entries.map(e => new Date(e.createdAt).getTime()))).toISOString(),
-        newest: new Date(Math.max(...entries.map(e => new Date(e.createdAt).getTime()))).toISOString()
+        oldest: new Date(Math.min(...dates)).toISOString(),
+        newest: new Date(Math.max(...dates)).toISOString()
       });
       
       // Log newest entries

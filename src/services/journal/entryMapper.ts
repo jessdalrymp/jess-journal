@@ -124,7 +124,7 @@ export const mapDatabaseEntryToJournalEntry = (
     conversation_id: conversationId
   };
   
-  // Log the mapped entry
+  // Log the mapped entry with its ISO date for consistency
   console.log(`Completed mapping entry ${entry.id}, created: ${journalEntry.createdAt.toISOString()}, type: ${journalEntry.type}`);
   
   return journalEntry;

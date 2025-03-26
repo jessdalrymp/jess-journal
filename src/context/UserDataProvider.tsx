@@ -74,7 +74,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   }, [user]);
 
-  // Add a recurring refresh for journal entries
+  // Add a recurring refresh for journal entries (more frequent refresh)
   useEffect(() => {
     if (!user) return;
     
@@ -83,7 +83,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     const refreshInterval = setInterval(() => {
       console.log("UserDataProvider - Periodic journal refresh - forcing refresh");
       fetchJournalEntries(true); // Force refresh on periodic updates
-    }, 30000); // Refresh every 30 seconds
+    }, 15000); // Refresh every 15 seconds instead of 30
     
     return () => {
       console.log("UserDataProvider - Clearing periodic journal refresh");
@@ -149,4 +149,4 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
       {children}
     </UserDataContext.Provider>
   );
-};
+}
