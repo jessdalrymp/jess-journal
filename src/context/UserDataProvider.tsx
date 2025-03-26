@@ -57,13 +57,13 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   // Initial data loading
   useEffect(() => {
     fetchUser();
-  }, [fetchUser]);
+  }, []);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
     }
-  }, [user, fetchProfile]);
+  }, [user]);
 
   // Always fetch journal entries when user is loaded - force refresh to bypass cache
   useEffect(() => {
@@ -72,19 +72,18 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
       fetchJournalEntries(true); // Force refresh when user is loaded
       checkSubscriptionStatus();
     }
-  }, [user, fetchJournalEntries, checkSubscriptionStatus]);
+  }, [user]);
 
-  // Add a more frequent recurring refresh for journal entries
+  // Add a recurring refresh for journal entries
   useEffect(() => {
     if (!user) return;
     
     console.log("UserDataProvider - Setting up periodic journal refresh");
     
-    // Refresh more frequently (every 15 seconds) to catch new entries faster
     const refreshInterval = setInterval(() => {
       console.log("UserDataProvider - Periodic journal refresh - forcing refresh");
       fetchJournalEntries(true); // Force refresh on periodic updates
-    }, 15000); // Refresh every 15 seconds
+    }, 30000); // Refresh every 30 seconds
     
     return () => {
       console.log("UserDataProvider - Clearing periodic journal refresh");
