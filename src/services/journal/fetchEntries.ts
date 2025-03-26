@@ -65,7 +65,7 @@ export const fetchJournalEntries = async (
         if (entry.conversation_id) {
           console.log(`Fetching conversation data for entry ${entry.id} with conversation_id ${entry.conversation_id}`);
           try {
-            const conversation = await getConversationForJournalEntry(entry.id, entry.conversation_id);
+            const conversation = await getConversationForJournalEntry(entry.conversation_id);
             if (conversation) {
               // Add conversation summary if available
               mappedEntry.conversationSummary = conversation.summary;
@@ -117,7 +117,7 @@ export const fetchJournalEntryById = async (
     // Fetch conversation if this is a summary entry
     if (data.conversation_id) {
       try {
-        const conversation = await getConversationForJournalEntry(entryId, data.conversation_id);
+        const conversation = await getConversationForJournalEntry(data.conversation_id);
         if (conversation) {
           entry.conversationSummary = conversation.summary;
         }

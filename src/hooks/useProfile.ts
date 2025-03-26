@@ -47,10 +47,10 @@ export const useProfile = (userId: string | undefined) => {
         ...profileData,
         userId,
         id: profile?.id || '1',
-      };
+      } as UserProfile;
       
-      saveProfileToStorage(updatedProfile as UserProfile);
-      setProfile(updatedProfile as UserProfile);
+      saveProfileToStorage(updatedProfile);
+      setProfile(updatedProfile);
     } catch (error) {
       console.error('Error saving profile:', error);
       throw error;

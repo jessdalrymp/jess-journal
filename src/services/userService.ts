@@ -91,7 +91,7 @@ export const saveProfile = async (userId: string | undefined, profileData: Parti
       completedOnboarding: false,
       createdAt: new Date(),
       updatedAt: new Date()
-    };
+    } as UserProfile;
     
     const updatedProfile = { ...currentProfile, ...profileData };
 
