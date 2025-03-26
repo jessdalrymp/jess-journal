@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useInitializeChat } from './hooks/useInitializeChat';
 import { useSendMessage } from './hooks/useSendMessage';
 import { useGenerateSummary } from './hooks/useGenerateSummary';
+import { useToast } from '@/hooks/use-toast';
 
 export const useChat = (
   type: 'story' | 'sideQuest' | 'action' | 'journal', 
@@ -14,6 +15,7 @@ export const useChat = (
   const [session, setSession] = useState<ConversationSession | null>(null);
   const initializationAttempted = useRef(false);
   const initialMessageRef = useRef(initialMessage);
+  const { toast } = useToast();
   
   const { user } = useAuth();
   const { initializeChat, loading: initLoading, error: initError } = useInitializeChat(type);
@@ -40,45 +42,39 @@ export const useChat = (
         try {
           // Pass the conversationId directly to initializeChat
           const chatSession = await initializeChat(conversationId);
+          
           if (chatSession) {
             console.log(`Successfully loaded ${type} chat session with ${chatSession.messages?.length || 0} messages`);
-            
-            // If we have a custom initial message and this is a new conversation (only has 1 message)
-            if (initialMessageRef.current && chatSession.messages.length === 1) {
-              console.log(`Setting custom initial message for ${type} chat`);
-              // Replace the default initial message with our custom one
-              const updatedSession = {
-                ...chatSession,
-                messages: [
-                  {
-                    ...chatSession.messages[0],
-                    content: initialMessageRef.current
-                  }
-                ]
-              };
-              setSession(updatedSession);
-            } else {
-              setSession(chatSession);
-            }
+            setSession(chatSession);
+          } else {
+            console.error(`Failed to initialize ${type} chat session`);
+            toast({
+              title: "Chat Error",
+              description: `Could not start a new ${type} conversation. Please try again.`,
+              variant: "destructive"
+            });
           }
         } catch (err) {
           console.error(`Error loading ${type} chat:`, err);
           // We still consider initialization attempted even if it fails
+          toast({
+            title: "Chat Error",
+            description: err instanceof Error ? err.message : "Unknown error occurred",
+            variant: "destructive"
+          });
         }
       };
       
       loadChat();
     }
-  }, [initializeChat, user, type, conversationId]);
+  }, [initializeChat, user, type, conversationId, toast]);
   
-  // Reset initialization flag when user or type changes
-  useEffect(() => {
-    if (conversationId) {
-      // Don't reset if we're loading a specific conversation
-      return;
-    }
+  // Reset initialization flag when user or type changes or when explicitly requested
+  const resetChat = () => {
+    console.log(`Resetting ${type} chat`);
     initializationAttempted.current = false;
-  }, [user, type, conversationId]);
+    setSession(null);
+  };
   
   const handleSendMessage = async (message: string) => {
     if (!session) return;
@@ -109,6 +105,7 @@ export const useChat = (
     error,
     sendMessage: handleSendMessage,
     generateSummary: handleGenerateSummary,
-    saveJournalEntryFromChat
+    saveJournalEntryFromChat,
+    resetChat
   };
 };

@@ -19,17 +19,23 @@ const SideQuest = () => {
       setShowWelcome(true);
       localStorage.setItem("hasVisitedSideQuestPage", "true");
       
-      // Only clear conversation cache on first visit
+      // Clear conversation cache on first visit
       clearCurrentConversationFromStorage('sideQuest');
     }
   }, []); // Empty dependency array to ensure this only runs once
 
   const handleBack = () => {
-    // Always clear conversation on exit
+    // Always clear conversation on exit and return to dashboard
     clearCurrentConversationFromStorage('sideQuest');
     // Set a new key to force remount if user returns
     setKey(Date.now());
     navigate('/dashboard');
+  };
+
+  const handleRestart = () => {
+    // Clear conversation and force remount
+    clearCurrentConversationFromStorage('sideQuest');
+    setKey(Date.now());
   };
 
   return (
@@ -41,7 +47,8 @@ const SideQuest = () => {
           <ChatInterface 
             key={key} // The key ensures a fresh ChatInterface on each visit
             type="sideQuest" 
-            onBack={handleBack} 
+            onBack={handleBack}
+            onRestart={handleRestart}
           />
         </div>
       </main>

@@ -86,11 +86,13 @@ export function useConversationActions() {
         throw new Error("Conversation not found. Please start a new conversation.");
       }
       
-      await conversationService.addMessageToConversation(
+      const result = await conversationService.addMessageToConversation(
         conversationId, {
         role,
         content
       });
+      
+      console.log(`Successfully added message to conversation ${conversationId}`);
       return true; // Return true to indicate success
     } catch (error) {
       console.error('Error adding message to conversation:', error);
