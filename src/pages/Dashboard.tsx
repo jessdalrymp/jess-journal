@@ -6,7 +6,7 @@ import { AuthForm } from '../components/auth/AuthForm';
 import { SelfDiscoveryQuiz } from '../components/onboarding/SelfDiscoveryQuiz';
 import { Header } from '../components/Header';
 import { DisclaimerBanner } from '../components/ui/DisclaimerBanner';
-import { Dashboard } from '../components/dashboard/Dashboard';
+import { Dashboard as DashboardContent } from '../components/dashboard/Dashboard';
 
 // Add styles for tour highlight
 const tourStyles = `
@@ -28,7 +28,7 @@ const tourStyles = `
   }
 `;
 
-const Index = () => {
+const Dashboard = () => {
   const { user, isNewUser, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useUserData();
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -83,7 +83,7 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
       <main className="flex-1 py-6">
-        <Dashboard />
+        <DashboardContent />
       </main>
       <DisclaimerBanner />
       <style>{tourStyles}</style>
@@ -91,4 +91,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Dashboard;
