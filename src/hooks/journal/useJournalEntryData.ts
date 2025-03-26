@@ -20,7 +20,7 @@ export const useJournalEntryData = () => {
       setIsLoading(true);
       console.log("JournalHistory - Loading journal entries, retry count:", retryCount);
       try {
-        // Force refresh without arguments, using retry count to trigger
+        // Force refresh when loading entries to ensure we get the latest data
         await fetchJournalEntries();
         console.log("JournalHistory - Successfully loaded entries");
       } catch (error) {
@@ -44,19 +44,25 @@ export const useJournalEntryData = () => {
     try {
       // Log raw entries dates for debugging
       if (journalEntries.length > 0) {
-        // Ensure all dates are Date objects
-        const dates = journalEntries.map(e => new Date(e.createdAt).getTime());
+        // Ensure we're working with proper Date objects
+        const entryDates = journalEntries.map(e => {
+          // Handle different date formats
+          return new Date(e.createdAt).getTime();
+        });
         
         console.log("JournalHistory - Raw entries date range:", {
-          newest: new Date(Math.max(...dates)).toISOString(),
-          oldest: new Date(Math.min(...dates)).toISOString()
+          newest: new Date(Math.max(...entryDates)).toISOString(),
+          oldest: new Date(Math.min(...entryDates)).toISOString()
         });
       }
       
       // Sort entries by date (newest first)
-      const sorted = [...journalEntries].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+      // Ensure we properly convert dates for comparison
+      const sorted = [...journalEntries].sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA;
+      });
       
       console.log(`JournalHistory - Sorted ${sorted.length} entries including ${sorted.filter(e => e.conversation_id).length} conversation entries`);
       

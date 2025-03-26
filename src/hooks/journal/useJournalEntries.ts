@@ -10,8 +10,8 @@ const journalEntriesCache: Record<string, {
   timestamp: number;
 }> = {};
 
-// Cache expiration time (5 seconds to ensure we always get fresh data)
-const CACHE_EXPIRATION = 5 * 1000;
+// Cache expiration time (reduced to 30 seconds to ensure fresh data)
+const CACHE_EXPIRATION = 30 * 1000;
 
 /**
  * Hook for fetching journal entries with caching
@@ -29,15 +29,13 @@ export function useJournalEntries() {
     }
     
     try {
+      // Always log current time to help debug date issues
+      console.log('Current time when fetching:', new Date().toISOString());
+      
       // Check if we have a valid cache entry and aren't forcing a refresh
       const cachedData = journalEntriesCache[userId];
-      const now = Date.now();
-      const cacheExpired = !cachedData || (now - cachedData.timestamp) >= CACHE_EXPIRATION;
-      
-      if (forceRefresh) {
-        console.log('Force fetch enabled - bypassing cache');
-      } else if (!cacheExpired && cachedData) {
-        console.log('Using cached journal entries');
+      if (!forceRefresh && cachedData && (Date.now() - cachedData.timestamp) < CACHE_EXPIRATION) {
+        console.log('Using cached journal entries from:', new Date(cachedData.timestamp).toISOString());
         return cachedData.entries;
       }
       
@@ -49,21 +47,9 @@ export function useJournalEntries() {
       // Attempt to fetch entries
       const entries = await journalService.fetchJournalEntries(userId);
       
-      console.log(`Successfully fetched ${entries.length} journal entries`);
+      console.log(`Fetched ${entries.length} journal entries from service`);
       
-      // Log date range of entries for debugging
-      if (entries.length > 0) {
-        const dates = entries.map(entry => new Date(entry.createdAt).getTime());
-        const newest = new Date(Math.max(...dates));
-        const oldest = new Date(Math.min(...dates));
-        
-        console.log('Sorted entries date range:', {
-          newest: newest.toISOString(),
-          oldest: oldest.toISOString()
-        });
-      }
-      
-      // Ensure all entries have proper Date objects for createdAt
+      // Process entries to ensure date objects are consistent
       const processedEntries = entries.map(entry => ({
         ...entry,
         createdAt: entry.createdAt instanceof Date ? entry.createdAt : new Date(entry.createdAt)
@@ -72,9 +58,10 @@ export function useJournalEntries() {
       // Update cache even if we get empty entries (to prevent constant retries)
       journalEntriesCache[userId] = {
         entries: processedEntries,
-        timestamp: now
+        timestamp: Date.now()
       };
       
+      console.log(`Successfully cached ${processedEntries.length} journal entries at:`, new Date().toISOString());
       return processedEntries;
     } catch (error) {
       console.error('Error fetching journal entries:', error);

@@ -65,28 +65,34 @@ export function useJournalContext(userId: string | null | undefined) {
       if (entries.length > 0) {
         console.log("Successfully fetched", entries.length, "journal entries");
         
+        // Ensure all entries have proper Date objects
+        const processedEntries = entries.map(entry => ({
+          ...entry,
+          createdAt: entry.createdAt instanceof Date ? entry.createdAt : new Date(entry.createdAt)
+        }));
+        
         // Sort entries by date (newest first)
-        const sortedEntries = [...entries].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        const sortedEntries = [...processedEntries].sort(
+          (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
         );
         
         // Log date range for debugging
         if (sortedEntries.length > 0) {
           console.log('Sorted entries date range:', {
-            newest: new Date(sortedEntries[0].createdAt).toISOString(),
-            oldest: new Date(sortedEntries[sortedEntries.length - 1].createdAt).toISOString()
+            newest: sortedEntries[0].createdAt.toISOString(),
+            oldest: sortedEntries[sortedEntries.length - 1].createdAt.toISOString()
           });
         }
         
         // Log conversation-related entries for debugging
-        const conversationEntries = entries.filter(e => e.conversation_id);
+        const conversationEntries = sortedEntries.filter(e => e.conversation_id);
         if (conversationEntries.length > 0) {
           console.log(`Found ${conversationEntries.length} entries with conversation_id`);
           console.log('Conversation entries:', conversationEntries.map(e => ({
             id: e.id,
             title: e.title,
             type: e.type,
-            createdAt: e.createdAt,
+            createdAt: e.createdAt.toISOString(),
             conversation_id: e.conversation_id
           })));
         }

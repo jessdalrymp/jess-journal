@@ -34,37 +34,33 @@ export const JournalHistoryContent = ({
     console.log(`JournalHistory - Processing ${entries.length} entries for display`);
     
     if (entries.length > 0) {
-      // Ensure all entries have proper Date objects
-      const normalizedEntries = entries.map(entry => ({
+      // Ensure we properly convert all dates
+      const processedEntries = entries.map(entry => ({
         ...entry,
         createdAt: entry.createdAt instanceof Date ? entry.createdAt : new Date(entry.createdAt)
       }));
       
       // Sort entries by date (newest first) to ensure proper ordering
-      const sortedEntries = [...normalizedEntries].sort((a, b) => {
-        const dateA = a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime();
-        const dateB = b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime();
-        return dateB - dateA;
-      });
+      const sortedEntries = [...processedEntries].sort(
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+      );
       
       // Log the date range of entries for debugging date filtering issues
-      if (sortedEntries.length > 0) {
-        const newestDate = sortedEntries[0].createdAt;
-        const oldestDate = sortedEntries[sortedEntries.length - 1].createdAt;
-        
-        console.log('JournalHistory - Entries date range:', {
-          newest: newestDate instanceof Date ? newestDate.toISOString() : new Date(newestDate).toISOString(),
-          oldest: oldestDate instanceof Date ? oldestDate.toISOString() : new Date(oldestDate).toISOString(),
-          count: sortedEntries.length
-        });
-      }
+      const newestDate = sortedEntries[0].createdAt;
+      const oldestDate = sortedEntries[sortedEntries.length - 1].createdAt;
+      
+      console.log('JournalHistory - Entries date range:', {
+        newest: newestDate.toISOString(),
+        oldest: oldestDate.toISOString(),
+        count: sortedEntries.length
+      });
       
       // Log the first 5 entries for debugging
       console.log('JournalHistory - First 5 entries:', sortedEntries.slice(0, 5).map(e => ({
         id: e.id,
         title: e.title?.substring(0, 30) + '...',
         type: e.type,
-        date: e.createdAt instanceof Date ? e.createdAt.toISOString() : new Date(e.createdAt).toISOString(),
+        date: new Date(e.createdAt).toISOString(),
         conversationId: e.conversation_id
       })));
       
@@ -86,7 +82,7 @@ export const JournalHistoryContent = ({
             id: e.id,
             type: e.type,
             title: e.title,
-            date: e.createdAt instanceof Date ? e.createdAt.toISOString() : new Date(e.createdAt).toISOString(),
+            date: new Date(e.createdAt).toISOString(),
             conversationId: e.conversation_id
           }))
         );

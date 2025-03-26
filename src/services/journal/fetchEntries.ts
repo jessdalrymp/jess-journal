@@ -34,13 +34,6 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     
     // Log date range of fetched entries to debug date filtering issues
     if (entriesData.length > 0) {
-      // Log raw timestamps for analysis
-      console.log('Raw timestamps from database:');
-      entriesData.slice(0, 5).forEach(entry => {
-        console.log(`Entry ID: ${entry.id}, created_at: ${entry.created_at}, type: ${entry.type || 'unknown'}`);
-      });
-      
-      // Sort by timestamp to get oldest and newest
       const oldestEntry = [...entriesData].sort((a, b) => 
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       )[0];
@@ -58,7 +51,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
       console.log('Most recent entries from database:', entriesData.slice(0, 3).map(entry => ({
         id: entry.id,
         created_at: entry.created_at,
-        parsed_date: new Date(entry.created_at).toISOString(),
+        created_at_iso: new Date(entry.created_at).toISOString(),
         type: entry.type,
         title: entry.prompt?.substring(0, 30) || 'No title'
       })));
@@ -113,19 +106,8 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         // Map the entry with any messages data we found
         const entry = mapDatabaseEntryToJournalEntry(entryData, userId, messagesData);
         
-        // Ensure createdAt is a proper Date object
-        if (!(entry.createdAt instanceof Date)) {
-          entry.createdAt = new Date(entry.createdAt);
-        }
-        
-        // Double-check date value is valid
-        if (isNaN(entry.createdAt.getTime())) {
-          console.error(`Invalid date for entry ${entry.id}, using current date instead`);
-          entry.createdAt = new Date();
-        }
-        
         // Log the entry's date for debugging
-        console.log(`Processed entry: ${entry.id}, date: ${entry.createdAt.toISOString()}, type: ${entry.type}`);
+        console.log(`Processed entry: ${entry.id}, date: ${new Date(entry.createdAt).toISOString()}, type: ${entry.type}`);
         
         entries.push(entry);
       } catch (err) {
@@ -148,26 +130,27 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     // Log the final processed entries for debugging
     console.log(`Successfully processed ${entries.length} entries`);
     if (entries.length > 0) {
-      // Get actual date values from entries
-      const dates = entries.map(e => new Date(e.createdAt).getTime());
+      // Ensure all dates are proper Date objects
+      const sortedEntries = [...entries].sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA;
+      });
       
       console.log('Date range of processed entries:', {
-        oldest: new Date(Math.min(...dates)).toISOString(),
-        newest: new Date(Math.max(...dates)).toISOString()
+        oldest: new Date(Math.min(...entries.map(e => new Date(e.createdAt).getTime()))).toISOString(),
+        newest: new Date(Math.max(...entries.map(e => new Date(e.createdAt).getTime()))).toISOString()
       });
       
       // Log newest entries
       console.log('Newest processed entries:', 
-        [...entries]
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .slice(0, 3)
-          .map(e => ({
-            id: e.id,
-            title: e.title,
-            type: e.type,
-            createdAt: new Date(e.createdAt).toISOString(),
-            conversation_id: e.conversation_id
-          }))
+        sortedEntries.slice(0, 3).map(e => ({
+          id: e.id,
+          title: e.title,
+          type: e.type,
+          createdAt: new Date(e.createdAt).toISOString(),
+          conversation_id: e.conversation_id
+        }))
       );
     }
     

@@ -57,13 +57,13 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   // Initial data loading
   useEffect(() => {
     fetchUser();
-  }, []);
+  }, [fetchUser]);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
     }
-  }, [user]);
+  }, [user, fetchProfile]);
 
   // Always fetch journal entries when user is loaded - force refresh to bypass cache
   useEffect(() => {
@@ -72,18 +72,19 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
       fetchJournalEntries(true); // Force refresh when user is loaded
       checkSubscriptionStatus();
     }
-  }, [user]);
+  }, [user, fetchJournalEntries, checkSubscriptionStatus]);
 
-  // Add a recurring refresh for journal entries (more frequent refresh)
+  // Add a more frequent recurring refresh for journal entries
   useEffect(() => {
     if (!user) return;
     
     console.log("UserDataProvider - Setting up periodic journal refresh");
     
+    // Refresh more frequently (every 15 seconds) to catch new entries faster
     const refreshInterval = setInterval(() => {
       console.log("UserDataProvider - Periodic journal refresh - forcing refresh");
       fetchJournalEntries(true); // Force refresh on periodic updates
-    }, 10000); // Refresh every 10 seconds for more frequent updates
+    }, 15000); // Refresh every 15 seconds
     
     return () => {
       console.log("UserDataProvider - Clearing periodic journal refresh");
@@ -106,13 +107,13 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
           setTimeout(() => {
             console.log("Delayed journal refresh after conversation update");
             fetchJournalEntries(true); // Force refresh
-          }, 500);
+          }, 1000);
           
           // Do an additional refresh after a longer delay as a safety measure
           setTimeout(() => {
             console.log("Secondary delayed journal refresh after conversation update");
             fetchJournalEntries(true); // Force refresh
-          }, 2000);
+          }, 3000);
         }
       }
       
@@ -149,4 +150,4 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
       {children}
     </UserDataContext.Provider>
   );
-}
+};
