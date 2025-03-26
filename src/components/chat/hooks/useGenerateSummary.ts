@@ -1,129 +1,110 @@
-
-import { useState } from 'react';
-import { ConversationSession } from '@/lib/types';
+import { useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import * as conversationService from '@/services/conversation';
 import { useToast } from '@/hooks/use-toast';
-import { formatMessagesForSummary } from '../chatUtils';
-import { generateDeepseekResponse, DeepseekMessage } from '../../../utils/deepseekApi';
-import { saveConversationSummary } from '@/services/conversation';
 
-export const useGenerateSummary = () => {
-  const [loading, setLoading] = useState(false);
+interface SummaryResult {
+  title: string | null;
+  summary: string | null;
+}
+
+export const useGenerateSummary = (
+  conversationId: string | null,
+  type: 'story' | 'sideQuest' | 'action' | 'journal',
+  onSummarySaved?: () => void
+) => {
+  const [generating, setGenerating] = useState(false);
+  const [summary, setSummary] = useState<SummaryResult>({ title: null, summary: null });
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const generateSummary = async (session: ConversationSession) => {
-    if (!session || !user) {
-      console.error("No active session or user not authenticated");
-      return null;
+  const generateTitleAndSummary = useCallback(async (messages: { role: string; content: string }[]) => {
+    if (!user || !conversationId) {
+      console.error("User not authenticated or conversation ID missing");
+      return;
     }
-    
-    setLoading(true);
-    
-    try {
-      console.log(`Generating summary for ${session.type} conversation...`);
-      if (!session.messages || session.messages.length <= 2) {
-        console.log("Not enough messages to summarize");
-        setLoading(false);
-        return null;
-      }
-      
-      const aiMessages = formatMessagesForSummary(session.messages);
-      
-      console.log("Requesting AI summary with prompt to create very brief summary...");
-      // Modify the request to specifically ask for a clean JSON format without nested code blocks
-      const systemPrompt: DeepseekMessage = {
-        role: 'system',
-        content: `Create a very brief summary of this conversation as a clean JSON object with a title and summary. 
-        Focus only on the main topics discussed. Keep it extremely concise (max 50 words) and return a plain JSON object like:
-        {"title": "Short descriptive title", "summary": "Brief overview of what was discussed"}
-        
-        IMPORTANT: Do NOT wrap your response in markdown code blocks. Just return the raw JSON object.`
-      };
-      
-      // Add the system prompt to guide the AI to generate proper summaries
-      const messagesWithPrompt: DeepseekMessage[] = [
-        systemPrompt,
-        ...aiMessages
-      ];
-      
-      const response = await generateDeepseekResponse(messagesWithPrompt);
-      
-      if (!response || !response.choices || !response.choices[0] || !response.choices[0].message) {
-        console.error("Received invalid response from AI service:", response);
-        throw new Error("Failed to generate summary: Invalid AI response");
-      }
-      
-      let summaryText = response.choices[0].message.content || "No summary available";
-      console.log("Received summary from AI:", summaryText);
-      
-      // Remove any markdown code blocks if they're present
-      summaryText = summaryText.replace(/```json\s*|\s*```/g, '');
-      
-      let title = "Conversation Summary";
-      let summary = summaryText;
-      
-      try {
-        // Try to parse as JSON
-        const jsonSummary = JSON.parse(summaryText);
-        if (jsonSummary.title && jsonSummary.summary) {
-          title = jsonSummary.title;
-          summary = jsonSummary.summary;
-          console.log("Parsed JSON summary:", { title, summary });
-        }
-      } catch (e) {
-        console.log("Summary not in JSON format, using raw text");
-        // Attempt to create a basic title and summary from the raw text
-        const lines = summaryText.split('\n').filter(line => line.trim());
-        if (lines.length > 1) {
-          title = lines[0].replace(/^#|Title:|topic:/i, '').trim();
-          summary = lines.slice(1).join('\n').trim();
-        }
-      }
-      
-      console.log("Saving summary to journal...", { 
-        userId: user.id, 
-        title, 
-        summary, 
-        sessionId: session.id,
-        type: session.type 
-      });
-      
-      // Create a clean JSON structure for storage
-      const cleanJson = JSON.stringify({
-        title,
-        summary,
-        type: session.type
-      }, null, 2);
-      
-      // Store the summary WITHOUT nested code blocks
-      await saveConversationSummary(user.id, title, summary, session.id, session.type, cleanJson);
-      
-      console.log("Summary saved to journal");
-      
-      toast({
-        title: "Conversation Summarized",
-        description: `Your ${session.type === 'story' ? 'story' : 'side quest'} has been saved to your journal.`,
-        duration: 3000,
-      });
-      
-      return { title, summary };
-    } catch (error) {
-      console.error('Error generating summary:', error);
-      toast({
-        title: "Error Saving Summary",
-        description: "We couldn't save your conversation summary.",
-        variant: "destructive",
-        duration: 5000,
-      });
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  return {
-    generateSummary,
-    loading
-  };
+    setGenerating(true);
+    try {
+      // Step 1: Generate Title
+      const titleResponse = await fetch('/api/generate-title', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messages }),
+      });
+
+      if (!titleResponse.ok) {
+        throw new Error(`Title generation failed with status: ${titleResponse.status}`);
+      }
+
+      const titleData = await titleResponse.json();
+      const generatedTitle = titleData.title?.trim() || 'Untitled';
+
+      // Step 2: Generate Summary
+      const summaryResponse = await fetch('/api/generate-summary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messages }),
+      });
+
+      if (!summaryResponse.ok) {
+        throw new Error(`Summary generation failed with status: ${summaryResponse.status}`);
+      }
+
+      const summaryData = await summaryResponse.json();
+      const generatedSummary = summaryData.summary?.trim() || '';
+
+      setSummary({ title: generatedTitle, summary: generatedSummary });
+
+      // Step 3: Save Title and Summary to Database
+      if (user && conversationId) {
+        try {
+          await conversationService.updateConversationTitle(conversationId, generatedTitle);
+          await conversationService.updateConversationSummary(conversationId, generatedSummary);
+
+          // Also save to journal if it's a story, sideQuest, or action
+          if (type === 'story' || type === 'sideQuest' || type === 'action') {
+            await conversationService.saveConversationSummary(
+              user.id,
+              generatedTitle,
+              generatedSummary,
+              conversationId,
+              type
+            );
+          }
+
+          if (onSummarySaved) {
+            onSummarySaved();
+          }
+
+          toast({
+            title: "Summary Generated",
+            description: "Your story has been summarized and saved.",
+          });
+        } catch (dbError: any) {
+          console.error("Error saving summary to database:", dbError);
+          toast({
+            title: "Error Saving Summary",
+            description: "There was an error saving the summary. Please try again.",
+            variant: "destructive",
+          });
+        }
+      }
+    } catch (error: any) {
+      console.error("Error generating title and summary:", error);
+      toast({
+        title: "Error Generating Summary",
+        description: "Failed to generate summary. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setGenerating(false);
+    }
+  }, [conversationId, user, type, onSummarySaved, toast]);
+
+  return { generateTitleAndSummary, generating, summary };
 };
