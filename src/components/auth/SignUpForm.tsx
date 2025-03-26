@@ -5,6 +5,7 @@ import { ErrorMessage } from './ErrorMessage';
 import { useSignUpValidation } from '../../hooks/auth/useSignUpValidation';
 import { useSignUpSubmit } from '../../hooks/auth/useSignUpSubmit';
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 interface SignUpFormProps {
   onVerificationSent: (email: string) => void;
@@ -18,6 +19,8 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
   
   const { error, setError, validateForm } = useSignUpValidation();
   const { handleSubmit, isProcessing, loading } = useSignUpSubmit({ onVerificationSent });
+  
+  const isLoading = loading || isProcessing;
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +44,7 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         onChange={setName}
         label="Name"
         placeholder="Your name"
+        disabled={isLoading}
       />
       
       <AuthFormInput
@@ -50,6 +54,7 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         onChange={setEmail}
         label="Email"
         placeholder="you@example.com"
+        disabled={isLoading}
       />
       
       <AuthFormInput
@@ -59,6 +64,7 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         onChange={setPassword}
         label="Password"
         placeholder="••••••••"
+        disabled={isLoading}
       />
       
       <AuthFormInput
@@ -68,6 +74,7 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         onChange={setConfirmPassword}
         label="Confirm Password"
         placeholder="••••••••"
+        disabled={isLoading}
       />
       
       <ErrorMessage error={error} />
@@ -76,9 +83,14 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
         <Button 
           type="submit" 
           className="w-full py-3"
-          disabled={loading || isProcessing}
+          disabled={isLoading}
         >
-          {loading || isProcessing ? 'Processing...' : 'Create Account'}
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Processing...
+            </span>
+          ) : 'Create Account'}
         </Button>
       </div>
     </form>

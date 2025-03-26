@@ -1,12 +1,14 @@
+
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { AuthFormInput } from './AuthFormInput';
-import { ActionButton } from '../ui/ActionButton';
-import { ForgotPasswordLink } from './ForgotPasswordLink';
 import { ErrorMessage } from './ErrorMessage';
+import { ForgotPasswordLink } from './ForgotPasswordLink';
 import { validateEmail, validatePassword } from '../../utils/authValidation';
 import { isRateLimited } from '../../utils/email/rateLimitDetection';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 interface LoginFormProps {
   onForgotPassword: () => void;
@@ -99,6 +101,7 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
         onChange={setEmail}
         label="Email"
         placeholder="you@example.com"
+        disabled={loading}
       />
       
       <AuthFormInput
@@ -108,6 +111,7 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
         onChange={setPassword}
         label="Password"
         placeholder="••••••••"
+        disabled={loading}
       />
       
       <ErrorMessage error={error} />
@@ -115,13 +119,18 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
       <ForgotPasswordLink onForgotPassword={onForgotPassword} />
       
       <div className="pt-2">
-        <ActionButton 
-          type="primary" 
+        <Button 
+          type="submit" 
           className="w-full py-3"
           disabled={loading}
         >
-          {loading ? 'Processing...' : 'Sign In'}
-        </ActionButton>
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Processing...
+            </span>
+          ) : 'Sign In'}
+        </Button>
       </div>
     </form>
   );
