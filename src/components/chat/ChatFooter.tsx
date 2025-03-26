@@ -20,7 +20,7 @@ export const ChatFooter = ({
 }: ChatFooterProps) => {
   const handleEndChatClick = () => {
     console.log("End chat button clicked in ChatFooter, saveChat =", saveChat);
-    // Directly call onEndChat without any additional logic
+    // Simply call the onEndChat function which should handle navigation in its parent component
     onEndChat();
   };
 

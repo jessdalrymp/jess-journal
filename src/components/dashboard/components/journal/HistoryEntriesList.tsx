@@ -13,9 +13,9 @@ interface HistoryEntriesListProps {
 export const HistoryEntriesList = ({ entries, loading }: HistoryEntriesListProps) => {
   // Log entries for debugging
   useEffect(() => {
+    console.log(`Rendering ${entries.length} entries in history list`);
+    
     if (entries.length > 0) {
-      console.log(`Rendering ${entries.length} entries in history list`);
-      
       // Count conversation summaries
       const summaries = entries.filter(e => e.conversation_id);
       console.log(`Found ${summaries.length} conversation summaries`);
@@ -36,7 +36,7 @@ export const HistoryEntriesList = ({ entries, loading }: HistoryEntriesListProps
     return <HistoryLoadingState />;
   }
   
-  if (entries.length === 0) {
+  if (!entries || entries.length === 0) {
     return <HistoryEmptyState />;
   }
   

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useUserData } from '@/context/UserDataContext';
 import { HistorySectionHeading } from './journal/HistorySectionHeading';
 import { HistoryActionCard } from './journal/HistoryActionCard';
@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 export const JournalHistorySection = () => {
   const { journalEntries, loading, fetchJournalEntries } = useUserData();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [mountedTime] = useState(Date.now());
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -44,19 +45,33 @@ export const JournalHistorySection = () => {
   
   console.log('Journal History - recent entries sample:', recentEntries?.slice(0, 2));
   
-  // Force refresh when the component mounts to ensure latest entries
-  useEffect(() => {
-    const refreshEntries = async () => {
-      try {
-        console.log("JournalHistorySection - Refreshing entries on mount");
-        await fetchJournalEntries();
-      } catch (error) {
-        console.error("Error refreshing journal entries:", error);
-      }
-    };
-    
-    refreshEntries();
+  // Force refresh when the component mounts
+  const refreshEntries = useCallback(async () => {
+    try {
+      console.log("JournalHistorySection - Refreshing entries");
+      await fetchJournalEntries();
+    } catch (error) {
+      console.error("Error refreshing journal entries:", error);
+    }
   }, [fetchJournalEntries]);
+  
+  // Refresh on mount
+  useEffect(() => {
+    console.log("JournalHistorySection - Component mounted, refreshing entries");
+    refreshEntries();
+  }, [refreshEntries]);
+  
+  // Refresh again after a short delay (helps with race conditions)
+  useEffect(() => {
+    const timeSinceMounted = Date.now() - mountedTime;
+    if (timeSinceMounted < 5000) { // Only do this near initial load
+      const timer = setTimeout(() => {
+        console.log("JournalHistorySection - Delayed refresh");
+        refreshEntries();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [mountedTime, refreshEntries]);
   
   const handleRefresh = async () => {
     setIsRefreshing(true);
