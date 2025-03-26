@@ -24,7 +24,13 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
     e.preventDefault();
     console.log('Validating and submitting sign-up form');
     const isValid = validateForm(email, password, confirmPassword, name);
-    handleSubmit(e, email, password, name, () => isValid, setError);
+    
+    if (isValid) {
+      console.log('Form validation passed, submitting...');
+      handleSubmit(e, email, password, name, () => true, setError);
+    } else {
+      console.log('Form validation failed');
+    }
   };
 
   return (

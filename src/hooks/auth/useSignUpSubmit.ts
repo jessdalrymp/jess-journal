@@ -29,14 +29,22 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
     setError(null);
     
     try {
-      console.log("Starting sign up validation");
+      console.log("Starting sign up submission");
       if (!validateForm()) {
-        console.log("Validation failed");
+        console.log("Validation failed in handleSubmit");
         return;
       }
 
       setIsProcessing(true);
       console.log("Attempting to sign up with:", { email, name });
+      
+      // Check if email and password are valid
+      if (!email || !password) {
+        setError("Email and password are required");
+        setIsProcessing(false);
+        return;
+      }
+      
       const result = await signUp(email, password, name, true); // Added true to check if user exists
       console.log("Sign up result:", result);
       
