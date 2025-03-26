@@ -6,7 +6,7 @@ export const deleteConversation = async (conversationId: string): Promise<boolea
   try {
     // First delete all messages in the conversation
     const { error: messagesError } = await supabase
-      .from('Messages')
+      .from('messages')
       .delete()
       .eq('conversation', conversationId);
 
@@ -17,7 +17,7 @@ export const deleteConversation = async (conversationId: string): Promise<boolea
 
     // Then delete the conversation itself
     const { error } = await supabase
-      .from('Conversation_id')
+      .from('conversation_id')
       .delete()
       .eq('id', conversationId);
 

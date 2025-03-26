@@ -13,8 +13,8 @@ export const updateJournalEntry = async (entryId: string, content: string, userI
     const encryptedContent = encryptContent(content, userId);
     
     const { error } = await supabase
-      .from('Journal_Entries')
-      .update({ Content: encryptedContent })
+      .from('journal_entries')
+      .update({ content: encryptedContent })
       .eq('id', entryId);
 
     if (error) {

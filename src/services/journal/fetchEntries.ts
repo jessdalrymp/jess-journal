@@ -16,12 +16,12 @@ export const fetchJournalEntries = async (userId: string): Promise<JournalEntry[
   try {
     console.log(`Fetching journal entries for user ${userId}`);
     
-    // Fetch entries from the Journal_Entries table where User_id matches
+    // Fetch entries from the journal_entries table where user_id matches
     const { data, error } = await supabase
-      .from('Journal_Entries')
+      .from('journal_entries')
       .select('*')
-      .eq('User_id', userId)
-      .order('Created_at', { ascending: false });
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching journal entries:', error);
@@ -36,18 +36,18 @@ export const fetchJournalEntries = async (userId: string): Promise<JournalEntry[
     console.log(`Found ${data.length} journal entries for user ${userId}`);
     console.log('Entry dates sample:', data.slice(0, 3).map(entry => ({ 
       id: entry.id,
-      date: new Date(entry.Created_at).toISOString(),
-      type: entry.Type
+      date: new Date(entry.created_at).toISOString(),
+      type: entry.type
     })));
     
     // Log a quick sample of what the latest entries look like
     const latest = data[0];
     console.log('Latest entry:', {
       id: latest.id, 
-      date: new Date(latest.Created_at).toISOString(),
-      type: latest.Type,
-      prompt: latest.Prompt?.substring(0, 50),
-      createdAt: latest.Created_at,
+      date: new Date(latest.created_at).toISOString(),
+      type: latest.type,
+      prompt: latest.prompt?.substring(0, 50),
+      createdAt: latest.created_at,
       conversationId: latest.conversation_id
     });
     
@@ -55,7 +55,7 @@ export const fetchJournalEntries = async (userId: string): Promise<JournalEntry[
     const oldest = data[data.length - 1];
     console.log('Oldest entry:', {
       id: oldest.id, 
-      date: new Date(oldest.Created_at).toISOString(),
+      date: new Date(oldest.created_at).toISOString(),
       conversationId: oldest.conversation_id
     });
 
@@ -68,7 +68,7 @@ export const fetchJournalEntries = async (userId: string): Promise<JournalEntry[
         console.log(`Checking messages for conversation: ${entry.conversation_id}`);
         
         const { data: messages, error: messagesError } = await supabase
-          .from('Messages')
+          .from('messages')
           .select('*')
           .eq('conversation', entry.conversation_id)
           .limit(3);
@@ -84,19 +84,19 @@ export const fetchJournalEntries = async (userId: string): Promise<JournalEntry[
     // Map database entries to JournalEntry type
     const entries = data.map(entry => {
       try {
-        console.log(`Processing entry ${entry.id}, created at ${entry.Created_at}, type ${entry.Type}`);
+        console.log(`Processing entry ${entry.id}, created at ${entry.created_at}, type ${entry.type}`);
         return mapDatabaseEntryToJournalEntry(entry, userId);
       } catch (err) {
         console.error(`Error mapping entry ${entry.id}:`, err);
         // Return a minimal valid entry for entries that can't be properly mapped
         return {
           id: entry.id,
-          userId: entry.User_id,
-          title: entry.Prompt,
+          userId: entry.user_id,
+          title: entry.prompt,
           content: '',
-          createdAt: new Date(entry.Created_at),
-          type: entry.Type || 'journal',
-          prompt: entry.Prompt,
+          createdAt: new Date(entry.created_at),
+          type: entry.type || 'journal',
+          prompt: entry.prompt,
           conversation_id: entry.conversation_id
         } as JournalEntry;
       }
@@ -119,10 +119,10 @@ export const fetchJournalEntryById = async (entryId: string, userId: string): Pr
     console.log(`Fetching journal entry ${entryId} for user ${userId}`);
     
     const { data, error } = await supabase
-      .from('Journal_Entries')
+      .from('journal_entries')
       .select('*')
       .eq('id', entryId)
-      .eq('User_id', userId)
+      .eq('user_id', userId)
       .single();
 
     if (error) {

@@ -21,12 +21,12 @@ export const saveJournalEntry = async (
     const encryptedContent = encryptContent(content, userId);
     
     const { data, error } = await supabase
-      .from('Journal_Entries')
+      .from('journal_entries')
       .insert({
-        User_id: userId,
-        Prompt: prompt,
-        Content: encryptedContent,
-        Type: type
+        user_id: userId,
+        prompt: prompt,
+        content: encryptedContent,
+        type: type
       })
       .select()
       .single();

@@ -16,7 +16,7 @@ export const saveConversationToJournal = async (
     
     // Get the conversation summary
     const { data: conversationData, error: conversationError } = await supabase
-      .from('Conversation_id')
+      .from('conversation_id')
       .select('*')
       .eq('id', conversationId)
       .maybeSingle();
@@ -28,7 +28,7 @@ export const saveConversationToJournal = async (
     
     // Get the messages from the conversation
     const { data: messagesData, error: messagesError } = await supabase
-      .from('Messages')
+      .from('messages')
       .select('*')
       .eq('conversation', conversationId)
       .order('timestamp', { ascending: true });
@@ -54,12 +54,12 @@ export const saveConversationToJournal = async (
     
     // Create a journal entry with the conversation content
     const { data: journalEntry, error: journalError } = await supabase
-      .from('Journal_Entries')
+      .from('journal_entries')
       .insert({
-        User_id: userId,
-        Prompt: title,
-        Content: encryptedContent,
-        Type: type,
+        user_id: userId,
+        prompt: title,
+        content: encryptedContent,
+        type: type,
         conversation_id: conversationId
       })
       .select()

@@ -20,25 +20,25 @@ export const saveConversationSummary = async (
       conversationId
     });
     
-    // Save the summary to the Journal_Entries table
+    // Save the summary to the journal_entries table
     const { data, error } = await supabase
-      .from('Journal_Entries')
+      .from('journal_entries')
       .insert({
-        User_id: userId,
-        Prompt: title || 'Conversation Summary',
-        Content: summary || 'No summary available',
+        user_id: userId,
+        prompt: title || 'Conversation Summary',
+        content: summary || 'No summary available',
         conversation_id: conversationId,
-        Type: conversationType
+        type: conversationType
       });
     
     if (error) {
-      console.error(`Error saving ${conversationType} summary to Journal_Entries:`, error);
+      console.error(`Error saving ${conversationType} summary to journal_entries:`, error);
       throw error;
     }
     
-    // Also update the Conversation_id table with the summary
+    // Also update the conversation_id table with the summary
     const { error: updateError } = await supabase
-      .from('Conversation_id')
+      .from('conversation_id')
       .update({ 
         summary: summary || 'No summary available',
         title: title || 'Conversation Summary'
@@ -61,7 +61,7 @@ export const saveConversationSummary = async (
     // After saving, verify what was stored
     console.log('Verifying journal entry was created...');
     const { data: journalCheck, error: journalCheckError } = await supabase
-      .from('Journal_Entries')
+      .from('journal_entries')
       .select('*')
       .eq('conversation_id', conversationId)
       .single();
@@ -74,7 +74,7 @@ export const saveConversationSummary = async (
     
     console.log('Verifying conversation was updated...');
     const { data: conversationCheck, error: conversationCheckError } = await supabase
-      .from('Conversation_id')
+      .from('conversation_id')
       .select('*')
       .eq('id', conversationId)
       .single();

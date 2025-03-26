@@ -10,7 +10,7 @@ export const createConversation = async (params: {
 }): Promise<Conversation | null> => {
   try {
     const { data, error } = await supabase
-      .from('Conversation_id')
+      .from('conversation_id')
       .insert({
         profile_id: params.userId,
         type: params.type,
@@ -51,7 +51,7 @@ export const addMessageToConversation = async (
 ): Promise<ConversationMessage | null> => {
   try {
     const { data, error } = await supabase
-      .from('Messages')
+      .from('messages')
       .insert({
         conversation: conversationId,
         role: message.role,
@@ -67,7 +67,7 @@ export const addMessageToConversation = async (
 
     // Update conversation's updated_at timestamp
     await supabase
-      .from('Conversation_id')
+      .from('conversation_id')
       .update({ updated_at: new Date().toISOString() })
       .eq('id', conversationId);
 
@@ -92,7 +92,7 @@ export const updateConversationTitle = async (
 ): Promise<boolean> => {
   try {
     const { error } = await supabase
-      .from('Conversation_id')
+      .from('conversation_id')
       .update({ title, updated_at: new Date().toISOString() })
       .eq('id', conversationId);
 
@@ -116,7 +116,7 @@ export const updateConversationSummary = async (
 ): Promise<boolean> => {
   try {
     const { error } = await supabase
-      .from('Conversation_id')
+      .from('conversation_id')
       .update({ summary, updated_at: new Date().toISOString() })
       .eq('id', conversationId);
 

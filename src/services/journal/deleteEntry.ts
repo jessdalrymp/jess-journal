@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const deleteJournalEntry = async (entryId: string): Promise<boolean> => {
   try {
     const { error } = await supabase
-      .from('Journal_Entries')
+      .from('journal_entries')
       .delete()
       .eq('id', entryId);
 

@@ -1,3 +1,4 @@
+
 import { supabase } from '../../integrations/supabase/client';
 import { Conversation } from './types';
 import { getCachedConversation, cacheConversation } from './conversationCache';
@@ -12,7 +13,7 @@ export const fetchConversations = async (userId: string): Promise<Conversation[]
     console.log('Fetching conversations for user:', userId);
 
     const { data, error } = await supabase
-      .from('Conversation_id')
+      .from('conversation_id')
       .select('*')
       .eq('profile_id', userId)
       .order('updated_at', { ascending: false });
@@ -67,7 +68,7 @@ export const fetchConversation = async (conversationId: string, userId: string):
     // Otherwise fetch from database
     console.log(`Fetching conversation ${conversationId} from database`);
     const { data, error } = await supabase
-      .from('Conversation_id')
+      .from('conversation_id')
       .select('*')
       .eq('id', conversationId)
       .eq('profile_id', userId)
@@ -85,7 +86,7 @@ export const fetchConversation = async (conversationId: string, userId: string):
 
     // Fetch messages for this conversation
     const { data: messages, error: messagesError } = await supabase
-      .from('Messages')
+      .from('messages')
       .select('*')
       .eq('conversation', conversationId)
       .order('timestamp', { ascending: true });
