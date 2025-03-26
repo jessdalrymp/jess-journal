@@ -80,7 +80,7 @@ export const mapDatabaseEntryToJournalEntry = (
     });
     
     // If the title is generic and this is a conversation entry
-    if (title === 'Untitled Entry' || title === 'Conversation Summary') {
+    if (title === 'Untitled Entry' || title === 'Conversation') {
       title = `Conversation: ${new Date(entry.created_at).toLocaleDateString()}`;
     }
     
