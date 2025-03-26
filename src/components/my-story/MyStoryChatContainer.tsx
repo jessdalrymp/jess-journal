@@ -46,14 +46,12 @@ export const MyStoryChatContainer = ({
   };
 
   const handleEndChat = () => {
-    console.log("Ending chat and saving to journal from MyStoryChatContainer");
+    console.log("Ending chat and saving to journal...");
     toast({
       title: "Saving your story",
-      description: "Preparing to save your conversation to your journal"
+      description: "We're preparing to save your story conversation to your journal",
     });
-    
-    // Call onSave with true to indicate refresh is needed
-    onSave(true);
+    onSave(true); // Pass true to indicate need for refresh
   };
 
   const handleReloadPage = () => {
@@ -92,11 +90,11 @@ export const MyStoryChatContainer = ({
           initialMessage={getInitialMessage('story')} 
           onEndChat={handleEndChat}
           onError={handleError}
-          saveChat={true}
+          saveChat
           persistConversation={true} // Keep conversation after saving
           conversationId={conversationId}
         />
       )}
     </div>
   );
-}
+};

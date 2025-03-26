@@ -1,9 +1,10 @@
+
 import { Link } from 'react-router-dom';
 import { Calendar, Clock } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon } from '@/components/journal/JournalHistoryUtils';
 import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
-import { getContentPreview, extractFormattedContent } from '@/utils/contentParser';
+import { getContentPreview } from '@/utils/contentParser';
 
 interface HistoryEntryItemProps {
   entry: JournalEntry;
@@ -32,21 +33,7 @@ const formatTime = (date: Date) => {
 export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   const entryType = entry.type || 'journal';
   const content = getContentPreview(entry);
-  const isConversationEntry = !!entry.conversation_id;
-  const isSummary = entry.type === 'summary';
-  
-  console.log('Rendering entry in history item:', { 
-    id: entry.id, 
-    title: entry.title, 
-    type: entry.type,
-    isConversationEntry,
-    isSummary,
-    conversation_id: entry.conversation_id,
-    content: content.substring(0, 50) + (content.length > 50 ? '...' : '')
-  });
-  
-  // Process content to handle JSON formatting if present
-  const displayContent = extractFormattedContent(content);
+  const isConversationSummary = !!entry.conversation_id;
   
   // Always link to journal entry page
   const linkPath = `/journal-entry/${entry.id}`;
@@ -71,7 +58,7 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
         </p>
       </div>
       <div className="mt-1 text-xs text-jess-muted line-clamp-2 bg-gray-50 p-1.5 rounded">
-        {displayContent}
+        {content}
       </div>
     </Link>
   );

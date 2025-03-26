@@ -1,7 +1,7 @@
 
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon, getEntryTypeName } from './JournalHistoryUtils';
-import { extractFormattedContent } from '@/utils/contentParser';
+import { parseContentWithJsonCodeBlock } from '@/services/journal/contentParser';
 
 interface JournalHistoryEntryItemProps {
   entry: JournalEntry;
@@ -12,8 +12,25 @@ interface JournalHistoryEntryItemProps {
 // Helper function to extract a readable summary from entry content
 const getEntrySummary = (entry: JournalEntry): string => {
   try {
-    // Use the extractFormattedContent utility to handle JSON formatting
-    return extractFormattedContent(entry.content);
+    // First try to parse JSON content
+    const parsedContent = parseContentWithJsonCodeBlock(entry.content);
+    if (parsedContent && parsedContent.summary) {
+      // If we have a parsed summary, use that
+      return parsedContent.summary;
+    }
+    
+    // For story entries, just use the content directly
+    if (entry.type === 'story') {
+      return entry.content;
+    }
+    
+    // For other types, do some basic prompt cleanup
+    if (entry.prompt && entry.content.includes(entry.prompt)) {
+      return entry.content.replace(entry.prompt, '').trim();
+    }
+    
+    // Fallback to just the content
+    return entry.content;
   } catch (e) {
     console.error('Error processing entry content:', e);
     return entry.content;

@@ -1,5 +1,5 @@
 
-import { supabase } from "../../integrations/supabase/client";
+import { supabase } from '../../integrations/supabase/client';
 import { updateCachedConversation } from './conversationCache';
 
 /**
@@ -36,9 +36,9 @@ export const saveConversationSummary = async (
       throw error;
     }
     
-    // Also update the conversation_id table with the summary
+    // Also update the conversations table with the summary
     const { error: updateError } = await supabase
-      .from('conversation_id')
+      .from('conversations')
       .update({ 
         summary: summary || 'No summary available',
         title: title || 'Conversation Summary'
@@ -74,7 +74,7 @@ export const saveConversationSummary = async (
     
     console.log('Verifying conversation was updated...');
     const { data: conversationCheck, error: conversationCheckError } = await supabase
-      .from('conversation_id')
+      .from('conversations')
       .select('*')
       .eq('id', conversationId)
       .single();

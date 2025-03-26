@@ -3,29 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 
 interface JournalEntrySaveButtonProps {
-  onSave: () => Promise<void | boolean>;
+  onSave: () => Promise<void>;
   isSaving: boolean;
-  onSaveAndClose?: () => Promise<void | boolean>;
 }
 
 export const JournalEntrySaveButton = ({ 
   onSave, 
-  isSaving,
-  onSaveAndClose
+  isSaving 
 }: JournalEntrySaveButtonProps) => {
   return (
-    <div className="mt-6 flex justify-end gap-3">
-      {onSaveAndClose && (
-        <Button 
-          onClick={onSaveAndClose} 
-          disabled={isSaving}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <Save size={16} />
-          {isSaving ? "Saving..." : "Save & Close"}
-        </Button>
-      )}
+    <div className="mt-6 flex justify-end">
       <Button 
         onClick={onSave} 
         disabled={isSaving}

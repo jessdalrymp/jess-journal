@@ -32,8 +32,7 @@ export const ChatDialogs = ({
         <ChatEndDialog 
           open={showEndDialog} 
           onOpenChange={setShowEndDialog} 
-          onEndConversation={onEndConversation}
-          chatType={type}
+          onEndConversation={onEndConversation} 
         />
       )}
       

@@ -1,10 +1,8 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { X } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getInitialMessage } from './chatUtils';
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 
 interface WelcomeModalProps {
   open: boolean;
@@ -13,7 +11,6 @@ interface WelcomeModalProps {
   description: string;
   buttonText: string;
   type?: 'story' | 'sideQuest' | 'action' | 'journal';
-  onDontShowAgain?: (dontShow: boolean) => void;
 }
 
 export const WelcomeModal = ({ 
@@ -22,18 +19,9 @@ export const WelcomeModal = ({
   title, 
   description, 
   buttonText,
-  type,
-  onDontShowAgain
+  type 
 }: WelcomeModalProps) => {
-  const [dontShowAgain, setDontShowAgain] = useState(false);
   const welcomeMessage = type ? getInitialMessage(type) : description;
-  
-  const handleDontShowChange = (checked: boolean) => {
-    setDontShowAgain(checked);
-    if (onDontShowAgain) {
-      onDontShowAgain(checked);
-    }
-  };
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -66,15 +54,7 @@ export const WelcomeModal = ({
             return <p key={i}>{paragraph}</p>;
           })}
         </div>
-        <div className="mt-6 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Switch 
-              id="dont-show-again" 
-              checked={dontShowAgain}
-              onCheckedChange={handleDontShowChange}
-            />
-            <Label htmlFor="dont-show-again">Don't show again</Label>
-          </div>
+        <div className="mt-4">
           <button 
             onClick={() => onOpenChange(false)}
             className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"

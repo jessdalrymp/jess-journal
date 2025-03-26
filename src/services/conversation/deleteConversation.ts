@@ -17,7 +17,7 @@ export const deleteConversation = async (conversationId: string): Promise<boolea
 
     // Then delete the conversation itself
     const { error } = await supabase
-      .from('conversation_id')
+      .from('conversations')
       .delete()
       .eq('id', conversationId);
 

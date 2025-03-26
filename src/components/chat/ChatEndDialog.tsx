@@ -1,75 +1,40 @@
 
-import {
+import React from 'react';
+import { 
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { CheckCheck, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+  DialogDescription,
+  DialogFooter
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface ChatEndDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAcceptChallenge?: () => void;
-  onEndConversation?: () => void;
-  chatType?: 'story' | 'sideQuest' | 'action' | 'journal';
+  onEndConversation: () => void;
 }
 
-export function ChatEndDialog({ 
-  open, 
-  onOpenChange, 
-  onAcceptChallenge,
-  onEndConversation,
-  chatType = 'story'
-}: ChatEndDialogProps) {
-  const navigate = useNavigate();
-
-  const handleClose = () => {
-    onOpenChange(false);
-    // Call onEndConversation if provided
-    if (onEndConversation) {
-      onEndConversation();
-    } else {
-      // Navigate to the home page as fallback
-      navigate('/');
-    }
-  };
-  
+export const ChatEndDialog = ({ open, onOpenChange, onEndConversation }: ChatEndDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>End Conversation</DialogTitle>
           <DialogDescription>
-            {chatType === 'action'
-              ? "Would you like to accept this challenge or return to dashboard?"
-              : "Would you like to return to the dashboard?"}
+            Good job today, we can join this conversation again next time.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="flex flex-col sm:flex-row sm:justify-between">
-          {chatType === 'action' && onAcceptChallenge && (
-            <Button 
-              variant="default" 
-              onClick={() => {
-                onAcceptChallenge();
-                onOpenChange(false);
-              }}
-              className="mb-2 sm:mb-0"
-            >
-              <CheckCheck className="w-4 h-4 mr-2" />
-              Accept Challenge
-            </Button>
-          )}
-          <Button onClick={handleClose} variant="outline">
-            <X className="w-4 h-4 mr-2" />
-            Return to Dashboard
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Continue Chatting
+          </Button>
+          <Button onClick={onEndConversation}>
+            End For Now
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-}
+};

@@ -48,20 +48,9 @@ const JournalEntry = () => {
         title: "Journal entry saved",
         description: "Your journal entry has been saved successfully.",
       });
-    }
-    return success;
-  };
-
-  const handleSaveAndCloseClick = async () => {
-    const success = await handleSave();
-    if (success) {
-      toast({
-        title: "Journal entry saved",
-        description: "Your journal entry has been saved successfully.",
-      });
+      
       navigate('/dashboard');
     }
-    return success;
   };
 
   if (loading) {
@@ -89,7 +78,6 @@ const JournalEntry = () => {
         setEditableTitle={setEditableTitle}
         setEditableContent={setEditableContent}
         handleSaveClick={handleSaveClick}
-        handleSaveAndCloseClick={handleSaveAndCloseClick}
         isSaving={isSaving}
       />
     </JournalEntryLayout>

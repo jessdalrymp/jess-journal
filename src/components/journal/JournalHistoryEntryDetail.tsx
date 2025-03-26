@@ -1,7 +1,7 @@
 
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon, getEntryTypeName } from './JournalHistoryUtils';
-import { extractFormattedContent } from '@/utils/contentParser';
+import { parseEntryContent } from '@/utils/contentParser';
 import { Button } from '@/components/ui/button';
 import { MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -15,8 +15,19 @@ interface JournalHistoryEntryDetailProps {
 // Helper function to format the content for display
 const formatEntryContent = (entry: JournalEntry): string => {
   try {
-    // Use the extractFormattedContent utility to handle JSON formatting
-    return extractFormattedContent(entry.content);
+    // Try to parse content as JSON
+    const parsedContent = parseEntryContent(entry.content);
+    if (parsedContent && parsedContent.summary) {
+      return parsedContent.summary;
+    }
+    
+    // For story entries, the content might be the summary itself
+    if (entry.type === 'story') {
+      return entry.content;
+    }
+    
+    // For other entries, return the content as-is
+    return entry.content;
   } catch (e) {
     console.error('Error parsing entry content:', e);
     return entry.content;

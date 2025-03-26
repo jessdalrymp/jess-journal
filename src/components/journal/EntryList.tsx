@@ -1,28 +1,24 @@
 
-import { JournalEntry } from "@/lib/types";
-import { EntryListEmptyState } from "@/components/journal/EntryListEmptyState";
-import { EntryListLoading } from "@/components/journal/EntryListLoading";
-import { EntryItem } from "@/components/journal/EntryItem";
-import { ConversationEntryItem } from "@/components/journal/ConversationEntryItem";
+import { JournalEntry } from "../../lib/types";
+import { EntryItem } from "./EntryItem";
+import { EntryListEmptyState } from "./EntryListEmptyState";
+import { EntryListLoading } from "./EntryListLoading";
 
 interface EntryListProps {
   entries: JournalEntry[];
-  isLoading: boolean;
-  onEntryClick: (entry: JournalEntry) => void;
   onEditClick: (e: React.MouseEvent, entry: JournalEntry) => void;
   onDeleteClick: (e: React.MouseEvent, entry: JournalEntry) => void;
+  onEntryClick: (entry: JournalEntry) => void;
+  isLoading: boolean;
 }
 
 export const EntryList = ({
   entries,
-  isLoading,
-  onEntryClick,
   onEditClick,
-  onDeleteClick
+  onDeleteClick,
+  onEntryClick,
+  isLoading
 }: EntryListProps) => {
-  // Log entries for debugging
-  console.log(`EntryList - Found ${entries.length} entries including ${entries.filter(e => e.conversation_id).length} conversation entries`);
-
   if (isLoading) {
     return <EntryListLoading />;
   }
@@ -32,25 +28,15 @@ export const EntryList = ({
   }
 
   return (
-    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+    <div className="space-y-4">
       {entries.map((entry) => (
-        entry.conversation_id ? (
-          <ConversationEntryItem
-            key={entry.id}
-            entry={entry}
-            onEntryClick={onEntryClick}
-            onEditClick={onEditClick}
-            onDeleteClick={onDeleteClick}
-          />
-        ) : (
-          <EntryItem
-            key={entry.id}
-            entry={entry}
-            onEntryClick={onEntryClick}
-            onEditClick={onEditClick}
-            onDeleteClick={onDeleteClick}
-          />
-        )
+        <EntryItem 
+          key={entry.id}
+          entry={entry}
+          onEditClick={onEditClick}
+          onDeleteClick={onDeleteClick}
+          onEntryClick={onEntryClick}
+        />
       ))}
     </div>
   );

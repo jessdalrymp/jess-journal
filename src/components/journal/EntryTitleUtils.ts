@@ -1,52 +1,43 @@
 
 import { JournalEntry } from '@/lib/types';
+import { parseContentWithJsonCodeBlock } from '@/services/journal/contentParser';
 
-/**
- * Get a title for the journal entry
- * Handles both standard journal entries and conversation summaries
- */
 export const getEntryTitle = (entry: JournalEntry): string => {
-  // If the entry already has a title, use it
-  if (entry.title && entry.title !== 'Untitled Entry') {
+  // If the entry has a title, use it
+  if (entry.title) {
     return entry.title;
   }
-  
-  // For entries with a conversation, use a more descriptive title
-  if (entry.conversation_id) {
-    switch (entry.type) {
-      case 'story':
-        return 'My Story Conversation';
-      case 'sideQuest':
-        return 'Side Quest Conversation';
-      case 'action':
-        return 'Action Challenge';
-      case 'summary':
-        return `Journal Summary: ${new Date(entry.createdAt).toLocaleDateString()}`;
-      default:
-        return 'Journal Conversation';
+
+  // For summary entries, create a formatted title
+  if (entry.type === 'summary') {
+    // Try to extract a title from content if it's JSON
+    try {
+      const parsedContent = parseContentWithJsonCodeBlock(entry.content);
+      if (parsedContent && parsedContent.title) {
+        return parsedContent.title;
+      }
+    } catch (e) {
+      // Ignore parsing errors
     }
+    
+    // Fall back to a date-based title
+    return `Daily Summary: ${new Date(entry.createdAt).toLocaleDateString()}`;
   }
   
-  // If we have a prompt, use that as the title
+  // For entries with a prompt, use that as the title
   if (entry.prompt) {
-    // Truncate long prompts
-    return entry.prompt.length > 50 
-      ? entry.prompt.substring(0, 50) + '...'
-      : entry.prompt;
+    return entry.prompt.substring(0, 50) + (entry.prompt.length > 50 ? '...' : '');
   }
-  
-  // Default title based on type
+
+  // For entries with a type but no title or prompt
   switch (entry.type) {
     case 'story':
-      return 'My Story';
+      return 'Story Journey';
     case 'sideQuest':
-      return 'Side Quest';
+      return 'Side Quest Adventure';
     case 'action':
-      return 'Action Challenge';
-    case 'summary':
-      return `Journal Summary: ${new Date(entry.createdAt).toLocaleDateString()}`;
+      return 'Action Plan';
     default:
-      return `Journal Entry: ${new Date(entry.createdAt).toLocaleDateString()}`;
+      return 'Journal Entry';
   }
 };
-

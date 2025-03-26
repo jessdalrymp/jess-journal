@@ -1,55 +1,129 @@
 
 import { JournalEntry } from '@/lib/types';
 import { decryptContent } from './encryption';
+import { parseContentWithJsonCodeBlock } from './contentParser';
 
 /**
- * Maps a database entry to a JournalEntry object
- * Handles the changes in column naming
+ * Maps database journal entry object to application JournalEntry type
+ * with improved error handling for decryption
  */
 export const mapDatabaseEntryToJournalEntry = (
-  dbEntry: any, 
-  userId: string
+  entry: any, 
+  userId: string,
+  conversationData: any = null
 ): JournalEntry => {
-  if (!dbEntry) {
-    throw new Error('Cannot map null database entry');
+  let content = '';
+  let prompt = entry.prompt || null;
+  let conversationId = entry.conversation_id || null;
+  
+  // Try to decrypt the content, but handle errors gracefully
+  try {
+    content = decryptContent(entry.content, userId);
+  } catch (error) {
+    console.error('Error decrypting content:', error);
+    // Use raw content if decryption fails or a fallback message
+    content = entry.raw_content || entry.content || 'Content could not be decrypted';
+  }
+  
+  // Try to parse the content as JSON
+  let parsedContent = null;
+  let entryType = entry.type || 'journal';
+  let title = prompt ? prompt.substring(0, 50) + (prompt.length > 50 ? '...' : '') : 'Untitled Entry';
+  
+  try {
+    parsedContent = parseContentWithJsonCodeBlock(content);
+    
+    // Use the parsed title if available
+    if (parsedContent && parsedContent.title) {
+      title = parsedContent.title;
+    }
+    
+    // Use the parsed type if available
+    if (parsedContent && parsedContent.type) {
+      entryType = parsedContent.type;
+    }
+  } catch (error) {
+    console.error('Error parsing content:', error);
+    // Continue without parsedContent if parsing fails
   }
 
-  // Log the entry structure to debug
-  console.log(`Mapping DB entry to JournalEntry, keys: ${Object.keys(dbEntry).join(', ')}`);
-  
-  // Handle both old (capitalized) and new (lowercase) column names
-  const createdAt = dbEntry.created_at || dbEntry.Created_at;
-  const content = dbEntry.content || dbEntry.Content;
-  const prompt = dbEntry.prompt || dbEntry.Prompt;
-  const type = dbEntry.type || dbEntry.Type || 'journal';
-  const conversation_id = dbEntry.conversation_id;
-  const userId_ = dbEntry.user_id || dbEntry.User_id;
-  
-  if (!createdAt) {
-    console.error('created_at is missing in database entry:', dbEntry);
-    throw new Error('created_at is missing in database entry');
+  // Special handling for summary type entries
+  if (entryType === 'summary' || entry.type === 'summary') {
+    console.log('Processing summary entry:', entry.id);
+    
+    // If it's a summary but doesn't have a proper title yet
+    if (title === 'Untitled Entry' || title.includes('Daily Summary:')) {
+      // Try to create a better title from the prompt
+      if (prompt && prompt.includes('Daily Summary:')) {
+        title = prompt;
+      } else if (parsedContent && parsedContent.title) {
+        title = parsedContent.title;
+      } else {
+        title = `Daily Journal Summary: ${new Date(entry.created_at).toLocaleDateString()}`;
+      }
+    }
+    
+    // If we have parsed content with a summary field, use that for the content
+    if (parsedContent && parsedContent.summary) {
+      content = parsedContent.summary;
+    }
+    
+    entryType = 'summary';
   }
 
-  // Decrypt the content if it exists
-  let decryptedContent = '';
-  if (content) {
-    try {
-      decryptedContent = decryptContent(content, userId);
-    } catch (error) {
-      console.error('Error decrypting content:', error);
-      decryptedContent = content; // Fall back to encrypted content if decryption fails
+  // For conversation summaries, we can enhance the entry with conversation data
+  if (conversationId && conversationData) {
+    console.log('Processing conversation data for entry:', {
+      entryId: entry.id,
+      conversationId,
+      hasTitle: !!conversationData.title,
+      hasSummary: !!conversationData.summary,
+      messageCount: conversationData.messages?.length || 0
+    });
+    
+    // If we have a conversation title, use it
+    if (conversationData.title) {
+      title = conversationData.title;
+    }
+    
+    // If we have a conversation summary from the conversation record, use it
+    if (conversationData.summary && (!content || content === 'No summary available')) {
+      content = conversationData.summary;
+    }
+    
+    // Check for assistant messages (summaries) in the messages array
+    if (conversationData.messages && conversationData.messages.length > 0) {
+      // Look for the most recent assistant message that could be a summary
+      const assistantMessages = conversationData.messages
+        .filter((msg: any) => msg.role === 'assistant')
+        .sort((a: any, b: any) => 
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+      
+      if (assistantMessages.length > 0) {
+        const latestAssistantMessage = assistantMessages[0];
+        console.log('Found potential summary message:', {
+          messageId: latestAssistantMessage.id,
+          contentPreview: latestAssistantMessage.content.substring(0, 50) + '...'
+        });
+        
+        // If we don't have content yet, use the assistant message
+        if (!content || content === 'No summary available') {
+          content = latestAssistantMessage.content;
+          console.log('Using assistant message as summary content');
+        }
+      }
     }
   }
 
-  // Construct and return the JournalEntry object
   return {
-    id: dbEntry.id,
-    userId: userId_,
-    title: prompt || 'Untitled Entry',
-    content: decryptedContent,
-    createdAt: new Date(createdAt),
-    type,
-    prompt,
-    conversation_id
+    id: entry.id,
+    userId: entry.user_id,
+    title: title,
+    content: content,
+    type: entryType as 'journal' | 'story' | 'sideQuest' | 'action' | 'summary',
+    createdAt: new Date(entry.created_at),
+    prompt: prompt,
+    conversation_id: conversationId // Add the conversation_id to the journal entry
   };
 };

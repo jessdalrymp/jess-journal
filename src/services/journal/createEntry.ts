@@ -24,9 +24,9 @@ export const saveJournalEntry = async (
       .from('journal_entries')
       .insert({
         user_id: userId,
-        prompt: prompt,
+        prompt,
         content: encryptedContent,
-        type: type
+        type
       })
       .select()
       .single();

@@ -13,12 +13,12 @@ interface HistoryEntriesListProps {
 export const HistoryEntriesList = ({ entries, loading }: HistoryEntriesListProps) => {
   // Log entries for debugging
   useEffect(() => {
-    console.log(`Rendering ${entries.length} entries in history list`);
-    
     if (entries.length > 0) {
-      // Count entries with conversation IDs
-      const conversationEntries = entries.filter(e => e.conversation_id);
-      console.log(`Found ${conversationEntries.length} entries with conversation_id`);
+      console.log(`Rendering ${entries.length} entries in history list`);
+      
+      // Count conversation summaries
+      const summaries = entries.filter(e => e.conversation_id);
+      console.log(`Found ${summaries.length} conversation summaries`);
       
       // Log the first few entries with more details
       console.log('First 3 entries details:', entries.slice(0, 3).map(e => ({
@@ -36,7 +36,7 @@ export const HistoryEntriesList = ({ entries, loading }: HistoryEntriesListProps
     return <HistoryLoadingState />;
   }
   
-  if (!entries || entries.length === 0) {
+  if (entries.length === 0) {
     return <HistoryEmptyState />;
   }
   

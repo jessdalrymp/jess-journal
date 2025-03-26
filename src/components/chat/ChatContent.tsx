@@ -3,7 +3,6 @@ import React from 'react';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatInput } from './ChatInput';
-import { ChatFooter } from './ChatFooter';
 import { ConversationSession } from '@/lib/types';
 
 interface ChatContentProps {
@@ -43,15 +42,6 @@ export const ChatContent = ({
         <ChatMessageList messages={session.messages} />
       </div>
       <ChatInput onSendMessage={onSendMessage} loading={loading} />
-      {onEndChat && (
-        <ChatFooter 
-          type={type} 
-          onEndChat={onEndChat} 
-          onAcceptChallenge={onAcceptChallenge}
-          onNewChallenge={onNewChallenge}
-          saveChat={saveChat}
-        />
-      )}
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import { supabase } from '../../integrations/supabase/client';
 import { Conversation } from './types';
 import { getCachedConversation, cacheConversation } from './conversationCache';
@@ -12,7 +13,7 @@ export const fetchConversations = async (userId: string): Promise<Conversation[]
     console.log('Fetching conversations for user:', userId);
 
     const { data, error } = await supabase
-      .from('conversation_id')
+      .from('conversations')
       .select('*')
       .eq('profile_id', userId)
       .order('updated_at', { ascending: false });
@@ -30,14 +31,14 @@ export const fetchConversations = async (userId: string): Promise<Conversation[]
     }
 
     return data.map(item => ({
-      id: String(item.id),
+      id: item.id,
       userId: item.profile_id,
-      type: item.type || 'story',
+      type: item.type,
       title: item.title || 'Untitled Conversation',
       messages: [],
-      summary: '', // Since summary field doesn't exist in the database, initialize as empty string
+      summary: item.summary || '',
       createdAt: new Date(item.created_at),
-      updatedAt: new Date(item.updated_at || item.created_at)
+      updatedAt: new Date(item.updated_at)
     }));
   } catch (error) {
     console.error('Error in fetchConversations:', error);
@@ -67,7 +68,7 @@ export const fetchConversation = async (conversationId: string, userId: string):
     // Otherwise fetch from database
     console.log(`Fetching conversation ${conversationId} from database`);
     const { data, error } = await supabase
-      .from('conversation_id')
+      .from('conversations')
       .select('*')
       .eq('id', conversationId)
       .eq('profile_id', userId)
@@ -94,14 +95,14 @@ export const fetchConversation = async (conversationId: string, userId: string):
       console.error('Error fetching messages:', messagesError);
       // Return conversation without messages if we can't fetch them
       const emptyConversation: Conversation = {
-        id: String(data.id),
+        id: data.id,
         userId: data.profile_id,
-        type: data.type || 'story',
-        title: data.title || 'Untitled',
+        type: data.type,
+        title: data.title,
         messages: [],
-        summary: '', // Since summary field doesn't exist in the database, initialize as empty string
+        summary: data.summary || '',
         createdAt: new Date(data.created_at),
-        updatedAt: new Date(data.updated_at || data.created_at)
+        updatedAt: new Date(data.updated_at)
       };
       return emptyConversation;
     }
@@ -110,19 +111,19 @@ export const fetchConversation = async (conversationId: string, userId: string):
 
     // Build conversation object
     const conversation: Conversation = {
-      id: String(data.id),
+      id: data.id,
       userId: data.profile_id,
-      type: data.type || 'story',
-      title: data.title || 'Untitled',
+      type: data.type,
+      title: data.title,
       messages: messages ? messages.map(msg => ({
-        id: String(msg.id),
+        id: msg.id,
         role: msg.role,
         content: msg.content,
         createdAt: new Date(msg.timestamp)
       })) : [],
-      summary: '', // Since summary field doesn't exist in the database, initialize as empty string
+      summary: data.summary || '',
       createdAt: new Date(data.created_at),
-      updatedAt: new Date(data.updated_at || data.created_at)
+      updatedAt: new Date(data.updated_at)
     };
 
     // Cache the conversation

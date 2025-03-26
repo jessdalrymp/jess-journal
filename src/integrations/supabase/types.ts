@@ -30,32 +30,43 @@ export type Database = {
         }
         Relationships: []
       }
-      conversation_id: {
+      conversations: {
         Row: {
           created_at: string
           id: string
-          profile_id: string | null
-          title: string | null
-          type: Database["public"]["Enums"]["app_role"] | null
-          updated_at: string | null
+          profile_id: string
+          summary: string | null
+          title: string
+          type: string
+          updated_at: string
         }
         Insert: {
           created_at?: string
           id?: string
-          profile_id?: string | null
-          title?: string | null
-          type?: Database["public"]["Enums"]["app_role"] | null
-          updated_at?: string | null
+          profile_id: string
+          summary?: string | null
+          title: string
+          type: string
+          updated_at?: string
         }
         Update: {
           created_at?: string
           id?: string
-          profile_id?: string | null
-          title?: string | null
-          type?: Database["public"]["Enums"]["app_role"] | null
-          updated_at?: string | null
+          profile_id?: string
+          summary?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "conversations_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       coupons: {
         Row: {
@@ -105,6 +116,7 @@ export type Database = {
           conversation_id: string | null
           created_at: string
           id: string
+          mood: string | null
           prompt: string
           topic: string | null
           type: string | null
@@ -115,6 +127,7 @@ export type Database = {
           conversation_id?: string | null
           created_at?: string
           id?: string
+          mood?: string | null
           prompt: string
           topic?: string | null
           type?: string | null
@@ -125,6 +138,7 @@ export type Database = {
           conversation_id?: string | null
           created_at?: string
           id?: string
+          mood?: string | null
           prompt?: string
           topic?: string | null
           type?: string | null
@@ -145,24 +159,32 @@ export type Database = {
           content: string
           conversation_id: string
           id: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: string
           timestamp: string
         }
         Insert: {
           content: string
           conversation_id: string
           id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          timestamp: string
+          role: string
+          timestamp?: string
         }
         Update: {
           content?: string
           conversation_id?: string
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: string
           timestamp?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_plans: {
         Row: {
@@ -246,7 +268,6 @@ export type Database = {
           id: string
           last_session: string | null
           learning_style: string | null
-          new_column_name: string | null
           updated_at: string | null
         }
         Insert: {
@@ -264,7 +285,6 @@ export type Database = {
           id: string
           last_session?: string | null
           learning_style?: string | null
-          new_column_name?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -282,7 +302,6 @@ export type Database = {
           id?: string
           last_session?: string | null
           learning_style?: string | null
-          new_column_name?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -383,6 +402,7 @@ export type Database = {
           conversation_id: string | null
           created_at: string
           id: string
+          mood: string | null
           prompt: string
           topic: string | null
           type: string | null
