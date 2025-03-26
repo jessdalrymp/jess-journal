@@ -13,6 +13,27 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     console.log('Fetching journal entries for user:', userId);
     console.log('Current time:', new Date().toISOString());
     
+    // First, let's query to see if there are ANY entries after March 18
+    const { data: recentEntries, error: recentError } = await supabase
+      .from('journal_entries')
+      .select('id, created_at, type')
+      .eq('user_id', userId)
+      .gt('created_at', '2025-03-18')
+      .order('created_at', { ascending: false });
+    
+    if (recentError) {
+      console.error('Error checking for recent entries:', recentError);
+    } else {
+      console.log('Recent entries check (after March 18):', recentEntries?.length || 0);
+      if (recentEntries && recentEntries.length > 0) {
+        console.log('Sample of recent entries:', recentEntries.slice(0, 3).map(e => ({
+          id: e.id,
+          created_at: e.created_at,
+          type: e.type
+        })));
+      }
+    }
+    
     // Fetch all journal entries directly with improved logging
     const { data: entriesData, error: entriesError } = await supabase
       .from('journal_entries')
@@ -47,13 +68,55 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         newest: new Date(newestEntry.created_at).toISOString()
       });
       
+      // Log entry counts by month to identify any patterns
+      const entriesByMonth = entriesData.reduce((acc, entry) => {
+        const date = new Date(entry.created_at);
+        const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        acc[month] = (acc[month] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      console.log('Entries by month:', entriesByMonth);
+      
+      // Log entry counts by type to check for pattern
+      const entriesByType = entriesData.reduce((acc, entry) => {
+        const type = entry.type || 'unknown';
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      console.log('Entries by type:', entriesByType);
+      
+      // Check for differences in structure between old and new entries
+      const oldEntries = entriesData.filter(e => new Date(e.created_at) < new Date('2025-03-19'));
+      const newEntries = entriesData.filter(e => new Date(e.created_at) >= new Date('2025-03-19'));
+      
+      console.log('Old entries count (before Mar 19):', oldEntries.length);
+      console.log('New entries count (after Mar 19):', newEntries.length);
+      
+      if (oldEntries.length > 0 && newEntries.length > 0) {
+        const oldSample = oldEntries[0];
+        const newSample = newEntries[0];
+        
+        console.log('Sample old entry structure:', Object.keys(oldSample));
+        console.log('Sample new entry structure:', Object.keys(newSample));
+        
+        // Check for any difference in column values
+        const oldHasNull = Object.entries(oldSample).filter(([_, v]) => v === null).map(([k]) => k);
+        const newHasNull = Object.entries(newSample).filter(([_, v]) => v === null).map(([k]) => k);
+        
+        console.log('Old entry null fields:', oldHasNull);
+        console.log('New entry null fields:', newHasNull);
+      }
+      
       // Log the most recent entries for debugging
-      console.log('Most recent entries from database:', entriesData.slice(0, 3).map(entry => ({
+      console.log('Most recent entries from database:', entriesData.slice(0, 5).map(entry => ({
         id: entry.id,
         created_at: entry.created_at,
         created_at_iso: new Date(entry.created_at).toISOString(),
         type: entry.type,
-        title: entry.prompt?.substring(0, 30) || 'No title'
+        title: entry.prompt?.substring(0, 30) || 'No title',
+        conversation_id: entry.conversation_id
       })));
     }
     

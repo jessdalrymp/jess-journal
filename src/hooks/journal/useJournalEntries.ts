@@ -8,10 +8,11 @@ import { useToast } from '@/components/ui/use-toast';
 const journalEntriesCache: Record<string, {
   entries: JournalEntry[];
   timestamp: number;
+  entriesByDate: Record<string, number>;
 }> = {};
 
-// Cache expiration time (reduced to 30 seconds to ensure fresh data)
-const CACHE_EXPIRATION = 30 * 1000;
+// Cache expiration time (reduced to 15 seconds to ensure fresh data)
+const CACHE_EXPIRATION = 15 * 1000;
 
 /**
  * Hook for fetching journal entries with caching
@@ -36,6 +37,7 @@ export function useJournalEntries() {
       const cachedData = journalEntriesCache[userId];
       if (!forceRefresh && cachedData && (Date.now() - cachedData.timestamp) < CACHE_EXPIRATION) {
         console.log('Using cached journal entries from:', new Date(cachedData.timestamp).toISOString());
+        console.log('Cached entries count by date:', cachedData.entriesByDate);
         return cachedData.entries;
       }
       
@@ -55,10 +57,29 @@ export function useJournalEntries() {
         createdAt: entry.createdAt instanceof Date ? entry.createdAt : new Date(entry.createdAt)
       }));
       
+      // Count entries by date for debugging
+      const entriesByDate = processedEntries.reduce((acc, entry) => {
+        const date = entry.createdAt.toISOString().substring(0, 10);
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      console.log('Entries by date:', entriesByDate);
+      
+      // Group by month for higher-level overview
+      const entriesByMonth = processedEntries.reduce((acc, entry) => {
+        const month = entry.createdAt.toISOString().substring(0, 7);
+        acc[month] = (acc[month] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      console.log('Entries by month:', entriesByMonth);
+      
       // Update cache even if we get empty entries (to prevent constant retries)
       journalEntriesCache[userId] = {
         entries: processedEntries,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        entriesByDate
       };
       
       console.log(`Successfully cached ${processedEntries.length} journal entries at:`, new Date().toISOString());
