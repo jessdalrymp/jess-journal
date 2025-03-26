@@ -11,6 +11,7 @@ export function useJournalContext(userId: string | null | undefined) {
   const isFetchingJournalRef = useRef(false);
   const lastFetchTimeRef = useRef<number>(0);
   const fetchAttemptsRef = useRef(0);
+  const lastCacheTimeRef = useRef<number>(0);
   
   const { fetchJournalEntries: fetchEntries, loading: journalActionsLoading } = useJournalEntries();
   const { toast } = useToast();
@@ -19,11 +20,11 @@ export function useJournalContext(userId: string | null | undefined) {
   useEffect(() => {
     if (userId) {
       console.log("useJournalContext - userId changed or component mounted, fetching entries");
-      fetchJournalEntries();
+      fetchJournalEntries(true); // Force refresh on mount
     }
   }, [userId]);
   
-  const fetchJournalEntries = useCallback(async (): Promise<JournalEntry[]> => {
+  const fetchJournalEntries = useCallback(async (forceFetch = false): Promise<JournalEntry[]> => {
     if (!userId) {
       console.log("useJournalContext - No userId, skipping fetch");
       return [];
@@ -38,12 +39,13 @@ export function useJournalContext(userId: string | null | undefined) {
       return journalEntries;
     }
     
-    // If we've fetched recently, skip unless forceFetch is true
-    if (now - lastFetchTimeRef.current < minFetchInterval && journalEntries.length > 0) {
+    // If we've fetched recently and not forcing a refresh, skip
+    if (!forceFetch && now - lastFetchTimeRef.current < minFetchInterval && journalEntries.length > 0) {
       console.log("Fetch throttled - recent fetch detected");
       return journalEntries;
     }
     
+    // Initialize fetch state
     isFetchingJournalRef.current = true;
     setIsJournalLoading(true);
     lastFetchTimeRef.current = now;
@@ -51,21 +53,44 @@ export function useJournalContext(userId: string | null | undefined) {
     
     try {
       console.log("Fetching journal entries for user:", userId);
+      console.log("Force fetch:", forceFetch);
+      
       const entries = await fetchEntries(userId);
       
       if (entries.length > 0) {
         console.log("Successfully fetched", entries.length, "journal entries");
         
+        // Sort entries by date (newest first)
+        const sortedEntries = [...entries].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        
+        // Log date range for debugging
+        if (sortedEntries.length > 0) {
+          console.log('Sorted entries date range:', {
+            newest: new Date(sortedEntries[0].createdAt).toISOString(),
+            oldest: new Date(sortedEntries[sortedEntries.length - 1].createdAt).toISOString()
+          });
+        }
+        
         // Log conversation-related entries for debugging
         const conversationEntries = entries.filter(e => e.conversation_id);
         if (conversationEntries.length > 0) {
           console.log(`Found ${conversationEntries.length} entries with conversation_id`);
+          console.log('Conversation entries:', conversationEntries.map(e => ({
+            id: e.id,
+            title: e.title,
+            type: e.type,
+            createdAt: e.createdAt,
+            conversation_id: e.conversation_id
+          })));
         }
         
-        setJournalEntries(entries);
+        setJournalEntries(sortedEntries);
         setIsJournalFetched(true);
+        lastCacheTimeRef.current = now;
         fetchAttemptsRef.current = 0; // Reset attempts counter on success
-        return entries;
+        return sortedEntries;
       } else {
         console.log("Fetch returned 0 entries, checking if retry needed");
         // If we've had multiple empty results and know we should have data,

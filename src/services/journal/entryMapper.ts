@@ -12,11 +12,15 @@ export const mapDatabaseEntryToJournalEntry = (
   userId: string,
   messagesData: any[] | null = null
 ): JournalEntry => {
+  console.log(`Mapping entry ID: ${entry.id}, created_at: ${entry.created_at}, type: ${entry.type}`);
+  
   let content = '';
   let prompt = entry.prompt || null;
   let conversationId = entry.conversation_id || null;
   
-  console.log('Mapping entry with conversation_id:', conversationId);
+  if (conversationId) {
+    console.log(`Entry ${entry.id} has conversation_id: ${conversationId}`);
+  }
   
   // Try to decrypt the content, but handle errors gracefully
   try {
@@ -51,11 +55,7 @@ export const mapDatabaseEntryToJournalEntry = (
 
   // Special handling for conversations
   if (conversationId && messagesData && messagesData.length > 0) {
-    console.log('Processing conversation entry:', {
-      entryId: entry.id,
-      conversationId,
-      messageCount: messagesData.length
-    });
+    console.log(`Processing conversation entry: ${entry.id} with ${messagesData.length} messages`);
     
     // Generate a conversation title if not already set
     if (title === 'Untitled Entry' || title === 'Conversation') {
@@ -70,6 +70,8 @@ export const mapDatabaseEntryToJournalEntry = (
         title = firstMessage.length > 40 
           ? firstMessage.substring(0, 40) + '...' 
           : firstMessage;
+        
+        console.log(`Generated title for conversation entry: ${title}`);
       } else {
         title = `Conversation: ${new Date(entry.created_at).toLocaleDateString()}`;
       }
@@ -85,6 +87,7 @@ export const mapDatabaseEntryToJournalEntry = (
       
       // If this is a conversation, use the formatted messages instead
       content = formattedContent;
+      console.log(`Formatted conversation content with ${messagesData.length} messages`);
     }
   }
 
@@ -109,7 +112,8 @@ export const mapDatabaseEntryToJournalEntry = (
     entryType = 'summary';
   }
 
-  return {
+  // Create and return the finalized journal entry
+  const journalEntry: JournalEntry = {
     id: entry.id,
     userId: entry.user_id,
     title: title,
@@ -119,4 +123,9 @@ export const mapDatabaseEntryToJournalEntry = (
     prompt: prompt,
     conversation_id: conversationId
   };
+  
+  // Log the mapped entry
+  console.log(`Completed mapping entry ${entry.id}, created: ${journalEntry.createdAt.toISOString()}, type: ${journalEntry.type}`);
+  
+  return journalEntry;
 };

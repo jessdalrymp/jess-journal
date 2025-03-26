@@ -11,8 +11,9 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
 
   try {
     console.log('Fetching journal entries for user:', userId);
+    console.log('Current time:', new Date().toISOString());
     
-    // Fetch all journal entries directly
+    // Fetch all journal entries directly with improved logging
     const { data: entriesData, error: entriesError } = await supabase
       .from('journal_entries')
       .select('*')
@@ -29,15 +30,37 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
       return [];
     }
     
-    console.log('Raw entries data:', entriesData);
     console.log(`Found ${entriesData.length} journal entries`);
+    
+    // Log date range of fetched entries to debug date filtering issues
+    if (entriesData.length > 0) {
+      const oldestEntry = [...entriesData].sort((a, b) => 
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      )[0];
+      
+      const newestEntry = [...entriesData].sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )[0];
+      
+      console.log('Date range of entries:', {
+        oldest: new Date(oldestEntry.created_at).toISOString(),
+        newest: new Date(newestEntry.created_at).toISOString()
+      });
+      
+      // Log the most recent entries for debugging
+      console.log('Most recent entries:', entriesData.slice(0, 3).map(entry => ({
+        id: entry.id,
+        created_at: entry.created_at,
+        type: entry.type,
+        title: entry.prompt?.substring(0, 30) || 'No title'
+      })));
+    }
     
     // Get all unique conversation IDs from the entries
     const conversationIds = entriesData
       .filter(entry => entry.conversation_id)
       .map(entry => entry.conversation_id);
     
-    console.log('Conversation IDs found:', conversationIds);
     console.log(`Found ${conversationIds.length} unique conversation IDs`);
     
     // Fetch messages for all conversations in a single query if there are any conversation IDs
@@ -55,7 +78,6 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
       if (messagesError) {
         console.error('Error fetching messages:', messagesError);
       } else if (messagesData && messagesData.length > 0) {
-        console.log('Raw messages data:', messagesData);
         console.log(`Fetched ${messagesData.length} messages for all conversations`);
         
         // Group messages by conversation_id for easier lookup
@@ -67,8 +89,6 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
           acc[convId].push(message);
           return acc;
         }, {} as Record<string, any[]>);
-        
-        console.log('Grouped messages map:', messagesMap);
       }
     }
     
@@ -77,22 +97,10 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     
     for (const entryData of entriesData) {
       try {
-        console.log('Processing entry:', {
-          id: entryData.id,
-          conversation_id: entryData.conversation_id,
-          type: entryData.type,
-          title: entryData.prompt || 'Untitled Entry'
-        });
-        
         // Get messages for this entry's conversation if it exists
         const messagesData = entryData.conversation_id 
           ? messagesMap[entryData.conversation_id] || null
           : null;
-        
-        if (messagesData) {
-          console.log(`Using ${messagesData.length} messages for entry ${entryData.id} with conversation ${entryData.conversation_id}`);
-          console.log('Messages for entry:', messagesData);
-        }
         
         // Map the entry with any messages data we found
         const entry = mapDatabaseEntryToJournalEntry(entryData, userId, messagesData);
@@ -105,7 +113,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
           userId: entryData.user_id,
           title: entryData.prompt || 'Untitled Entry',
           content: 'Content could not be loaded',
-          type: (entryData.type as 'journal' | 'story' | 'sideQuest' | 'action') || 'journal',
+          type: (entryData.type as 'journal' | 'story' | 'sideQuest' | 'action' | 'summary') || 'journal',
           createdAt: new Date(entryData.created_at),
           prompt: entryData.prompt || null,
           conversation_id: entryData.conversation_id || null
@@ -113,6 +121,13 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         entries.push(fallbackEntry);
       }
     }
+    
+    // Log the final processed entries for debugging
+    console.log(`Successfully processed ${entries.length} entries`);
+    console.log('Date range of processed entries:', {
+      oldest: entries.length > 0 ? new Date(Math.min(...entries.map(e => e.createdAt.getTime()))).toISOString() : 'none',
+      newest: entries.length > 0 ? new Date(Math.max(...entries.map(e => e.createdAt.getTime()))).toISOString() : 'none'
+    });
     
     return entries;
   } catch (error) {

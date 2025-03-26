@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useUserData } from "@/context/UserDataContext";
@@ -21,8 +21,10 @@ export const useJournalHistoryPage = () => {
   const { toast } = useToast();
   const location = useLocation();
 
+  // Handle navigation state for journal chat
   useEffect(() => {
     if (location.state?.showJournalChat) {
+      console.log("JournalHistory - Showing journal chat from navigation state");
       setShowJournalChat(true);
       if (location.state?.skipPrompt) {
         setSkipPrompt(true);
@@ -30,13 +32,15 @@ export const useJournalHistoryPage = () => {
     }
   }, [location.state]);
 
+  // Load entries when component mounts or retry count changes
   useEffect(() => {
     const loadEntries = async () => {
       setIsLoading(true);
       if (user) {
-        console.log("JournalHistory - Loading journal entries, retry:", retryCount);
+        console.log("JournalHistory - Loading journal entries, retry count:", retryCount);
         try {
-          await fetchJournalEntries();
+          // Force refresh to bypass cache
+          await fetchJournalEntries(true);
           console.log("JournalHistory - Successfully loaded entries");
         } catch (error) {
           console.error("JournalHistory - Error loading entries:", error);
@@ -53,8 +57,20 @@ export const useJournalHistoryPage = () => {
     loadEntries();
   }, [user, retryCount, fetchJournalEntries, toast]);
 
+  // Sort entries whenever journalEntries changes
   useEffect(() => {
+    console.log(`JournalHistory - Sorting ${journalEntries.length} entries`);
+    
     try {
+      // Log raw entries dates for debugging
+      if (journalEntries.length > 0) {
+        console.log("JournalHistory - Raw entries date range:", {
+          newest: new Date(Math.max(...journalEntries.map(e => new Date(e.createdAt).getTime()))).toISOString(),
+          oldest: new Date(Math.min(...journalEntries.map(e => new Date(e.createdAt).getTime()))).toISOString()
+        });
+      }
+      
+      // Sort entries by date (newest first)
       const sorted = [...journalEntries].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
@@ -62,13 +78,22 @@ export const useJournalHistoryPage = () => {
       console.log(`JournalHistory - Sorted ${sorted.length} entries including ${sorted.filter(e => e.conversation_id).length} conversation entries`);
       
       if (sorted.length > 0) {
-        console.log("JournalHistory - First 3 entries:", sorted.slice(0, 3).map(e => ({
-          id: e.id,
-          type: e.type,
-          title: e.title?.substring(0, 30) + '...',
-          conversationId: e.conversation_id,
-          date: e.createdAt
-        })));
+        // Log the most recent and oldest entries to debug date filtering issues
+        console.log("JournalHistory - First entry:", {
+          id: sorted[0].id,
+          type: sorted[0].type,
+          date: new Date(sorted[0].createdAt).toISOString(),
+          title: sorted[0].title?.substring(0, 30) + '...',
+          conversationId: sorted[0].conversation_id
+        });
+        
+        console.log("JournalHistory - Last entry:", {
+          id: sorted[sorted.length - 1].id,
+          type: sorted[sorted.length - 1].type,
+          date: new Date(sorted[sorted.length - 1].createdAt).toISOString(),
+          title: sorted[sorted.length - 1].title?.substring(0, 30) + '...',
+          conversationId: sorted[sorted.length - 1].conversation_id
+        });
       }
       
       setSortedEntries(sorted);
@@ -78,51 +103,59 @@ export const useJournalHistoryPage = () => {
     }
   }, [journalEntries]);
 
-  const handleEntryClick = (entry: JournalEntry) => {
+  // Click handlers
+  const handleEntryClick = useCallback((entry: JournalEntry) => {
     console.log("JournalHistory - Entry clicked:", entry.id, "conversation_id:", entry.conversation_id);
     navigate(`/journal-entry/${entry.id}`, { state: { entry } });
-  };
+  }, [navigate]);
 
-  const handleEditClick = (e: React.MouseEvent, entry: JournalEntry) => {
+  const handleEditClick = useCallback((e: React.MouseEvent, entry: JournalEntry) => {
     e.stopPropagation();
     console.log("JournalHistory - Edit entry:", entry.id, "conversation_id:", entry.conversation_id);
     navigate(`/journal-entry/${entry.id}`, { state: { entry, isEditing: true } });
-  };
+  }, [navigate]);
 
-  const handleDeleteClick = (e: React.MouseEvent, entry: JournalEntry) => {
+  const handleDeleteClick = useCallback((e: React.MouseEvent, entry: JournalEntry) => {
     e.stopPropagation();
     console.log("JournalHistory - Delete entry dialog:", entry.id, "conversation_id:", entry.conversation_id);
     setEntryToDelete(entry);
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const handleRefreshEntries = () => {
+  // Force refresh entries
+  const handleRefreshEntries = useCallback(() => {
     console.log("JournalHistory - Manual refresh triggered");
     setRetryCount(prev => prev + 1);
     toast({
       title: "Refreshing entries",
       description: "Fetching your latest journal entries",
     });
-  };
+  }, [toast]);
 
-  const handleNewEntry = () => {
+  const handleNewEntry = useCallback(() => {
     console.log("JournalHistory - New entry");
     setShowJournalChat(true);
     setSkipPrompt(false);
-  };
+  }, []);
 
-  const handleJournalChatBack = () => {
+  const handleJournalChatBack = useCallback(() => {
     console.log("JournalHistory - Back from chat");
     setShowJournalChat(false);
-  };
+  }, []);
 
-  const handleJournalChatSave = () => {
-    console.log("JournalHistory - Chat saved");
+  const handleJournalChatSave = useCallback(() => {
+    console.log("JournalHistory - Chat saved, scheduling refresh");
     setShowJournalChat(false);
+    
+    // Do an immediate refresh
+    setRetryCount(prev => prev + 1);
+    
+    // Add a delayed refresh to catch any database updates that might take time
     setTimeout(() => {
+      console.log("JournalHistory - Delayed refresh after chat save");
       setRetryCount(prev => prev + 1);
-    }, 1000);
-  };
+    }, 2000);
+  }, []);
 
   const confirmDelete = async () => {
     if (!entryToDelete) return;
@@ -135,7 +168,8 @@ export const useJournalHistoryPage = () => {
         description: "Journal entry has been deleted successfully",
       });
       if (user) {
-        fetchJournalEntries();
+        // Force refresh entries after delete
+        fetchJournalEntries(true);
       }
     } else {
       toast({
