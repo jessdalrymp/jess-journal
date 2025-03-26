@@ -10,19 +10,8 @@ export const useSignUp = () => {
   const checkUserExists = async (email: string): Promise<boolean> => {
     try {
       console.log("Checking if user exists:", email);
-      // First try auth lookup
-      const { data: authData, error: authError } = await supabase.auth.admin.listUsers({
-        filters: {
-          email: email
-        }
-      }).catch(() => ({ data: null, error: null }));
-
-      if (authData?.users && authData.users.length > 0) {
-        console.log("User exists in auth:", authData.users[0].id);
-        return true;
-      }
-
-      // Then try profiles lookup
+      
+      // First try profiles lookup as it's more reliable
       const { data, error } = await supabase
         .from('profiles')
         .select('id')
@@ -30,12 +19,36 @@ export const useSignUp = () => {
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
-        console.error("Error checking if user exists:", error);
-        return false;
+        console.error("Error checking if user exists in profiles:", error);
+      }
+      
+      if (data) {
+        console.log("User exists in profiles:", data.id);
+        return true;
       }
 
-      console.log("User exists check result:", !!data);
-      return !!data;
+      // Try auth lookup as fallback using a different approach
+      // The admin.listUsers with filters is not supported in the current version
+      try {
+        const { data: authData, error: signInError } = await supabase.auth.signInWithOtp({
+          email: email,
+          options: {
+            shouldCreateUser: false // Only check if user exists, don't create
+          }
+        });
+        
+        // If there's no error with code 'user_not_found', the user likely exists
+        if (!signInError || !signInError.message.includes('user_not_found')) {
+          console.log("User likely exists in auth system");
+          return true;
+        }
+      } catch (e) {
+        console.log("Error checking auth system:", e);
+        // Ignore errors here, we're just doing a check
+      }
+
+      console.log("User does not appear to exist");
+      return false;
     } catch (error) {
       console.error("Exception checking if user exists:", error);
       return false;
