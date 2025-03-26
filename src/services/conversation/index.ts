@@ -17,19 +17,13 @@ export const saveConversationSummary = async (
   conversationId: string, 
   type: 'story' | 'sideQuest' | 'action' | 'journal'
 ): Promise<boolean> => {
-  const { saveJournalEntryFromConversation } = await import('./journalIntegration');
-  const { linkJournalEntryToConversation } = await import('./journalIntegration');
-  
   try {
-    // Create a journal entry from the conversation
-    const success = await saveJournalEntryFromConversation(
-      userId,
-      title,
-      summary,
-      type
-    );
+    // Import the functions directly to avoid circular dependencies
+    const result = await import('./journalIntegration').then(module => {
+      return module.saveConversationSummary(userId, title, summary, conversationId, type);
+    });
     
-    if (success && conversationId) {
+    if (result && conversationId) {
       // Get the latest journal entry (should be the one we just created)
       const { fetchJournalEntries } = await import('../journal');
       const entries = await fetchJournalEntries(userId);
@@ -40,12 +34,14 @@ export const saveConversationSummary = async (
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         )[0];
         
-        // Link the entry to the conversation
-        await linkJournalEntryToConversation(latestEntry.id, conversationId);
+        // Link the entry to the conversation using dynamic import
+        await import('./journalIntegration').then(module => {
+          return module.linkJournalEntryToConversation(latestEntry.id, conversationId);
+        });
       }
     }
     
-    return success;
+    return !!result;
   } catch (error) {
     console.error('Error saving conversation summary:', error);
     return false;
