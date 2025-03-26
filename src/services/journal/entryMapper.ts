@@ -47,13 +47,50 @@ export const mapDatabaseEntryToJournalEntry = (
     // Continue without parsedContent if parsing fails
   }
 
+  // Special handling for conversations
+  if (conversationId && messagesData && messagesData.length > 0) {
+    console.log('Processing conversation entry:', {
+      entryId: entry.id,
+      conversationId,
+      messageCount: messagesData.length
+    });
+    
+    // Generate a conversation title if not already set
+    if (title === 'Untitled Entry' || title === 'Conversation') {
+      // Generate a title based on the first few user messages
+      const userMessages = messagesData
+        .filter((msg: any) => msg.role === 'user')
+        .slice(0, 2);
+        
+      if (userMessages.length > 0) {
+        const firstMessage = userMessages[0].content;
+        // Create title from first user message (limited to 40 chars)
+        title = firstMessage.length > 40 
+          ? firstMessage.substring(0, 40) + '...' 
+          : firstMessage;
+      } else {
+        title = `Conversation: ${new Date(entry.created_at).toLocaleDateString()}`;
+      }
+    }
+    
+    // Create content from the full conversation
+    if (messagesData && messagesData.length > 0) {
+      // Format the conversation as content
+      const formattedContent = messagesData.map((msg: any) => {
+        const role = msg.role === 'user' ? 'You' : 'Assistant';
+        return `**${role}:** ${msg.content}`;
+      }).join('\n\n');
+      
+      // If this is a conversation, use the formatted messages instead
+      content = formattedContent;
+    }
+  }
+
   // Special handling for summary type entries
   if (entryType === 'summary' || entry.type === 'summary') {
     console.log('Processing summary entry:', entry.id);
     
-    // If it's a summary but doesn't have a proper title yet
     if (title === 'Untitled Entry' || title.includes('Daily Summary:')) {
-      // Try to create a better title from the prompt
       if (prompt && prompt.includes('Daily Summary:')) {
         title = prompt;
       } else if (parsedContent && parsedContent.title) {
@@ -63,47 +100,11 @@ export const mapDatabaseEntryToJournalEntry = (
       }
     }
     
-    // If we have parsed content with a summary field, use that for the content
     if (parsedContent && parsedContent.summary) {
       content = parsedContent.summary;
     }
     
     entryType = 'summary';
-  }
-
-  // For conversation entries, enhance with message data
-  if (conversationId && messagesData && messagesData.length > 0) {
-    console.log('Processing message data for entry:', {
-      entryId: entry.id,
-      conversationId,
-      messageCount: messagesData.length
-    });
-    
-    // If the title is generic and this is a conversation entry
-    if (title === 'Untitled Entry' || title === 'Conversation') {
-      title = `Conversation: ${new Date(entry.created_at).toLocaleDateString()}`;
-    }
-    
-    // Look for the most recent assistant message that could be a summary
-    const assistantMessages = messagesData
-      .filter((msg: any) => msg.role === 'assistant')
-      .sort((a: any, b: any) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-    
-    if (assistantMessages.length > 0) {
-      const latestAssistantMessage = assistantMessages[0];
-      console.log('Found potential summary message:', {
-        messageId: latestAssistantMessage.id,
-        contentPreview: latestAssistantMessage.content.substring(0, 50) + '...'
-      });
-      
-      // If we don't have content yet, use the assistant message
-      if (!content || content === 'No summary available') {
-        content = latestAssistantMessage.content;
-        console.log('Using assistant message as summary content');
-      }
-    }
   }
 
   return {
