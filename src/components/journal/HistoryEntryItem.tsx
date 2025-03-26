@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Calendar, Clock } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
@@ -33,7 +32,18 @@ const formatTime = (date: Date) => {
 export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   const entryType = entry.type || 'journal';
   const content = getContentPreview(entry);
-  const isConversationSummary = !!entry.conversation_id;
+  const isConversationEntry = !!entry.conversation_id;
+  const isSummary = entry.type === 'summary';
+  
+  console.log('Rendering entry in history item:', { 
+    id: entry.id, 
+    title: entry.title, 
+    type: entry.type,
+    isConversationEntry,
+    isSummary,
+    conversation_id: entry.conversation_id,
+    content: content.substring(0, 50) + (content.length > 50 ? '...' : '')
+  });
   
   // Process content to handle JSON formatting if present
   const displayContent = extractFormattedContent(content);

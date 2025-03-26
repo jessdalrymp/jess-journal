@@ -15,7 +15,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     // Fetch all journal entries directly
     const { data: entriesData, error: entriesError } = await supabase
       .from('journal_entries')
-      .select('*')
+      .select('*, messages(*))')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
@@ -29,6 +29,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
       return [];
     }
     
+    console.log('Raw entries data:', entriesData);
     console.log(`Found ${entriesData.length} journal entries`);
     
     // Get all unique conversation IDs from the entries
@@ -36,12 +37,15 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
       .filter(entry => entry.conversation_id)
       .map(entry => entry.conversation_id);
     
+    console.log('Conversation IDs found:', conversationIds);
     console.log(`Found ${conversationIds.length} unique conversation IDs`);
     
     // Fetch messages for all conversations in a single query if there are any conversation IDs
     let messagesMap: Record<string, any[]> = {};
     
     if (conversationIds.length > 0) {
+      console.log('Fetching messages for conversations:', conversationIds);
+      
       const { data: messagesData, error: messagesError } = await supabase
         .from('messages')
         .select('*')
@@ -51,6 +55,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
       if (messagesError) {
         console.error('Error fetching messages:', messagesError);
       } else if (messagesData && messagesData.length > 0) {
+        console.log('Raw messages data:', messagesData);
         console.log(`Fetched ${messagesData.length} messages for all conversations`);
         
         // Group messages by conversation_id for easier lookup
@@ -62,6 +67,8 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
           acc[convId].push(message);
           return acc;
         }, {} as Record<string, any[]>);
+        
+        console.log('Grouped messages map:', messagesMap);
       }
     }
     
@@ -70,6 +77,13 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     
     for (const entryData of entriesData) {
       try {
+        console.log('Processing entry:', {
+          id: entryData.id,
+          conversation_id: entryData.conversation_id,
+          type: entryData.type,
+          title: entryData.title || entryData.prompt
+        });
+        
         // Get messages for this entry's conversation if it exists
         const messagesData = entryData.conversation_id 
           ? messagesMap[entryData.conversation_id] || null
@@ -77,6 +91,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         
         if (messagesData) {
           console.log(`Using ${messagesData.length} messages for entry ${entryData.id} with conversation ${entryData.conversation_id}`);
+          console.log('Messages for entry:', messagesData);
         }
         
         // Map the entry with any messages data we found
