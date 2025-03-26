@@ -29,18 +29,22 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
     setError(null);
     
     try {
+      console.log("Starting sign up validation");
       if (!validateForm()) {
+        console.log("Validation failed");
         return;
       }
 
       setIsProcessing(true);
       console.log("Attempting to sign up with:", { email, name });
-      const result = await signUp(email, password, name);
+      const result = await signUp(email, password, name, true); // Added true to check if user exists
+      console.log("Sign up result:", result);
       
       // Check if user exists
       if (result?.exists) {
         console.log("User already exists");
         setError("An account with this email already exists. Try signing in instead.");
+        setIsProcessing(false);
         return;
       }
       
@@ -50,6 +54,7 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
         
         // Send verification email using our custom sender
         const emailResult: EmailVerificationResult = await sendCustomVerificationEmail(email);
+        console.log("Email verification result:", emailResult);
         
         if (emailResult.success) {
           console.log("Verification email sent successfully");
@@ -82,6 +87,7 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
         }
       } else if (result?.user && result.session) {
         // User was created and logged in immediately (email verification disabled)
+        console.log("User created and logged in immediately");
         toast({
           title: "Account created successfully",
           description: "You have been logged in automatically.",

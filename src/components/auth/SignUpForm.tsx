@@ -5,6 +5,7 @@ import { ActionButton } from '../ui/ActionButton';
 import { ErrorMessage } from './ErrorMessage';
 import { useSignUpValidation } from '../../hooks/auth/useSignUpValidation';
 import { useSignUpSubmit } from '../../hooks/auth/useSignUpSubmit';
+import { Button } from '@/components/ui/button';  // Import the shadcn Button component
 
 interface SignUpFormProps {
   onVerificationSent: (email: string) => void;
@@ -20,6 +21,8 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
   const { handleSubmit, isProcessing, loading } = useSignUpSubmit({ onVerificationSent });
 
   const validateAndSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Validating and submitting sign-up form');
     const isValid = validateForm(email, password, confirmPassword, name);
     handleSubmit(e, email, password, name, () => isValid, setError);
   };
@@ -65,13 +68,13 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
       <ErrorMessage error={error} />
       
       <div className="pt-2">
-        <ActionButton 
-          type="primary" 
+        <Button 
+          type="submit" 
           className="w-full py-3"
           disabled={loading || isProcessing}
         >
           {loading || isProcessing ? 'Processing...' : 'Create Account'}
-        </ActionButton>
+        </Button>
       </div>
     </form>
   );

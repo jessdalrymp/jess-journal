@@ -9,17 +9,32 @@ export const useSignUp = () => {
 
   const checkUserExists = async (email: string): Promise<boolean> => {
     try {
+      console.log("Checking if user exists:", email);
+      // First try auth lookup
+      const { data: authData, error: authError } = await supabase.auth.admin.listUsers({
+        filters: {
+          email: email
+        }
+      }).catch(() => ({ data: null, error: null }));
+
+      if (authData?.users && authData.users.length > 0) {
+        console.log("User exists in auth:", authData.users[0].id);
+        return true;
+      }
+
+      // Then try profiles lookup
       const { data, error } = await supabase
         .from('profiles')
         .select('id')
         .eq('email', email)
         .maybeSingle();
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error("Error checking if user exists:", error);
         return false;
       }
 
+      console.log("User exists check result:", !!data);
       return !!data;
     } catch (error) {
       console.error("Exception checking if user exists:", error);
@@ -29,6 +44,7 @@ export const useSignUp = () => {
 
   const createUserRecord = async (userId: string, email: string, name?: string) => {
     try {
+      console.log("Creating user record for:", userId, email, name);
       const { error } = await supabase.from('profiles').upsert({
         id: userId,
         email: email,
@@ -42,6 +58,7 @@ export const useSignUp = () => {
         throw error;
       }
       
+      console.log("User record created successfully");
       return true;
     } catch (error) {
       console.error("Exception creating user record:", error);
@@ -51,11 +68,14 @@ export const useSignUp = () => {
 
   const signUp = async (email: string, password: string, name?: string, checkExists = false): Promise<{ user?: any; session?: any; exists?: boolean; emailVerificationRequired?: boolean; emailSent?: boolean }> => {
     setLoading(true);
+    console.log("Starting sign up process for:", email);
+    
     try {
       // Optionally check if user exists first
       if (checkExists) {
         const exists = await checkUserExists(email);
         if (exists) {
+          console.log("User already exists:", email);
           toast({
             title: "User exists",
             description: "An account with this email already exists. Try signing in instead.",
@@ -83,7 +103,6 @@ export const useSignUp = () => {
             isNewUser: true // Add flag to identify new users
           },
           emailRedirectTo: `${origin}/auth/callback`,
-          // If testing in development, consider disabling this in the Supabase dashboard
         },
       });
 
