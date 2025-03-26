@@ -1,3 +1,4 @@
+
 import { JournalEntry } from "@/lib/types";
 import { JournalHistoryHeader } from "@/components/journal/JournalHistoryHeader";
 import { JournalActions } from "@/components/journal/JournalActions";
