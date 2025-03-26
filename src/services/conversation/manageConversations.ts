@@ -9,8 +9,9 @@ export const createConversation = async (params: {
   title: string;
 }): Promise<Conversation | null> => {
   try {
+    // Updated table name from "conversations" to "Conversation_id"
     const { data, error } = await supabase
-      .from('conversations')
+      .from('Conversation_id')
       .insert({
         profile_id: params.userId,
         type: params.type,
@@ -50,10 +51,11 @@ export const addMessageToConversation = async (
   message: Omit<ConversationMessage, 'id' | 'createdAt'>
 ): Promise<ConversationMessage | null> => {
   try {
+    // Updated table name from "messages" to "Messages" and column from "conversation_id" to "conversation"
     const { data, error } = await supabase
-      .from('messages')
+      .from('Messages')
       .insert({
-        conversation_id: conversationId,
+        conversation: conversationId,
         role: message.role,
         content: message.content
       })
@@ -66,8 +68,9 @@ export const addMessageToConversation = async (
     }
 
     // Update conversation's updated_at timestamp
+    // Updated table name from "conversations" to "Conversation_id"
     await supabase
-      .from('conversations')
+      .from('Conversation_id')
       .update({ updated_at: new Date().toISOString() })
       .eq('id', conversationId);
 
@@ -91,8 +94,9 @@ export const updateConversationTitle = async (
   title: string
 ): Promise<boolean> => {
   try {
+    // Updated table name from "conversations" to "Conversation_id"
     const { error } = await supabase
-      .from('conversations')
+      .from('Conversation_id')
       .update({ title, updated_at: new Date().toISOString() })
       .eq('id', conversationId);
 
@@ -115,8 +119,9 @@ export const updateConversationSummary = async (
   summary: string
 ): Promise<boolean> => {
   try {
+    // Updated table name from "conversations" to "Conversation_id"
     const { error } = await supabase
-      .from('conversations')
+      .from('Conversation_id')
       .update({ summary, updated_at: new Date().toISOString() })
       .eq('id', conversationId);
 

@@ -12,8 +12,9 @@ export const fetchConversations = async (userId: string): Promise<Conversation[]
 
     console.log('Fetching conversations for user:', userId);
 
+    // Updated table name from "conversations" to "Conversation_id"
     const { data, error } = await supabase
-      .from('conversations')
+      .from('Conversation_id')
       .select('*')
       .eq('profile_id', userId)
       .order('updated_at', { ascending: false });
@@ -67,8 +68,9 @@ export const fetchConversation = async (conversationId: string, userId: string):
 
     // Otherwise fetch from database
     console.log(`Fetching conversation ${conversationId} from database`);
+    // Updated table name from "conversations" to "Conversation_id"
     const { data, error } = await supabase
-      .from('conversations')
+      .from('Conversation_id')
       .select('*')
       .eq('id', conversationId)
       .eq('profile_id', userId)
@@ -85,10 +87,11 @@ export const fetchConversation = async (conversationId: string, userId: string):
     }
 
     // Fetch messages for this conversation
+    // Updated table name from "messages" to "Messages" and column from "conversation_id" to "conversation"
     const { data: messages, error: messagesError } = await supabase
-      .from('messages')
+      .from('Messages')
       .select('*')
-      .eq('conversation_id', conversationId)
+      .eq('conversation', conversationId)
       .order('timestamp', { ascending: true });
 
     if (messagesError) {

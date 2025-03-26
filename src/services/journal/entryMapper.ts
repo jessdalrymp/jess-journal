@@ -12,10 +12,10 @@ export const mapDatabaseEntryToJournalEntry = (
   userId: string,
   messagesData: any[] | null = null
 ): JournalEntry => {
-  console.log(`Mapping entry ID: ${entry.id}, created_at: ${entry.created_at}, type: ${entry.type}`);
+  console.log(`Mapping entry ID: ${entry.id}, created_at: ${entry.Created_at}, type: ${entry.Type}`);
   
   let content = '';
-  let prompt = entry.prompt || null;
+  let prompt = entry.Prompt || null;
   let conversationId = entry.conversation_id || null;
   
   if (conversationId) {
@@ -24,16 +24,16 @@ export const mapDatabaseEntryToJournalEntry = (
   
   // Try to decrypt the content, but handle errors gracefully
   try {
-    content = decryptContent(entry.content, userId);
+    content = decryptContent(entry.Content, userId);
   } catch (error) {
     console.error('Error decrypting content:', error);
     // Use raw content if decryption fails or a fallback message
-    content = entry.content || 'Content could not be decrypted';
+    content = entry.Content || 'Content could not be decrypted';
   }
   
   // Try to parse the content as JSON
   let parsedContent = null;
-  let entryType = entry.type || 'journal';
+  let entryType = entry.Type || 'journal';
   let title = prompt ? prompt.substring(0, 50) + (prompt.length > 50 ? '...' : '') : 'Untitled Entry';
   
   try {
@@ -73,7 +73,7 @@ export const mapDatabaseEntryToJournalEntry = (
         
         console.log(`Generated title for conversation entry: ${title}`);
       } else {
-        title = `Conversation: ${new Date(entry.created_at).toLocaleDateString()}`;
+        title = `Conversation: ${new Date(entry.Created_at).toLocaleDateString()}`;
       }
     }
     
@@ -92,7 +92,7 @@ export const mapDatabaseEntryToJournalEntry = (
   }
 
   // Special handling for summary type entries
-  if (entryType === 'summary' || entry.type === 'summary') {
+  if (entryType === 'summary' || entry.Type === 'summary') {
     console.log('Processing summary entry:', entry.id);
     
     if (title === 'Untitled Entry' || title.includes('Daily Summary:')) {
@@ -101,7 +101,7 @@ export const mapDatabaseEntryToJournalEntry = (
       } else if (parsedContent && parsedContent.title) {
         title = parsedContent.title;
       } else {
-        title = `Daily Journal Summary: ${new Date(entry.created_at).toLocaleDateString()}`;
+        title = `Daily Journal Summary: ${new Date(entry.Created_at).toLocaleDateString()}`;
       }
     }
     
@@ -113,12 +113,12 @@ export const mapDatabaseEntryToJournalEntry = (
   }
 
   // Ensure we properly create a Date object from the entry's created_at
-  const createdAt = new Date(entry.created_at);
+  const createdAt = new Date(entry.Created_at);
   
   // Create and return the finalized journal entry with proper date
   const journalEntry: JournalEntry = {
     id: entry.id,
-    userId: entry.user_id,
+    userId: entry.User_id,
     title: title,
     content: content,
     type: entryType as 'journal' | 'story' | 'sideQuest' | 'action' | 'summary',

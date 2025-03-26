@@ -1,127 +1,82 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { encryptContent } from "../journal/encryption";
+import { supabase } from '@/integrations/supabase/client';
+import { encryptContent } from '../journal/encryption';
 
 /**
- * Saves a conversation to the journal without generating a summary
+ * Saves a conversation to the journal
  */
 export const saveConversationToJournal = async (
-  userId: string,
-  title: string,
-  conversationId: string,
-  conversationType: string
-) => {
+  userId: string, 
+  title: string, 
+  conversationId: string, 
+  type: 'story' | 'sideQuest' | 'action' | 'journal'
+): Promise<boolean> => {
   try {
-    console.log(`Saving ${conversationType} conversation to journal for user ${userId}`);
-
-    // Create a simple content structure
-    const content = JSON.stringify({
-      title,
-      type: conversationType
-    }, null, 2);
-
-    // Encrypt the content for storage
-    const encryptedContent = encryptContent(`\`\`\`json\n${content}\n\`\`\``, userId);
-
-    // Create a prompt
-    const prompt = `Conversation: ${title}`;
-
-    // Save to the journal_entries table
-    const { data, error } = await supabase
-      .from('journal_entries')
+    console.log(`Saving conversation ${conversationId} to journal for user ${userId}`);
+    
+    // Get the conversation summary
+    // Updated table name from "conversations" to "Conversation_id"
+    const { data: conversationData, error: conversationError } = await supabase
+      .from('Conversation_id')
+      .select('*')
+      .eq('id', conversationId)
+      .maybeSingle();
+    
+    if (conversationError || !conversationData) {
+      console.error('Error fetching conversation:', conversationError);
+      return false;
+    }
+    
+    // Get the messages from the conversation
+    // Updated table name from "messages" to "Messages" and column from "conversation_id" to "conversation"
+    const { data: messagesData, error: messagesError } = await supabase
+      .from('Messages')
+      .select('*')
+      .eq('conversation', conversationId)
+      .order('timestamp', { ascending: true });
+    
+    if (messagesError) {
+      console.error('Error fetching messages:', messagesError);
+      return false;
+    }
+    
+    if (!messagesData || messagesData.length === 0) {
+      console.error('No messages found for conversation:', conversationId);
+      return false;
+    }
+    
+    // Format the conversation as content
+    const formattedContent = messagesData.map(msg => {
+      const role = msg.role === 'user' ? 'You' : 'Assistant';
+      return `**${role}:** ${msg.content}`;
+    }).join('\n\n');
+    
+    // Encrypt the content
+    const encryptedContent = encryptContent(formattedContent, userId);
+    
+    // Create a journal entry with the conversation content
+    // Updated table name from "journal_entries" to "Journal_Entries" and column names
+    const { data: journalEntry, error: journalError } = await supabase
+      .from('Journal_Entries')
       .insert({
-        user_id: userId,
-        title: title,
-        content: encryptedContent,
-        type: conversationType,
-        prompt: prompt,
+        User_id: userId,
+        Prompt: title,
+        Content: encryptedContent,
+        Type: type,
         conversation_id: conversationId
       })
       .select()
       .single();
-
-    if (error) {
-      console.error("Error saving conversation to journal:", error);
-      return null;
-    }
-
-    console.log("Successfully saved conversation to journal:", data.id);
-    return data;
-  } catch (error) {
-    console.error("Exception saving conversation to journal:", error);
-    return null;
-  }
-};
-
-/**
- * Saves a journal entry from a conversation
- */
-export const saveJournalEntryFromConversation = async (
-  userId: string,
-  title: string, 
-  content: string,
-  entryType: string
-): Promise<boolean> => {
-  try {
-    console.log(`Saving journal entry from conversation for user ${userId}`);
     
-    // Encrypt the content for storage
-    const encryptedContent = encryptContent(content, userId);
-    
-    // Create a clean prompt
-    const prompt = `Journal Entry: ${title}`;
-    
-    // Save to the journal_entries table
-    const { data, error } = await supabase
-      .from('journal_entries')
-      .insert({
-        user_id: userId,
-        title: title,
-        content: encryptedContent,
-        type: entryType,
-        prompt: prompt
-      })
-      .select()
-      .single();
-      
-    if (error) {
-      console.error("Error saving journal entry from conversation:", error);
+    if (journalError) {
+      console.error('Error creating journal entry:', journalError);
       return false;
     }
     
-    console.log("Successfully saved journal entry:", data.id);
+    console.log(`Successfully saved conversation ${conversationId} to journal as entry ${journalEntry.id}`);
     return true;
   } catch (error) {
-    console.error("Exception saving journal entry from conversation:", error);
-    return false;
-  }
-};
-
-/**
- * Links a journal entry to a conversation
- */
-export const linkJournalEntryToConversation = async (
-  journalEntryId: string, 
-  conversationId: string
-): Promise<boolean> => {
-  try {
-    console.log(`Linking journal entry ${journalEntryId} to conversation ${conversationId}`);
-    
-    // Update the journal entry with the conversation ID
-    const { error } = await supabase
-      .from('journal_entries')
-      .update({ conversation_id: conversationId })
-      .eq('id', journalEntryId);
-      
-    if (error) {
-      console.error("Error linking journal entry to conversation:", error);
-      return false;
-    }
-    
-    console.log("Successfully linked journal entry to conversation");
-    return true;
-  } catch (error) {
-    console.error("Exception linking journal entry to conversation:", error);
+    console.error('Error in saveConversationToJournal:', error);
     return false;
   }
 };

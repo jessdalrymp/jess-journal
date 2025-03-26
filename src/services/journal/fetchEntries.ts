@@ -14,11 +14,12 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     console.log('Current time:', new Date().toISOString());
     
     // Fetch all journal entries directly with improved logging
+    // NOTE: Updated table name from "journal_entries" to "Journal_Entries"
     const { data: entriesData, error: entriesError } = await supabase
-      .from('journal_entries')
+      .from('Journal_Entries')
       .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .eq('User_id', userId)  // Updated column name from "user_id" to "User_id"
+      .order('Created_at', { ascending: false });  // Updated column name from "created_at" to "Created_at"
 
     if (entriesError) {
       console.error('Error fetching journal entries:', entriesError);
@@ -35,25 +36,25 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     // Log date range of fetched entries to debug date filtering issues
     if (entriesData.length > 0) {
       const oldestEntry = [...entriesData].sort((a, b) => 
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        new Date(a.Created_at).getTime() - new Date(b.Created_at).getTime() // Updated column name
       )[0];
       
       const newestEntry = [...entriesData].sort((a, b) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        new Date(b.Created_at).getTime() - new Date(a.Created_at).getTime() // Updated column name
       )[0];
       
       console.log('Date range of entries from database:', {
-        oldest: new Date(oldestEntry.created_at).toISOString(),
-        newest: new Date(newestEntry.created_at).toISOString()
+        oldest: new Date(oldestEntry.Created_at).toISOString(),  // Updated column name
+        newest: new Date(newestEntry.Created_at).toISOString()   // Updated column name
       });
       
       // Log the most recent entries for debugging
       console.log('Most recent entries from database:', entriesData.slice(0, 3).map(entry => ({
         id: entry.id,
-        created_at: entry.created_at,
-        created_at_iso: new Date(entry.created_at).toISOString(),
-        type: entry.type,
-        title: entry.prompt?.substring(0, 30) || 'No title'
+        created_at: entry.Created_at,  // Updated column name
+        created_at_iso: new Date(entry.Created_at).toISOString(),  // Updated column name
+        type: entry.Type,  // Updated column name
+        title: entry.Prompt?.substring(0, 30) || 'No title'  // Updated column name
       })));
     }
     
@@ -70,10 +71,11 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     if (conversationIds.length > 0) {
       console.log('Fetching messages for conversations:', conversationIds);
       
+      // NOTE: Updated table name from "messages" to "Messages"
       const { data: messagesData, error: messagesError } = await supabase
-        .from('messages')
+        .from('Messages')
         .select('*')
-        .in('conversation_id', conversationIds)
+        .in('conversation', conversationIds) // Updated column name from "conversation_id" to "conversation"
         .order('timestamp', { ascending: true });
       
       if (messagesError) {
@@ -83,7 +85,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         
         // Group messages by conversation_id for easier lookup
         messagesMap = messagesData.reduce((acc, message) => {
-          const convId = message.conversation_id;
+          const convId = message.conversation; // Updated column name from "conversation_id" to "conversation"
           if (!acc[convId]) {
             acc[convId] = [];
           }
@@ -115,12 +117,12 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         // Create a fallback entry with minimal information
         const fallbackEntry: JournalEntry = {
           id: entryData.id,
-          userId: entryData.user_id,
-          title: entryData.prompt || 'Untitled Entry',
+          userId: entryData.User_id,  // Updated column name from "user_id" to "User_id"
+          title: entryData.Prompt || 'Untitled Entry',  // Updated column name from "prompt" to "Prompt"
           content: 'Content could not be loaded',
-          type: (entryData.type as 'journal' | 'story' | 'sideQuest' | 'action' | 'summary') || 'journal',
-          createdAt: new Date(entryData.created_at),
-          prompt: entryData.prompt || null,
+          type: (entryData.Type as 'journal' | 'story' | 'sideQuest' | 'action' | 'summary') || 'journal',  // Updated column name from "type" to "Type"
+          createdAt: new Date(entryData.Created_at),  // Updated column name from "created_at" to "Created_at"
+          prompt: entryData.Prompt || null,  // Updated column name from "prompt" to "Prompt"
           conversation_id: entryData.conversation_id || null
         };
         entries.push(fallbackEntry);
