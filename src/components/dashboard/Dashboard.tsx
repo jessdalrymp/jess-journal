@@ -13,39 +13,34 @@ export const Dashboard = () => {
   const { user } = useAuth();
   const { journalEntries, loading, profile, fetchJournalEntries } = useUserData();
   const [isLoading, setIsLoading] = useState(true);
-  const [dashboardInitialized, setDashboardInitialized] = useState(false);
+  const [dataInitialized, setDataInitialized] = useState(false);
 
+  // Track loading state
   useEffect(() => {
-    // Simply track the loading state
     if (!loading) {
       setIsLoading(false);
+    } else {
+      setIsLoading(true);
     }
   }, [loading]);
   
-  // Refresh entries when dashboard mounts or becomes visible
+  // Force refresh journal entries on dashboard mount
   useEffect(() => {
-    if (user && !dashboardInitialized) {
-      console.log("Dashboard mounted - refreshing journal entries");
-      fetchJournalEntries()
-        .then(() => setDashboardInitialized(true))
-        .catch(err => console.error("Error refreshing journal entries:", err));
-    }
-  }, [user, fetchJournalEntries, dashboardInitialized]);
-  
-  // Also refresh when the window regains focus
-  useEffect(() => {
-    const handleFocus = () => {
-      if (user) {
-        console.log("Window focused - refreshing journal entries");
-        fetchJournalEntries().catch(err => 
-          console.error("Error refreshing journal entries on focus:", err)
-        );
+    const loadData = async () => {
+      if (user && !dataInitialized) {
+        console.log("Dashboard mounted - forcing journal entries refresh");
+        try {
+          await fetchJournalEntries();
+          console.log("Dashboard - journal entries refreshed successfully");
+          setDataInitialized(true);
+        } catch (err) {
+          console.error("Error refreshing journal entries in Dashboard:", err);
+        }
       }
     };
     
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [user, fetchJournalEntries]);
+    loadData();
+  }, [user, fetchJournalEntries, dataInitialized]);
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 relative">

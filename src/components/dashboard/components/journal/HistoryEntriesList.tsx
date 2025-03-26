@@ -16,37 +16,28 @@ export const HistoryEntriesList = ({ entries, loading }: HistoryEntriesListProps
   // Update display entries when entries prop changes
   useEffect(() => {
     if (entries && entries.length > 0) {
+      console.log(`HistoryEntriesList - Received ${entries.length} entries to display`);
       setDisplayEntries(entries);
-      
-      // Log entries for debugging
-      console.log(`Rendering ${entries.length} entries in history list`);
-      
-      // Count conversation summaries
-      const summaries = entries.filter(e => e.conversation_id);
-      console.log(`Found ${summaries.length} conversation summaries`);
-      
-      // Log the first few entries with more details
-      console.log('First 3 entries details:', entries.slice(0, 3).map(e => ({
-        id: e.id,
-        title: e.title,
-        type: e.type,
-        contentPreview: e.content?.substring(0, 50) + (e.content?.length > 50 ? '...' : ''),
-        conversation_id: e.conversation_id,
-        createdAt: e.createdAt
-      })));
     } else {
+      console.log('HistoryEntriesList - No entries to display');
       setDisplayEntries([]);
     }
   }, [entries]);
   
+  // Show loading state
   if (loading) {
+    console.log('HistoryEntriesList - Showing loading state');
     return <HistoryLoadingState />;
   }
   
+  // Show empty state if no entries
   if (!displayEntries || displayEntries.length === 0) {
+    console.log('HistoryEntriesList - Showing empty state');
     return <HistoryEmptyState />;
   }
   
+  // Show entries
+  console.log(`HistoryEntriesList - Rendering ${displayEntries.length} entries`);
   return (
     <div className="mt-5 space-y-3 pl-2">
       {displayEntries.map((entry) => (

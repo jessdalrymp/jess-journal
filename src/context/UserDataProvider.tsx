@@ -56,19 +56,22 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
 
   // Initial data loading
   useEffect(() => {
+    console.log("UserDataProvider - Initial user fetch");
     fetchUser();
   }, [fetchUser]);
 
   useEffect(() => {
     if (user) {
+      console.log("UserDataProvider - Fetching profile for user:", user.id);
       fetchProfile();
     }
   }, [user, fetchProfile]);
 
-  // Always fetch journal entries when user is loaded
+  // Always fetch journal entries when user is loaded and force a refresh on mount
   useEffect(() => {
     if (user) {
       console.log("UserDataProvider - Fetching journal entries on user load");
+      // Force a full refresh of journal entries
       fetchJournalEntries().catch(err => {
         console.error("Error fetching journal entries on user load:", err);
       });
@@ -76,7 +79,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   }, [user, fetchJournalEntries, checkSubscriptionStatus]);
 
-  // Refresh journal entries periodically
+  // Refresh journal entries periodically - more frequently now for better UX
   useEffect(() => {
     if (!user) return;
     
@@ -85,9 +88,24 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
       fetchJournalEntries().catch(err => {
         console.error("Error in periodic journal refresh:", err);
       });
-    }, 60000); // Refresh every minute
+    }, 30000); // Refresh every 30 seconds
     
     return () => clearInterval(refreshInterval);
+  }, [user, fetchJournalEntries]);
+
+  // Additional fetch on window focus for better reliability
+  useEffect(() => {
+    if (!user) return;
+
+    const handleFocus = () => {
+      console.log("UserDataProvider - Window focused, refreshing journal entries");
+      fetchJournalEntries().catch(err => {
+        console.error("Error refreshing journal entries on focus:", err);
+      });
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, [user, fetchJournalEntries]);
 
   const handleAddMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<boolean> => {
