@@ -34,6 +34,12 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     
     // Log date range of fetched entries to debug date filtering issues
     if (entriesData.length > 0) {
+      // Log raw timestamps for analysis
+      console.log('Raw timestamps from database:');
+      entriesData.slice(0, 5).forEach(entry => {
+        console.log(`Entry ID: ${entry.id}, created_at: ${entry.created_at}, type: ${entry.type || 'unknown'}`);
+      });
+      
       // Sort by timestamp to get oldest and newest
       const oldestEntry = [...entriesData].sort((a, b) => 
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
@@ -52,6 +58,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
       console.log('Most recent entries from database:', entriesData.slice(0, 3).map(entry => ({
         id: entry.id,
         created_at: entry.created_at,
+        parsed_date: new Date(entry.created_at).toISOString(),
         type: entry.type,
         title: entry.prompt?.substring(0, 30) || 'No title'
       })));
@@ -106,8 +113,16 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         // Map the entry with any messages data we found
         const entry = mapDatabaseEntryToJournalEntry(entryData, userId, messagesData);
         
-        // Normalize createdAt to ensure it's a Date object
-        entry.createdAt = new Date(entry.createdAt);
+        // Ensure createdAt is a proper Date object
+        if (!(entry.createdAt instanceof Date)) {
+          entry.createdAt = new Date(entry.createdAt);
+        }
+        
+        // Double-check date value is valid
+        if (isNaN(entry.createdAt.getTime())) {
+          console.error(`Invalid date for entry ${entry.id}, using current date instead`);
+          entry.createdAt = new Date();
+        }
         
         // Log the entry's date for debugging
         console.log(`Processed entry: ${entry.id}, date: ${entry.createdAt.toISOString()}, type: ${entry.type}`);

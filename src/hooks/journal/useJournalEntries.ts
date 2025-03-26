@@ -10,8 +10,8 @@ const journalEntriesCache: Record<string, {
   timestamp: number;
 }> = {};
 
-// Cache expiration time (30 seconds to ensure we get fresh data frequently)
-const CACHE_EXPIRATION = 30 * 1000;
+// Cache expiration time (5 seconds to ensure we always get fresh data)
+const CACHE_EXPIRATION = 5 * 1000;
 
 /**
  * Hook for fetching journal entries with caching
@@ -63,13 +63,19 @@ export function useJournalEntries() {
         });
       }
       
+      // Ensure all entries have proper Date objects for createdAt
+      const processedEntries = entries.map(entry => ({
+        ...entry,
+        createdAt: entry.createdAt instanceof Date ? entry.createdAt : new Date(entry.createdAt)
+      }));
+      
       // Update cache even if we get empty entries (to prevent constant retries)
       journalEntriesCache[userId] = {
-        entries,
+        entries: processedEntries,
         timestamp: now
       };
       
-      return entries;
+      return processedEntries;
     } catch (error) {
       console.error('Error fetching journal entries:', error);
       // Don't show error toast if we have cached entries

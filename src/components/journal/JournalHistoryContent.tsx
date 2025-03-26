@@ -34,27 +34,37 @@ export const JournalHistoryContent = ({
     console.log(`JournalHistory - Processing ${entries.length} entries for display`);
     
     if (entries.length > 0) {
+      // Ensure all entries have proper Date objects
+      const normalizedEntries = entries.map(entry => ({
+        ...entry,
+        createdAt: entry.createdAt instanceof Date ? entry.createdAt : new Date(entry.createdAt)
+      }));
+      
       // Sort entries by date (newest first) to ensure proper ordering
-      const sortedEntries = [...entries].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+      const sortedEntries = [...normalizedEntries].sort((a, b) => {
+        const dateA = a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime();
+        const dateB = b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime();
+        return dateB - dateA;
+      });
       
       // Log the date range of entries for debugging date filtering issues
-      const newestDate = new Date(sortedEntries[0].createdAt);
-      const oldestDate = new Date(sortedEntries[sortedEntries.length - 1].createdAt);
-      
-      console.log('JournalHistory - Entries date range:', {
-        newest: newestDate.toISOString(),
-        oldest: oldestDate.toISOString(),
-        count: sortedEntries.length
-      });
+      if (sortedEntries.length > 0) {
+        const newestDate = sortedEntries[0].createdAt;
+        const oldestDate = sortedEntries[sortedEntries.length - 1].createdAt;
+        
+        console.log('JournalHistory - Entries date range:', {
+          newest: newestDate instanceof Date ? newestDate.toISOString() : new Date(newestDate).toISOString(),
+          oldest: oldestDate instanceof Date ? oldestDate.toISOString() : new Date(oldestDate).toISOString(),
+          count: sortedEntries.length
+        });
+      }
       
       // Log the first 5 entries for debugging
       console.log('JournalHistory - First 5 entries:', sortedEntries.slice(0, 5).map(e => ({
         id: e.id,
         title: e.title?.substring(0, 30) + '...',
         type: e.type,
-        date: new Date(e.createdAt).toISOString(),
+        date: e.createdAt instanceof Date ? e.createdAt.toISOString() : new Date(e.createdAt).toISOString(),
         conversationId: e.conversation_id
       })));
       
@@ -76,7 +86,7 @@ export const JournalHistoryContent = ({
             id: e.id,
             type: e.type,
             title: e.title,
-            date: new Date(e.createdAt).toISOString(),
+            date: e.createdAt instanceof Date ? e.createdAt.toISOString() : new Date(e.createdAt).toISOString(),
             conversationId: e.conversation_id
           }))
         );

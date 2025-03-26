@@ -83,7 +83,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     const refreshInterval = setInterval(() => {
       console.log("UserDataProvider - Periodic journal refresh - forcing refresh");
       fetchJournalEntries(true); // Force refresh on periodic updates
-    }, 15000); // Refresh every 15 seconds instead of 30
+    }, 10000); // Refresh every 10 seconds for more frequent updates
     
     return () => {
       console.log("UserDataProvider - Clearing periodic journal refresh");
@@ -106,13 +106,13 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
           setTimeout(() => {
             console.log("Delayed journal refresh after conversation update");
             fetchJournalEntries(true); // Force refresh
-          }, 1000);
+          }, 500);
           
           // Do an additional refresh after a longer delay as a safety measure
           setTimeout(() => {
             console.log("Secondary delayed journal refresh after conversation update");
             fetchJournalEntries(true); // Force refresh
-          }, 3000);
+          }, 2000);
         }
       }
       
