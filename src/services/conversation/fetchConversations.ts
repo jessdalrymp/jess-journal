@@ -1,4 +1,3 @@
-
 import { supabase } from '../../integrations/supabase/client';
 import { Conversation } from './types';
 import { getCachedConversation, cacheConversation } from './conversationCache';
@@ -12,7 +11,6 @@ export const fetchConversations = async (userId: string): Promise<Conversation[]
 
     console.log('Fetching conversations for user:', userId);
 
-    // Updated table name from "conversations" to "Conversation_id"
     const { data, error } = await supabase
       .from('Conversation_id')
       .select('*')
@@ -68,7 +66,6 @@ export const fetchConversation = async (conversationId: string, userId: string):
 
     // Otherwise fetch from database
     console.log(`Fetching conversation ${conversationId} from database`);
-    // Updated table name from "conversations" to "Conversation_id"
     const { data, error } = await supabase
       .from('Conversation_id')
       .select('*')
@@ -87,7 +84,6 @@ export const fetchConversation = async (conversationId: string, userId: string):
     }
 
     // Fetch messages for this conversation
-    // Updated table name from "messages" to "Messages" and column from "conversation_id" to "conversation"
     const { data: messages, error: messagesError } = await supabase
       .from('Messages')
       .select('*')

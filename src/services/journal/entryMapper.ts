@@ -1,134 +1,54 @@
 
 import { JournalEntry } from '@/lib/types';
 import { decryptContent } from './encryption';
-import { parseContentWithJsonCodeBlock } from './contentParser';
 
 /**
- * Maps database journal entry object to application JournalEntry type
- * with improved error handling for decryption
+ * Maps a database entry to a JournalEntry object
+ * Handles the changes in column naming
  */
 export const mapDatabaseEntryToJournalEntry = (
-  entry: any, 
-  userId: string,
-  messagesData: any[] | null = null
+  dbEntry: any, 
+  userId: string
 ): JournalEntry => {
-  console.log(`Mapping entry ID: ${entry.id}, created_at: ${entry.Created_at}, type: ${entry.Type}`);
-  
-  let content = '';
-  let prompt = entry.Prompt || null;
-  let conversationId = entry.conversation_id || null;
-  
-  if (conversationId) {
-    console.log(`Entry ${entry.id} has conversation_id: ${conversationId}`);
-  }
-  
-  // Try to decrypt the content, but handle errors gracefully
-  try {
-    content = decryptContent(entry.Content, userId);
-  } catch (error) {
-    console.error('Error decrypting content:', error);
-    // Use raw content if decryption fails or a fallback message
-    content = entry.Content || 'Content could not be decrypted';
-  }
-  
-  // Try to parse the content as JSON
-  let parsedContent = null;
-  let entryType = entry.Type || 'journal';
-  let title = prompt ? prompt.substring(0, 50) + (prompt.length > 50 ? '...' : '') : 'Untitled Entry';
-  
-  try {
-    parsedContent = parseContentWithJsonCodeBlock(content);
-    
-    // Use the parsed title if available
-    if (parsedContent && parsedContent.title) {
-      title = parsedContent.title;
-    }
-    
-    // Use the parsed type if available
-    if (parsedContent && parsedContent.type) {
-      entryType = parsedContent.type;
-    }
-  } catch (error) {
-    console.error('Error parsing content:', error);
-    // Continue without parsedContent if parsing fails
+  if (!dbEntry) {
+    throw new Error('Cannot map null database entry');
   }
 
-  // Special handling for conversations
-  if (conversationId && messagesData && messagesData.length > 0) {
-    console.log(`Processing conversation entry: ${entry.id} with ${messagesData.length} messages`);
-    
-    // Generate a conversation title if not already set
-    if (title === 'Untitled Entry' || title === 'Conversation') {
-      // Generate a title based on the first few user messages
-      const userMessages = messagesData
-        .filter((msg: any) => msg.role === 'user')
-        .slice(0, 2);
-        
-      if (userMessages.length > 0) {
-        const firstMessage = userMessages[0].content;
-        // Create title from first user message (limited to 40 chars)
-        title = firstMessage.length > 40 
-          ? firstMessage.substring(0, 40) + '...' 
-          : firstMessage;
-        
-        console.log(`Generated title for conversation entry: ${title}`);
-      } else {
-        title = `Conversation: ${new Date(entry.Created_at).toLocaleDateString()}`;
-      }
-    }
-    
-    // Create content from the full conversation
-    if (messagesData && messagesData.length > 0) {
-      // Format the conversation as content
-      const formattedContent = messagesData.map((msg: any) => {
-        const role = msg.role === 'user' ? 'You' : 'Assistant';
-        return `**${role}:** ${msg.content}`;
-      }).join('\n\n');
-      
-      // If this is a conversation, use the formatted messages instead
-      content = formattedContent;
-      console.log(`Formatted conversation content with ${messagesData.length} messages`);
+  // Log the entry structure to debug
+  console.log(`Mapping DB entry to JournalEntry, keys: ${Object.keys(dbEntry).join(', ')}`);
+  
+  // Maps both old (lowercase) and new (capitalized) column names
+  const createdAt = dbEntry.Created_at || dbEntry.created_at;
+  const content = dbEntry.Content || dbEntry.content;
+  const prompt = dbEntry.Prompt || dbEntry.prompt;
+  const type = dbEntry.Type || dbEntry.type || 'journal';
+  const conversation_id = dbEntry.conversation_id;
+  
+  if (!createdAt) {
+    console.error('Created_at is missing in database entry:', dbEntry);
+    throw new Error('Created_at is missing in database entry');
+  }
+
+  // Decrypt the content if it exists
+  let decryptedContent = '';
+  if (content) {
+    try {
+      decryptedContent = decryptContent(content, userId);
+    } catch (error) {
+      console.error('Error decrypting content:', error);
+      decryptedContent = content; // Fall back to encrypted content if decryption fails
     }
   }
 
-  // Special handling for summary type entries
-  if (entryType === 'summary' || entry.Type === 'summary') {
-    console.log('Processing summary entry:', entry.id);
-    
-    if (title === 'Untitled Entry' || title.includes('Daily Summary:')) {
-      if (prompt && prompt.includes('Daily Summary:')) {
-        title = prompt;
-      } else if (parsedContent && parsedContent.title) {
-        title = parsedContent.title;
-      } else {
-        title = `Daily Journal Summary: ${new Date(entry.Created_at).toLocaleDateString()}`;
-      }
-    }
-    
-    if (parsedContent && parsedContent.summary) {
-      content = parsedContent.summary;
-    }
-    
-    entryType = 'summary';
-  }
-
-  // Ensure we properly create a Date object from the entry's created_at
-  const createdAt = new Date(entry.Created_at);
-  
-  // Create and return the finalized journal entry with proper date
-  const journalEntry: JournalEntry = {
-    id: entry.id,
-    userId: entry.User_id,
-    title: title,
-    content: content,
-    type: entryType as 'journal' | 'story' | 'sideQuest' | 'action' | 'summary',
-    createdAt: createdAt,
-    prompt: prompt,
-    conversation_id: conversationId
+  // Construct and return the JournalEntry object
+  return {
+    id: dbEntry.id,
+    userId: dbEntry.User_id || dbEntry.user_id,
+    title: prompt || 'Untitled Entry',
+    content: decryptedContent,
+    createdAt: new Date(createdAt),
+    type,
+    prompt,
+    conversation_id
   };
-  
-  // Log the mapped entry with proper date
-  console.log(`Completed mapping entry ${entry.id}, created: ${journalEntry.createdAt.toISOString()}, type: ${journalEntry.type}`);
-  
-  return journalEntry;
 };

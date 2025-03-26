@@ -9,7 +9,6 @@ export const createConversation = async (params: {
   title: string;
 }): Promise<Conversation | null> => {
   try {
-    // Updated table name from "conversations" to "Conversation_id"
     const { data, error } = await supabase
       .from('Conversation_id')
       .insert({
@@ -51,7 +50,6 @@ export const addMessageToConversation = async (
   message: Omit<ConversationMessage, 'id' | 'createdAt'>
 ): Promise<ConversationMessage | null> => {
   try {
-    // Updated table name from "messages" to "Messages" and column from "conversation_id" to "conversation"
     const { data, error } = await supabase
       .from('Messages')
       .insert({
@@ -68,7 +66,6 @@ export const addMessageToConversation = async (
     }
 
     // Update conversation's updated_at timestamp
-    // Updated table name from "conversations" to "Conversation_id"
     await supabase
       .from('Conversation_id')
       .update({ updated_at: new Date().toISOString() })
@@ -94,7 +91,6 @@ export const updateConversationTitle = async (
   title: string
 ): Promise<boolean> => {
   try {
-    // Updated table name from "conversations" to "Conversation_id"
     const { error } = await supabase
       .from('Conversation_id')
       .update({ title, updated_at: new Date().toISOString() })
@@ -119,7 +115,6 @@ export const updateConversationSummary = async (
   summary: string
 ): Promise<boolean> => {
   try {
-    // Updated table name from "conversations" to "Conversation_id"
     const { error } = await supabase
       .from('Conversation_id')
       .update({ summary, updated_at: new Date().toISOString() })

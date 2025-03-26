@@ -15,7 +15,6 @@ export const saveConversationToJournal = async (
     console.log(`Saving conversation ${conversationId} to journal for user ${userId}`);
     
     // Get the conversation summary
-    // Updated table name from "conversations" to "Conversation_id"
     const { data: conversationData, error: conversationError } = await supabase
       .from('Conversation_id')
       .select('*')
@@ -28,7 +27,6 @@ export const saveConversationToJournal = async (
     }
     
     // Get the messages from the conversation
-    // Updated table name from "messages" to "Messages" and column from "conversation_id" to "conversation"
     const { data: messagesData, error: messagesError } = await supabase
       .from('Messages')
       .select('*')
@@ -55,7 +53,6 @@ export const saveConversationToJournal = async (
     const encryptedContent = encryptContent(formattedContent, userId);
     
     // Create a journal entry with the conversation content
-    // Updated table name from "journal_entries" to "Journal_Entries" and column names
     const { data: journalEntry, error: journalError } = await supabase
       .from('Journal_Entries')
       .insert({

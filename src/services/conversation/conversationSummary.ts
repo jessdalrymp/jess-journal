@@ -1,5 +1,5 @@
 
-import { supabase } from '../../integrations/supabase/client';
+import { supabase } from "../../integrations/supabase/client";
 import { updateCachedConversation } from './conversationCache';
 
 /**
@@ -20,25 +20,25 @@ export const saveConversationSummary = async (
       conversationId
     });
     
-    // Save the summary to the journal_entries table
+    // Save the summary to the Journal_Entries table
     const { data, error } = await supabase
-      .from('journal_entries')
+      .from('Journal_Entries')
       .insert({
-        user_id: userId,
-        prompt: title || 'Conversation Summary',
-        content: summary || 'No summary available',
+        User_id: userId,
+        Prompt: title || 'Conversation Summary',
+        Content: summary || 'No summary available',
         conversation_id: conversationId,
-        type: conversationType
+        Type: conversationType
       });
     
     if (error) {
-      console.error(`Error saving ${conversationType} summary to journal_entries:`, error);
+      console.error(`Error saving ${conversationType} summary to Journal_Entries:`, error);
       throw error;
     }
     
-    // Also update the conversations table with the summary
+    // Also update the Conversation_id table with the summary
     const { error: updateError } = await supabase
-      .from('conversations')
+      .from('Conversation_id')
       .update({ 
         summary: summary || 'No summary available',
         title: title || 'Conversation Summary'
@@ -61,7 +61,7 @@ export const saveConversationSummary = async (
     // After saving, verify what was stored
     console.log('Verifying journal entry was created...');
     const { data: journalCheck, error: journalCheckError } = await supabase
-      .from('journal_entries')
+      .from('Journal_Entries')
       .select('*')
       .eq('conversation_id', conversationId)
       .single();
@@ -74,7 +74,7 @@ export const saveConversationSummary = async (
     
     console.log('Verifying conversation was updated...');
     const { data: conversationCheck, error: conversationCheckError } = await supabase
-      .from('conversations')
+      .from('Conversation_id')
       .select('*')
       .eq('id', conversationId)
       .single();

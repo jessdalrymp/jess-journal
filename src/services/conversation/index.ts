@@ -8,6 +8,7 @@ export * from './fetchConversations';
 export * from './manageConversations';
 export * from './deleteConversation';
 export * from './journalIntegration';
+export * from './journalEntryHelpers';
 
 // Updated direct export for saving conversations without summary
 export const saveConversationToJournal = async (

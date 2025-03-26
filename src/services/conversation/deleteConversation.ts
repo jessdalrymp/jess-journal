@@ -5,7 +5,6 @@ import { clearConversationCache } from './conversationCache';
 export const deleteConversation = async (conversationId: string): Promise<boolean> => {
   try {
     // First delete all messages in the conversation
-    // Updated table name from "messages" to "Messages" and column from "conversation_id" to "conversation"
     const { error: messagesError } = await supabase
       .from('Messages')
       .delete()
@@ -17,7 +16,6 @@ export const deleteConversation = async (conversationId: string): Promise<boolea
     }
 
     // Then delete the conversation itself
-    // Updated table name from "conversations" to "Conversation_id"
     const { error } = await supabase
       .from('Conversation_id')
       .delete()

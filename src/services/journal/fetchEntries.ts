@@ -1,164 +1,143 @@
 
-import { JournalEntry } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
+import { JournalEntry } from '@/lib/types';
 import { mapDatabaseEntryToJournalEntry } from './entryMapper';
+import { decryptContent } from './encryption';
 
 /**
  * Fetches all journal entries for a user
  */
-export const fetchJournalEntries = async (userId: string | undefined): Promise<JournalEntry[]> => {
-  if (!userId) return [];
+export const fetchJournalEntries = async (userId: string): Promise<JournalEntry[]> => {
+  if (!userId) {
+    console.warn('fetchJournalEntries called without a user ID');
+    return [];
+  }
 
   try {
-    console.log('Fetching journal entries for user:', userId);
-    console.log('Current time:', new Date().toISOString());
+    console.log(`Fetching journal entries for user ${userId}`);
     
-    // Fetch all journal entries directly with improved logging
-    // NOTE: Updated table name from "journal_entries" to "Journal_Entries"
-    const { data: entriesData, error: entriesError } = await supabase
+    // Fetch entries from the Journal_Entries table where User_id matches
+    const { data, error } = await supabase
       .from('Journal_Entries')
       .select('*')
-      .eq('User_id', userId)  // Updated column name from "user_id" to "User_id"
-      .order('Created_at', { ascending: false });  // Updated column name from "created_at" to "Created_at"
+      .eq('User_id', userId)
+      .order('Created_at', { ascending: false });
 
-    if (entriesError) {
-      console.error('Error fetching journal entries:', entriesError);
+    if (error) {
+      console.error('Error fetching journal entries:', error);
       return [];
     }
 
-    if (!entriesData || entriesData.length === 0) {
-      console.log('No journal entries found for user:', userId);
+    if (!data || data.length === 0) {
+      console.log(`No journal entries found for user ${userId}`);
       return [];
     }
+
+    console.log(`Found ${data.length} journal entries for user ${userId}`);
+    console.log('Entry dates sample:', data.slice(0, 3).map(entry => ({ 
+      id: entry.id,
+      date: new Date(entry.Created_at).toISOString(),
+      type: entry.Type
+    })));
     
-    console.log(`Found ${entriesData.length} journal entries`);
+    // Log a quick sample of what the latest entries look like
+    const latest = data[0];
+    console.log('Latest entry:', {
+      id: latest.id, 
+      date: new Date(latest.Created_at).toISOString(),
+      type: latest.Type,
+      prompt: latest.Prompt?.substring(0, 50),
+      createdAt: latest.Created_at,
+      conversationId: latest.conversation_id
+    });
     
-    // Log date range of fetched entries to debug date filtering issues
-    if (entriesData.length > 0) {
-      const oldestEntry = [...entriesData].sort((a, b) => 
-        new Date(a.Created_at).getTime() - new Date(b.Created_at).getTime() // Updated column name
-      )[0];
-      
-      const newestEntry = [...entriesData].sort((a, b) => 
-        new Date(b.Created_at).getTime() - new Date(a.Created_at).getTime() // Updated column name
-      )[0];
-      
-      console.log('Date range of entries from database:', {
-        oldest: new Date(oldestEntry.Created_at).toISOString(),  // Updated column name
-        newest: new Date(newestEntry.Created_at).toISOString()   // Updated column name
-      });
-      
-      // Log the most recent entries for debugging
-      console.log('Most recent entries from database:', entriesData.slice(0, 3).map(entry => ({
-        id: entry.id,
-        created_at: entry.Created_at,  // Updated column name
-        created_at_iso: new Date(entry.Created_at).toISOString(),  // Updated column name
-        type: entry.Type,  // Updated column name
-        title: entry.Prompt?.substring(0, 30) || 'No title'  // Updated column name
-      })));
-    }
+    // Log the oldest entry too for comparison
+    const oldest = data[data.length - 1];
+    console.log('Oldest entry:', {
+      id: oldest.id, 
+      date: new Date(oldest.Created_at).toISOString(),
+      conversationId: oldest.conversation_id
+    });
+
+    // For conversation summaries, fetch the associated messages
+    const conversationEntries = data.filter(entry => entry.conversation_id);
+    console.log(`Found ${conversationEntries.length} entries with conversation_id`);
     
-    // Get all unique conversation IDs from the entries
-    const conversationIds = entriesData
-      .filter(entry => entry.conversation_id)
-      .map(entry => entry.conversation_id);
-    
-    console.log(`Found ${conversationIds.length} unique conversation IDs`);
-    
-    // Fetch messages for all conversations in a single query if there are any conversation IDs
-    let messagesMap: Record<string, any[]> = {};
-    
-    if (conversationIds.length > 0) {
-      console.log('Fetching messages for conversations:', conversationIds);
-      
-      // NOTE: Updated table name from "messages" to "Messages"
-      const { data: messagesData, error: messagesError } = await supabase
-        .from('Messages')
-        .select('*')
-        .in('conversation', conversationIds) // Updated column name from "conversation_id" to "conversation"
-        .order('timestamp', { ascending: true });
-      
-      if (messagesError) {
-        console.error('Error fetching messages:', messagesError);
-      } else if (messagesData && messagesData.length > 0) {
-        console.log(`Fetched ${messagesData.length} messages for all conversations`);
+    if (conversationEntries.length > 0) {
+      for (const entry of conversationEntries.slice(0, 3)) { // Process first 3 for logging
+        console.log(`Checking messages for conversation: ${entry.conversation_id}`);
         
-        // Group messages by conversation_id for easier lookup
-        messagesMap = messagesData.reduce((acc, message) => {
-          const convId = message.conversation; // Updated column name from "conversation_id" to "conversation"
-          if (!acc[convId]) {
-            acc[convId] = [];
-          }
-          acc[convId].push(message);
-          return acc;
-        }, {} as Record<string, any[]>);
+        const { data: messages, error: messagesError } = await supabase
+          .from('Messages')
+          .select('*')
+          .eq('conversation', entry.conversation_id)
+          .limit(3);
+        
+        if (messagesError) {
+          console.error(`Error fetching messages for conversation ${entry.conversation_id}:`, messagesError);
+        } else {
+          console.log(`Found ${messages?.length || 0} messages for conversation ${entry.conversation_id}`);
+        }
       }
     }
-    
-    // Process entries and map messages to entries
-    const entries: JournalEntry[] = [];
-    
-    for (const entryData of entriesData) {
+
+    // Map database entries to JournalEntry type
+    const entries = data.map(entry => {
       try {
-        // Get messages for this entry's conversation if it exists
-        const messagesData = entryData.conversation_id 
-          ? messagesMap[entryData.conversation_id] || null
-          : null;
-        
-        // Map the entry with any messages data we found
-        const entry = mapDatabaseEntryToJournalEntry(entryData, userId, messagesData);
-        
-        // Log the entry's date for debugging
-        console.log(`Processed entry: ${entry.id}, date: ${new Date(entry.createdAt).toISOString()}, type: ${entry.type}`);
-        
-        entries.push(entry);
+        console.log(`Processing entry ${entry.id}, created at ${entry.Created_at}, type ${entry.Type}`);
+        return mapDatabaseEntryToJournalEntry(entry, userId);
       } catch (err) {
-        console.error('Error processing journal entry:', err, entryData);
-        // Create a fallback entry with minimal information
-        const fallbackEntry: JournalEntry = {
-          id: entryData.id,
-          userId: entryData.User_id,  // Updated column name from "user_id" to "User_id"
-          title: entryData.Prompt || 'Untitled Entry',  // Updated column name from "prompt" to "Prompt"
-          content: 'Content could not be loaded',
-          type: (entryData.Type as 'journal' | 'story' | 'sideQuest' | 'action' | 'summary') || 'journal',  // Updated column name from "type" to "Type"
-          createdAt: new Date(entryData.Created_at),  // Updated column name from "created_at" to "Created_at"
-          prompt: entryData.Prompt || null,  // Updated column name from "prompt" to "Prompt"
-          conversation_id: entryData.conversation_id || null
-        };
-        entries.push(fallbackEntry);
+        console.error(`Error mapping entry ${entry.id}:`, err);
+        // Return a minimal valid entry for entries that can't be properly mapped
+        return {
+          id: entry.id,
+          userId: entry.User_id,
+          title: entry.Prompt,
+          content: '',
+          createdAt: new Date(entry.Created_at),
+          type: entry.Type || 'journal',
+          prompt: entry.Prompt,
+          conversation_id: entry.conversation_id
+        } as JournalEntry;
       }
-    }
-    
-    // Log the final processed entries for debugging
-    console.log(`Successfully processed ${entries.length} entries`);
-    if (entries.length > 0) {
-      // Ensure all dates are proper Date objects
-      const sortedEntries = [...entries].sort((a, b) => {
-        const dateA = new Date(a.createdAt).getTime();
-        const dateB = new Date(b.createdAt).getTime();
-        return dateB - dateA;
-      });
-      
-      console.log('Date range of processed entries:', {
-        oldest: new Date(Math.min(...entries.map(e => new Date(e.createdAt).getTime()))).toISOString(),
-        newest: new Date(Math.max(...entries.map(e => new Date(e.createdAt).getTime()))).toISOString()
-      });
-      
-      // Log newest entries
-      console.log('Newest processed entries:', 
-        sortedEntries.slice(0, 3).map(e => ({
-          id: e.id,
-          title: e.title,
-          type: e.type,
-          createdAt: new Date(e.createdAt).toISOString(),
-          conversation_id: e.conversation_id
-        }))
-      );
-    }
-    
+    });
+
     return entries;
   } catch (error) {
-    console.error('Error processing journal entries:', error);
+    console.error('Error in fetchJournalEntries:', error);
     return [];
+  }
+};
+
+/**
+ * Fetches a single journal entry by its ID
+ */
+export const fetchJournalEntryById = async (entryId: string, userId: string): Promise<JournalEntry | null> => {
+  if (!userId || !entryId) return null;
+
+  try {
+    console.log(`Fetching journal entry ${entryId} for user ${userId}`);
+    
+    const { data, error } = await supabase
+      .from('Journal_Entries')
+      .select('*')
+      .eq('id', entryId)
+      .eq('User_id', userId)
+      .single();
+
+    if (error) {
+      console.error(`Error fetching journal entry ${entryId}:`, error);
+      return null;
+    }
+
+    if (!data) {
+      console.log(`No journal entry found with id ${entryId}`);
+      return null;
+    }
+
+    return mapDatabaseEntryToJournalEntry(data, userId);
+  } catch (error) {
+    console.error(`Error fetching journal entry ${entryId}:`, error);
+    return null;
   }
 };

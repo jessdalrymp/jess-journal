@@ -20,7 +20,6 @@ export const saveJournalEntry = async (
     // Encrypt the content before saving
     const encryptedContent = encryptContent(content, userId);
     
-    // Updated table name from "journal_entries" to "Journal_Entries" and column names
     const { data, error } = await supabase
       .from('Journal_Entries')
       .insert({

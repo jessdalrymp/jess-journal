@@ -12,7 +12,6 @@ export const updateJournalEntry = async (entryId: string, content: string, userI
     // Encrypt the content before updating
     const encryptedContent = encryptContent(content, userId);
     
-    // Updated table name from "journal_entries" to "Journal_Entries" and column from "content" to "Content"
     const { error } = await supabase
       .from('Journal_Entries')
       .update({ Content: encryptedContent })
