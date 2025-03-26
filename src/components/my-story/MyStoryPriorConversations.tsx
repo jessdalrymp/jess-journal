@@ -22,7 +22,7 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-sm h-full p-4 flex flex-col">
-        <h3 className="text-lg font-medium mb-3">Prior Conversations</h3>
+        <h3 className="text-lg font-medium mb-3 font-sourcesans">Prior Conversations</h3>
         <div className="flex items-center justify-center flex-1">
           <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
         </div>
@@ -60,7 +60,7 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
 
   return (
     <div className="bg-white rounded-lg shadow-sm h-full p-4 flex flex-col">
-      <h3 className="text-lg font-medium mb-3">Prior Conversations</h3>
+      <h3 className="text-lg font-medium mb-3 font-sourcesans">Prior Conversations</h3>
       
       {filteredConversations.length === 0 ? (
         <div className="flex flex-col items-center justify-center flex-1 text-center p-4">
@@ -79,7 +79,7 @@ export const MyStoryPriorConversations: React.FC<MyStoryPriorConversationsProps>
               >
                 <div className="flex items-center gap-1">
                   <BookOpen className="h-4 w-4 text-blue-500" />
-                  <h4 className="font-medium text-sm line-clamp-1">
+                  <h4 className="font-medium text-sm line-clamp-1 font-sourcesans">
                     {conversation.title || 'My Story'}
                   </h4>
                 </div>
