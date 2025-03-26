@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useConversationActions } from './useConversationActions';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +11,12 @@ export function useConversationData(userId?: string | null) {
 
   const startConversation = async (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
     if (!userId) {
+      console.error("Cannot start conversation: User not authenticated");
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to continue",
+        variant: "destructive"
+      });
       throw new Error("User not authenticated");
     }
 

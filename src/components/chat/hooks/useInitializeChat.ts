@@ -32,8 +32,9 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
   }, [authUser, type]);
 
   const initializeChat = useCallback(async (conversationId?: string | null) => {
-    if (!authUser) {
-      console.log("User not authenticated, cannot initialize chat");
+    // Make sure we have an authenticated user
+    if (!authUser || !authUser.id) {
+      console.log("User not authenticated or missing ID, cannot initialize chat");
       setError("Authentication required");
       return null;
     }
@@ -55,10 +56,11 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       initializationInProgress.current = true;
       setLoading(true);
       console.log(`Initializing chat for type: ${type}${conversationId ? ` with existing conversation id: ${conversationId}` : ''}`);
-      console.log("User authentication state:", authUser ? "Authenticated" : "Not authenticated");
+      console.log("User authentication state:", authUser ? `Authenticated as ${authUser.id}` : "Not authenticated");
       
-      if (!authUser) {
-        console.log("User not authenticated, cannot initialize chat");
+      // Double-check authentication
+      if (!authUser || !authUser.id) {
+        console.log("User not authenticated or missing ID, cannot initialize chat");
         setError("Authentication required");
         return null;
       }
