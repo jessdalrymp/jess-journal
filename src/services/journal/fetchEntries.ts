@@ -81,7 +81,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
           id: entryData.id,
           conversation_id: entryData.conversation_id,
           type: entryData.type,
-          title: entryData.title || entryData.prompt
+          title: entryData.prompt || 'Untitled Entry'
         });
         
         // Get messages for this entry's conversation if it exists
