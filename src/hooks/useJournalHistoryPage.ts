@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -39,8 +38,7 @@ export const useJournalHistoryPage = () => {
       if (user) {
         console.log("JournalHistory - Loading journal entries, retry count:", retryCount);
         try {
-          // Force refresh to bypass cache
-          await fetchJournalEntries(true);
+          await fetchJournalEntries();
           console.log("JournalHistory - Successfully loaded entries");
         } catch (error) {
           console.error("JournalHistory - Error loading entries:", error);
@@ -103,7 +101,6 @@ export const useJournalHistoryPage = () => {
     }
   }, [journalEntries]);
 
-  // Click handlers
   const handleEntryClick = useCallback((entry: JournalEntry) => {
     console.log("JournalHistory - Entry clicked:", entry.id, "conversation_id:", entry.conversation_id);
     navigate(`/journal-entry/${entry.id}`, { state: { entry } });
@@ -122,7 +119,6 @@ export const useJournalHistoryPage = () => {
     setDeleteDialogOpen(true);
   }, []);
 
-  // Force refresh entries
   const handleRefreshEntries = useCallback(() => {
     console.log("JournalHistory - Manual refresh triggered");
     setRetryCount(prev => prev + 1);
@@ -147,14 +143,8 @@ export const useJournalHistoryPage = () => {
     console.log("JournalHistory - Chat saved, scheduling refresh");
     setShowJournalChat(false);
     
-    // Do an immediate refresh
+    // Do an immediate refresh by incrementing retry count
     setRetryCount(prev => prev + 1);
-    
-    // Add a delayed refresh to catch any database updates that might take time
-    setTimeout(() => {
-      console.log("JournalHistory - Delayed refresh after chat save");
-      setRetryCount(prev => prev + 1);
-    }, 2000);
   }, []);
 
   const confirmDelete = async () => {
@@ -168,8 +158,8 @@ export const useJournalHistoryPage = () => {
         description: "Journal entry has been deleted successfully",
       });
       if (user) {
-        // Force refresh entries after delete
-        fetchJournalEntries(true);
+        // Force refresh entries after delete by fetching again
+        await fetchJournalEntries();
       }
     } else {
       toast({
