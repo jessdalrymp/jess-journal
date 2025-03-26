@@ -1,11 +1,10 @@
 
 import { useState } from 'react';
 import { AuthFormInput } from './AuthFormInput';
-import { ActionButton } from '../ui/ActionButton';
 import { ErrorMessage } from './ErrorMessage';
 import { useSignUpValidation } from '../../hooks/auth/useSignUpValidation';
 import { useSignUpSubmit } from '../../hooks/auth/useSignUpSubmit';
-import { Button } from '@/components/ui/button';  // Import the shadcn Button component
+import { Button } from '@/components/ui/button';
 
 interface SignUpFormProps {
   onVerificationSent: (email: string) => void;
@@ -20,12 +19,12 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
   const { error, setError, validateForm } = useSignUpValidation();
   const { handleSubmit, isProcessing, loading } = useSignUpSubmit({ onVerificationSent });
 
-  const validateAndSubmit = (e: React.FormEvent) => {
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Validating and submitting sign-up form');
-    const isValid = validateForm(email, password, confirmPassword, name);
+    console.log('Form submission triggered');
     
-    if (isValid) {
+    // Validate form before submitting
+    if (validateForm(email, password, confirmPassword, name)) {
       console.log('Form validation passed, submitting...');
       handleSubmit(e, email, password, name, () => true, setError);
     } else {
@@ -34,7 +33,7 @@ export const SignUpForm = ({ onVerificationSent }: SignUpFormProps) => {
   };
 
   return (
-    <form onSubmit={validateAndSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4">
       <AuthFormInput
         id="name"
         type="text"

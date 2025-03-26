@@ -26,26 +26,27 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
     setError: (error: string | null) => void
   ) => {
     e.preventDefault();
+    console.log("handleSubmit called with email:", email);
     setError(null);
     
-    try {
-      console.log("Starting sign up submission");
-      if (!validateForm()) {
-        console.log("Validation failed in handleSubmit");
-        return;
-      }
+    if (!validateForm()) {
+      console.log("Form validation failed in handleSubmit");
+      return;
+    }
 
-      setIsProcessing(true);
-      console.log("Attempting to sign up with:", { email, name });
+    // Check if required fields are present
+    if (!email || !password) {
+      setError("Email and password are required");
+      return;
+    }
+    
+    setIsProcessing(true);
+    
+    try {
+      console.log("Starting sign up process for:", email);
       
-      // Check if email and password are valid
-      if (!email || !password) {
-        setError("Email and password are required");
-        setIsProcessing(false);
-        return;
-      }
-      
-      const result = await signUp(email, password, name, true); // Added true to check if user exists
+      // Attempt to sign up the user with Supabase
+      const result = await signUp(email, password, name, true);
       console.log("Sign up result:", result);
       
       // Check if user exists
@@ -75,7 +76,6 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
         } else if (emailResult.rateLimit) {
           console.log("Rate limit detected when sending verification email");
           
-          // More user-friendly message
           toast({
             title: "Account created",
             description: "Your account has been created. Please check your email for the verification link or try signing in after a few minutes.",
@@ -116,7 +116,6 @@ export const useSignUpSubmit = ({ onVerificationSent }: UseSignUpSubmitProps) =>
         } else if (rateLimited) {
           errorMessage = "Please wait a moment before creating another account.";
           
-          // Don't show toasts for rate limits - use a more friendly approach
           toast({
             title: "Please wait a moment",
             description: "For security reasons, please wait a few minutes before trying again.",
