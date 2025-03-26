@@ -29,21 +29,15 @@ export function useJournalEntries() {
     }
     
     try {
-      // Check if we have a valid cache entry
-      const cachedData = journalEntriesCache[userId];
-      if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_EXPIRATION) {
-        console.log('Using cached journal entries');
-        return cachedData.entries;
-      }
-      
+      // Always set loading to true when we start fetching
       setLoading(true);
       isFetching.current = true;
       console.log('Fetching journal entries for user:', userId);
       
-      // Attempt to fetch entries
+      // Always fetch fresh data from the database
       const entries = await journalService.fetchJournalEntries(userId);
       
-      // Update cache even if we get empty entries (to prevent constant retries)
+      // Update cache with the fresh data
       journalEntriesCache[userId] = {
         entries,
         timestamp: Date.now()
@@ -69,8 +63,22 @@ export function useJournalEntries() {
     }
   }, [toast]);
 
+  // Helper function to clear the cache
+  const clearCache = useCallback((userId?: string) => {
+    if (userId) {
+      delete journalEntriesCache[userId];
+    } else {
+      // Clear all cache if no userId provided
+      Object.keys(journalEntriesCache).forEach(key => {
+        delete journalEntriesCache[key];
+      });
+    }
+    console.log('Journal entries cache cleared');
+  }, []);
+
   return {
     loading,
     fetchJournalEntries,
+    clearCache
   };
 }

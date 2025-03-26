@@ -57,22 +57,38 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
   // Initial data loading
   useEffect(() => {
     fetchUser();
-  }, []);
+  }, [fetchUser]);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
     }
-  }, [user]);
+  }, [user, fetchProfile]);
 
-  // Only fetch journal entries when user is loaded and entries haven't been fetched yet
+  // Always fetch journal entries when user is loaded
   useEffect(() => {
-    if (user && !isJournalFetched) {
-      console.log("Triggering journal entries fetch");
-      fetchJournalEntries();
+    if (user) {
+      console.log("UserDataProvider - Fetching journal entries on user load");
+      fetchJournalEntries().catch(err => {
+        console.error("Error fetching journal entries on user load:", err);
+      });
       checkSubscriptionStatus();
     }
-  }, [user, isJournalFetched]);
+  }, [user, fetchJournalEntries, checkSubscriptionStatus]);
+
+  // Refresh journal entries periodically
+  useEffect(() => {
+    if (!user) return;
+    
+    const refreshInterval = setInterval(() => {
+      console.log("UserDataProvider - Periodic journal refresh");
+      fetchJournalEntries().catch(err => {
+        console.error("Error in periodic journal refresh:", err);
+      });
+    }, 60000); // Refresh every minute
+    
+    return () => clearInterval(refreshInterval);
+  }, [user, fetchJournalEntries]);
 
   const handleAddMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<boolean> => {
     try {
@@ -81,7 +97,8 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
       if (role === 'assistant') {
         if (user) {
           console.log("Marking journal entries as not fetched to trigger refresh after conversation update");
-          setIsJournalFetched(false);
+          // Force a refresh of journal entries after assistant messages are added
+          fetchJournalEntries();
         }
       }
       

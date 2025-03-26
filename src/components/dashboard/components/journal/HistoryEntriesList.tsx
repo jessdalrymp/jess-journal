@@ -3,7 +3,7 @@ import { JournalEntry } from '@/lib/types';
 import { HistoryEntryItem } from './HistoryEntryItem';
 import { HistoryLoadingState } from './HistoryLoadingState';
 import { HistoryEmptyState } from './HistoryEmptyState';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface HistoryEntriesListProps {
   entries: JournalEntry[];
@@ -11,9 +11,14 @@ interface HistoryEntriesListProps {
 }
 
 export const HistoryEntriesList = ({ entries, loading }: HistoryEntriesListProps) => {
-  // Log entries for debugging
+  const [displayEntries, setDisplayEntries] = useState<JournalEntry[]>([]);
+  
+  // Update display entries when entries prop changes
   useEffect(() => {
-    if (entries.length > 0) {
+    if (entries && entries.length > 0) {
+      setDisplayEntries(entries);
+      
+      // Log entries for debugging
       console.log(`Rendering ${entries.length} entries in history list`);
       
       // Count conversation summaries
@@ -29,6 +34,8 @@ export const HistoryEntriesList = ({ entries, loading }: HistoryEntriesListProps
         conversation_id: e.conversation_id,
         createdAt: e.createdAt
       })));
+    } else {
+      setDisplayEntries([]);
     }
   }, [entries]);
   
@@ -36,13 +43,13 @@ export const HistoryEntriesList = ({ entries, loading }: HistoryEntriesListProps
     return <HistoryLoadingState />;
   }
   
-  if (entries.length === 0) {
+  if (!displayEntries || displayEntries.length === 0) {
     return <HistoryEmptyState />;
   }
   
   return (
     <div className="mt-5 space-y-3 pl-2">
-      {entries.map((entry) => (
+      {displayEntries.map((entry) => (
         <HistoryEntryItem key={entry.id} entry={entry} />
       ))}
     </div>

@@ -9,9 +9,11 @@ import { RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { HistoryViewAllLink } from './journal/HistoryViewAllLink';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 export const JournalHistorySection = () => {
   const { journalEntries, loading, fetchJournalEntries } = useUserData();
+  const { user } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -47,16 +49,22 @@ export const JournalHistorySection = () => {
   // Force refresh when the component mounts to ensure latest entries
   useEffect(() => {
     const refreshEntries = async () => {
+      if (!user) return;
+      
       try {
         console.log("JournalHistorySection - Refreshing entries on mount");
+        setIsRefreshing(true);
         await fetchJournalEntries();
+        console.log("JournalHistorySection - Entries refreshed successfully");
       } catch (error) {
         console.error("Error refreshing journal entries:", error);
+      } finally {
+        setIsRefreshing(false);
       }
     };
     
     refreshEntries();
-  }, [fetchJournalEntries]);
+  }, [fetchJournalEntries, user]);
   
   const handleRefresh = async () => {
     setIsRefreshing(true);
