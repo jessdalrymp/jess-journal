@@ -59,7 +59,16 @@ export const JournalingDialog = ({
   };
 
   const handleSaveAndClose = async () => {
-    if (!user || !journalContent.trim()) return;
+    if (!user || !journalContent.trim()) {
+      if (!journalContent.trim()) {
+        toast({
+          title: "Cannot save empty entry",
+          description: "Please add some content to your reflection",
+          variant: "destructive"
+        });
+      }
+      return;
+    }
     
     try {
       setIsSaving(true);

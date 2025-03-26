@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useUserData } from '@/context/UserDataContext';
@@ -23,23 +22,30 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
   const { toast } = useToast();
 
   const handleSave = async () => {
-    if (!user || !content.trim() || !prompt || !category) return;
+    if (!user || !content.trim()) {
+      if (!content.trim()) {
+        toast({
+          title: "Cannot save empty entry",
+          description: "Please add some content to your entry",
+          variant: "destructive"
+        });
+      }
+      return;
+    }
     
     setIsSaving(true);
     
     try {
-      // Generate a title based on the user's response, not the prompt
       const contentPreview = content.trim().substring(0, 40) + (content.length > 40 ? '...' : '');
-      const entryTitle = `${category.name}: ${contentPreview}`;
+      const entryTitle = `${category?.name}: ${contentPreview}`;
       
       const journalContent = JSON.stringify({
         title: entryTitle,
-        prompt: prompt, // Store the original prompt for reference
+        prompt: prompt,
         summary: content,
-        type: category.id
+        type: category?.id
       });
       
-      // Import these dynamically to reduce initial load time
       const journalCreateModule = await import('@/hooks/journal/useJournalCreate');
       const { saveJournalEntry } = journalCreateModule.useJournalCreate();
       
@@ -49,7 +55,7 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
       
       toast({
         title: "Journal entry saved",
-        description: `Your ${category.name.toLowerCase()} has been saved successfully.`,
+        description: `Your ${category?.name.toLowerCase()} has been saved successfully.`,
       });
       
       setContent('');
