@@ -12,7 +12,7 @@ export const fetchUser = async (): Promise<User | null> => {
         email: authUser.email || '',
         name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
         createdAt: new Date(authUser.created_at || Date.now()),
-        updatedAt: new Date()
+        updatedAt: new Date() // Added missing updatedAt property
       };
       return userData;
     } else {
@@ -90,7 +90,8 @@ export const saveProfile = async (userId: string | undefined, profileData: Parti
       userId: userId,
       completedOnboarding: false,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      preferences: {}
     } as UserProfile;
     
     const updatedProfile = { ...currentProfile, ...profileData };

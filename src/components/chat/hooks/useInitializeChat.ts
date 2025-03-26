@@ -90,6 +90,8 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           throw new Error('Failed to create conversation');
         }
         
+        console.log(`Successfully created new ${type} conversation with ID: ${conversation.id}`);
+        
         // Add initial system message
         const initialChatMessage: ChatMessage = {
           id: Date.now().toString(),

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useUserData } from '@/context/UserDataContext';
 import { HistorySectionHeading } from './journal/HistorySectionHeading';
@@ -14,20 +13,26 @@ export const JournalHistorySection = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   
-  // Filter and sort recent entries
+  const getEntryLink = (entry: JournalEntry) => {
+    if (entry.type === 'story' || entry.type === 'sideQuest' || entry.type === 'action') {
+      if (entry.conversationId) {
+        return `/${entry.type.toLowerCase()}?conversationId=${entry.conversationId}`;
+      }
+    }
+    return `/journal-entry/${entry.id}`;
+  };
+
   const recentEntries = journalEntries 
     ? [...journalEntries]
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 5)
     : [];
   
-  // Debug logs to help identify issues
   console.log('Journal History - entries count:', journalEntries?.length);
   console.log('Journal History - entries with conversationId:', 
     journalEntries?.filter(e => e.conversationId)?.length);
   console.log('Journal History - recent entries sample:', recentEntries?.slice(0, 2));
   
-  // Force refresh when the component mounts to ensure latest entries
   useEffect(() => {
     const refreshEntries = async () => {
       try {
@@ -85,7 +90,6 @@ export const JournalHistorySection = () => {
       <div className="flex flex-col flex-1">
         <HistoryActionCard />
         
-        {/* Recent Entries - Show actual entries or placeholder */}
         <HistoryEntriesList 
           entries={recentEntries}
           loading={loading || isRefreshing}

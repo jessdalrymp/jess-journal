@@ -1,94 +1,35 @@
-
+import React from 'react';
 import { JournalEntry } from '@/lib/types';
-import { getEntryIcon, getEntryTypeName } from './JournalHistoryUtils';
-import { parseEntryContent } from '@/utils/contentParser';
-import { Button } from '@/components/ui/button';
-import { MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { MessageSquare } from 'lucide-react';
 
 interface JournalHistoryEntryDetailProps {
   entry: JournalEntry;
-  getEntryTitle: (entry: JournalEntry) => string;
-  onBack: () => void;
 }
 
-// Helper function to format the content for display
-const formatEntryContent = (entry: JournalEntry): string => {
-  try {
-    // Try to parse content as JSON
-    const parsedContent = parseEntryContent(entry.content);
-    if (parsedContent && parsedContent.summary) {
-      return parsedContent.summary;
+export const JournalHistoryEntryDetail = ({ entry }: JournalHistoryEntryDetailProps) => {
+  const getEntryLink = () => {
+    if (entry.type === 'story' || entry.type === 'sideQuest' || entry.type === 'action') {
+      if (entry.conversationId) {
+        return `/${entry.type.toLowerCase()}?conversationId=${entry.conversationId}`;
+      }
     }
-    
-    // For story entries, the content might be the summary itself
-    if (entry.type === 'story') {
-      return entry.content;
-    }
-    
-    // For other entries, return the content as-is
-    return entry.content;
-  } catch (e) {
-    console.error('Error parsing entry content:', e);
-    return entry.content;
-  }
-};
+    return `/journal-entry/${entry.id}`;
+  };
 
-export const JournalHistoryEntryDetail = ({
-  entry,
-  getEntryTitle,
-  onBack
-}: JournalHistoryEntryDetailProps) => {
-  const formattedContent = formatEntryContent(entry);
-  const isConversationSummary = !!entry.conversationId;
-  
   return (
     <div>
-      <div className="flex items-center text-sm text-jess-muted mb-4">
-        <span className="flex items-center mr-3">
-          {getEntryIcon(entry.type)}
-          <span className="ml-1">{getEntryTypeName(entry.type)}</span>
-        </span>
-        <span>
-          {new Date(entry.createdAt).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          })}
-        </span>
-      </div>
-      
-      <h1 className="text-xl font-semibold mb-4">{getEntryTitle(entry)}</h1>
-      
-      {entry.type === 'story' ? (
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 whitespace-pre-wrap mb-4">
-          {formattedContent}
-        </div>
-      ) : (
-        <div className="whitespace-pre-wrap">
-          {formattedContent}
-        </div>
-      )}
-      
-      {isConversationSummary && (
-        <div className="mt-6 mb-6">
-          <Link to={`/my-story?conversationId=${entry.conversationId}`}>
-            <Button variant="secondary" className="flex items-center gap-2">
-              <MessageSquare size={16} />
-              View Full Conversation
-            </Button>
+      {entry.conversationId && (
+        <div className="mt-4">
+          <Link 
+            to={getEntryLink()} 
+            className="text-sm text-blue-600 hover:text-blue-800 inline-flex items-center"
+          >
+            <MessageSquare className="h-4 w-4 mr-1" />
+            Continue conversation
           </Link>
         </div>
       )}
-      
-      <div className="mt-6">
-        <button
-          onClick={onBack}
-          className="text-sm py-1 px-3 bg-transparent text-jess-foreground hover:bg-jess-subtle/50 rounded-full"
-        >
-          Back to list
-        </button>
-      </div>
     </div>
   );
 };

@@ -11,35 +11,44 @@ export const createConversation = async (params: {
   type: 'story' | 'sideQuest' | 'action' | 'journal';
   title: string;
 }): Promise<Conversation> => {
-  const { data, error } = await supabase
-    .from('conversations')
-    .insert({
-      profile_id: params.userId,
-      type: params.type,
-      title: params.title || `New ${params.type} conversation`,
-    })
-    .select('*')
-    .single();
+  try {
+    console.log(`Creating conversation of type ${params.type} for user ${params.userId}`);
+    
+    const { data, error } = await supabase
+      .from('conversations')
+      .insert({
+        profile_id: params.userId,
+        type: params.type,
+        title: params.title || `New ${params.type} conversation`,
+      })
+      .select('*')
+      .single();
 
-  if (error) {
-    console.error('Error creating conversation:', error);
+    if (error) {
+      console.error('Error creating conversation:', error);
+      throw error;
+    }
+
+    if (!data) {
+      throw new Error('No data returned when creating conversation');
+    }
+
+    console.log(`Successfully created conversation with ID: ${data.id}`);
+
+    return {
+      id: data.id,
+      userId: data.profile_id,
+      type: data.type,
+      title: data.title,
+      messages: [],
+      summary: data.summary || '',
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at)
+    };
+  } catch (error) {
+    console.error('Error in createConversation:', error);
     throw error;
   }
-
-  if (!data) {
-    throw new Error('No data returned when creating conversation');
-  }
-
-  return {
-    id: data.id,
-    userId: data.profile_id,
-    type: data.type,
-    title: data.title,
-    messages: [],
-    summary: data.summary || '',
-    createdAt: new Date(data.created_at),
-    updatedAt: new Date(data.updated_at)
-  };
 };
 
 /**

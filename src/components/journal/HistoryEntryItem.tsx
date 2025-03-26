@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Calendar, Clock } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
@@ -8,6 +7,7 @@ import { getContentPreview } from '@/utils/contentParser';
 
 interface HistoryEntryItemProps {
   entry: JournalEntry;
+  isSelected: boolean;
 }
 
 // Format the date in a readable way compatible with date-fns v3
@@ -30,18 +30,24 @@ const formatTime = (date: Date) => {
   return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 };
 
-export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
+export const HistoryEntryItem = ({ entry, isSelected }: HistoryEntryItemProps) => {
   const entryType = entry.type || 'journal';
   const content = getContentPreview(entry);
   const isConversationSummary = !!entry.conversationId;
   
-  // Always link to journal entry page
-  const linkPath = `/journal-entry/${entry.id}`;
+  const getEntryLink = () => {
+    if (entry.type === 'story' || entry.type === 'sideQuest' || entry.type === 'action') {
+      if (entry.conversationId) {
+        return `/${entry.type.toLowerCase()}?conversationId=${entry.conversationId}`;
+      }
+    }
+    return `/journal-entry/${entry.id}`;
+  };
   
   return (
     <Link 
       key={entry.id} 
-      to={linkPath}
+      to={getEntryLink()}
       className="relative border-l-2 border-jess-subtle pl-4 pb-5 block group"
     >
       <div className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-jess-secondary group-hover:bg-jess-primary transition-colors"></div>

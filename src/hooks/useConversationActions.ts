@@ -19,6 +19,10 @@ export function useConversationActions() {
       const conversationParams: ConversationParams = { userId, type, title };
       
       const result = await conversationService.createConversation(conversationParams);
+      
+      // Log success for debugging
+      console.log(`Successfully created conversation of type ${type} with ID ${result.id}`);
+      
       return result;
     } catch (error) {
       console.error('Error starting conversation:', error);

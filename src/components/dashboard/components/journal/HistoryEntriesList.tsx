@@ -1,50 +1,43 @@
-
+import React from 'react';
 import { JournalEntry } from '@/lib/types';
 import { HistoryEntryItem } from './HistoryEntryItem';
-import { HistoryLoadingState } from './HistoryLoadingState';
-import { HistoryEmptyState } from './HistoryEmptyState';
-import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 interface HistoryEntriesListProps {
   entries: JournalEntry[];
   loading: boolean;
+  limit?: number;
 }
 
-export const HistoryEntriesList = ({ entries, loading }: HistoryEntriesListProps) => {
-  // Log entries for debugging
-  useEffect(() => {
-    if (entries.length > 0) {
-      console.log(`Rendering ${entries.length} entries in history list`);
-      
-      // Count conversation summaries
-      const summaries = entries.filter(e => e.conversationId);
-      console.log(`Found ${summaries.length} conversation summaries`);
-      
-      // Log the first few entries with more details
-      console.log('First 3 entries details:', entries.slice(0, 3).map(e => ({
-        id: e.id,
-        title: e.title,
-        type: e.type,
-        contentPreview: e.content?.substring(0, 50) + (e.content?.length > 50 ? '...' : ''),
-        conversationId: e.conversationId,
-        createdAt: e.createdAt
-      })));
+export const HistoryEntriesList = ({ entries, loading, limit }: HistoryEntriesListProps) => {
+  const displayLimit = limit || 5;
+
+  const getEntryLink = (entry: JournalEntry) => {
+    if (entry.type === 'story' || entry.type === 'sideQuest' || entry.type === 'action') {
+      if (entry.conversationId) {
+        return `/${entry.type.toLowerCase()}?conversationId=${entry.conversationId}`;
+      }
     }
-  }, [entries]);
-  
-  if (loading) {
-    return <HistoryLoadingState />;
-  }
-  
-  if (entries.length === 0) {
-    return <HistoryEmptyState />;
-  }
-  
+    return `/journal-entry/${entry.id}`;
+  };
+
   return (
-    <div className="mt-5 space-y-3 pl-2">
-      {entries.map((entry) => (
-        <HistoryEntryItem key={entry.id} entry={entry} />
-      ))}
+    <div>
+      {!loading && entries.length > 0 && (
+        <div className="space-y-3">
+          {entries.slice(0, displayLimit).map((entry) => (
+            <Link key={entry.id} to={getEntryLink(entry)}>
+              <HistoryEntryItem entry={entry} />
+            </Link>
+          ))}
+        </div>
+      )}
+      {!loading && entries.length === 0 && (
+        <div className="text-gray-500">No entries found.</div>
+      )}
+      {loading && (
+        <div className="text-gray-500">Loading entries...</div>
+      )}
     </div>
   );
 };
