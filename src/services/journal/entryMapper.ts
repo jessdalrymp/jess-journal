@@ -16,6 +16,8 @@ export const mapDatabaseEntryToJournalEntry = (
   let prompt = entry.prompt || null;
   let conversationId = entry.conversation_id || null;
   
+  console.log('Mapping entry with conversation_id:', conversationId);
+  
   // Try to decrypt the content, but handle errors gracefully
   try {
     content = decryptContent(entry.content, userId);

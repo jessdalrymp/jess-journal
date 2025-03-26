@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -78,19 +79,19 @@ export const useJournalHistoryPage = () => {
   }, [journalEntries]);
 
   const handleEntryClick = (entry: JournalEntry) => {
-    console.log("JournalHistory - Entry clicked:", entry.id);
+    console.log("JournalHistory - Entry clicked:", entry.id, "conversation_id:", entry.conversation_id);
     navigate(`/journal-entry/${entry.id}`, { state: { entry } });
   };
 
   const handleEditClick = (e: React.MouseEvent, entry: JournalEntry) => {
     e.stopPropagation();
-    console.log("JournalHistory - Edit entry:", entry.id);
+    console.log("JournalHistory - Edit entry:", entry.id, "conversation_id:", entry.conversation_id);
     navigate(`/journal-entry/${entry.id}`, { state: { entry, isEditing: true } });
   };
 
   const handleDeleteClick = (e: React.MouseEvent, entry: JournalEntry) => {
     e.stopPropagation();
-    console.log("JournalHistory - Delete entry dialog:", entry.id);
+    console.log("JournalHistory - Delete entry dialog:", entry.id, "conversation_id:", entry.conversation_id);
     setEntryToDelete(entry);
     setDeleteDialogOpen(true);
   };

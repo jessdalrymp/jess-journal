@@ -30,10 +30,21 @@ export const ConversationEntryItem = ({
     ? entry.content.substring(0, 150) + '...' 
     : entry.content;
 
+  // Debug log to track conversation entries
+  console.log('Rendering conversation entry:', { 
+    id: entry.id, 
+    title: entry.title,
+    type: entry.type,
+    conversation_id: entry.conversation_id,
+    contentPreview: contentPreview.substring(0, 50) + '...'
+  });
+
   return (
     <div 
       className="p-4 border rounded-lg hover:border-jess-primary transition-colors cursor-pointer bg-gradient-to-br from-white to-blue-50"
       onClick={() => onEntryClick(entry)}
+      data-entry-type="conversation"
+      data-conversation-id={entry.conversation_id}
     >
       <div className="flex justify-between items-start mb-2">
         <div className="flex gap-2 items-center">
