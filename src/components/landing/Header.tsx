@@ -21,7 +21,7 @@ export const Header = () => {
   return (
     <header className="container mx-auto pt-10 px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center">
-        <Link to="/dashboard">
+        <Link to="/">
           <AuthFormHeader />
         </Link>
         
@@ -44,10 +44,10 @@ export const Header = () => {
                       Free Journal Prompts
                     </Button>
                   </Link>
-                  <Link to="/dashboard" className="w-full">
+                  <Link to="/" className="w-full">
                     <Button variant="ghost" className="w-full text-jess-foreground font-semibold">Login</Button>
                   </Link>
-                  <Link to="/dashboard" className="w-full">
+                  <Link to="/" className="w-full">
                     <Button className="w-full font-medium">Get Started</Button>
                   </Link>
                 </nav>
@@ -61,10 +61,10 @@ export const Header = () => {
                 Free Journal Prompts
               </Button>
             </Link>
-            <Link to="/dashboard">
+            <Link to="/">
               <Button variant="ghost" className="text-jess-foreground font-semibold">Login</Button>
             </Link>
-            <Link to="/dashboard">
+            <Link to="/">
               <Button className="font-medium">Get Started</Button>
             </Link>
           </div>

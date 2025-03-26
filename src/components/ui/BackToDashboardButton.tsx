@@ -14,7 +14,7 @@ export const BackToDashboardButton = ({ className = "" }: BackToDashboardButtonP
     <Button 
       variant="ghost" 
       className={`mr-4 ${className}`}
-      onClick={() => navigate('/dashboard')}
+      onClick={() => navigate('/')}
     >
       <ArrowLeft size={18} className="mr-2" />
       Back to Dashboard

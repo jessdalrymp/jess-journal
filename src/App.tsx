@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from "./components/ui/theme-provider";
@@ -31,7 +32,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/free-journal-prompts" element={<FreeJournalPrompts />} />
-              <Route path="/dashboard" element={<Index />} />
+              <Route path="/dashboard" element={<Navigate to="/" replace />} />
               <Route path="/account" element={<Account />} />
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />

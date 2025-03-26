@@ -1,13 +1,12 @@
-
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../context/UserDataContext';
 import { AuthForm } from '../components/auth/AuthForm';
 import { SelfDiscoveryQuiz } from '../components/onboarding/SelfDiscoveryQuiz';
-import { Dashboard } from '../components/dashboard/Dashboard';
 import { Header } from '../components/Header';
 import { DisclaimerBanner } from '../components/ui/DisclaimerBanner';
+import { Dashboard } from '../components/dashboard/Dashboard';
 
 // Add styles for tour highlight
 const tourStyles = `
@@ -29,7 +28,7 @@ const tourStyles = `
   }
 `;
 
-const AppContent = () => {
+const Index = () => {
   const { user, isNewUser, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useUserData();
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -90,10 +89,6 @@ const AppContent = () => {
       <style>{tourStyles}</style>
     </div>
   );
-};
-
-const Index = () => {
-  return <AppContent />;
 };
 
 export default Index;
