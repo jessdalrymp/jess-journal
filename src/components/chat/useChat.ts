@@ -18,7 +18,10 @@ export const useChat = (
   const { user } = useAuth();
   const { initializeChat, loading: initLoading, error: initError } = useInitializeChat(type);
   const { sendMessage, loading: sendLoading } = useSendMessage(type);
-  const { generateSummary, loading: summaryLoading } = useGenerateSummary();
+  const { generateTitleAndSummary, generating: summaryLoading } = useGenerateSummary(
+    session?.id || null,
+    type
+  );
   
   const loading = initLoading || sendLoading || summaryLoading;
   const error = initError;
@@ -89,17 +92,16 @@ export const useChat = (
   };
   
   const handleGenerateSummary = async () => {
-    if (!session) return null;
+    if (!session) return;
     
-    return await generateSummary(session);
+    await generateTitleAndSummary(session.messages);
   };
   
   const saveJournalEntryFromChat = async () => {
-    if (!session || session.messages.length < 2 || type !== 'journal') return null;
+    if (!session || session.messages.length < 2 || type !== 'journal') return;
     
-    // Generate summary to save as journal entry
-    const summary = await handleGenerateSummary();
-    return summary;
+    // Simply save the journal entry without generating a summary
+    await handleGenerateSummary();
   };
   
   return {

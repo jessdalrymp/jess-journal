@@ -3,63 +3,52 @@ import { supabase } from "@/integrations/supabase/client";
 import { encryptContent } from "../journal/encryption";
 
 /**
- * Saves a conversation summary to the journal
+ * Saves a conversation to the journal without generating a summary
  */
-export const saveConversationSummary = async (
+export const saveConversationToJournal = async (
   userId: string,
   title: string,
-  summary: string,
   conversationId: string,
-  conversationType: string,
-  cleanJson?: string
+  conversationType: string
 ) => {
   try {
-    console.log(`Saving ${conversationType} conversation summary to journal for user ${userId}`);
+    console.log(`Saving ${conversationType} conversation to journal for user ${userId}`);
 
-    // Prepare content - either use provided cleanJson or create a new JSON object
-    // This ensures we're not creating nested JSON structures
-    let content;
-    if (cleanJson) {
-      // If cleanJson is provided, use it directly without extra wrapping
-      content = cleanJson;
-    } else {
-      // Create a simple JSON structure
-      content = JSON.stringify({
-        title,
-        summary,
-        type: conversationType
-      }, null, 2);
-    }
+    // Create a simple content structure
+    const content = JSON.stringify({
+      title,
+      type: conversationType
+    }, null, 2);
 
     // Encrypt the content for storage
     const encryptedContent = encryptContent(`\`\`\`json\n${content}\n\`\`\``, userId);
 
-    // Create a prompt that's clean and doesn't contain nested JSON
-    const prompt = `Conversation Summary: ${title}`;
+    // Create a prompt
+    const prompt = `Conversation: ${title}`;
 
     // Save to the journal_entries table
     const { data, error } = await supabase
       .from('journal_entries')
       .insert({
         user_id: userId,
-        title: title, // Store the title explicitly
+        title: title,
         content: encryptedContent,
-        type: conversationType, // Store the conversation type
+        type: conversationType,
         prompt: prompt,
-        conversation_id: conversationId // Link to the original conversation
+        conversation_id: conversationId
       })
       .select()
       .single();
 
     if (error) {
-      console.error("Error saving conversation summary to journal:", error);
+      console.error("Error saving conversation to journal:", error);
       return null;
     }
 
-    console.log("Successfully saved summary to journal:", data.id);
+    console.log("Successfully saved conversation to journal:", data.id);
     return data;
   } catch (error) {
-    console.error("Exception saving conversation summary to journal:", error);
+    console.error("Exception saving conversation to journal:", error);
     return null;
   }
 };
