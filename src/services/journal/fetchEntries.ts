@@ -42,13 +42,13 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )[0];
       
-      console.log('Date range of entries:', {
+      console.log('Date range of entries from database:', {
         oldest: new Date(oldestEntry.created_at).toISOString(),
         newest: new Date(newestEntry.created_at).toISOString()
       });
       
       // Log the most recent entries for debugging
-      console.log('Most recent entries:', entriesData.slice(0, 3).map(entry => ({
+      console.log('Most recent entries from database:', entriesData.slice(0, 3).map(entry => ({
         id: entry.id,
         created_at: entry.created_at,
         type: entry.type,
@@ -104,6 +104,10 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         
         // Map the entry with any messages data we found
         const entry = mapDatabaseEntryToJournalEntry(entryData, userId, messagesData);
+        
+        // Log the entry's date for debugging
+        console.log(`Processed entry: ${entry.id}, date: ${new Date(entry.createdAt).toISOString()}, type: ${entry.type}`);
+        
         entries.push(entry);
       } catch (err) {
         console.error('Error processing journal entry:', err, entryData);
@@ -124,10 +128,26 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     
     // Log the final processed entries for debugging
     console.log(`Successfully processed ${entries.length} entries`);
-    console.log('Date range of processed entries:', {
-      oldest: entries.length > 0 ? new Date(Math.min(...entries.map(e => e.createdAt.getTime()))).toISOString() : 'none',
-      newest: entries.length > 0 ? new Date(Math.max(...entries.map(e => e.createdAt.getTime()))).toISOString() : 'none'
-    });
+    if (entries.length > 0) {
+      console.log('Date range of processed entries:', {
+        oldest: new Date(Math.min(...entries.map(e => new Date(e.createdAt).getTime()))).toISOString(),
+        newest: new Date(Math.max(...entries.map(e => new Date(e.createdAt).getTime()))).toISOString()
+      });
+      
+      // Log newest entries
+      console.log('Newest processed entries:', 
+        [...entries]
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 3)
+          .map(e => ({
+            id: e.id,
+            title: e.title,
+            type: e.type,
+            createdAt: new Date(e.createdAt).toISOString(),
+            conversation_id: e.conversation_id
+          }))
+      );
+    }
     
     return entries;
   } catch (error) {

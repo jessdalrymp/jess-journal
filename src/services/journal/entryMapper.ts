@@ -112,7 +112,7 @@ export const mapDatabaseEntryToJournalEntry = (
     entryType = 'summary';
   }
 
-  // Create and return the finalized journal entry
+  // Create and return the finalized journal entry with proper date
   const journalEntry: JournalEntry = {
     id: entry.id,
     userId: entry.user_id,

@@ -20,7 +20,8 @@ export const useJournalEntryData = () => {
       setIsLoading(true);
       console.log("JournalHistory - Loading journal entries, retry count:", retryCount);
       try {
-        await fetchJournalEntries();
+        // Force refresh when loading entries to ensure we get the latest data
+        await fetchJournalEntries(true);
         console.log("JournalHistory - Successfully loaded entries");
       } catch (error) {
         console.error("JournalHistory - Error loading entries:", error);

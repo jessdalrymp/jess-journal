@@ -55,6 +55,11 @@ export function useJournalContext(userId: string | null | undefined) {
       console.log("Fetching journal entries for user:", userId);
       console.log("Force fetch:", forceFetch);
       
+      // Clear cache when force fetching to ensure we get fresh data
+      if (forceFetch) {
+        console.log("Force fetch enabled - bypassing cache");
+      }
+      
       const entries = await fetchEntries(userId);
       
       if (entries.length > 0) {

@@ -10,8 +10,8 @@ const journalEntriesCache: Record<string, {
   timestamp: number;
 }> = {};
 
-// Cache expiration time (5 minutes)
-const CACHE_EXPIRATION = 5 * 60 * 1000;
+// Cache expiration time (1 minute to ensure we get fresh data more frequently)
+const CACHE_EXPIRATION = 60 * 1000;
 
 /**
  * Hook for fetching journal entries with caching
@@ -21,7 +21,7 @@ export function useJournalEntries() {
   const isFetching = useRef(false);
   const { toast } = useToast();
 
-  const fetchJournalEntries = useCallback(async (userId: string) => {
+  const fetchJournalEntries = useCallback(async (userId: string, forceRefresh = false) => {
     // Prevent multiple simultaneous fetches
     if (isFetching.current) {
       console.log('Already fetching journal entries, skipping duplicate request');
@@ -29,9 +29,9 @@ export function useJournalEntries() {
     }
     
     try {
-      // Check if we have a valid cache entry
+      // Check if we have a valid cache entry and aren't forcing a refresh
       const cachedData = journalEntriesCache[userId];
-      if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_EXPIRATION) {
+      if (!forceRefresh && cachedData && (Date.now() - cachedData.timestamp) < CACHE_EXPIRATION) {
         console.log('Using cached journal entries');
         return cachedData.entries;
       }
@@ -39,9 +39,12 @@ export function useJournalEntries() {
       setLoading(true);
       isFetching.current = true;
       console.log('Fetching journal entries for user:', userId);
+      console.log('Force refresh:', forceRefresh);
       
       // Attempt to fetch entries
       const entries = await journalService.fetchJournalEntries(userId);
+      
+      console.log(`Fetched ${entries.length} journal entries from service`);
       
       // Update cache even if we get empty entries (to prevent constant retries)
       journalEntriesCache[userId] = {
@@ -49,7 +52,7 @@ export function useJournalEntries() {
         timestamp: Date.now()
       };
       
-      console.log(`Successfully fetched ${entries.length} journal entries`);
+      console.log(`Successfully cached ${entries.length} journal entries`);
       return entries;
     } catch (error) {
       console.error('Error fetching journal entries:', error);
