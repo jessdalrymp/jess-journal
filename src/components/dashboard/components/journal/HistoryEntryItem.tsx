@@ -72,7 +72,7 @@ const getCategoryIcon = (entry: JournalEntry) => {
 export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   const entryType = entry.type || 'journal';
   const content = getContentPreview(entry);
-  const isConversationSummary = !!entry.conversation_id;
+  const isConversationSummary = !!entry.conversationId;
   const isSummary = entry.type === 'summary';
   
   console.log('Rendering entry in history item:', { 
@@ -81,7 +81,7 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
     type: entry.type,
     isConversationSummary, 
     isSummary,
-    conversation_id: entry.conversation_id,
+    conversationId: entry.conversationId,
     content: content.substring(0, 50) + (content.length > 50 ? '...' : '')
   });
   

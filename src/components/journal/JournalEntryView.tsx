@@ -31,7 +31,7 @@ export const JournalEntryView = ({
   handleSaveClick,
   isSaving,
 }: JournalEntryViewProps) => {
-  const isConversationSummary = !!entry.conversation_id;
+  const isConversationSummary = !!entry.conversationId;
 
   return (
     <div className="container mx-auto max-w-3xl px-4">
@@ -64,7 +64,7 @@ export const JournalEntryView = ({
             
             {isConversationSummary && (
               <div className="mt-6">
-                <Link to={`/my-story?conversationId=${entry.conversation_id}`}>
+                <Link to={`/my-story?conversationId=${entry.conversationId}`}>
                   <Button variant="secondary" className="flex items-center gap-2">
                     <MessageSquare size={16} />
                     View Full Conversation

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { JournalEntry } from "@/lib/types";
 import { useUserData } from "@/context/UserDataContext";
@@ -22,7 +23,7 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
       const parsed = parseEntryContent(entry.content);
       setParsedContent(parsed);
       setEditableContent(formatContentForEditing(entry.content));
-      setEditableTitle(parsed?.title || entry.title);
+      setEditableTitle(parsed?.title || entry.title || "");
     }
   }, [entry]);
 
@@ -31,7 +32,7 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
       const formattedContent = formatContentForEditing(entry.content);
       setEditableContent(formattedContent);
       const parsed = parseEntryContent(entry.content);
-      setEditableTitle(parsed?.title || entry.title);
+      setEditableTitle(parsed?.title || entry.title || "");
     }
   }, [isEditing, entry]);
 
@@ -101,7 +102,7 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
     if (entry) {
       setEditableContent(formatContentForEditing(entry.content));
       const parsed = parseEntryContent(entry.content);
-      setEditableTitle(parsed?.title || entry.title);
+      setEditableTitle(parsed?.title || entry.title || "");
     }
     setIsEditing(false);
   };

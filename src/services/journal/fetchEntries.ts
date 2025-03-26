@@ -65,10 +65,9 @@ export const fetchJournalEntries = async (
         if (entry.conversation_id) {
           console.log(`Fetching conversation data for entry ${entry.id} with conversation_id ${entry.conversation_id}`);
           try {
-            const conversation = await getConversationForJournalEntry(entry.id);
+            const conversation = await getConversationForJournalEntry(entry.id, entry.conversation_id);
             if (conversation) {
               // Add conversation summary if available
-              // @ts-ignore - We're adding a property that might not be in the type definition
               mappedEntry.conversationSummary = conversation.summary;
             }
           } catch (error) {
@@ -113,7 +112,21 @@ export const fetchJournalEntryById = async (
       return null;
     }
 
-    return mapDatabaseEntryToJournalEntry(data);
+    const entry = mapDatabaseEntryToJournalEntry(data);
+    
+    // Fetch conversation if this is a summary entry
+    if (data.conversation_id) {
+      try {
+        const conversation = await getConversationForJournalEntry(entryId, data.conversation_id);
+        if (conversation) {
+          entry.conversationSummary = conversation.summary;
+        }
+      } catch (error) {
+        console.error(`Error fetching conversation for entry ${entryId}:`, error);
+      }
+    }
+    
+    return entry;
   } catch (error) {
     console.error(`Error in fetchJournalEntryById for ${entryId}:`, error);
     return null;
