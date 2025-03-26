@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useSignIn } from './useSignIn';
 import { useSignUp } from './useSignUp';
@@ -34,3 +33,8 @@ export {
   usePasswordReset,
   useAuthCallback
 };
+
+// Export the utility functions directly for use when needed
+export { checkUserExists } from './utils/userVerification';
+export { createUserRecord } from './utils/userRecordManagement';
+export { sendVerificationEmail } from './utils/emailVerification';
