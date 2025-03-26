@@ -56,57 +56,23 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
 
   // Initial data loading
   useEffect(() => {
-    console.log("UserDataProvider - Initial user fetch");
     fetchUser();
-  }, [fetchUser]);
+  }, []);
 
   useEffect(() => {
     if (user) {
-      console.log("UserDataProvider - Fetching profile for user:", user.id);
       fetchProfile();
     }
-  }, [user, fetchProfile]);
+  }, [user]);
 
-  // Always fetch journal entries when user is loaded and force a refresh on mount
+  // Only fetch journal entries when user is loaded and entries haven't been fetched yet
   useEffect(() => {
-    if (user) {
-      console.log("UserDataProvider - Fetching journal entries on user load");
-      // Force a full refresh of journal entries
-      fetchJournalEntries().catch(err => {
-        console.error("Error fetching journal entries on user load:", err);
-      });
+    if (user && !isJournalFetched) {
+      console.log("Triggering journal entries fetch");
+      fetchJournalEntries();
       checkSubscriptionStatus();
     }
-  }, [user, fetchJournalEntries, checkSubscriptionStatus]);
-
-  // Refresh journal entries periodically - more frequently now for better UX
-  useEffect(() => {
-    if (!user) return;
-    
-    const refreshInterval = setInterval(() => {
-      console.log("UserDataProvider - Periodic journal refresh");
-      fetchJournalEntries().catch(err => {
-        console.error("Error in periodic journal refresh:", err);
-      });
-    }, 30000); // Refresh every 30 seconds
-    
-    return () => clearInterval(refreshInterval);
-  }, [user, fetchJournalEntries]);
-
-  // Additional fetch on window focus for better reliability
-  useEffect(() => {
-    if (!user) return;
-
-    const handleFocus = () => {
-      console.log("UserDataProvider - Window focused, refreshing journal entries");
-      fetchJournalEntries().catch(err => {
-        console.error("Error refreshing journal entries on focus:", err);
-      });
-    };
-
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [user, fetchJournalEntries]);
+  }, [user, isJournalFetched]);
 
   const handleAddMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<boolean> => {
     try {
@@ -115,8 +81,7 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
       if (role === 'assistant') {
         if (user) {
           console.log("Marking journal entries as not fetched to trigger refresh after conversation update");
-          // Force a refresh of journal entries after assistant messages are added
-          fetchJournalEntries();
+          setIsJournalFetched(false);
         }
       }
       

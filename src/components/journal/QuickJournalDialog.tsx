@@ -1,6 +1,4 @@
-
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useUserData } from '@/context/UserDataContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -22,7 +20,6 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
   const { user } = useAuth();
   const { fetchJournalEntries } = useUserData();
   const { toast } = useToast();
-  const navigate = useNavigate();
   
   const handleSave = async () => {
     if (!user || !content.trim() || !prompt || !category) return;
@@ -56,7 +53,6 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
       
       setContent('');
       onClose();
-      navigate('/');
     } catch (error) {
       console.error('Error saving journal entry:', error);
       toast({

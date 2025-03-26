@@ -120,7 +120,7 @@ export const useJournalHistoryPage = () => {
     setShowJournalChat(false);
     setTimeout(() => {
       setRetryCount(prev => prev + 1);
-    }, 500);
+    }, 1000);
   };
 
   const confirmDelete = async () => {

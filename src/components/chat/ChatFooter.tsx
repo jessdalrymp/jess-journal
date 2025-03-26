@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CheckCheck, Save, X, Sparkles } from 'lucide-react';
 
@@ -19,17 +18,10 @@ export const ChatFooter = ({
   onNewChallenge,
   saveChat = false
 }: ChatFooterProps) => {
-  const navigate = useNavigate();
-  
   const handleEndChatClick = () => {
     console.log("End chat button clicked in ChatFooter, saveChat =", saveChat);
-    // Call onEndChat to handle any cleanup
+    // Directly call onEndChat without any additional logic
     onEndChat();
-    
-    // If we're saving chat, navigate to index page after completion
-    if (saveChat) {
-      setTimeout(() => navigate('/'), 300);
-    }
   };
 
   return (

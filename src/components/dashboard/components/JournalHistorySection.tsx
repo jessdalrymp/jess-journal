@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useUserData } from '@/context/UserDataContext';
 import { HistorySectionHeading } from './journal/HistorySectionHeading';
 import { HistoryActionCard } from './journal/HistoryActionCard';
@@ -9,13 +9,10 @@ import { RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { HistoryViewAllLink } from './journal/HistoryViewAllLink';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
 
 export const JournalHistorySection = () => {
   const { journalEntries, loading, fetchJournalEntries } = useUserData();
-  const { user } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [hasInitialized, setHasInitialized] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -28,45 +25,44 @@ export const JournalHistorySection = () => {
   
   // Debug logs to help identify issues
   console.log('Journal History - entries count:', journalEntries?.length);
+  console.log('Journal History - entries with conversation_id:', 
+    journalEntries?.filter(e => e.conversation_id)?.length);
+  
+  // Log conversations specifically to debug
+  const conversationEntries = journalEntries?.filter(e => e.conversation_id) || [];
+  console.log('Journal History - conversation entries:', conversationEntries.length);
+  if (conversationEntries.length > 0) {
+    console.log('Journal History - conversation entries sample:', 
+      conversationEntries.slice(0, 2).map(e => ({
+        id: e.id,
+        title: e.title,
+        type: e.type,
+        conversationId: e.conversation_id
+      }))
+    );
+  }
+  
+  console.log('Journal History - recent entries sample:', recentEntries?.slice(0, 2));
   
   // Force refresh when the component mounts to ensure latest entries
-  const refreshEntries = useCallback(async () => {
-    if (!user) return;
-    
-    try {
-      console.log("JournalHistorySection - Refreshing entries");
-      setIsRefreshing(true);
-      await fetchJournalEntries();
-      console.log("JournalHistorySection - Entries refreshed successfully");
-    } catch (error) {
-      console.error("Error refreshing journal entries:", error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [fetchJournalEntries, user]);
-  
-  // Initial load and periodic refresh
   useEffect(() => {
-    if (!hasInitialized && user) {
-      refreshEntries();
-      setHasInitialized(true);
-    }
-    
-    // Setup periodic refresh
-    const refreshInterval = setInterval(() => {
-      if (user) {
-        console.log("JournalHistorySection - Periodic refresh");
-        refreshEntries();
+    const refreshEntries = async () => {
+      try {
+        console.log("JournalHistorySection - Refreshing entries on mount");
+        await fetchJournalEntries();
+      } catch (error) {
+        console.error("Error refreshing journal entries:", error);
       }
-    }, 20000); // Refresh every 20 seconds
+    };
     
-    return () => clearInterval(refreshInterval);
-  }, [user, refreshEntries, hasInitialized]);
+    refreshEntries();
+  }, [fetchJournalEntries]);
   
   const handleRefresh = async () => {
+    setIsRefreshing(true);
     try {
       console.log("JournalHistorySection - Manual refresh triggered");
-      await refreshEntries();
+      await fetchJournalEntries();
       toast({
         title: "Refreshed",
         description: "Your journal entries have been refreshed",
@@ -79,6 +75,8 @@ export const JournalHistorySection = () => {
         description: "Could not refresh journal entries. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsRefreshing(false);
     }
   };
 

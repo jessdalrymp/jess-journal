@@ -21,7 +21,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
 
     if (entriesError) {
       console.error('Error fetching journal entries:', entriesError);
-      throw new Error(`Failed to fetch journal entries: ${entriesError.message}`);
+      return [];
     }
 
     if (!entriesData || entriesData.length === 0) {
@@ -42,39 +42,27 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
         if (entryData.conversation_id) {
           console.log(`Fetching conversation data for entry ${entryData.id} with conversation_id ${entryData.conversation_id}`);
           
-          try {
-            // First get the conversation
-            const { data: conversationResult, error: conversationError } = await supabase
-              .from('conversations')
+          // First get the conversation
+          const { data: conversationResult } = await supabase
+            .from('conversations')
+            .select('*')
+            .eq('id', entryData.conversation_id)
+            .single();
+            
+          if (conversationResult) {
+            conversationData = conversationResult;
+            
+            // Then get messages for this conversation
+            const { data: messagesData } = await supabase
+              .from('messages')
               .select('*')
-              .eq('id', entryData.conversation_id)
-              .single();
+              .eq('conversation_id', entryData.conversation_id)
+              .order('timestamp', { ascending: false });
               
-            if (conversationError) {
-              console.error(`Error fetching conversation ${entryData.conversation_id}:`, conversationError);
-            } else if (conversationResult) {
-              conversationData = conversationResult;
-              
-              try {
-                // Then get messages for this conversation
-                const { data: messagesData, error: messagesError } = await supabase
-                  .from('messages')
-                  .select('*')
-                  .eq('conversation_id', entryData.conversation_id)
-                  .order('timestamp', { ascending: false });
-                  
-                if (messagesError) {
-                  console.error(`Error fetching messages for conversation ${entryData.conversation_id}:`, messagesError);
-                } else if (messagesData && messagesData.length > 0) {
-                  console.log(`Found ${messagesData.length} messages for conversation ${entryData.conversation_id}`);
-                  conversationData.messages = messagesData;
-                }
-              } catch (messagesErr) {
-                console.error(`Error processing messages for conversation ${entryData.conversation_id}:`, messagesErr);
-              }
+            if (messagesData && messagesData.length > 0) {
+              console.log(`Found ${messagesData.length} messages for conversation ${entryData.conversation_id}`);
+              conversationData.messages = messagesData;
             }
-          } catch (conversationErr) {
-            console.error(`Error processing conversation ${entryData.conversation_id}:`, conversationErr);
           }
         }
         
@@ -98,10 +86,9 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
       }
     }
     
-    console.log(`Successfully processed ${entries.length} journal entries`);
     return entries;
   } catch (error) {
     console.error('Error processing journal entries:', error);
-    throw error; // Re-throw to allow proper error handling
+    return [];
   }
 };
