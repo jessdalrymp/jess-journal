@@ -61,7 +61,7 @@ export const ChatContent = ({
       </div>
       <ChatInput
         onSendMessage={handleSendMessage}
-        disabled={loading}
+        loading={loading}
         scrollToBottom={scrollToBottom}
       />
       <ChatFooter

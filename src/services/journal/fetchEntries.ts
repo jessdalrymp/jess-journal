@@ -68,6 +68,7 @@ export const fetchJournalEntries = async (
             const conversation = await getConversationForJournalEntry(entry.id);
             if (conversation) {
               // Add conversation summary if available
+              // @ts-ignore - We're adding a property that might not be in the type definition
               mappedEntry.conversationSummary = conversation.summary;
             }
           } catch (error) {

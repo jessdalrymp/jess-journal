@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { ConversationSession, ChatMessage } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
 import { useConversationActions } from '@/hooks/useConversationActions';
-import { getConversationFromStorage, saveCurrentConversationToStorage } from '@/lib/storageUtils';
+import { getCurrentConversationFromStorage, saveCurrentConversationToStorage } from '@/lib/storageUtils';
 import { getInitialMessage } from '../chatUtils';
 import { fetchConversation } from '@/services/conversation/fetchConversations';
 
@@ -72,7 +72,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       }
       
       // Otherwise, look for an existing conversation in storage or create a new one
-      const existingConversation = getConversationFromStorage(type);
+      const existingConversation = getCurrentConversationFromStorage(type);
       
       if (existingConversation && existingConversation.userId === user.id) {
         console.log(`Found existing conversation in storage for ${type}`);
