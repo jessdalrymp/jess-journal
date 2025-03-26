@@ -112,6 +112,9 @@ export const mapDatabaseEntryToJournalEntry = (
     entryType = 'summary';
   }
 
+  // Ensure we properly create a Date object from the entry's created_at
+  const createdAt = new Date(entry.created_at);
+  
   // Create and return the finalized journal entry with proper date
   const journalEntry: JournalEntry = {
     id: entry.id,
@@ -119,12 +122,12 @@ export const mapDatabaseEntryToJournalEntry = (
     title: title,
     content: content,
     type: entryType as 'journal' | 'story' | 'sideQuest' | 'action' | 'summary',
-    createdAt: new Date(entry.created_at),
+    createdAt: createdAt,
     prompt: prompt,
     conversation_id: conversationId
   };
   
-  // Log the mapped entry
+  // Log the mapped entry with proper date
   console.log(`Completed mapping entry ${entry.id}, created: ${journalEntry.createdAt.toISOString()}, type: ${journalEntry.type}`);
   
   return journalEntry;

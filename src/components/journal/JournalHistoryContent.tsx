@@ -34,14 +34,20 @@ export const JournalHistoryContent = ({
     console.log(`JournalHistory - Processing ${entries.length} entries for display`);
     
     if (entries.length > 0) {
+      // Ensure we properly convert all dates
+      const processedEntries = entries.map(entry => ({
+        ...entry,
+        createdAt: entry.createdAt instanceof Date ? entry.createdAt : new Date(entry.createdAt)
+      }));
+      
       // Sort entries by date (newest first) to ensure proper ordering
-      const sortedEntries = [...entries].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      const sortedEntries = [...processedEntries].sort(
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
       );
       
       // Log the date range of entries for debugging date filtering issues
-      const newestDate = new Date(sortedEntries[0].createdAt);
-      const oldestDate = new Date(sortedEntries[sortedEntries.length - 1].createdAt);
+      const newestDate = sortedEntries[0].createdAt;
+      const oldestDate = sortedEntries[sortedEntries.length - 1].createdAt;
       
       console.log('JournalHistory - Entries date range:', {
         newest: newestDate.toISOString(),

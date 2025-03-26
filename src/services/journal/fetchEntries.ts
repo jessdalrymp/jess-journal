@@ -51,6 +51,7 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
       console.log('Most recent entries from database:', entriesData.slice(0, 3).map(entry => ({
         id: entry.id,
         created_at: entry.created_at,
+        created_at_iso: new Date(entry.created_at).toISOString(),
         type: entry.type,
         title: entry.prompt?.substring(0, 30) || 'No title'
       })));
@@ -129,6 +130,13 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
     // Log the final processed entries for debugging
     console.log(`Successfully processed ${entries.length} entries`);
     if (entries.length > 0) {
+      // Ensure all dates are proper Date objects
+      const sortedEntries = [...entries].sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA;
+      });
+      
       console.log('Date range of processed entries:', {
         oldest: new Date(Math.min(...entries.map(e => new Date(e.createdAt).getTime()))).toISOString(),
         newest: new Date(Math.max(...entries.map(e => new Date(e.createdAt).getTime()))).toISOString()
@@ -136,16 +144,13 @@ export const fetchJournalEntries = async (userId: string | undefined): Promise<J
       
       // Log newest entries
       console.log('Newest processed entries:', 
-        [...entries]
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .slice(0, 3)
-          .map(e => ({
-            id: e.id,
-            title: e.title,
-            type: e.type,
-            createdAt: new Date(e.createdAt).toISOString(),
-            conversation_id: e.conversation_id
-          }))
+        sortedEntries.slice(0, 3).map(e => ({
+          id: e.id,
+          title: e.title,
+          type: e.type,
+          createdAt: new Date(e.createdAt).toISOString(),
+          conversation_id: e.conversation_id
+        }))
       );
     }
     

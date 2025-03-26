@@ -44,16 +44,25 @@ export const useJournalEntryData = () => {
     try {
       // Log raw entries dates for debugging
       if (journalEntries.length > 0) {
+        // Ensure we're working with proper Date objects
+        const entryDates = journalEntries.map(e => {
+          // Handle different date formats
+          return new Date(e.createdAt).getTime();
+        });
+        
         console.log("JournalHistory - Raw entries date range:", {
-          newest: new Date(Math.max(...journalEntries.map(e => new Date(e.createdAt).getTime()))).toISOString(),
-          oldest: new Date(Math.min(...journalEntries.map(e => new Date(e.createdAt).getTime()))).toISOString()
+          newest: new Date(Math.max(...entryDates)).toISOString(),
+          oldest: new Date(Math.min(...entryDates)).toISOString()
         });
       }
       
       // Sort entries by date (newest first)
-      const sorted = [...journalEntries].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+      // Ensure we properly convert dates for comparison
+      const sorted = [...journalEntries].sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA;
+      });
       
       console.log(`JournalHistory - Sorted ${sorted.length} entries including ${sorted.filter(e => e.conversation_id).length} conversation entries`);
       
