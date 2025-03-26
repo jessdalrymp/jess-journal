@@ -34,7 +34,11 @@ export const useMyStoryState = () => {
           setExistingConversationId(existingConversation.id);
         } else {
           console.log('No existing story conversation found');
-          setShowWelcomeModal(true);
+          // Check if the user has chosen not to see the welcome modal
+          const dontShowWelcome = localStorage.getItem('dontShowStoryWelcome');
+          if (dontShowWelcome !== 'true') {
+            setShowWelcomeModal(true);
+          }
         }
       } catch (error) {
         console.error('Error retrieving conversation from storage:', error);
