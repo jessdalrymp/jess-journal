@@ -12,6 +12,7 @@ interface ChatMessageListProps {
 export const ChatMessageList = memo(({ messages }: ChatMessageListProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
+  // Scroll to bottom when messages change
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });

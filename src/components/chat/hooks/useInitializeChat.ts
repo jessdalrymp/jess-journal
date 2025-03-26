@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { ConversationSession, ChatMessage } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
@@ -41,9 +42,9 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           // Check if the messages were loaded
           if (!conversation.messages || conversation.messages.length === 0) {
             console.error(`No messages found for conversation: ${conversationId}`);
+          } else {
+            console.log(`Successfully loaded existing conversation with ${conversation.messages.length} messages`);
           }
-          
-          console.log(`Successfully loaded existing conversation with ${conversation.messages.length} messages`);
           
           const session: ConversationSession = {
             id: conversation.id,

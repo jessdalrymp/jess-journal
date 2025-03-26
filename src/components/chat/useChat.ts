@@ -23,11 +23,12 @@ export const useChat = (
   const loading = initLoading || sendLoading || summaryLoading;
   const error = initError;
   
+  // Store initialMessage in ref to avoid dependency issues
   useEffect(() => {
-    // Store initialMessage in ref to avoid dependency issues
     initialMessageRef.current = initialMessage;
   }, [initialMessage]);
   
+  // Initialize chat session when user is authenticated
   useEffect(() => {
     // Only load chat if user exists and we haven't attempted initialization yet
     if (user && !initializationAttempted.current) {

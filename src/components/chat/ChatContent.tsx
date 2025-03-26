@@ -33,10 +33,12 @@ export const ChatContent = ({
 }: ChatContentProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // Scroll to bottom when messages change or component mounts
   useEffect(() => {
     scrollToBottom();
   }, [session.messages]);
 
+  // Function to scroll to the bottom of the chat
   const scrollToBottom = () => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
@@ -45,7 +47,7 @@ export const ChatContent = ({
 
   const handleSendMessage = (message: string) => {
     onSendMessage(message);
-    // Scroll to bottom after sending message
+    // Scroll to bottom after sending message with a small delay to ensure message is rendered
     setTimeout(() => {
       scrollToBottom();
     }, 100);
