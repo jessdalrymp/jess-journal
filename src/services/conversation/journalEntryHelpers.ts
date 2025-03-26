@@ -17,12 +17,12 @@ export const saveJournalEntryFromConversation = async (
     
     // Create a journal entry with the conversation content
     const { data, error } = await supabase
-      .from('Journal_Entries')
+      .from('journal_entries')
       .insert({
-        User_id: userId,
-        Prompt: title,
-        Content: encryptedContent,
-        Type: type
+        user_id: userId,
+        prompt: title,
+        content: encryptedContent,
+        type: type
       })
       .select()
       .single();
