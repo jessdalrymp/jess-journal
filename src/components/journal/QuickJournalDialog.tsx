@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useUserData } from '@/context/UserDataContext';
@@ -21,7 +20,7 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
   const { user } = useAuth();
   const { fetchJournalEntries } = useUserData();
   const { toast } = useToast();
-
+  
   const handleSave = async () => {
     if (!user || !content.trim() || !prompt || !category) return;
     

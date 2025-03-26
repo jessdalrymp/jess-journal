@@ -26,7 +26,7 @@ export const useStoryConversation = () => {
         console.error('StoryConversation - Error refreshing journal entries:', error);
       }
     }
-    navigate('/dashboard');
+    navigate('/');
   };
 
   const handleStartFresh = async () => {

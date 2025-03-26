@@ -91,7 +91,7 @@ const BlankJournal = () => {
       fetchJournalEntries();
       
       toast.success("Journal entry saved successfully");
-      navigate(`/dashboard`);
+      navigate(`/`);
     } catch (error) {
       console.error("Error saving journal entry:", error);
       toast.error("Failed to save journal entry");

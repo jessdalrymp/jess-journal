@@ -58,7 +58,7 @@ export function SaveChatDialog({
       
       // Delay navigation to ensure toast is seen
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        window.location.href = '/';
       }, 1500);
     }
   );
