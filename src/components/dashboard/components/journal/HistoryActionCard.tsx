@@ -1,19 +1,46 @@
 
-import { Link } from 'react-router-dom';
-import { History, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Plus, Pencil } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useUserData } from '@/context/UserDataContext';
 
 export const HistoryActionCard = () => {
+  const navigate = useNavigate();
+  const { fetchJournalEntries } = useUserData();
+  
+  const handleNewJournal = () => {
+    navigate('/journal-history', { state: { showJournalChat: true } });
+  };
+  
+  const handleWriteFreely = () => {
+    // Navigate to the new journal page instead
+    navigate('/journal', { state: { skipPrompt: true } });
+  };
+  
   return (
-    <Link to="/journal-history">
-      <div className="bg-gradient-to-r from-jess-subtle/80 to-white rounded-lg p-4 flex items-center justify-between cursor-pointer shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-gradient-to-r hover:from-jess-secondary/60 hover:to-white border border-jess-subtle/30 hover:border-jess-secondary/50 group">
-        <div className="flex items-center">
-          <div className="bg-jess-primary/10 p-2 rounded-full">
-            <History size={20} className="text-jess-primary" />
-          </div>
-          <span className="ml-3 font-medium">View your journal history</span>
-        </div>
-        <ArrowRight size={18} className="transform transition-transform duration-300 group-hover:translate-x-1 text-jess-primary/80" />
+    <div className="p-4 bg-jess-subtle/40 rounded-xl mb-4">
+      <h3 className="text-lg font-medium mb-2">Reflect on your growth</h3>
+      <p className="text-jess-muted text-sm mb-3">
+        Keep track of your growth by journaling your reflections, insights, and breakthroughs.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Button 
+          onClick={handleNewJournal}
+          variant="outline" 
+          className="w-full bg-white hover:bg-jess-subtle/60 border-jess-subtle flex items-center justify-center gap-2"
+        >
+          <Plus size={16} />
+          <span>New Journal Entry</span>
+        </Button>
+        <Button 
+          onClick={handleWriteFreely}
+          variant="outline" 
+          className="w-full bg-white hover:bg-jess-subtle/60 border-jess-subtle flex items-center justify-center gap-2"
+        >
+          <Pencil size={16} />
+          <span>Write Freely</span>
+        </Button>
       </div>
-    </Link>
+    </div>
   );
 };

@@ -8,13 +8,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 import { Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { clearCurrentConversationFromStorage, getCurrentConversationFromStorage } from "@/lib/storageUtils";
 import { useUserData } from "@/context/UserDataContext";
 import { useGenerateSummary } from "./hooks/useGenerateSummary";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
 
 interface SaveChatDialogProps {
   open: boolean;
@@ -29,47 +29,88 @@ export function SaveChatDialog({
   refreshData = false,
   persistConversation = false
 }: SaveChatDialogProps) {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const { fetchJournalEntries } = useUserData();
-  const { generateSummary, loading: summaryLoading } = useGenerateSummary();
   const [isSaving, setIsSaving] = useState(false);
+  const [saveComplete, setSaveComplete] = useState(false);
+  const [conversationTitle, setConversationTitle] = useState('');
+
+  // Get the current conversation from storage once when dialog opens
+  const [currentConversation, setCurrentConversation] = useState(null);
+  
+  useEffect(() => {
+    if (open) {
+      setSaveComplete(false);
+      setIsSaving(false);
+      const conversation = getCurrentConversationFromStorage('story');
+      setCurrentConversation(conversation);
+      
+      // Generate a default title from the first few user messages if available
+      if (conversation && conversation.messages && conversation.messages.length > 0) {
+        const userMessages = conversation.messages
+          .filter(msg => msg.role === 'user')
+          .slice(0, 2);
+          
+        if (userMessages.length > 0) {
+          const firstMessage = userMessages[0].content;
+          // Create title from first user message (limited to 40 chars)
+          const suggestedTitle = firstMessage.length > 40 
+            ? firstMessage.substring(0, 40) + '...' 
+            : firstMessage;
+          setConversationTitle(suggestedTitle);
+        } else {
+          setConversationTitle(`My Story - ${new Date().toLocaleDateString()}`);
+        }
+      } else {
+        setConversationTitle(`My Story - ${new Date().toLocaleDateString()}`);
+      }
+    }
+  }, [open]);
+
+  // Setup the generate summary hook with the current conversation ID
+  const { generateTitleAndSummary, generating } = useGenerateSummary(
+    currentConversation?.id || null,
+    'story',
+    () => {
+      // This callback is called when saving is complete
+      if (refreshData) {
+        fetchJournalEntries();
+      }
+      
+      setSaveComplete(true);
+      
+      // Delay navigation to ensure toast is seen
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500);
+    }
+  );
 
   const handleSave = async () => {
+    console.log("Save button clicked in SaveChatDialog");
+    if (isSaving || saveComplete) {
+      console.log("Already saving or save completed, ignoring duplicate click");
+      return;
+    }
+    
     setIsSaving(true);
+    
     try {
-      // Get the current conversation from storage
       const currentConversation = getCurrentConversationFromStorage('story');
+      console.log("Current conversation retrieved:", currentConversation?.id);
       
       if (currentConversation && currentConversation.messages.length > 1) {
-        console.log("Generating summary for story conversation before saving...");
-        // Generate summary to save to journal
-        await generateSummary({
-          id: currentConversation.id,
-          userId: currentConversation.userId,
-          type: 'story',
-          title: currentConversation.title || 'My Story',
-          messages: currentConversation.messages,
-          createdAt: new Date(currentConversation.createdAt),
-          updatedAt: new Date(currentConversation.updatedAt),
-        });
+        console.log("Saving conversation to journal with title:", conversationTitle);
         
-        console.log("Story conversation summarized and saved to journal");
+        // Pass the custom title to the generate summary function
+        await generateTitleAndSummary(
+          currentConversation.messages, 
+          conversationTitle
+        );
       }
       
-      // Only clear current conversation if not persisting
       if (!persistConversation) {
         clearCurrentConversationFromStorage('story');
-      }
-      
-      // If refresh is needed, fetch latest entries before navigating
-      if (refreshData) {
-        try {
-          await fetchJournalEntries();
-          console.log("Journal entries refreshed after saving story");
-        } catch (error) {
-          console.error("Error refreshing journal entries:", error);
-        }
       }
       
       const message = persistConversation 
@@ -80,8 +121,6 @@ export function SaveChatDialog({
         title: "Conversation saved",
         description: message,
       });
-      
-      navigate('/dashboard');
     } catch (error) {
       console.error("Error saving conversation:", error);
       toast({
@@ -89,18 +128,24 @@ export function SaveChatDialog({
         description: "There was a problem saving your story. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsSaving(false);
-      onOpenChange(false); // Close the dialog after saving
     }
   };
 
   const handleCancel = () => {
+    if (isSaving || saveComplete) {
+      console.log("Cannot cancel while saving or after save completed");
+      return;
+    }
     onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      if (!isSaving && !saveComplete) {
+        onOpenChange(newOpen);
+      }
+    }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Save your story chat</DialogTitle>
@@ -110,23 +155,48 @@ export function SaveChatDialog({
               : "Saving your chat will add this conversation to your journal and start a fresh conversation next time you return."}
           </DialogDescription>
         </DialogHeader>
-        <div className="p-4 my-2 bg-jess-subtle rounded-md">
-          <p className="text-sm">
-            <span className="font-medium">What happens when you save:</span>
-          </p>
-          <ul className="mt-2 space-y-1 text-sm list-disc list-inside">
-            <li>This conversation is saved to your journal</li>
-            <li>A summary is created for easy reference</li>
-            {!persistConversation && <li>Your next visit will start a new conversation</li>}
-          </ul>
+        
+        <div className="space-y-4 py-3">
+          <div className="space-y-2">
+            <label htmlFor="conversationTitle" className="text-sm font-medium">
+              Conversation Title
+            </label>
+            <Input 
+              id="conversationTitle" 
+              value={conversationTitle}
+              onChange={(e) => setConversationTitle(e.target.value)}
+              placeholder="Enter a title for this conversation"
+              className="w-full"
+              disabled={isSaving || generating || saveComplete}
+            />
+          </div>
+          
+          <div className="p-3 bg-jess-subtle rounded-md">
+            <p className="text-sm">
+              <span className="font-medium">What happens when you save:</span>
+            </p>
+            <ul className="mt-2 space-y-1 text-sm list-disc list-inside">
+              <li>This conversation is saved to your journal</li>
+              {!persistConversation && <li>Your next visit will start a new conversation</li>}
+            </ul>
+          </div>
         </div>
+        
         <DialogFooter className="flex space-x-2 sm:justify-between sm:space-x-0">
-          <Button variant="outline" onClick={handleCancel} disabled={isSaving || summaryLoading}>
+          <Button 
+            variant="outline" 
+            onClick={handleCancel} 
+            disabled={isSaving || generating || saveComplete}
+          >
             Keep Chatting
           </Button>
-          <Button onClick={handleSave} disabled={isSaving || summaryLoading}>
+          <Button 
+            onClick={handleSave} 
+            disabled={isSaving || generating || saveComplete || !conversationTitle.trim()}
+            className="bg-jess-primary text-white hover:bg-jess-primary/90"
+          >
             <Save className="w-4 h-4 mr-2" />
-            {(isSaving || summaryLoading) ? "Saving..." : "Save and Exit"}
+            {(isSaving || generating) ? "Saving..." : (saveComplete ? "Saved" : "Save and Exit")}
           </Button>
         </DialogFooter>
       </DialogContent>

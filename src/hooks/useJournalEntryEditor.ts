@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { JournalEntry } from "@/lib/types";
 import { useUserData } from "@/context/UserDataContext";
 import { updateJournalEntry } from "@/services/journal";
 import { useToast } from "@/hooks/use-toast";
-import { parseEntryContent, formatContentForEditing } from "@/utils/contentParser";
+import { parseEntryContent, getContentPreview, formatContentForEditing } from "@/utils/contentParser";
 import { useAuth } from "@/context/AuthContext";
 
 export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
@@ -22,17 +21,16 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
     if (entry) {
       const parsed = parseEntryContent(entry.content);
       setParsedContent(parsed);
-      setEditableContent(formatContentForEditing(entry.content));
-      setEditableTitle(parsed?.title || entry.title || "");
+      setEditableContent(formatContentForEditing(entry));
+      setEditableTitle(parsed?.title || entry.title);
     }
   }, [entry]);
 
   useEffect(() => {
     if (isEditing && entry) {
-      const formattedContent = formatContentForEditing(entry.content);
-      setEditableContent(formattedContent);
+      setEditableContent(formatContentForEditing(entry));
       const parsed = parseEntryContent(entry.content);
-      setEditableTitle(parsed?.title || entry.title || "");
+      setEditableTitle(parsed?.title || entry.title);
     }
   }, [isEditing, entry]);
 
@@ -100,9 +98,9 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
 
   const handleCancelEdit = () => {
     if (entry) {
-      setEditableContent(formatContentForEditing(entry.content));
+      setEditableContent(formatContentForEditing(entry));
       const parsed = parseEntryContent(entry.content);
-      setEditableTitle(parsed?.title || entry.title || "");
+      setEditableTitle(parsed?.title || entry.title);
     }
     setIsEditing(false);
   };

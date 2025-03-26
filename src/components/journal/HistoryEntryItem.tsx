@@ -1,85 +1,78 @@
-
-import React from 'react';
+import { Link } from 'react-router-dom';
+import { Calendar, Clock } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
-import { format } from 'date-fns';
-import { Book, MessageSquare, PenLine, FilePlus } from 'lucide-react';
+import { getEntryIcon } from '@/components/journal/JournalHistoryUtils';
+import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
+import { getContentPreview, extractFormattedContent } from '@/utils/contentParser';
 
 interface HistoryEntryItemProps {
   entry: JournalEntry;
-  isSelected?: boolean;
 }
 
-export const HistoryEntryItem = ({ entry, isSelected = false }: HistoryEntryItemProps) => {
-  // Get the appropriate icon based on entry type
-  const getIcon = () => {
-    switch (entry.type) {
-      case 'story':
-        return <Book className="w-5 h-5" />;
-      case 'sideQuest':
-        return <MessageSquare className="w-5 h-5" />;
-      case 'journal':
-        return <PenLine className="w-5 h-5" />;
-      default:
-        return <FilePlus className="w-5 h-5" />;
-    }
-  };
+// Format the date in a readable way compatible with date-fns v3
+const formatDate = (date: Date) => {
+  const now = new Date();
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  if (date.toDateString() === now.toDateString()) {
+    return 'Today';
+  } else if (date.toDateString() === yesterday.toDateString()) {
+    return 'Yesterday';
+  } else {
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+};
 
-  // Get the display name for the entry type
-  const getTypeLabel = () => {
-    switch (entry.type) {
-      case 'story':
-        return 'My Story';
-      case 'sideQuest':
-        return 'Side Quest';
-      case 'action':
-        return 'Action';
-      case 'summary':
-        return 'Summary';
-      case 'journal':
-        return 'Journal Entry';
-      default:
-        return 'Entry';
-    }
-  };
+// Format time from date object
+const formatTime = (date: Date) => {
+  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+};
 
-  // Extract a content preview from the entry content
-  const getContentPreview = () => {
-    if (!entry.content) return '';
-    
-    // Remove any markdown formatting for cleaner preview
-    const cleanContent = entry.content
-      .replace(/#{1,6}\s+/g, '') // Remove headings
-      .replace(/\*\*|\*|__|\n\s*\n/g, ' ') // Remove bold, italic, and extra newlines
-      .trim();
-    
-    // Return a short preview of the content
-    return cleanContent.length > 150 
-      ? cleanContent.substring(0, 150) + '...' 
-      : cleanContent;
-  };
-
+export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
+  const entryType = entry.type || 'journal';
+  const content = getContentPreview(entry);
+  const isConversationEntry = !!entry.conversation_id;
+  const isSummary = entry.type === 'summary';
+  
+  console.log('Rendering entry in history item:', { 
+    id: entry.id, 
+    title: entry.title, 
+    type: entry.type,
+    isConversationEntry,
+    isSummary,
+    conversation_id: entry.conversation_id,
+    content: content.substring(0, 50) + (content.length > 50 ? '...' : '')
+  });
+  
+  // Process content to handle JSON formatting if present
+  const displayContent = extractFormattedContent(content);
+  
+  // Always link to journal entry page
+  const linkPath = `/journal-entry/${entry.id}`;
+  
   return (
-    <div className={`p-4 rounded-lg border ${isSelected 
-      ? 'border-jess-primary bg-jess-subtle/20' 
-      : 'border-jess-subtle/50 hover:border-jess-primary/50'} transition-colors`}>
-      <div className="flex items-start gap-4">
-        <div className="text-jess-primary mt-1">
-          {getIcon()}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="font-medium text-jess-foreground truncate">
-              {entry.title || getTypeLabel()}
-            </h3>
-            <span className="text-sm text-jess-muted whitespace-nowrap">
-              {format(new Date(entry.createdAt), 'MMM d, yyyy')}
-            </span>
-          </div>
-          <p className="mt-1 text-sm text-jess-muted line-clamp-2">
-            {getContentPreview()}
-          </p>
-        </div>
+    <Link 
+      key={entry.id} 
+      to={linkPath}
+      className="relative border-l-2 border-jess-subtle pl-4 pb-5 block group"
+    >
+      <div className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-jess-secondary group-hover:bg-jess-primary transition-colors"></div>
+      <div className="flex items-center text-xs text-jess-muted mb-1">
+        <Calendar size={12} className="mr-1" />
+        <span>{formatDate(new Date(entry.createdAt))}</span>
+        <Clock size={12} className="ml-2 mr-1" />
+        <span>{formatTime(new Date(entry.createdAt))}</span>
       </div>
-    </div>
+      <div className="flex items-center">
+        <span className="mr-2">{getEntryIcon(entryType)}</span>
+        <p className="text-sm font-medium text-jess-foreground group-hover:text-jess-primary transition-colors">
+          {getEntryTitle(entry)}
+        </p>
+      </div>
+      <div className="mt-1 text-xs text-jess-muted line-clamp-2 bg-gray-50 p-1.5 rounded">
+        {displayContent}
+      </div>
+    </Link>
   );
 };

@@ -1,11 +1,10 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { CheckCheck, Save, Sparkles } from 'lucide-react';
+import { CheckCheck, Save, X, Sparkles } from 'lucide-react';
 
 interface ChatFooterProps {
   onEndChat: () => void;
-  onSaveAndExit?: () => void;
   type: 'story' | 'sideQuest' | 'action' | 'journal';
   onAcceptChallenge?: () => void;
   onNewChallenge?: () => void;
@@ -14,12 +13,17 @@ interface ChatFooterProps {
 
 export const ChatFooter = ({ 
   onEndChat, 
-  onSaveAndExit,
   type, 
   onAcceptChallenge, 
   onNewChallenge,
   saveChat = false
 }: ChatFooterProps) => {
+  const handleEndChatClick = () => {
+    console.log("End chat button clicked in ChatFooter, saveChat =", saveChat);
+    // Simply call the onEndChat function which should handle navigation in its parent component
+    onEndChat();
+  };
+
   return (
     <div className="p-3 bg-white border-t border-jess-subtle flex justify-between">
       {(type === 'action') && onAcceptChallenge && (
@@ -44,29 +48,22 @@ export const ChatFooter = ({
         </Button>
       )}
       
-      <div className="ml-auto flex gap-2">
-        {onSaveAndExit && (
-          <Button 
-            onClick={onSaveAndExit} 
-            variant="default"
-            className="text-sm"
-          >
-            <Save size={16} className="mr-1" />
-            Save & Exit
-          </Button>
-        )}
+      <div className="ml-auto">
         <Button 
-          onClick={onEndChat} 
-          variant="outline"
-          className="text-sm"
+          onClick={handleEndChatClick}
+          variant={saveChat ? "default" : "outline"}
+          className={`text-sm ${saveChat ? "bg-jess-primary hover:bg-jess-primary/90" : ""}`}
         >
           {saveChat ? (
             <>
               <Save size={16} className="mr-1" />
-              Save Chat
+              Save & Close
             </>
           ) : (
-            <>End Chat</>
+            <>
+              <X size={16} className="mr-1" />
+              Close
+            </>
           )}
         </Button>
       </div>

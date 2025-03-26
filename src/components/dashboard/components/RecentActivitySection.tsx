@@ -1,3 +1,4 @@
+
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { Clock, PenSquare } from 'lucide-react';
@@ -19,24 +20,17 @@ export const RecentActivitySection = ({
 }: RecentActivitySectionProps) => {
   const navigate = useNavigate();
 
-  const entryUrl = (entry: JournalEntry) => {
-    if (entry.type === 'story' || entry.type === 'sideQuest' || entry.type === 'action') {
-      return entry.conversationId 
-        ? `/${entry.type.toLowerCase()}?conversationId=${entry.conversationId}` 
-        : `/journal-entry/${entry.id}`;
-    }
-    return `/journal-entry/${entry.id}`;
-  };
-
+  // Get recent journal entries safely, including entries from conversations
   const recentEntries = journalEntries && journalEntries.length > 0
     ? [...journalEntries]
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, 3)
     : [];
 
+  // Debug logs to check what entries are available
   console.log('Recent activity entries:', recentEntries);
   console.log('Total journal entries:', journalEntries?.length);
-  console.log('Entries with conversationId:', journalEntries?.filter(e => e.conversationId)?.length);
+  console.log('Entries with conversation_id:', journalEntries?.filter(e => e.conversation_id)?.length);
 
   const handleStartJournal = () => {
     navigate('/journal-challenge');
@@ -60,7 +54,7 @@ export const RecentActivitySection = ({
             {recentEntries.map(entry => (
               <Link 
                 key={entry.id} 
-                to={entryUrl(entry)}
+                to={`/journal-entry/${entry.id}`}
                 className="block border border-jess-subtle p-4 rounded-lg hover:bg-jess-subtle/30 transition-all duration-200 hover:border-jess-primary/50 transform hover:-translate-y-0.5"
               >
                 <h3 className="font-medium text-base line-clamp-1">{getEntryTitle(entry)}</h3>

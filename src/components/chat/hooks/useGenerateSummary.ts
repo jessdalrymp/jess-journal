@@ -1,117 +1,141 @@
 
-import { useState } from 'react';
-import { ConversationSession } from '@/lib/types';
-import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { formatMessagesForSummary } from '../chatUtils';
-import { generateDeepseekResponse, DeepseekMessage } from '../../../utils/deepseekApi';
-import { saveConversationSummary } from '@/services/conversation';
+import { useCallback, useState } from 'react';
+import { useGenerateChatCompletion } from '@/hooks/useGenerateChatCompletion';
+import { useUserData } from '@/context/UserDataContext';
+import { ChatMessage } from '@/lib/types';
+import { useConversation } from '@/hooks/useConversation';
+import { supabase } from '@/integrations/supabase/client';
 
-export const useGenerateSummary = () => {
-  const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
-  const { toast } = useToast();
-
-  const generateSummary = async (session: ConversationSession) => {
-    if (!session || !user) {
-      console.error("No active session or user not authenticated");
-      return null;
-    }
-    
-    setLoading(true);
+/**
+ * Hook to generate a title and summary from chat messages
+ */
+export const useGenerateSummary = (
+  conversationId: string | null,
+  type: 'story' | 'sideQuest' | 'action' | 'journal',
+  onComplete?: () => void
+) => {
+  const [generating, setGenerating] = useState(false);
+  const { generateCompletion, loading } = useGenerateChatCompletion();
+  const { user } = useUserData();
+  const { updateConversationTitle, updateConversationSummary } = useConversation();
+  
+  const generateTitleAndSummary = useCallback(async (
+    messages: ChatMessage[], 
+    customTitle?: string
+  ) => {
+    if (!user || !conversationId) return;
     
     try {
-      console.log(`Generating summary for ${session.type} conversation...`);
-      if (!session.messages || session.messages.length <= 2) {
-        console.log("Not enough messages to summarize");
-        setLoading(false);
-        return null;
+      setGenerating(true);
+      
+      // If custom title is provided, use it instead of generating one
+      let title = customTitle;
+      
+      // Only generate if we don't have a custom title
+      if (!title) {
+        // First, generate a title using OpenAI
+        const titlePrompt = `
+        Generate a short, descriptive title (maximum 5 words) for this ${type} conversation.
+        Just respond with the title, nothing else. No quotes or additional text.
+        `;
+        
+        const titleMessages = [
+          { role: 'system', content: titlePrompt },
+          ...messages.slice(0, Math.min(messages.length, 10)) // Use first 10 messages at most
+        ];
+        
+        title = await generateCompletion(titleMessages);
+        
+        // Clean up and truncate the title if needed
+        title = title.replace(/^"(.+)"$/, '$1').trim(); // Remove quotes if present
+        title = title.substring(0, 50); // Limit length
       }
       
-      const aiMessages = formatMessagesForSummary(session.messages);
+      // Update the conversation title
+      await updateConversationTitle(conversationId, title);
       
-      console.log("Requesting AI summary with prompt to create very brief summary in second person...");
-      // Modify the request to specifically ask for a very brief summary in second person
-      const systemPrompt: DeepseekMessage = {
-        role: 'system',
-        content: `Create a very brief summary of this conversation in JSON format with a title and summary. 
-        The title should be creative and descriptive.
-        Write the summary in second person (using "you" instead of "I" or "they").
-        Focus only on the main topics discussed. Keep it extremely concise (max 50 words) and in this format:
-        {"title": "Short descriptive title", "summary": "Brief overview of what was discussed in second person"}`
-      };
+      // Generate a summary using OpenAI
+      const summaryPrompt = `
+      Create a detailed summary of this ${type} conversation.
+      Include the key points and themes discussed.
+      Format your response as a coherent paragraph, not a list.
+      `;
       
-      // Add the system prompt to guide the AI to generate proper summaries
-      const messagesWithPrompt: DeepseekMessage[] = [
-        systemPrompt,
-        ...aiMessages
+      const summaryMessages = [
+        { role: 'system', content: summaryPrompt },
+        ...messages // Use all messages for the summary
       ];
       
-      const response = await generateDeepseekResponse(messagesWithPrompt);
+      const summary = await generateCompletion(summaryMessages);
       
-      if (!response || !response.choices || !response.choices[0] || !response.choices[0].message) {
-        console.error("Received invalid response from AI service:", response);
-        throw new Error("Failed to generate summary: Invalid AI response");
+      // Update the conversation summary
+      await updateConversationSummary(conversationId, summary);
+      
+      // Create a journal entry with the conversation
+      await createJournalEntryFromConversation(
+        user.id,
+        conversationId,
+        title,
+        summary
+      );
+      
+      if (onComplete) {
+        onComplete();
       }
-      
-      let summaryText = response.choices[0].message.content || "No summary available";
-      console.log("Received summary from AI:", summaryText);
-      
-      let title = "Conversation Summary";
-      let summary = summaryText;
-      
-      try {
-        const jsonSummary = JSON.parse(summaryText);
-        if (jsonSummary.title && jsonSummary.summary) {
-          title = jsonSummary.title;
-          summary = jsonSummary.summary;
-          console.log("Parsed JSON summary:", { title, summary });
-        }
-      } catch (e) {
-        console.log("Summary not in JSON format, using raw text");
-        // Attempt to create a basic title and summary from the raw text
-        const lines = summaryText.split('\n').filter(line => line.trim());
-        if (lines.length > 1) {
-          title = lines[0].replace(/^#|Title:|topic:/i, '').trim();
-          summary = lines.slice(1).join('\n').trim();
-        }
-      }
-      
-      console.log("Saving summary to journal...", { 
-        userId: user.id, 
-        title, 
-        summary, 
-        sessionId: session.id,
-        type: session.type 
-      });
-      
-      await saveConversationSummary(user.id, title, summary, session.id, session.type);
-      
-      console.log("Summary saved to journal");
-      
-      toast({
-        title: "Conversation Summarized",
-        description: `Your ${session.type === 'story' ? 'story' : 'side quest'} has been saved to your journal.`,
-        duration: 3000,
-      });
       
       return { title, summary };
     } catch (error) {
-      console.error('Error generating summary:', error);
-      toast({
-        title: "Error Saving Summary",
-        description: "We couldn't save your conversation summary.",
-        variant: "destructive",
-        duration: 5000,
-      });
-      return null;
+      console.error('Error generating title and summary:', error);
+      throw error;
     } finally {
-      setLoading(false);
+      setGenerating(false);
+    }
+  }, [user, conversationId, type, generateCompletion, updateConversationTitle, updateConversationSummary, onComplete]);
+  
+  /**
+   * Creates a journal entry from a conversation
+   */
+  const createJournalEntryFromConversation = async (
+    userId: string,
+    conversationId: string,
+    title: string,
+    summary: string
+  ) => {
+    try {
+      console.log('Creating journal entry from conversation:', {
+        userId,
+        conversationId,
+        title
+      });
+      
+      // Insert a new journal entry with reference to the conversation
+      const { data, error } = await supabase
+        .from('journal_entries')
+        .insert({
+          user_id: userId,
+          conversation_id: conversationId,
+          prompt: title,
+          content: summary,
+          type: 'story'
+        })
+        .select('id')
+        .single();
+      
+      if (error) {
+        console.error('Error creating journal entry:', error);
+        throw error;
+      }
+      
+      console.log('Successfully created journal entry with ID:', data.id);
+      return data.id;
+    } catch (error) {
+      console.error('Error in createJournalEntryFromConversation:', error);
+      throw error;
     }
   };
-
+  
   return {
-    generateSummary,
-    loading
+    generateTitleAndSummary,
+    generating: generating || loading
   };
 };

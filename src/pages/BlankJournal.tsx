@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Header } from "../components/Header";
 import { DisclaimerBanner } from "../components/ui/DisclaimerBanner";
 import { useUserData } from "../context/UserDataContext";
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 
 const BlankJournal = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { fetchJournalEntries } = useUserData();
   const [content, setContent] = useState('```json\n{\n  "title": "Untitled Entry",\n  "summary": ""\n}\n```');
@@ -26,6 +27,13 @@ const BlankJournal = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<PromptCategory | null>(null);
   const [showPromptSelector, setShowPromptSelector] = useState(true);
+
+  // Check if we should skip the prompt selector based on route state
+  useEffect(() => {
+    if (location.state?.skipPrompt) {
+      setShowPromptSelector(false);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     try {
@@ -83,7 +91,7 @@ const BlankJournal = () => {
       fetchJournalEntries();
       
       toast.success("Journal entry saved successfully");
-      navigate(`/dashboard`);
+      navigate(`/`);
     } catch (error) {
       console.error("Error saving journal entry:", error);
       toast.error("Failed to save journal entry");

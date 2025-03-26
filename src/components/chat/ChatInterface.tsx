@@ -1,6 +1,5 @@
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import { useConversationHandling } from './hooks/useConversationHandling';
 import { 
   ChatLoadingState, 
@@ -36,8 +35,6 @@ export const ChatInterface = ({
   persistConversation = false,
   conversationId = null
 }: ChatInterfaceProps) => {
-  const navigate = useNavigate();
-  
   const {
     user,
     session,
@@ -52,8 +49,7 @@ export const ChatInterface = ({
     openEndDialog,
     handleEndConversation,
     handleJournalingComplete,
-    handleNewChallenge,
-    generateSummary
+    handleNewChallenge
   } = useConversationHandling(
     type, 
     onBack, 
@@ -64,27 +60,8 @@ export const ChatInterface = ({
     persistConversation
   );
   
-  // New function to handle save and exit
-  const handleSaveAndExit = async () => {
-    if (!session || !user) return;
-    
-    try {
-      const summary = await generateSummary();
-      if (summary) {
-        console.log("Generated summary before exiting:", summary);
-      }
-      // Navigate to index page
-      navigate('/');
-    } catch (error) {
-      console.error("Error saving and exiting:", error);
-      if (onError) {
-        onError("Failed to save conversation summary");
-      }
-    }
-  };
-  
   // Report errors back to parent if needed
-  React.useEffect(() => {
+  useEffect(() => {
     if (error && onError) {
       onError(error);
     }
@@ -122,7 +99,6 @@ export const ChatInterface = ({
         onBack={onBack}
         onSendMessage={sendMessage}
         onEndChat={() => openEndDialog(saveChat)}
-        onSaveAndExit={handleSaveAndExit}
         onAcceptChallenge={onAcceptChallenge}
         onNewChallenge={type === 'action' || type === 'journal' ? handleNewChallenge : undefined}
         saveChat={saveChat}

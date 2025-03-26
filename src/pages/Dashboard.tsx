@@ -1,13 +1,12 @@
-
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../context/UserDataContext';
 import { AuthForm } from '../components/auth/AuthForm';
 import { SelfDiscoveryQuiz } from '../components/onboarding/SelfDiscoveryQuiz';
-import { Dashboard } from '../components/dashboard/Dashboard';
 import { Header } from '../components/Header';
 import { DisclaimerBanner } from '../components/ui/DisclaimerBanner';
+import { Dashboard as DashboardContent } from '../components/dashboard/Dashboard';
 
 // Add styles for tour highlight
 const tourStyles = `
@@ -29,7 +28,7 @@ const tourStyles = `
   }
 `;
 
-const AppContent = () => {
+const Dashboard = () => {
   const { user, isNewUser, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useUserData();
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -84,7 +83,7 @@ const AppContent = () => {
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />
       <main className="flex-1 py-6">
-        <Dashboard />
+        <DashboardContent />
       </main>
       <DisclaimerBanner />
       <style>{tourStyles}</style>
@@ -92,8 +91,4 @@ const AppContent = () => {
   );
 };
 
-const Index = () => {
-  return <AppContent />;
-};
-
-export default Index;
+export default Dashboard;

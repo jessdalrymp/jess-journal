@@ -7,17 +7,10 @@ import { AnswerLengthToggle } from './AnswerLengthToggle';
 
 interface ChatInputProps {
   onSendMessage: (message: string, options?: { brevity?: 'short' | 'detailed' }) => void;
-  loading?: boolean;
-  disabled?: boolean;
-  scrollToBottom?: () => void;
+  loading: boolean;
 }
 
-export const ChatInput = ({ 
-  onSendMessage, 
-  loading = false, 
-  disabled = false,
-  scrollToBottom
-}: ChatInputProps) => {
+export const ChatInput = ({ onSendMessage, loading }: ChatInputProps) => {
   const [message, setMessage] = useState('');
   const [brevity, setBrevity] = useState<'short' | 'detailed'>(() => {
     // Try to get saved preference from localStorage, default to 'detailed'
@@ -26,16 +19,9 @@ export const ChatInput = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   const handleSend = () => {
-    if (!message.trim() || loading || disabled) return;
+    if (!message.trim() || loading) return;
     onSendMessage(message, { brevity });
     setMessage('');
-    
-    // Scroll to bottom if function is provided
-    if (scrollToBottom) {
-      setTimeout(() => {
-        scrollToBottom();
-      }, 100);
-    }
   };
   
   const handleToggleBrevity = (value: 'short' | 'detailed') => {
@@ -76,7 +62,7 @@ export const ChatInput = ({
                 handleSend();
               }
             }}
-            disabled={loading || disabled}
+            disabled={loading}
             rows={1}
           />
           {loading ? (
@@ -87,7 +73,7 @@ export const ChatInput = ({
             <ActionButton
               type="primary"
               onClick={handleSend}
-              disabled={!message.trim() || disabled}
+              disabled={!message.trim()}
               className="ml-2 w-10 h-10 p-0 rounded-full flex items-center justify-center"
               icon={<Send size={18} />}
             >

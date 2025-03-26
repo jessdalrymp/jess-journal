@@ -11,7 +11,6 @@ export const AuthForm = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   
   const handleToggleMode = () => {
     setIsLogin(!isLogin);
@@ -49,8 +48,6 @@ export const AuthForm = () => {
           onToggleMode={handleToggleMode}
           onForgotPassword={handleForgotPassword}
           onVerificationSent={handleVerificationSent}
-          isLoading={isLoading}
-          setIsLoading={setIsLoading}
         />
         <div className="mt-6 pt-6 border-t border-jess-subtle">
           <SocialLoginButtons isLogin={isLogin} />

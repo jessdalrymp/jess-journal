@@ -65,9 +65,9 @@ export const useQuiz = (onComplete: () => void) => {
       const profileData = {
         growthStage: answers['growth-stage'] as string,
         challenges: answers['challenges'] as string[],
-        mindsetPatterns: (answers['mindset'] as string), // Convert to string to match the UserProfile type
+        mindsetPatterns: [answers['mindset'] as string], // Convert to array to match the UserProfile type
         learningStyle: answers['learning-style'] as string,
-        supportNeeds: (answers['support-needs'] as string[])[0] || '', // Using first item to match string type
+        supportNeeds: answers['support-needs'] as string[],
         completedOnboarding: true
       };
       

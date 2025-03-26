@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from "./components/ui/theme-provider";
@@ -6,7 +7,7 @@ import { AuthProvider } from './context/AuthContext';
 import { UserDataProvider } from './context/UserDataProvider';
 import LandingPage from './pages/LandingPage';
 import FreeJournalPrompts from './pages/FreeJournalPrompts';
-import Index from './pages/Index';
+import Dashboard from './pages/Dashboard';
 import Account from './pages/Account';
 import MyStory from './pages/MyStory';
 import SideQuest from './pages/SideQuest';
@@ -29,9 +30,9 @@ const App = () => {
         <AuthProvider>
           <UserDataProvider>
             <Routes>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<Dashboard />} />
               <Route path="/free-journal-prompts" element={<FreeJournalPrompts />} />
-              <Route path="/dashboard" element={<Index />} />
+              <Route path="/dashboard" element={<Navigate to="/" replace />} />
               <Route path="/account" element={<Account />} />
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />

@@ -10,13 +10,10 @@ import { MyStoryUnauthenticated } from "../components/my-story/MyStoryUnauthenti
 import { MyStoryHeader } from "../components/my-story/MyStoryHeader";
 import { MyStoryChatContainer } from "../components/my-story/MyStoryChatContainer";
 import { useMyStoryState } from "../components/my-story/useMyStoryState";
-import { MyStoryPriorConversations } from "../components/my-story/MyStoryPriorConversations";
-import { useToast } from "@/hooks/use-toast";
 
 const MyStory = () => {
   const [searchParams] = useSearchParams();
   const urlConversationId = searchParams.get("conversationId");
-  const { toast } = useToast();
   
   const {
     showWelcomeModal,
@@ -31,10 +28,11 @@ const MyStory = () => {
     handleSaveChat,
     handleStartFresh,
     refreshDataOnSave,
-    priorConversations,
+    setRefreshDataOnSave,
     loadingPriorConversations,
     handleLoadConversation,
-    isLoadingConversation
+    isLoadingConversation,
+    handleDontShowWelcomeAgain
   } = useMyStoryState();
   
   // Load conversation from URL parameter if present
@@ -43,14 +41,7 @@ const MyStory = () => {
       console.log("Found conversation ID in URL:", urlConversationId);
       handleLoadConversation(urlConversationId);
     }
-  }, [urlConversationId, user, isLoading]);
-  
-  // Refresh prior conversations when loading is complete
-  useEffect(() => {
-    if (!isLoading && !userLoading && !isLoadingConversation) {
-      console.log("MyStory: Loading complete, priorConversations:", priorConversations.length);
-    }
-  }, [isLoading, userLoading, isLoadingConversation, priorConversations]);
+  }, [urlConversationId, user, isLoading, handleLoadConversation]);
   
   if (userLoading || isLoading || isLoadingConversation) {
     return <MyStoryLoading />;
@@ -59,6 +50,11 @@ const MyStory = () => {
   if (!user) {
     return <MyStoryUnauthenticated />;
   }
+
+  const handleSaveChatDialogOpenChange = (open: boolean) => {
+    console.log("SaveChatDialog open change:", open);
+    setShowSaveChatDialog(open);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
@@ -69,22 +65,12 @@ const MyStory = () => {
           onStartFresh={handleStartFresh} 
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          <div className="md:col-span-3">
-            <MyStoryChatContainer 
-              onBack={handleBack} 
-              onSave={handleSaveChat}
-              conversationId={existingConversationId}
-            />
-          </div>
-          <div className="md:col-span-1">
-            <MyStoryPriorConversations
-              conversations={priorConversations}
-              loading={loadingPriorConversations}
-              onSelectConversation={handleLoadConversation}
-              currentConversationId={existingConversationId}
-            />
-          </div>
+        <div className="mb-4">
+          <MyStoryChatContainer 
+            onBack={handleBack} 
+            onSave={handleSaveChat}
+            conversationId={existingConversationId}
+          />
         </div>
       </main>
       <DisclaimerBanner />
@@ -96,11 +82,12 @@ const MyStory = () => {
         description="Let's get to know you better"
         buttonText="Let's Begin"
         type="story"
+        onDontShowAgain={handleDontShowWelcomeAgain}
       />
 
       <SaveChatDialog
         open={showSaveChatDialog}
-        onOpenChange={setShowSaveChatDialog}
+        onOpenChange={handleSaveChatDialogOpenChange}
         refreshData={refreshDataOnSave}
         persistConversation={true}
       />

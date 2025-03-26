@@ -1,11 +1,9 @@
 
-import { parseEntryContent, getContentPreview } from '../../utils/contentParser';
-
-// Re-export the utility functions for backward compatibility
-export const parseContentWithJsonCodeBlock = (content: string) => {
-  const result = parseEntryContent(content);
-  return result || null;
-};
-
-// Export the getContentPreview function to maintain API compatibility
-export { getContentPreview };
+// Re-export the functions from utils/contentParser for backward compatibility
+export { 
+  getContentPreview,
+  extractFormattedContent,
+  parseEntryContent,
+  formatContentForEditing,
+  parseContentWithJsonCodeBlock
+} from '@/utils/contentParser';

@@ -8,23 +8,12 @@ import { AccountSection } from './components/AccountSection';
 import { DashboardWelcomeModal } from './WelcomeModal';
 import { FeatureTour } from './FeatureTour';
 import { GrowthInsights } from './GrowthInsights';
-import { DashboardSkeleton } from './DashboardSkeleton';
 
 export const Dashboard = () => {
   const { user } = useAuth();
   const { journalEntries, loading, profile, fetchJournalEntries } = useUserData();
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardInitialized, setDashboardInitialized] = useState(false);
-  const [showingSkeleton, setShowingSkeleton] = useState(true);
-
-  useEffect(() => {
-    // Ensure the skeleton shows for at least 600ms for a smoother UX
-    const timer = setTimeout(() => {
-      setShowingSkeleton(false);
-    }, 600);
-    
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     // Simply track the loading state
@@ -58,43 +47,35 @@ export const Dashboard = () => {
     return () => window.removeEventListener('focus', handleFocus);
   }, [user, fetchJournalEntries]);
 
-  // Show skeleton loader during initial load
-  if (isLoading || showingSkeleton) {
-    return <DashboardSkeleton />;
-  }
-
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 relative">
-      {/* First section - Core Actions */}
-      <div className="mb-4 md:mb-6 relative z-10">
-        <div className="core-actions-section">
+      {/* Main dashboard grid layout */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        {/* Core Actions Section - 6 columns on desktop */}
+        <div className="md:col-span-7 lg:col-span-6 relative z-10">
           <CoreActionsSection />
         </div>
-      </div>
-      
-      {/* Growth Insights - Now positioned between CoreActions and JournalHistory */}
-      {user && profile && !isLoading && (
-        <div className="mb-4 md:mb-6">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 md:p-6 shadow-lg border border-jess-subtle/50 transition-all duration-300 hover:shadow-xl relative overflow-hidden group">
-            {/* Subtle gradient background that matches CoreActionsSection */}
-            <div className="absolute inset-0 bg-gradient-to-br from-jess-subtle/10 via-white to-jess-secondary/10 opacity-70 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div className="relative z-10">
-              <GrowthInsights />
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* Journal History Section */}
-      <div className="mb-4 md:mb-6 relative z-10">
-        <div className="journal-history-section">
+        
+        {/* Journal History Section - 6 columns on desktop */}
+        <div className="md:col-span-5 lg:col-span-6 relative z-10">
           <JournalHistorySection />
         </div>
-      </div>
-      
-      {/* Account Section */}
-      <div className="relative z-10">
-        <div className="account-section">
+        
+        {/* Growth Insights - Full width */}
+        {user && profile && !isLoading && (
+          <div className="col-span-1 md:col-span-12 mb-6">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-jess-subtle/50 transition-all duration-300 hover:shadow-xl relative overflow-hidden group">
+              {/* Subtle gradient background that matches CoreActionsSection */}
+              <div className="absolute inset-0 bg-gradient-to-br from-jess-subtle/10 via-white to-jess-secondary/10 opacity-70 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10">
+                <GrowthInsights />
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Account Section - Full width */}
+        <div className="col-span-1 md:col-span-12 relative z-10">
           <AccountSection />
         </div>
       </div>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { Save, X, Clock } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { saveJournalEntryFromConversation } from "@/services/conversation/journalIntegration";
+import { saveJournalEntryFromConversation } from "@/services/conversation";
 
 interface JournalingDialogProps {
   open: boolean;
@@ -59,16 +60,7 @@ export const JournalingDialog = ({
   };
 
   const handleSaveAndClose = async () => {
-    if (!user || !journalContent.trim()) {
-      if (!journalContent.trim()) {
-        toast({
-          title: "Cannot save empty entry",
-          description: "Please add some content to your reflection",
-          variant: "destructive"
-        });
-      }
-      return;
-    }
+    if (!user || !journalContent.trim()) return;
     
     try {
       setIsSaving(true);

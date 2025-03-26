@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Settings, MessageCircle, Shield } from "lucide-react";
 import { User } from "../../lib/types";
 import { LegalLinks } from "../common/LegalLinks";
@@ -14,7 +14,7 @@ interface ProfileSectionProps {
 
 export const ProfileSection = ({ user }: ProfileSectionProps) => {
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
-  const { isAdmin, loading, makeAdmin } = useAdminStatus();
+  const { isAdmin } = useAdminStatus();
   
   return (
     <div className="p-4 border border-jess-subtle rounded-lg">
@@ -36,7 +36,7 @@ export const ProfileSection = ({ user }: ProfileSectionProps) => {
           Contact Support
         </Button>
         
-        {isAdmin ? (
+        {isAdmin && (
           <Link to="/admin">
             <Button 
               variant="outline" 
@@ -47,17 +47,6 @@ export const ProfileSection = ({ user }: ProfileSectionProps) => {
               Admin Dashboard
             </Button>
           </Link>
-        ) : (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full flex items-center justify-center text-jess-primary"
-            onClick={makeAdmin}
-            disabled={loading}
-          >
-            <Shield size={16} className="mr-2" />
-            {loading ? "Processing..." : "Request Admin Access"}
-          </Button>
         )}
       </div>
       

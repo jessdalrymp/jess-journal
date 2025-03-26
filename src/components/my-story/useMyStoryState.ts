@@ -1,57 +1,101 @@
 
-import { useAuth } from '@/context/AuthContext';
-import { useUserData } from '@/context/UserDataContext';
-import { useWelcomeModal } from './hooks/useWelcomeModal';
-import { useSaveChatDialog } from './hooks/useSaveChatDialog';
-import { useConversationLoader } from './hooks/useConversationLoader';
-import { usePriorConversations } from './hooks/usePriorConversations';
-import { useNavigationHandlers } from './hooks/useNavigationHandlers';
 import { useEffect } from 'react';
+import { useStoryModal, useStoryConversation, useStoryLoader, usePriorStories } from './hooks';
 
+/**
+ * Main hook for My Story feature state management
+ * Combines smaller, more focused hooks for better organization
+ */
 export const useMyStoryState = () => {
-  const { user, loading: userLoading } = useAuth();
-  const { fetchJournalEntries } = useUserData();
-  
-  const { showWelcomeModal, setShowWelcomeModal, initializeWelcomeModal } = useWelcomeModal();
-  const { showSaveChatDialog, setShowSaveChatDialog, refreshDataOnSave, handleSaveChat } = useSaveChatDialog();
-  const { existingConversationId, isLoading, isLoadingConversation, handleStartFresh, handleLoadConversation } = useConversationLoader();
-  const { priorConversations, loadingPriorConversations } = usePriorConversations();
-  const { handleBack } = useNavigationHandlers();
-  
-  // Initialize welcome modal based on existence of conversation
-  useEffect(() => {
-    if (!isLoading && user) {
-      initializeWelcomeModal(!existingConversationId);
-    }
-  }, [isLoading, user, existingConversationId]);
-  
-  // Utility function to handle starting fresh that integrates with journal entries
-  const handleStartFreshWithRefresh = async () => {
-    try {
-      await fetchJournalEntries();
-      handleStartFresh();
-    } catch (error) {
-      console.error('Error refreshing journal entries:', error);
-      handleStartFresh();
-    }
-  };
-
-  return {
+  // Modal state management
+  const {
     showWelcomeModal,
     setShowWelcomeModal,
     showSaveChatDialog,
     setShowSaveChatDialog,
-    isLoading,
-    userLoading,
-    existingConversationId,
-    user,
-    handleBack,
-    handleSaveChat,
-    handleStartFresh: handleStartFreshWithRefresh,
     refreshDataOnSave,
+    setRefreshDataOnSave,
+    handleDontShowWelcomeAgain,
+    handleSaveChat
+  } = useStoryModal();
+
+  // Current conversation management
+  const {
+    existingConversationId,
+    setExistingConversationId,
+    isLoadingConversation, 
+    setIsLoadingConversation,
+    handleBack,
+    handleStartFresh
+  } = useStoryConversation();
+
+  // Prior conversations management
+  const {
     priorConversations,
     loadingPriorConversations,
+    handleLoadConversation: loadConversation,
+    user
+  } = usePriorStories();
+
+  // Initial loading
+  const {
+    isLoading,
+    userLoading
+  } = useStoryLoader(setExistingConversationId, setShowWelcomeModal);
+
+  // Handle loading conversation with proper state updates
+  const handleLoadConversation = async (conversationId: string) => {
+    if (existingConversationId === conversationId) {
+      console.log('MyStoryState - Conversation already loaded');
+      return;
+    }
+    
+    setIsLoadingConversation(true);
+    const loadedConversationId = await loadConversation(conversationId);
+    
+    if (loadedConversationId) {
+      setExistingConversationId(loadedConversationId);
+      // Force reload to ensure everything is fresh
+      window.location.reload();
+    }
+    
+    setIsLoadingConversation(false);
+  };
+
+  // Refresh prior conversations when loading is complete
+  useEffect(() => {
+    if (!isLoading && !userLoading && !isLoadingConversation) {
+      console.log("MyStory: Loading complete, priorConversations:", priorConversations.length);
+    }
+  }, [isLoading, userLoading, isLoadingConversation, priorConversations.length]);
+
+  return {
+    // Modal state
+    showWelcomeModal,
+    setShowWelcomeModal,
+    showSaveChatDialog,
+    setShowSaveChatDialog,
+    refreshDataOnSave,
+    setRefreshDataOnSave,
+    
+    // Loading state
+    isLoading,
+    userLoading,
+    isLoadingConversation,
+    
+    // Conversation data
+    existingConversationId,
+    priorConversations,
+    loadingPriorConversations,
+    
+    // User data (from prior stories hook)
+    user,
+    
+    // Actions
+    handleBack,
+    handleSaveChat,
+    handleStartFresh,
     handleLoadConversation,
-    isLoadingConversation
+    handleDontShowWelcomeAgain
   };
 };

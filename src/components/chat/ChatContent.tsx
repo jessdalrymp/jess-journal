@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatInput } from './ChatInput';
@@ -11,9 +11,8 @@ interface ChatContentProps {
   session: ConversationSession;
   loading: boolean;
   onBack: () => void;
-  onSendMessage: (message: string) => void;
-  onEndChat: () => void;
-  onSaveAndExit?: () => void;
+  onSendMessage: (message: string, options?: { brevity?: 'short' | 'detailed' }) => void;
+  onEndChat?: () => void;
   onAcceptChallenge?: () => void;
   onNewChallenge?: () => void;
   saveChat?: boolean;
@@ -26,54 +25,33 @@ export const ChatContent = ({
   onBack,
   onSendMessage,
   onEndChat,
-  onSaveAndExit,
   onAcceptChallenge,
   onNewChallenge,
-  saveChat = false
+  saveChat
 }: ChatContentProps) => {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // Scroll to bottom when messages change or component mounts
-  useEffect(() => {
-    scrollToBottom();
-  }, [session.messages]);
-
-  // Function to scroll to the bottom of the chat
-  const scrollToBottom = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
-    }
-  };
-
-  const handleSendMessage = (message: string) => {
-    onSendMessage(message);
-    // Scroll to bottom after sending message with a small delay to ensure message is rendered
-    setTimeout(() => {
-      scrollToBottom();
-    }, 100);
-  };
-
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <ChatHeader type={type} onBack={onBack} />
-      <div className="flex-1 overflow-y-auto" ref={scrollContainerRef}>
-        <ChatMessageList 
-          messages={session.messages} 
-        />
-      </div>
-      <ChatInput
-        onSendMessage={handleSendMessage}
-        loading={loading}
-        scrollToBottom={scrollToBottom}
-      />
-      <ChatFooter
+      <ChatHeader
         type={type}
+        onBack={onBack}
         onEndChat={onEndChat}
-        onSaveAndExit={onSaveAndExit}
         onAcceptChallenge={onAcceptChallenge}
         onNewChallenge={onNewChallenge}
         saveChat={saveChat}
       />
+      <div className="flex-1 overflow-hidden">
+        <ChatMessageList messages={session.messages} />
+      </div>
+      <ChatInput onSendMessage={onSendMessage} loading={loading} />
+      {onEndChat && (
+        <ChatFooter 
+          type={type} 
+          onEndChat={onEndChat} 
+          onAcceptChallenge={onAcceptChallenge}
+          onNewChallenge={onNewChallenge}
+          saveChat={saveChat}
+        />
+      )}
     </div>
   );
 };

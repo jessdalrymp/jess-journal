@@ -22,16 +22,6 @@ export function useJournalUpdate() {
       return false;
     }
     
-    // Validate that content is not empty
-    if (!content.trim()) {
-      toast({
-        title: "Cannot save empty entry",
-        description: "Please add some content to your journal entry",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
     try {
       setLoading(true);
       const success = await journalService.updateJournalEntry(entryId, content, user.id);

@@ -1,28 +1,34 @@
 
-import React from 'react';
+import { ReactNode } from 'react';
+import { AuthFormHeader } from './AuthFormHeader';
+import { LegalLinks } from '../common/LegalLinks';
 
 interface AuthFormContainerProps {
-  children: React.ReactNode;
+  children: ReactNode;
+  showLegalLinks?: boolean;
 }
 
-export const AuthFormContainer = ({ children }: AuthFormContainerProps) => {
+export const AuthFormContainer = ({ 
+  children, 
+  showLegalLinks = true 
+}: AuthFormContainerProps) => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-jess-background p-4 sm:p-6">
-      <div className="w-full max-w-md bg-white p-6 sm:p-8 rounded-xl shadow-lg border border-jess-subtle/30 animate-fade-in">
-        <div className="flex justify-center mb-6">
-          <img 
-            src="/favicon.svg" 
-            alt="Jess Journal Logo" 
-            className="h-12 sm:h-14 w-auto" 
-          />
-        </div>
-        
+    <div className="w-full max-w-md mx-auto p-6">
+      <AuthFormHeader />
+      
+      <div className="card-base animate-fade-in">
         {children}
       </div>
       
-      <div className="mt-6 text-center text-sm text-jess-muted">
-        <p>Jess Journal © {new Date().getFullYear()} – All rights reserved.</p>
-      </div>
+      {showLegalLinks && (
+        <div className="mt-8 space-y-3">
+          <p className="text-center text-sm text-jess-muted">
+            By continuing, you agree to our Terms of Service and Privacy Policy.
+          </p>
+          
+          <LegalLinks className="mt-1" />
+        </div>
+      )}
     </div>
   );
 };

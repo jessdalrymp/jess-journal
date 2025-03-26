@@ -1,147 +1,135 @@
 
-import { ConversationSession } from '@/lib/types';
 import { supabase } from '../../integrations/supabase/client';
-import { Conversation } from './types';
+import { Conversation, ConversationMessage } from './types';
+import { cacheConversation, clearConversationCache } from './conversationCache';
 
-/**
- * Create a new conversation in the database
- */
 export const createConversation = async (params: {
   userId: string;
-  type: 'story' | 'sideQuest' | 'action' | 'journal';
+  type: 'action' | 'journal' | 'sideQuest' | 'story';
   title: string;
-}): Promise<Conversation> => {
+}): Promise<Conversation | null> => {
   try {
-    console.log(`Creating conversation of type ${params.type} for user ${params.userId}`);
-    
-    // First, verify that the user's profile exists
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', params.userId)
-      .single();
-    
-    if (profileError || !profileData) {
-      console.error('Profile not found for user:', params.userId, profileError);
-      throw new Error('Your profile is not yet set up. Please try again in a moment.');
-    }
-    
     const { data, error } = await supabase
       .from('conversations')
       .insert({
         profile_id: params.userId,
         type: params.type,
-        title: params.title || `New ${params.type} conversation`,
+        title: params.title,
+        summary: ''
       })
-      .select('*')
+      .select()
       .single();
 
     if (error) {
       console.error('Error creating conversation:', error);
-      throw error;
+      return null;
     }
 
-    if (!data) {
-      throw new Error('No data returned when creating conversation');
-    }
-
-    console.log(`Successfully created conversation with ID: ${data.id}`);
-
-    return {
+    const conversation: Conversation = {
       id: data.id,
       userId: data.profile_id,
       type: data.type,
       title: data.title,
       messages: [],
-      summary: data.summary || '',
+      summary: '',
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at)
     };
+
+    // Cache the conversation
+    cacheConversation(conversation);
+    return conversation;
   } catch (error) {
     console.error('Error in createConversation:', error);
-    throw error;
+    return null;
   }
 };
 
-/**
- * Add a message to an existing conversation in the database
- */
 export const addMessageToConversation = async (
   conversationId: string,
-  messageData: {
-    role: 'user' | 'assistant';
-    content: string;
+  message: Omit<ConversationMessage, 'id' | 'createdAt'>
+): Promise<ConversationMessage | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('messages')
+      .insert({
+        conversation_id: conversationId,
+        role: message.role,
+        content: message.content
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding message:', error);
+      return null;
+    }
+
+    // Update conversation's updated_at timestamp
+    await supabase
+      .from('conversations')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', conversationId);
+
+    // Clear the cache for this conversation
+    clearConversationCache(conversationId);
+
+    return {
+      id: data.id,
+      role: data.role,
+      content: data.content,
+      createdAt: new Date(data.timestamp)
+    };
+  } catch (error) {
+    console.error('Error in addMessageToConversation:', error);
+    return null;
   }
-): Promise<boolean> => {
-  const { error } = await supabase
-    .from('messages')
-    .insert({
-      conversation_id: conversationId,
-      role: messageData.role,
-      content: messageData.content,
-    });
-
-  if (error) {
-    console.error('Error adding message to conversation:', error);
-    throw error;
-  }
-
-  // Update the conversation's updated_at timestamp
-  await updateConversationTimestamp(conversationId);
-
-  return true;
 };
 
-/**
- * Update the timestamp of a conversation to mark it as recently accessed
- */
-export const updateConversationTimestamp = async (conversationId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('conversations')
-    .update({ updated_at: new Date().toISOString() })
-    .eq('id', conversationId);
-
-  if (error) {
-    console.error('Error updating conversation timestamp:', error);
-    // Don't throw here, just log the error
-  }
-};
-
-/**
- * Update a conversation's title or other metadata
- */
-export const updateConversationMetadata = async (
+export const updateConversationTitle = async (
   conversationId: string,
-  data: {
-    title?: string;
-    summary?: string;
-  }
-): Promise<void> => {
-  const { error } = await supabase
-    .from('conversations')
-    .update(data)
-    .eq('id', conversationId);
+  title: string
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('conversations')
+      .update({ title, updated_at: new Date().toISOString() })
+      .eq('id', conversationId);
 
-  if (error) {
-    console.error('Error updating conversation metadata:', error);
-    throw error;
+    if (error) {
+      console.error('Error updating conversation title:', error);
+      return false;
+    }
+
+    // Clear the cache for this conversation
+    clearConversationCache(conversationId);
+    return true;
+  } catch (error) {
+    console.error('Error in updateConversationTitle:', error);
+    return false;
   }
 };
 
-/**
- * Retrieve a specific message from a conversation
- */
-export const getMessageById = async (messageId: string): Promise<any> => {
-  const { data, error } = await supabase
-    .from('messages')
-    .select('*')
-    .eq('id', messageId)
-    .single();
+export const updateConversationSummary = async (
+  conversationId: string,
+  summary: string
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('conversations')
+      .update({ summary, updated_at: new Date().toISOString() })
+      .eq('id', conversationId);
 
-  if (error) {
-    console.error('Error retrieving message:', error);
-    throw error;
+    if (error) {
+      console.error('Error updating conversation summary:', error);
+      return false;
+    }
+
+    // Clear the cache for this conversation
+    clearConversationCache(conversationId);
+    return true;
+  } catch (error) {
+    console.error('Error in updateConversationSummary:', error);
+    return false;
   }
-
-  return data;
 };

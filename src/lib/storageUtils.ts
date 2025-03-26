@@ -1,3 +1,4 @@
+
 /**
  * Utility functions for interacting with localStorage
  */
@@ -64,24 +65,29 @@ export const saveChallengesToStorage = (challenges: ActionChallenge[]): void => 
   }
 };
 
-/**
- * Get conversations from local storage
- */
-export const getConversationsFromStorage = (): any[] => {
+export const getConversationsFromStorage = (): ConversationSession[] => {
   try {
-    const stored = localStorage.getItem('conversations');
-    if (!stored) return [];
-    return JSON.parse(stored);
+    const storedConversations = localStorage.getItem('conversations');
+    if (!storedConversations) return [];
+    
+    const parsed = JSON.parse(storedConversations);
+    
+    // Ensure the roles are strictly typed as 'user' | 'assistant'
+    return parsed.map((conv: any) => ({
+      ...conv,
+      messages: conv.messages ? conv.messages.map((msg: any) => ({
+        ...msg,
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        timestamp: new Date(msg.timestamp)
+      })) : []
+    }));
   } catch (error) {
-    console.error('Error getting conversations from storage:', error);
+    console.error('Error loading conversations from storage:', error);
     return [];
   }
 };
 
-/**
- * Save conversations to local storage
- */
-export const saveConversationsToStorage = (conversations: any[]): void => {
+export const saveConversationsToStorage = (conversations: ConversationSession[]): void => {
   try {
     localStorage.setItem('conversations', JSON.stringify(conversations));
   } catch (error) {
@@ -89,47 +95,43 @@ export const saveConversationsToStorage = (conversations: any[]): void => {
   }
 };
 
-/**
- * Get current conversation from local storage
- */
-export const getCurrentConversationFromStorage = (type: 'story' | 'sideQuest' | 'action' | 'journal'): any => {
+export const getCurrentConversationFromStorage = (type: 'story' | 'sideQuest' | 'action' | 'journal'): ConversationSession | null => {
   try {
-    const key = `current_${type}_conversation`;
-    const stored = localStorage.getItem(key);
-    if (!stored) return null;
-    return JSON.parse(stored);
+    const key = `currentConversation_${type}`;
+    const storedConversation = localStorage.getItem(key);
+    if (!storedConversation) return null;
+    
+    const parsed = JSON.parse(storedConversation);
+    
+    // Ensure the roles are strictly typed as 'user' | 'assistant'
+    return {
+      ...parsed,
+      messages: parsed.messages ? parsed.messages.map((msg: any) => ({
+        ...msg,
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        timestamp: new Date(msg.timestamp)
+      })) : []
+    };
   } catch (error) {
-    console.error(`Error getting current ${type} conversation from storage:`, error);
+    console.error(`Error loading ${type} conversation from storage:`, error);
     return null;
   }
 };
 
-/**
- * Save current conversation to local storage
- */
-export const saveCurrentConversationToStorage = (conversation: any): void => {
+export const saveCurrentConversationToStorage = (conversation: ConversationSession): void => {
   try {
-    if (!conversation || !conversation.type) {
-      console.error('Cannot save conversation: Missing type or invalid conversation object', conversation);
-      return;
-    }
-    
-    const key = `current_${conversation.type}_conversation`;
-    console.log(`Saving conversation to localStorage with key: ${key}`, conversation);
+    const key = `currentConversation_${conversation.type}`;
     localStorage.setItem(key, JSON.stringify(conversation));
   } catch (error) {
-    console.error('Error saving current conversation to storage:', error);
+    console.error('Error saving conversation to storage:', error);
   }
 };
 
-/**
- * Clear current conversation from local storage
- */
 export const clearCurrentConversationFromStorage = (type: 'story' | 'sideQuest' | 'action' | 'journal'): void => {
   try {
-    const key = `current_${type}_conversation`;
+    const key = `currentConversation_${type}`;
     localStorage.removeItem(key);
   } catch (error) {
-    console.error(`Error clearing current ${type} conversation from storage:`, error);
+    console.error(`Error clearing ${type} conversation from storage:`, error);
   }
 };

@@ -1,69 +1,35 @@
-
-/**
- * Type definitions for the application
- */
-
-// Define the User interface
 export interface User {
   id: string;
-  name?: string;
   email: string;
+  name?: string;
   createdAt: Date;
-  updatedAt: Date;
 }
 
-// Define the UserProfile interface
 export interface UserProfile {
   id: string;
   userId: string;
-  firstName?: string;
-  lastName?: string;
-  bio?: string;
-  growthStage?: string;
-  learningStyle?: string;
-  challenges?: string[];
-  goals?: string[];
-  preferences?: Record<string, any>;
-  createdAt: Date;
-  updatedAt: Date;
-  completedOnboarding?: boolean;
   email?: string;
+  growthStage?: string;
+  challenges?: string[];
+  mindsetPatterns?: string[];
+  learningStyle?: string;
+  supportNeeds?: string[];
   communicationPreference?: string;
-  supportNeeds?: string;
   engagementMode?: string;
-  mindsetPatterns?: string;
+  completedOnboarding: boolean;
 }
 
-// Define the JournalEntry interface
 export interface JournalEntry {
   id: string;
   userId: string;
-  prompt: string;
+  title: string;
   content: string;
-  title?: string;
-  topic?: string;
-  mood?: string;
   type: 'journal' | 'story' | 'sideQuest' | 'action' | 'summary';
   createdAt: Date;
-  updatedAt: Date;
-  conversationSummary?: string;
-  conversationId?: string;
+  prompt: string | null;
+  conversation_id?: string | null;
 }
 
-// Define the ActionChallenge interface
-export interface ActionChallenge {
-  id: string;
-  userId: string;
-  title: string;
-  description: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'abandoned';
-  goalId?: string;
-  reminderDate?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// Define the ChatMessage interface
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -71,7 +37,6 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
-// Define the ConversationSession interface
 export interface ConversationSession {
   id: string;
   userId: string;
@@ -81,4 +46,21 @@ export interface ConversationSession {
   summary?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  category: 'growthStage' | 'challenges' | 'mindset' | 'learningStyle' | 'supportNeeds';
+}
+
+export interface ActionChallenge {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  deadline?: Date;
+  createdAt: Date;
 }

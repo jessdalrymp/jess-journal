@@ -35,11 +35,11 @@ export async function generateDailySummary(userId: string, entriesContent: Journ
       return `Entry ${new Date(entry.created_at).toLocaleTimeString()}: ${entry.prompt}\n${entry.content.substring(0, 300)}${entry.content.length > 300 ? '...' : ''}`;
     }).join('\n\n');
     
-    // Construct a message for the AI model with emphasis on brevity
+    // Construct a message for the AI model with emphasis on brevity and clean JSON format
     const messages = [
       {
         role: "system", 
-        content: "You are a journal summary assistant. Create an extremely brief summary of the user's journal entries for the day, mentioning only the key topics discussed. Format your response as JSON with fields for 'title' and 'summary'. Keep the summary under 50 words."
+        content: "You are a journal summary assistant. Create an extremely brief summary of the user's journal entries for the day, mentioning only the key topics discussed. Format your response as a simple JSON object with fields for 'title' and 'summary'. Keep the summary under 50 words. DO NOT use markdown code blocks in your response - just return the plain JSON."
       },
       {
         role: "user",
@@ -64,25 +64,23 @@ export async function generateDailySummary(userId: string, entriesContent: Journ
     const result = await response.json();
     const summaryText = result.choices[0].message.content;
     
+    // Remove any code blocks or markdown formatting that might be in the response
+    const cleanedSummaryText = summaryText.replace(/```json\s*|\s*```/g, '');
+    
     // Format the summary content
     let title = `Daily Journal Summary: ${new Date().toLocaleDateString()}`;
-    let summary = summaryText;
+    let summary = cleanedSummaryText;
     
     try {
-      // Try to extract JSON if present
-      const jsonMatch = summaryText.match(/```json\s*([\s\S]*?)```/) || 
-                        summaryText.match(/\{[\s\S]*?\}/);
-      
-      if (jsonMatch) {
-        const parsedJson = JSON.parse(jsonMatch[0].replace(/```json|```/g, '').trim());
-        if (parsedJson.title) title = parsedJson.title;
-        if (parsedJson.summary) summary = parsedJson.summary;
-      }
+      // Try to parse as JSON
+      const parsedJson = JSON.parse(cleanedSummaryText);
+      if (parsedJson.title) title = parsedJson.title;
+      if (parsedJson.summary) summary = parsedJson.summary;
     } catch (e) {
       console.log('Could not parse JSON from summary, using raw text');
     }
     
-    // Create the content for the new journal entry
+    // Create the content for the new journal entry - as a clean JSON object
     const journalContent = JSON.stringify({
       title: title,
       summary: summary,

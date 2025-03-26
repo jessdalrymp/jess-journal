@@ -6,15 +6,11 @@ import { useAuth } from '../../context/AuthContext';
 export const AuthCallback = () => {
   const { handleAuthCallback, user } = useAuth();
   const [error, setError] = useState<string | null>(null);
-  const [processing, setProcessing] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const processAuthCallback = async () => {
       try {
-        setProcessing(true);
-        console.log("Processing auth callback");
-        
         // Check if this is a password reset request by examining the hash
         const hash = window.location.hash;
         if (hash && hash.includes('type=recovery')) {
@@ -26,11 +22,11 @@ export const AuthCallback = () => {
         const session = await handleAuthCallback();
         
         if (session) {
-          console.log("Auth callback successful, redirecting to dashboard");
+          console.log("Auth callback successful");
           // If auth was successful, redirect to dashboard
           navigate('/dashboard');
         } else {
-          console.log("No session from auth callback, redirecting to login");
+          console.log("No session from auth callback");
           // If no session was returned, redirect to login
           navigate('/');
         }
@@ -39,14 +35,11 @@ export const AuthCallback = () => {
         setError(err.message || "Authentication failed. Please try again.");
         // On error, redirect to login page after a delay
         setTimeout(() => navigate('/'), 3000);
-      } finally {
-        setProcessing(false);
       }
     };
 
     // If user is already authenticated, redirect to dashboard
     if (user) {
-      console.log("User already authenticated, redirecting to dashboard");
       navigate('/dashboard');
       return;
     }
@@ -68,9 +61,7 @@ export const AuthCallback = () => {
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-jess-subtle animate-pulse-soft flex items-center justify-center">
               <div className="w-8 h-8 rounded-full bg-jess-primary"></div>
             </div>
-            <p className="text-jess-muted">
-              {processing ? "Completing authentication..." : "Authentication complete, redirecting..."}
-            </p>
+            <p className="text-jess-muted">Completing authentication...</p>
           </div>
         )}
       </div>

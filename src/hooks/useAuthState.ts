@@ -43,7 +43,6 @@ export const useAuthState = () => {
             email: session.user.email || '',
             name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
             createdAt: new Date(session.user.created_at),
-            updatedAt: new Date()
           });
         } else {
           console.log("No user session found");
@@ -85,7 +84,6 @@ export const useAuthState = () => {
               email: session.user.email || '',
               name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
               createdAt: new Date(session.user.created_at),
-              updatedAt: new Date()
             });
           }
         } else if (event === 'SIGNED_OUT') {

@@ -36,7 +36,7 @@ export const saveJournalEntry = async (
       return null;
     }
 
-    return mapDatabaseEntryToJournalEntry(data);
+    return mapDatabaseEntryToJournalEntry(data, userId);
   } catch (error) {
     console.error('Error processing journal entry:', error);
     return null;

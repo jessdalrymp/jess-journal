@@ -1,12 +1,8 @@
 
-import React from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ForgotPasswordForm } from './ForgotPasswordForm';
+import { PasswordResetSuccess } from './PasswordResetSuccess';
 
 interface ForgotPasswordDialogProps {
   isOpen: boolean;
@@ -14,19 +10,39 @@ interface ForgotPasswordDialogProps {
 }
 
 export const ForgotPasswordDialog = ({ isOpen, onClose }: ForgotPasswordDialogProps) => {
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [email, setEmail] = useState('');
+
+  const handleSuccess = (submittedEmail: string) => {
+    setEmail(submittedEmail);
+    setIsSubmitted(true);
+  };
+
+  const handleClose = () => {
+    setEmail('');
+    setIsSubmitted(false);
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md p-6">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center text-xl sm:text-2xl font-medium">Reset Your Password</DialogTitle>
-          <p className="text-center text-jess-muted text-sm sm:text-base mt-2">
-            Enter your email address and we'll send you a link to reset your password.
-          </p>
+          <DialogTitle className="text-center">
+            {isSubmitted ? "Email Sent" : "Reset Password"}
+          </DialogTitle>
+          <DialogDescription className="text-center">
+            {isSubmitted 
+              ? "Check your inbox for instructions to reset your password."
+              : "Enter your email address and we'll send you a link to reset your password."}
+          </DialogDescription>
         </DialogHeader>
         
-        <div className="mt-4">
-          <ForgotPasswordForm onClose={onClose} />
-        </div>
+        {!isSubmitted ? (
+          <ForgotPasswordForm onSuccess={handleSuccess} />
+        ) : (
+          <PasswordResetSuccess email={email} onClose={handleClose} />
+        )}
       </DialogContent>
     </Dialog>
   );
