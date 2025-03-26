@@ -27,12 +27,17 @@ export function useConversationActions() {
       const conversationParams: ConversationParams = { userId, type, title };
       
       // Log for debugging
-      console.log(`Attempting to create conversation for user ${userId} of type ${type}`);
+      console.log(`Creating conversation for user ${userId} of type ${type}`, conversationParams);
       
       const result = await conversationService.createConversation(conversationParams);
       
+      if (!result || !result.id) {
+        console.error("Conversation creation failed: No valid result returned");
+        throw new Error("Failed to create conversation. Please try again.");
+      }
+      
       // Log success for debugging
-      console.log(`Successfully created conversation of type ${type} with ID ${result.id}`);
+      console.log(`Successfully created conversation of type ${type} with ID ${result.id}`, result);
       
       return result;
     } catch (error) {
@@ -41,14 +46,23 @@ export function useConversationActions() {
       // Add more specific error messaging based on the error
       if (error instanceof Error) {
         // Check for foreign key violation which could indicate profile isn't created yet
-        if (error.message.includes('foreign key constraint')) {
+        if (error.message.includes('foreign key constraint') || 
+            error.message.includes('violates foreign key constraint')) {
           toast({
-            title: "Profile not ready",
-            description: "Your profile is being set up. Please try again in a moment.",
+            title: "Profile setup in progress",
+            description: "Your profile is still being set up. Please try again in a moment.",
             variant: "destructive"
           });
-          throw new Error("Your profile is still being set up. Please try again in a moment.");
+          throw new Error("Please wait a moment while your profile is being set up, then try again.");
         }
+        
+        // Provide the actual error message for better debugging
+        toast({
+          title: "Error creating conversation",
+          description: error.message || "Could not create a new conversation. Please try again.",
+          variant: "destructive"
+        });
+        throw error;
       }
       
       toast({

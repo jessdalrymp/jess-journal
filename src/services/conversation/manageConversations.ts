@@ -14,6 +14,18 @@ export const createConversation = async (params: {
   try {
     console.log(`Creating conversation of type ${params.type} for user ${params.userId}`);
     
+    // First, verify that the user's profile exists
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', params.userId)
+      .single();
+    
+    if (profileError || !profileData) {
+      console.error('Profile not found for user:', params.userId, profileError);
+      throw new Error('Your profile is not yet set up. Please try again in a moment.');
+    }
+    
     const { data, error } = await supabase
       .from('conversations')
       .insert({

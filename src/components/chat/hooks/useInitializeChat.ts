@@ -6,12 +6,14 @@ import { useConversationActions } from '@/hooks/useConversationActions';
 import { getCurrentConversationFromStorage, saveCurrentConversationToStorage } from '@/lib/storageUtils';
 import { getInitialMessage } from '../chatUtils';
 import { fetchConversation } from '@/services/conversation/fetchConversations';
+import { useToast } from '@/hooks/use-toast';
 
 export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const { startConversation } = useConversationActions();
+  const { toast } = useToast();
 
   const initializeChat = useCallback(async (conversationId?: string | null): Promise<ConversationSession | null> => {
     if (!user || !user.id) {
@@ -76,22 +78,28 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       const existingConversation = getCurrentConversationFromStorage(type);
       
       if (existingConversation && existingConversation.userId === user.id) {
-        console.log(`Found existing conversation in storage for ${type}`);
+        console.log(`Found existing conversation in storage for ${type}`, existingConversation);
         return existingConversation;
       }
       
       // Create a new conversation if none exists
-      console.log(`Creating new ${type} conversation`);
+      console.log(`Creating new ${type} conversation for user ${user.id}`);
       const initialMessage = getInitialMessage(type);
       
       try {
+        // Add delay to allow profile creation to complete if necessary
         const conversation = await startConversation(user.id, type);
         
-        if (!conversation) {
-          throw new Error('Failed to create conversation');
+        if (!conversation || !conversation.id) {
+          toast({
+            title: "Error creating conversation",
+            description: "Failed to create a new conversation. Please try again.",
+            variant: "destructive"
+          });
+          throw new Error('Failed to create conversation: No valid conversation returned');
         }
         
-        console.log(`Successfully created new ${type} conversation with ID: ${conversation.id}`);
+        console.log(`Successfully created new ${type} conversation with ID: ${conversation.id}`, conversation);
         
         // Add initial system message
         const initialChatMessage: ChatMessage = {
@@ -122,12 +130,18 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       }
     } catch (error) {
       console.error('Error in initializeChat:', error);
-      setError(error instanceof Error ? error.message : 'Unknown error');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setError(errorMessage);
+      toast({
+        title: "Error initializing conversation",
+        description: errorMessage,
+        variant: "destructive"
+      });
       return null;
     } finally {
       setLoading(false);
     }
-  }, [user, type, startConversation]);
+  }, [user, type, startConversation, toast]);
 
   return {
     initializeChat,
