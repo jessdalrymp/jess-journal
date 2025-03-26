@@ -5,7 +5,7 @@ import { parseContentWithJsonCodeBlock } from './contentParser';
 
 /**
  * Maps database journal entry object to application JournalEntry type
- * with improved error handling for decryption and debugging of entry differences
+ * with improved error handling for decryption
  */
 export const mapDatabaseEntryToJournalEntry = (
   entry: any, 
@@ -13,10 +13,6 @@ export const mapDatabaseEntryToJournalEntry = (
   messagesData: any[] | null = null
 ): JournalEntry => {
   console.log(`Mapping entry ID: ${entry.id}, created_at: ${entry.created_at}, type: ${entry.type}`);
-  
-  // Debug: Log the raw entry structure to identify any differences
-  console.log(`Raw entry structure: ${JSON.stringify(Object.keys(entry))}`);
-  console.log(`Raw entry type: ${entry.type}`);
   
   let content = '';
   let prompt = entry.prompt || null;
@@ -35,12 +31,6 @@ export const mapDatabaseEntryToJournalEntry = (
     content = entry.content || 'Content could not be decrypted';
   }
   
-  // Debug: check content format
-  console.log(`Content format check for entry ${entry.id}:`, {
-    hasJson: content.includes('{') && content.includes('}'),
-    contentStart: content.substring(0, 50) + (content.length > 50 ? '...' : '')
-  });
-  
   // Try to parse the content as JSON
   let parsedContent = null;
   let entryType = entry.type || 'journal';
@@ -48,10 +38,6 @@ export const mapDatabaseEntryToJournalEntry = (
   
   try {
     parsedContent = parseContentWithJsonCodeBlock(content);
-    
-    if (parsedContent) {
-      console.log(`Entry ${entry.id} parsed content keys:`, Object.keys(parsedContent));
-    }
     
     // Use the parsed title if available
     if (parsedContent && parsedContent.title) {
@@ -61,7 +47,6 @@ export const mapDatabaseEntryToJournalEntry = (
     // Use the parsed type if available
     if (parsedContent && parsedContent.type) {
       entryType = parsedContent.type;
-      console.log(`Entry ${entry.id} using parsed type: ${entryType}`);
     }
   } catch (error) {
     console.error('Error parsing content:', error);
