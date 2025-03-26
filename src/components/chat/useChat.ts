@@ -18,10 +18,7 @@ export const useChat = (
   const { user } = useAuth();
   const { initializeChat, loading: initLoading, error: initError } = useInitializeChat(type);
   const { sendMessage, loading: sendLoading } = useSendMessage(type);
-  const { generateTitleAndSummary, generating: summaryLoading } = useGenerateSummary(
-    session?.id || null,
-    type
-  );
+  const { generateSummary, loading: summaryLoading } = useGenerateSummary();
   
   const loading = initLoading || sendLoading || summaryLoading;
   const error = initError;
@@ -94,8 +91,7 @@ export const useChat = (
   const handleGenerateSummary = async () => {
     if (!session) return null;
     
-    await generateTitleAndSummary(session.messages);
-    return { title: session.title, summary: session.summary };
+    return await generateSummary(session);
   };
   
   const saveJournalEntryFromChat = async () => {
