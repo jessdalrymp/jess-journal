@@ -2,7 +2,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { JournalEntry } from '@/lib/types';
 import { mapDatabaseEntryToJournalEntry } from './entryMapper';
-import { decryptContent } from './encryption';
 
 /**
  * Fetches all journal entries for a user
@@ -63,24 +62,6 @@ export const fetchJournalEntries = async (userId: string): Promise<JournalEntry[
     const conversationEntries = data.filter(entry => entry.conversation_id);
     console.log(`Found ${conversationEntries.length} entries with conversation_id`);
     
-    if (conversationEntries.length > 0) {
-      for (const entry of conversationEntries.slice(0, 3)) { // Process first 3 for logging
-        console.log(`Checking messages for conversation: ${entry.conversation_id}`);
-        
-        const { data: messages, error: messagesError } = await supabase
-          .from('messages')
-          .select('*')
-          .eq('conversation', entry.conversation_id)
-          .limit(3);
-        
-        if (messagesError) {
-          console.error(`Error fetching messages for conversation ${entry.conversation_id}:`, messagesError);
-        } else {
-          console.log(`Found ${messages?.length || 0} messages for conversation ${entry.conversation_id}`);
-        }
-      }
-    }
-
     // Map database entries to JournalEntry type
     const entries = data.map(entry => {
       try {
@@ -92,7 +73,7 @@ export const fetchJournalEntries = async (userId: string): Promise<JournalEntry[
         return {
           id: entry.id,
           userId: entry.user_id,
-          title: entry.prompt,
+          title: entry.prompt || 'Untitled Entry',
           content: '',
           createdAt: new Date(entry.created_at),
           type: entry.type || 'journal',

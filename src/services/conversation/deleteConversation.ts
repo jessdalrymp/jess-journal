@@ -8,7 +8,7 @@ export const deleteConversation = async (conversationId: string): Promise<boolea
     const { error: messagesError } = await supabase
       .from('messages')
       .delete()
-      .eq('conversation', conversationId);
+      .eq('conversation_id', conversationId);
 
     if (messagesError) {
       console.error('Error deleting conversation messages:', messagesError);

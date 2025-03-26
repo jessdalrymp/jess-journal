@@ -29,3 +29,6 @@ export const saveConversationToJournal = async (
     return false;
   }
 };
+
+// Export the saveJournalEntryFromConversation function
+export { saveJournalEntryFromConversation } from './journalIntegration';
