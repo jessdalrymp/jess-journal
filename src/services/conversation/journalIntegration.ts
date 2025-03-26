@@ -1,5 +1,4 @@
 
-
 import { supabase } from '../../integrations/supabase/client';
 import { Conversation } from './types';
 import { JournalEntry } from '@/lib/types';
@@ -72,7 +71,7 @@ export const saveJournalEntryFromConversation = async (
   userId: string,
   title: string,
   content: string,
-  type: 'journal' | 'story' | 'sideQuest' | 'action' = 'journal'
+  type: 'journal' | 'story' | 'sideQuest' | 'action' | 'summary' = 'journal'
 ): Promise<JournalEntry | null> => {
   try {
     // Create a default prompt if none is provided
@@ -101,8 +100,9 @@ export const saveJournalEntryFromConversation = async (
       userId: data.user_id,
       prompt: data.prompt,
       content: data.content,
-      title: data.title || title,
-      type: data.type || type,
+      // The database doesn't have a title field, so we use the prompt as the title
+      title: prompt,
+      type: data.type as 'journal' | 'story' | 'sideQuest' | 'action' | 'summary',
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.created_at),
       conversationId: data.conversation_id
