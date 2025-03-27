@@ -1,133 +1,95 @@
 
 import { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { AuthFormInput } from './AuthFormInput';
-import { ActionButton } from '../ui/ActionButton';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useAuth } from '@/context/AuthContext';
 import { ForgotPasswordLink } from './ForgotPasswordLink';
 import { ErrorMessage } from './ErrorMessage';
-import { validateEmail, validatePassword } from '../../utils/authValidation';
-import { isRateLimited } from '../../utils/email/rateLimitDetection';
-import { useNavigate } from 'react-router-dom';
+
+// Validation schema for login
+const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 interface LoginFormProps {
   onForgotPassword: () => void;
-  onVerificationSent: (email: string) => void;
 }
 
-export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormProps) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
+export const LoginForm = ({ onForgotPassword }: LoginFormProps) => {
   const { signIn } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const validateForm = (): boolean => {
+  const loginForm = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmitLogin = async (data: LoginFormData) => {
     setError(null);
-    
-    if (!email || !password) {
-      setError("Please fill in all required fields.");
-      return false;
-    }
-
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address.");
-      return false;
-    }
-
-    if (!validatePassword(password)) {
-      setError("Password must be at least 6 characters long.");
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
     setLoading(true);
-    setError(null);
-    
-    try {
-      if (!validateForm()) {
-        setLoading(false);
-        return;
-      }
 
-      console.log("Attempting to sign in with:", { email });
-      await signIn(email, password);
-      console.log("Sign in successful");
-      
-      // Navigate to dashboard after successful login
-      navigate('/');
-    } catch (error: any) {
-      console.error('Authentication error:', error);
-      
-      // Use the improved rate limit detection
-      const rateLimited = isRateLimited(error.message);
-      
-      if (rateLimited) {
-        setError("Your account is temporarily locked due to multiple login attempts. Please wait a few minutes before trying again, or use the 'Forgot Password' option.");
-        
-        toast({
-          title: "Account temporarily locked",
-          description: "For your security, please wait a few minutes before trying again or reset your password.",
-          duration: 8000,
-        });
-      } else if (error.message?.includes("Invalid login credentials")) {
-        setError("Invalid email or password. Please check your credentials and try again.");
-      } else if (error.message?.includes("Email not confirmed")) {
-        setError("Please check your email to confirm your account before signing in.");
-        onVerificationSent(email);
-      } else {
-        setError(error.message || "An unexpected error occurred. Please try again.");
-        
-        toast({
-          title: "Login failed",
-          description: error.message || "An unexpected error occurred. Please try again.",
-          variant: "destructive",
-        });
-      }
+    try {
+      await signIn(data.email, data.password);
+      // No need to navigate, the AuthContext will handle that
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err?.message || 'Failed to sign in. Please check your credentials.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <AuthFormInput
-        id="email"
-        type="email"
-        value={email}
-        onChange={setEmail}
-        label="Email"
-        placeholder="you@example.com"
-      />
-      
-      <AuthFormInput
-        id="password"
-        type="password"
-        value={password}
-        onChange={setPassword}
-        label="Password"
-        placeholder="••••••••"
-      />
-      
-      <ErrorMessage error={error} />
-      
-      <ForgotPasswordLink onForgotPassword={onForgotPassword} />
-      
-      <div className="pt-2">
-        <ActionButton 
-          type="primary" 
-          className="w-full py-3"
+    <form onSubmit={loginForm.handleSubmit(onSubmitLogin)} className="space-y-4">
+      <div>
+        <Input
+          {...loginForm.register('email')}
+          type="email"
+          placeholder="Email"
           disabled={loading}
-        >
-          {loading ? 'Processing...' : 'Sign In'}
-        </ActionButton>
+        />
+        {loginForm.formState.errors.email && (
+          <p className="text-red-500 text-sm mt-1">{loginForm.formState.errors.email.message}</p>
+        )}
+      </div>
+
+      <div>
+        <Input
+          {...loginForm.register('password')}
+          type="password"
+          placeholder="Password"
+          disabled={loading}
+        />
+        {loginForm.formState.errors.password && (
+          <p className="text-red-500 text-sm mt-1">{loginForm.formState.errors.password.message}</p>
+        )}
+      </div>
+
+      {error && <ErrorMessage error={error} />}
+
+      <Button
+        type="submit"
+        className="w-full"
+        disabled={loading}
+      >
+        {loading ? (
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <span>Signing in...</span>
+          </div>
+        ) : (
+          'Sign In'
+        )}
+      </Button>
+
+      <div className="text-center">
+        <ForgotPasswordLink onForgotPassword={onForgotPassword} />
       </div>
     </form>
   );
