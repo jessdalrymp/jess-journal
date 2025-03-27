@@ -14,12 +14,12 @@ export const loadExistingConversation = async (
   try {
     if (!userId) {
       console.error('Cannot load conversation: No user ID provided');
-      return null;
+      throw new Error('No user ID provided');
     }
     
     if (!conversationId) {
       console.error('Cannot load conversation: No conversation ID provided');
-      return null;
+      throw new Error('No conversation ID provided');
     }
     
     console.log(`Attempting to load specific conversation ID: ${conversationId} for user: ${userId}`);

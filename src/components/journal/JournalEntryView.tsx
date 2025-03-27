@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { JournalEntry } from '@/lib/types';
 import { parseEntryContent } from '@/utils/contentParser';
@@ -57,6 +58,7 @@ export const JournalEntryView = ({
           content={editableContent}
           onChange={setEditableContent}
           onTitleChange={setEditableTitle}
+          promptText={entry.prompt || undefined}
         />
         <JournalEntrySaveButton 
           onSave={handleSave} 

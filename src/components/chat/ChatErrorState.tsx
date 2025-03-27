@@ -16,7 +16,7 @@ export const ChatErrorState = ({ type, onBack, error, onRetry }: ChatErrorStateP
   
   // Try to format the error message to be more user-friendly
   const getFormattedError = (errorMsg: string) => {
-    if (errorMsg.includes('Failed to create conversation - no ID returned')) {
+    if (errorMsg.includes('Failed to create conversation')) {
       return "We couldn't start a new conversation. This could be due to a temporary service issue.";
     }
     if (errorMsg.includes('not found or not accessible')) {
