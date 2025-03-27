@@ -56,9 +56,6 @@ export const LoginSignUpForm = ({
     resolver: zodResolver(signupSchema),
   });
 
-  // Get the active form based on isLogin
-  const { register, handleSubmit, formState: { errors } } = isLogin ? loginForm : signupForm;
-
   const onSubmitLogin = async (data: LoginFormData) => {
     setError(null);
     setLoading(true);
@@ -95,81 +92,120 @@ export const LoginSignUpForm = ({
         {isLogin ? 'Welcome Back' : 'Create Your Account'}
       </h2>
       
-      <form onSubmit={handleSubmit(isLogin ? onSubmitLogin : onSubmitSignup)} className="space-y-4">
-        {!isLogin && (
+      {isLogin ? (
+        <form onSubmit={loginForm.handleSubmit(onSubmitLogin)} className="space-y-4">
           <div>
             <Input
-              {...register('name')}
+              {...loginForm.register('email')}
+              type="email"
+              placeholder="Email"
+              disabled={loading}
+            />
+            {loginForm.formState.errors.email && (
+              <p className="text-red-500 text-sm mt-1">{loginForm.formState.errors.email.message}</p>
+            )}
+          </div>
+
+          <div>
+            <Input
+              {...loginForm.register('password')}
+              type="password"
+              placeholder="Password"
+              disabled={loading}
+            />
+            {loginForm.formState.errors.password && (
+              <p className="text-red-500 text-sm mt-1">{loginForm.formState.errors.password.message}</p>
+            )}
+          </div>
+
+          {error && <ErrorMessage message={error} />}
+
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading}
+          >
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Signing in...</span>
+              </div>
+            ) : (
+              'Sign In'
+            )}
+          </Button>
+
+          <div className="text-center">
+            <ForgotPasswordLink onClick={onForgotPassword} />
+          </div>
+        </form>
+      ) : (
+        <form onSubmit={signupForm.handleSubmit(onSubmitSignup)} className="space-y-4">
+          <div>
+            <Input
+              {...signupForm.register('name')}
               placeholder="Full Name"
               disabled={loading}
             />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+            {signupForm.formState.errors.name && (
+              <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.name.message}</p>
             )}
           </div>
-        )}
 
-        <div>
-          <Input
-            {...register('email')}
-            type="email"
-            placeholder="Email"
-            disabled={loading}
-          />
-          {errors.email && (
-            <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-          )}
-        </div>
-
-        <div>
-          <Input
-            {...register('password')}
-            type="password"
-            placeholder="Password"
-            disabled={loading}
-          />
-          {errors.password && (
-            <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-          )}
-        </div>
-
-        {!isLogin && (
           <div>
             <Input
-              {...register('confirmPassword')}
+              {...signupForm.register('email')}
+              type="email"
+              placeholder="Email"
+              disabled={loading}
+            />
+            {signupForm.formState.errors.email && (
+              <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.email.message}</p>
+            )}
+          </div>
+
+          <div>
+            <Input
+              {...signupForm.register('password')}
+              type="password"
+              placeholder="Password"
+              disabled={loading}
+            />
+            {signupForm.formState.errors.password && (
+              <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.password.message}</p>
+            )}
+          </div>
+
+          <div>
+            <Input
+              {...signupForm.register('confirmPassword')}
               type="password"
               placeholder="Confirm Password"
               disabled={loading}
             />
-            {errors.confirmPassword && (
-              <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>
+            {signupForm.formState.errors.confirmPassword && (
+              <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.confirmPassword.message}</p>
             )}
           </div>
-        )}
 
-        {error && <ErrorMessage message={error} />}
+          {error && <ErrorMessage message={error} />}
 
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={loading}
-        >
-          {loading ? (
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>{isLogin ? 'Signing in...' : 'Creating account...'}</span>
-            </div>
-          ) : (
-            isLogin ? 'Sign In' : 'Create Account'
-          )}
-        </Button>
-
-        {isLogin && (
-          <div className="text-center">
-            <ForgotPasswordLink onClick={onForgotPassword} />
-          </div>
-        )}
-      </form>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading}
+          >
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Creating account...</span>
+              </div>
+            ) : (
+              'Create Account'
+            )}
+          </Button>
+        </form>
+      )}
 
       <div className="text-center mt-4">
         <button
