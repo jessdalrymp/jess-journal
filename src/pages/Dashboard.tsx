@@ -8,7 +8,6 @@ import { Header } from '../components/Header';
 import { DisclaimerBanner } from '../components/ui/DisclaimerBanner';
 import { Dashboard as DashboardContent } from '../components/dashboard/Dashboard';
 
-// Add styles for tour highlight
 const tourStyles = `
   .tour-highlight {
     position: relative;
@@ -35,10 +34,8 @@ const Dashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Check if auth form should be opened (e.g., from a "Sign In" button click)
   const shouldOpenAuth = location.state?.openAuth;
 
-  // Clear the openAuth state after it's been used
   useEffect(() => {
     if (shouldOpenAuth && user) {
       navigate(location.pathname, { replace: true });
@@ -47,8 +44,8 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!authLoading && !profileLoading && user) {
+      console.log("Dashboard - User authenticated, checking if onboarding needed");
       if (isNewUser || (profile && !profile.completedOnboarding)) {
-        // Show onboarding if user is new or hasn't completed onboarding
         setShowOnboarding(true);
       } else {
         setShowOnboarding(false);
@@ -70,15 +67,15 @@ const Dashboard = () => {
   }
 
   if (!user) {
+    console.log("Dashboard - No user authenticated, showing auth form");
     return <AuthForm />;
   }
 
-  // Show onboarding if the user is new or hasn't completed it yet
   if (showOnboarding) {
+    console.log("Dashboard - Showing onboarding quiz");
     return <SelfDiscoveryQuiz onComplete={() => setShowOnboarding(false)} />;
   }
 
-  // Otherwise, show the dashboard
   return (
     <div className="min-h-screen flex flex-col bg-jess-background">
       <Header />

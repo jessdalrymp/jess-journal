@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -7,6 +8,7 @@ import { ForgotPasswordLink } from './ForgotPasswordLink';
 import { ErrorMessage } from './ErrorMessage';
 import { validateEmail, validatePassword } from '../../utils/authValidation';
 import { isRateLimited } from '../../utils/email/rateLimitDetection';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginFormProps {
   onForgotPassword: () => void;
@@ -21,6 +23,7 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
   
   const { signIn } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const validateForm = (): boolean => {
     setError(null);
@@ -57,6 +60,9 @@ export const LoginForm = ({ onForgotPassword, onVerificationSent }: LoginFormPro
       console.log("Attempting to sign in with:", { email });
       await signIn(email, password);
       console.log("Sign in successful");
+      
+      // Navigate to dashboard after successful login
+      navigate('/');
     } catch (error: any) {
       console.error('Authentication error:', error);
       

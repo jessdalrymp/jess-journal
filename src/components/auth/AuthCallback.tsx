@@ -24,23 +24,23 @@ export const AuthCallback = () => {
         if (session) {
           console.log("Auth callback successful");
           // If auth was successful, redirect to dashboard
-          navigate('/dashboard');
+          navigate('/', { replace: true });
         } else {
           console.log("No session from auth callback");
           // If no session was returned, redirect to login
-          navigate('/');
+          navigate('/', { replace: true });
         }
       } catch (err: any) {
         console.error("Error in auth callback:", err);
         setError(err.message || "Authentication failed. Please try again.");
         // On error, redirect to login page after a delay
-        setTimeout(() => navigate('/'), 3000);
+        setTimeout(() => navigate('/', { replace: true }), 3000);
       }
     };
 
     // If user is already authenticated, redirect to dashboard
     if (user) {
-      navigate('/dashboard');
+      navigate('/', { replace: true });
       return;
     }
 
