@@ -57,7 +57,7 @@ export function useSaveDialog(
     () => {
       // Immediately fetch journal entries after saving to update the history view
       console.log("Summary saved, fetching journal entries to refresh history view");
-      fetchJournalEntries(true); // Force refresh to get the latest entries
+      fetchJournalEntries(); // Remove the argument as the function doesn't accept one
       
       // If refreshData was requested, note that we've already done it
       if (refreshData) {
