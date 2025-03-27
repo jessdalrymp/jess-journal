@@ -1,44 +1,76 @@
 
 import { Pencil, Scroll, Compass, Zap, FileText, Heart, Lightbulb, Sun, Moon, Leaf, Rocket, ListChecks, Sparkles } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
+import { JournalEntry } from '@/lib/types';
 
-// Add 'summary' to the entry type icons
-export const getEntryIcon = (type: string) => {
+// Define a type for entry types that includes both core types and extended category types
+export type EntryType = JournalEntry['type'] | 
+  'morning' | 'evening' | 'gratitude' | 'insights' | 
+  'affirmations' | 'selfcare' | 'actionPlan' | 'weekly';
+
+// Interface for icon options to make the function more flexible
+interface IconOptions {
+  size?: number;
+  className?: string;
+}
+
+/**
+ * Get the appropriate icon for a journal entry type
+ * @param type - The entry type
+ * @param options - Optional configuration for the icon
+ * @returns React JSX Element with the icon
+ */
+export const getEntryIcon = (type: string, options: IconOptions = {}) => {
+  const { size = 16, className = '' } = options;
+
+  // Helper function to create icon with consistent props
+  const createIcon = (Icon: LucideIcon, defaultClassName: string = '') => {
+    return <Icon size={size} className={`${defaultClassName} ${className}`.trim()} />;
+  };
+  
   switch (type) {
+    // Core entry types
     case 'journal':
-      return <Pencil size={16} />;
+      return createIcon(Pencil);
     case 'story':
-      return <Scroll size={16} />;
+      return createIcon(Scroll);
     case 'sideQuest':
-      return <Compass size={16} />;
+      return createIcon(Compass);
     case 'action':
-      return <Zap size={16} />;
+      return createIcon(Zap);
     case 'summary':
-      return <FileText size={16} className="text-blue-500" />;
-    // Additional category-specific icons that can be used
+      return createIcon(FileText, "text-blue-500");
+      
+    // Additional category-specific icons
     case 'morning':
-      return <Sun size={16} className="text-amber-500" />;
+      return createIcon(Sun, "text-amber-500");
     case 'evening':
-      return <Moon size={16} className="text-indigo-500" />;
+      return createIcon(Moon, "text-indigo-500");
     case 'gratitude':
-      return <Heart size={16} className="text-rose-500" />;
+      return createIcon(Heart, "text-rose-500");
     case 'insights':
-      return <Lightbulb size={16} className="text-yellow-500" />;
+      return createIcon(Lightbulb, "text-yellow-500");
     case 'affirmations':
-      return <Sparkles size={16} className="text-purple-500" />;
+      return createIcon(Sparkles, "text-purple-500");
     case 'selfcare':
-      return <Leaf size={16} className="text-green-500" />;
+      return createIcon(Leaf, "text-green-500");
     case 'actionPlan':
-      return <Rocket size={16} className="text-cyan-500" />;
+      return createIcon(Rocket, "text-cyan-500");
     case 'weekly':
-      return <ListChecks size={16} className="text-violet-500" />;
+      return createIcon(ListChecks, "text-violet-500");
     default:
-      return <Pencil size={16} />;
+      return createIcon(Pencil);
   }
 };
 
-// Update the getEntryTypeName function to include summary
-export const getEntryTypeName = (type: string) => {
+/**
+ * Get the display name for an entry type
+ * @param type - The entry type
+ * @returns The human-readable name for the entry type
+ */
+export const getEntryTypeName = (type: string): string => {
   switch (type) {
+    // Core entry types
     case 'journal':
       return 'Journal Entry';
     case 'story':
@@ -49,7 +81,8 @@ export const getEntryTypeName = (type: string) => {
       return 'Action Plan';
     case 'summary':
       return 'Daily Summary';
-    // Additional category names
+      
+    // Additional category types
     case 'morning':
       return 'Morning Reflection';
     case 'evening':
@@ -69,4 +102,13 @@ export const getEntryTypeName = (type: string) => {
     default:
       return 'Journal Entry';
   }
+};
+
+/**
+ * Determine if an entry type is a core type or a category type
+ * @param type - The entry type to check
+ * @returns boolean indicating if it's a core type
+ */
+export const isCoreEntryType = (type: string): boolean => {
+  return ['journal', 'story', 'sideQuest', 'action', 'summary'].includes(type);
 };

@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, MessageSquare, FileText, Heart, Lightbulb, Sun, Moon, Leaf, Rocket, ListChecks, Sparkles } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
@@ -31,8 +32,8 @@ const formatTime = (date: Date) => {
 
 // Get icon based on prompt content to match prompt categories
 const getCategoryIcon = (entry: JournalEntry) => {
-  // Default icon from the entry type
-  const defaultIcon = getEntryIcon(entry.type || 'journal');
+  // Default icon from the entry type with consistent sizing
+  const defaultIcon = getEntryIcon(entry.type || 'journal', { size: 16 });
   
   if (!entry.prompt) return defaultIcon;
   
