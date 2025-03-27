@@ -57,7 +57,7 @@ export const ChatFooter = ({
           {saveChat ? (
             <>
               <Save size={16} className="mr-1" />
-              Save & Close
+              Save to Journal
             </>
           ) : (
             <>
@@ -69,4 +69,4 @@ export const ChatFooter = ({
       </div>
     </div>
   );
-};
+}

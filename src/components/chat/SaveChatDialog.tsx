@@ -15,6 +15,7 @@ import { useUserData } from "@/context/UserDataContext";
 import { useGenerateSummary } from "./hooks/useGenerateSummary";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
 
 interface SaveChatDialogProps {
   open: boolean;
@@ -30,6 +31,7 @@ export function SaveChatDialog({
   persistConversation = false
 }: SaveChatDialogProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { fetchJournalEntries } = useUserData();
   const [isSaving, setIsSaving] = useState(false);
   const [saveComplete, setSaveComplete] = useState(false);
@@ -79,18 +81,10 @@ export function SaveChatDialog({
       
       setSaveComplete(true);
       
-      if (!persistConversation) {
-        // Only navigate away if we're not persisting the conversation
-        // Delay navigation to ensure toast is seen
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1500);
-      } else {
-        // Close the dialog if we're persisting the conversation
-        setTimeout(() => {
-          onOpenChange(false);
-        }, 1000);
-      }
+      // Always redirect to dashboard after saving
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
     }
   );
 
@@ -186,6 +180,7 @@ export function SaveChatDialog({
             <ul className="mt-2 space-y-1 text-sm list-disc list-inside">
               <li>This conversation is saved to your journal</li>
               {!persistConversation && <li>Your next visit will start a new conversation</li>}
+              <li>You will be redirected to the dashboard</li>
             </ul>
           </div>
         </div>
