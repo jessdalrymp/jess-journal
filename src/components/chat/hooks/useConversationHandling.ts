@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useInitializeChat } from './useInitializeChat';
 import { useSendMessage } from './useSendMessage';
@@ -12,17 +11,16 @@ export const useConversationHandling = (
   conversationId?: string | null,
   onEndChat?: () => void,
   onRestart?: () => void,
-  persistConversation = false
+  persistConversation = false,
+  retryCount = 0
 ) => {
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [showJournalingDialog, setShowJournalingDialog] = useState(false);
   const [session, setSession] = useState<ConversationSession | null>(null);
   const { user, loading: authLoading } = useAuth();
   
-  // Initialize chat session
   const { initializeChat, loading, error } = useInitializeChat(type);
   
-  // Initialize the chat session
   useEffect(() => {
     const loadSession = async () => {
       if (user && !session) {
@@ -38,12 +36,10 @@ export const useConversationHandling = (
     };
 
     loadSession();
-  }, [user, conversationId, initializeChat, session]);
+  }, [user, conversationId, initializeChat, session, retryCount]);
   
-  // Configure message sending
   const { sendMessage: sendMessageToApi, loading: sendLoading } = useSendMessage(type);
   
-  // Wrapper for sending messages that updates the local session
   const sendMessage = useCallback((message: string, options?: { brevity?: 'short' | 'detailed' }) => {
     if (!session) return;
     
@@ -60,7 +56,6 @@ export const useConversationHandling = (
       .catch(err => console.error("Error sending message:", err));
   }, [session, sendMessageToApi]);
   
-  // Handle opening the end dialog
   const openEndDialog = useCallback((saveChat: boolean = false) => {
     console.log("Opening end dialog with saveChat =", saveChat);
     if (saveChat && onEndChat) {
@@ -72,7 +67,6 @@ export const useConversationHandling = (
     }
   }, [onEndChat]);
   
-  // Handle ending the conversation
   const handleEndConversation = useCallback(() => {
     console.log("Handling end conversation request");
     setShowEndDialog(false);
@@ -86,14 +80,12 @@ export const useConversationHandling = (
     }
   }, [onBack, onEndChat]);
   
-  // Handle journaling completion
   const handleJournalingComplete = useCallback(() => {
     console.log("Handling journaling completion");
     setShowJournalingDialog(false);
     onBack();
   }, [onBack]);
   
-  // Handle new challenge request
   const handleNewChallenge = useCallback(() => {
     console.log("Handling new challenge request");
     if (onRestart) {

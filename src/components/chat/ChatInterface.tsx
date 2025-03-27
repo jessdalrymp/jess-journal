@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useConversationHandling } from './hooks/useConversationHandling';
 import { 
   ChatLoadingState, 
@@ -35,6 +35,8 @@ export const ChatInterface = ({
   persistConversation = false,
   conversationId = null
 }: ChatInterfaceProps) => {
+  const [retryCount, setRetryCount] = useState(0);
+  
   const {
     user,
     session,
@@ -57,7 +59,8 @@ export const ChatInterface = ({
     conversationId,
     onEndChat,
     onRestart,
-    persistConversation
+    persistConversation,
+    retryCount // Pass retry count to force re-initialization
   );
   
   // Report errors back to parent if needed
@@ -66,6 +69,11 @@ export const ChatInterface = ({
       onError(error);
     }
   }, [error, onError]);
+  
+  const handleRetry = useCallback(() => {
+    console.log('Retrying conversation initialization...');
+    setRetryCount(prev => prev + 1);
+  }, []);
   
   if (authLoading) {
     return <ChatLoadingState type={type} onBack={onBack} />;
@@ -80,7 +88,7 @@ export const ChatInterface = ({
   }
   
   if (error) {
-    return <ChatErrorState type={type} onBack={onBack} error={error} />;
+    return <ChatErrorState type={type} onBack={onBack} error={error} onRetry={handleRetry} />;
   }
   
   if (!session) {

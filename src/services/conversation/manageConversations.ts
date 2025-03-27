@@ -9,12 +9,24 @@ export const createConversation = async (params: {
   title: string;
 }): Promise<Conversation | null> => {
   try {
+    console.log('Creating conversation with params:', JSON.stringify(params));
+    
+    if (!params.userId) {
+      console.error('Error creating conversation: No user ID provided');
+      return null;
+    }
+    
+    if (!params.type) {
+      console.error('Error creating conversation: No type provided');
+      return null;
+    }
+
     const { data, error } = await supabase
       .from('conversations')
       .insert({
         profile_id: params.userId,
         type: params.type,
-        title: params.title,
+        title: params.title || `New ${params.type} - ${new Date().toLocaleDateString()}`,
         summary: ''
       })
       .select()
@@ -24,6 +36,13 @@ export const createConversation = async (params: {
       console.error('Error creating conversation:', error);
       return null;
     }
+
+    if (!data) {
+      console.error('No data returned from conversation creation');
+      return null;
+    }
+
+    console.log('Conversation created successfully:', data.id);
 
     const conversation: Conversation = {
       id: data.id,

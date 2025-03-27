@@ -1,3 +1,4 @@
+
 import { saveCurrentConversationToStorage } from '@/lib/storageUtils';
 import { ConversationSession } from '@/lib/types';
 import { getInitialMessage } from '../../chatUtils';
@@ -68,15 +69,23 @@ export const loadExistingConversation = async (
 export const createConversationWithInitialMessage = async (
   type: 'story' | 'sideQuest' | 'action' | 'journal',
   initialMessage: string,
-  startConversationFn: (type: 'story' | 'sideQuest' | 'action' | 'journal') => Promise<ConversationSession>,
+  startConversationFn: (type: 'story' | 'sideQuest' | 'action' | 'journal') => Promise<any>,
   addMessageFn: (conversationId: string, content: string, role: 'user' | 'assistant') => Promise<boolean>
 ): Promise<ConversationSession | null> => {
   try {
     console.log(`Creating new ${type} conversation with initial message`);
     const conversation = await startConversationFn(type);
     
-    if (!conversation?.id) {
-      console.error('Failed to create conversation - no ID returned');
+    // Add additional logging to debug the response
+    console.log(`startConversation response:`, JSON.stringify(conversation));
+    
+    if (!conversation) {
+      console.error('Failed to create conversation - conversation is null or undefined');
+      throw new Error('Failed to create conversation - conversation is null or undefined');
+    }
+    
+    if (!conversation.id) {
+      console.error('Failed to create conversation - no ID returned', conversation);
       throw new Error('Failed to create conversation - no ID returned');
     }
     
