@@ -7,6 +7,7 @@ import { getContentPreview } from '@/utils/contentParser';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PenLine, ArrowRight } from 'lucide-react';
+import { getEntryIcon } from '@/components/journal/JournalHistoryUtils'; 
 
 export const RecentActivitySection = () => {
   const navigate = useNavigate();
@@ -101,7 +102,7 @@ export const RecentActivitySection = () => {
             <div className="flex-1">
               <h3 className="font-medium text-jess-foreground">{entry.title}</h3>
               <p className="text-sm text-jess-muted line-clamp-1">
-                {getContentPreview(entry.content, 100)} {/* Fix: Pass entry.content not the whole entry */}
+                {getContentPreview(entry.content, 100)}
               </p>
             </div>
           </div>
