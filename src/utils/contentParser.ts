@@ -75,3 +75,43 @@ export const getContentPreview = (content: string, maxLength: number = 150): str
     ? `${formatted.substring(0, maxLength)}...`
     : formatted;
 };
+
+/**
+ * Format content for editing - extracts the content from a journal entry for editing
+ */
+export const formatContentForEditing = (entry: { content: string }): string => {
+  try {
+    // Check if content has a JSON code block
+    const jsonCodeBlockRegex = /```json\s*([\s\S]*?)```/;
+    const match = entry.content.match(jsonCodeBlockRegex);
+    
+    if (match && match[1]) {
+      // Return the raw code block for editing
+      return entry.content;
+    } else {
+      // If no JSON code block, return content as is
+      return entry.content;
+    }
+  } catch (e) {
+    console.error('Error formatting content for editing:', e);
+    return entry.content;
+  }
+};
+
+/**
+ * Parse content that might have a JSON code block
+ */
+export const parseContentWithJsonCodeBlock = (content: string): { title?: string; summary?: string } | null => {
+  try {
+    // Try to find JSON content in the content string
+    const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
+    if (jsonMatch) {
+      const jsonContent = JSON.parse(jsonMatch[1]);
+      return jsonContent;
+    }
+    return null;
+  } catch (e) {
+    console.error('Error parsing content with JSON code block:', e);
+    return null;
+  }
+};
