@@ -4,6 +4,7 @@ import { supabase } from '../../integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { User } from '@/lib/types';
 
 export const useSignIn = () => {
   const [loading, setLoading] = useState(false);
@@ -31,8 +32,16 @@ export const useSignIn = () => {
       if (data?.user) {
         console.log("Sign-in successful for user:", data.user.id);
         
-        // Update the auth context with the user
-        setUser(data.user);
+        // Map the Supabase user to our application's User type
+        const appUser: User = {
+          id: data.user.id,
+          email: data.user.email || '',
+          name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
+          createdAt: new Date(data.user.created_at),
+        };
+        
+        // Update the auth context with the mapped user
+        setUser(appUser);
         
         toast({
           title: "Welcome back!",
