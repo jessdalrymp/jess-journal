@@ -3,11 +3,13 @@ import { useState } from 'react';
 import { supabase } from '../../integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 export const useSignIn = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);
@@ -28,6 +30,10 @@ export const useSignIn = () => {
       
       if (data?.user) {
         console.log("Sign-in successful for user:", data.user.id);
+        
+        // Update the auth context with the user
+        setUser(data.user);
+        
         toast({
           title: "Welcome back!",
           description: "You've successfully logged in.",
