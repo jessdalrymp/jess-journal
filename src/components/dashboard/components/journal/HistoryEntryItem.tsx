@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, MessageSquare, FileText, Heart, Lightbulb, Sun, Moon, Leaf, Rocket, ListChecks, Sparkles } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
@@ -74,16 +73,8 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   const isConversationEntry = !!entry.conversation_id;
   const isSummary = entry.type === 'summary';
   
-  // Prepare content preview - remove prompt if exists
-  let contentPreview = entry.content;
-  if (entry.prompt && contentPreview.includes(entry.prompt)) {
-    contentPreview = contentPreview.replace(entry.prompt, '').trim();
-    // Also remove any Q: or A: prefixes that might remain
-    contentPreview = contentPreview.replace(/^[\s\S]*?[Q|A][:.]?\s*/im, '').trim();
-  }
-  
-  // Clean up any JSON code blocks in the content
-  contentPreview = extractFormattedContent(contentPreview);
+  // Get clean content without the initial prompt
+  let contentPreview = extractFormattedContent(entry.content);
   
   // Get a shorter preview for display
   const displayContent = contentPreview.substring(0, 200) + (contentPreview.length > 200 ? '...' : '');

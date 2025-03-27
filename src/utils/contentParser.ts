@@ -1,121 +1,77 @@
 
-import { JournalEntry } from "@/lib/types";
-
 /**
- * Extracts and formats content from a journal entry
- */
-export const getContentPreview = (entry: JournalEntry): string => {
-  // Default to empty string if content is missing
-  if (!entry.content) {
-    return 'No content available';
-  }
-  
-  // Try to parse content as JSON if it has a JSON code block
-  return extractFormattedContent(entry.content);
-};
-
-/**
- * Extracts formatted content from text that might contain JSON code blocks
+ * Extracts formatted content from a journal entry, removing JSON code blocks and other formatting
  */
 export const extractFormattedContent = (content: string): string => {
   try {
-    // Check if content contains a JSON code block - better regex to handle nested JSON
-    const jsonRegex = /```json\s*([\s\S]*?)```/g;
-    const matches = [...content.matchAll(jsonRegex)];
-    
-    if (matches.length > 0) {
-      // Process the first match (assuming it's the main content)
-      const jsonString = matches[0][1].trim();
+    // Check if content contains JSON code blocks
+    const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
+    if (jsonMatch) {
       try {
-        const jsonContent = JSON.parse(jsonString);
-        
-        // If there's a content or summary field, use that
-        if (jsonContent.content) {
-          return jsonContent.content;
-        }
-        
+        const jsonContent = JSON.parse(jsonMatch[1]);
+        // If we have a summary field in the JSON, return that
         if (jsonContent.summary) {
           return jsonContent.summary;
         }
-        
-        // Otherwise return a stringified version of the object
-        return Object.entries(jsonContent)
-          .filter(([key]) => key !== 'title' && key !== 'type')
-          .map(([key, value]) => `${key}: ${value}`)
-          .join('\n');
-      } catch (innerError) {
-        console.error('Error parsing JSON content block:', innerError);
-        // Return the raw JSON string if parsing fails, but clean up nested backticks
-        return jsonString.replace(/```json\s*|```/g, '');
+      } catch (e) {
+        // If JSON parsing fails, continue with normal content processing
+        console.warn('Failed to parse JSON in content', e);
       }
     }
     
-    // If no JSON or parsing failed, return the raw content
-    // But first, clean up any markdown-style JSON code blocks (including nested ones)
-    return content.replace(/```json\s*[\s\S]*?```/g, '').trim();
-  } catch (error) {
-    console.error('Error parsing content:', error);
-    // If JSON parsing fails, strip out the JSON code block syntax
-    return content.replace(/```json|```/g, '').trim();
+    // Remove any leading prompt text
+    // This finds the first instance of user response after a prompt
+    const userResponseMatch = content.match(/^[\s\S]*?(?:Q:|Question:|Prompt:)[\s\S]*?\n([\s\S]*)$/im);
+    if (userResponseMatch && userResponseMatch[1]) {
+      content = userResponseMatch[1].trim();
+    }
+    
+    // Also look for assistant/user conversation patterns and extract the first user message
+    const conversationMatch = content.match(/assistant:[\s\S]*?user:([\s\S]*?)(?:assistant:|$)/i);
+    if (conversationMatch && conversationMatch[1]) {
+      content = conversationMatch[1].trim();
+    }
+    
+    // Clean up any remaining markdown or code block syntax
+    content = content
+      .replace(/```json\n[\s\S]*?\n```/g, '') // Remove JSON code blocks
+      .replace(/```[\s\S]*?```/g, '')        // Remove other code blocks
+      .replace(/^[#]+\s+.*$/gm, '')          // Remove markdown headers
+      .trim();
+    
+    return content;
+  } catch (e) {
+    console.error('Error extracting formatted content:', e);
+    return content || '';
   }
 };
 
 /**
- * Parses content that might contain JSON code blocks and returns the parsed object
+ * Parse structured content from a journal entry
  */
-export const parseEntryContent = (content: string) => {
-  if (!content) return null;
+export const parseEntryContent = (content: string): { title?: string; summary?: string } | null => {
+  try {
+    // Try to find JSON content in the content string
+    const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
+    if (jsonMatch) {
+      const jsonContent = JSON.parse(jsonMatch[1]);
+      return jsonContent;
+    }
+    return null;
+  } catch (e) {
+    console.error('Error parsing entry content:', e);
+    return null;
+  }
+};
+
+/**
+ * Get a short preview of content for display in lists
+ */
+export const getContentPreview = (content: string, maxLength: number = 150): string => {
+  const formatted = extractFormattedContent(content);
+  if (!formatted) return '';
   
-  try {
-    // Use a more flexible regex that can handle any whitespace between ```json and the content
-    // and properly match nested JSON blocks
-    const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
-    if (jsonMatch && jsonMatch[1]) {
-      const jsonString = jsonMatch[1].trim().replace(/```json\s*|```/g, '');
-      return JSON.parse(jsonString);
-    }
-    return null;
-  } catch (error) {
-    console.error('Error parsing JSON content:', error);
-    return null;
-  }
-};
-
-/**
- * Formats content for the editor to ensure it's editable
- */
-export const formatContentForEditing = (entry: JournalEntry): string => {
-  try {
-    // If there's no content, return empty string
-    if (!entry || !entry.content) {
-      return '';
-    }
-    
-    // Return the raw content if it doesn't have a JSON code block
-    if (!entry.content.includes('```json')) {
-      return entry.content;
-    }
-    
-    // Parse the JSON content
-    const parsedContent = parseEntryContent(entry.content);
-    
-    // If parsing failed, return the raw content
-    if (!parsedContent) {
-      return entry.content;
-    }
-    
-    // Build a clean version for editing
-    return entry.content;
-  } catch (error) {
-    console.error('Error formatting content for editing:', error);
-    return entry.content || '';
-  }
-};
-
-/**
- * Tries to parse JSON content from a code block in the content string
- * Alias of parseEntryContent for backward compatibility
- */
-export const parseContentWithJsonCodeBlock = (content: string) => {
-  return parseEntryContent(content);
+  return formatted.length > maxLength
+    ? `${formatted.substring(0, maxLength)}...`
+    : formatted;
 };
