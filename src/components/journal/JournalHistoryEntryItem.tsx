@@ -12,8 +12,17 @@ interface JournalHistoryEntryItemProps {
 // Helper function to extract a readable summary from entry content
 const getEntrySummary = (entry: JournalEntry): string => {
   try {
+    let content = entry.content;
+    
+    // Remove the prompt from the content if it exists
+    if (entry.prompt && content.includes(entry.prompt)) {
+      content = content.replace(entry.prompt, '').trim();
+      // Also remove any Q: or A: prefixes that might remain
+      content = content.replace(/^[\s\S]*?[Q|A][:.]?\s*/im, '').trim();
+    }
+    
     // Use the extractFormattedContent utility to handle JSON formatting
-    return extractFormattedContent(entry.content);
+    return extractFormattedContent(content);
   } catch (e) {
     console.error('Error processing entry content:', e);
     return entry.content;

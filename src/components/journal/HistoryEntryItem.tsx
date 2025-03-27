@@ -4,7 +4,7 @@ import { Calendar, Clock, MessageSquare, FileText } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon } from '@/components/journal/JournalHistoryUtils';
 import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
-import { getContentPreview, extractFormattedContent } from '@/utils/contentParser';
+import { extractFormattedContent } from '@/utils/contentParser';
 
 interface HistoryEntryItemProps {
   entry: JournalEntry;
@@ -32,9 +32,19 @@ const formatTime = (date: Date) => {
 
 export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   const entryType = entry.type || 'journal';
-  const content = getContentPreview(entry);
   const isConversationEntry = !!entry.conversation_id;
   const isSummary = entry.type === 'summary';
+  
+  // Prepare content preview - remove prompt if exists
+  let contentPreview = entry.content;
+  if (entry.prompt && contentPreview.includes(entry.prompt)) {
+    contentPreview = contentPreview.replace(entry.prompt, '').trim();
+    // Also remove any Q: or A: prefixes that might remain
+    contentPreview = contentPreview.replace(/^[\s\S]*?[Q|A][:.]?\s*/im, '').trim();
+  }
+  
+  // Clean up any JSON code blocks in the content
+  contentPreview = extractFormattedContent(contentPreview);
   
   console.log('Rendering entry in history item:', { 
     id: entry.id, 
@@ -43,11 +53,8 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
     isConversationEntry,
     isSummary,
     conversation_id: entry.conversation_id,
-    content: content.substring(0, 50) + (content.length > 50 ? '...' : '')
+    content: contentPreview.substring(0, 50) + (contentPreview.length > 50 ? '...' : '')
   });
-  
-  // Process content to handle JSON formatting if present
-  const displayContent = extractFormattedContent(content);
   
   // Always link to journal entry page
   const linkPath = `/journal-entry/${entry.id}`;
@@ -83,7 +90,7 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
         </p>
       </div>
       <div className="mt-1 text-xs text-jess-muted line-clamp-2 bg-gray-50 p-1.5 rounded">
-        {displayContent}
+        {contentPreview}
       </div>
     </Link>
   );
