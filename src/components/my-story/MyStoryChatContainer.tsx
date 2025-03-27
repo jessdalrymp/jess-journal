@@ -52,7 +52,7 @@ export const MyStoryChatContainer = ({
       description: "Preparing to save your conversation to your journal"
     });
     
-    // Call onSave with true to indicate refresh is needed
+    // Call onSave with true to indicate refresh is needed and redirect after saving
     onSave(true);
   };
 

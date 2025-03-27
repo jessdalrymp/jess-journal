@@ -79,10 +79,18 @@ export function SaveChatDialog({
       
       setSaveComplete(true);
       
-      // Delay navigation to ensure toast is seen
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1500);
+      if (!persistConversation) {
+        // Only navigate away if we're not persisting the conversation
+        // Delay navigation to ensure toast is seen
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1500);
+      } else {
+        // Close the dialog if we're persisting the conversation
+        setTimeout(() => {
+          onOpenChange(false);
+        }, 1000);
+      }
     }
   );
 

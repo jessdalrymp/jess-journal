@@ -89,7 +89,7 @@ const MyStory = () => {
         open={showSaveChatDialog}
         onOpenChange={handleSaveChatDialogOpenChange}
         refreshData={refreshDataOnSave}
-        persistConversation={true}
+        persistConversation={false}  // Changed to false so it will redirect after saving
       />
     </div>
   );
