@@ -23,7 +23,9 @@ export const useGenerateSummary = (
     messages: ChatMessage[], 
     customTitle?: string
   ) => {
-    if (!user || !conversationId) return;
+    if (!user || !conversationId) {
+      throw new Error("User or conversation ID not available");
+    }
     
     try {
       setGenerating(true);
@@ -33,40 +35,51 @@ export const useGenerateSummary = (
       
       // Only generate if we don't have a custom title
       if (!title) {
-        // First, generate a title using OpenAI
-        const titlePrompt = `
-        Generate a short, descriptive title (maximum 5 words) for this ${type} conversation.
-        Just respond with the title, nothing else. No quotes or additional text.
-        `;
-        
-        const titleMessages = [
-          { role: 'system', content: titlePrompt },
-          ...messages.slice(0, Math.min(messages.length, 10)) // Use first 10 messages at most
-        ];
-        
-        title = await generateCompletion(titleMessages);
-        
-        // Clean up and truncate the title if needed
-        title = title.replace(/^"(.+)"$/, '$1').trim(); // Remove quotes if present
-        title = title.substring(0, 50); // Limit length
+        try {
+          // First, generate a title using OpenAI
+          const titlePrompt = `
+          Generate a short, descriptive title (maximum 5 words) for this ${type} conversation.
+          Just respond with the title, nothing else. No quotes or additional text.
+          `;
+          
+          const titleMessages = [
+            { role: 'system', content: titlePrompt },
+            ...messages.slice(0, Math.min(messages.length, 10)) // Use first 10 messages at most
+          ];
+          
+          title = await generateCompletion(titleMessages);
+          
+          // Clean up and truncate the title if needed
+          title = title.replace(/^"(.+)"$/, '$1').trim(); // Remove quotes if present
+          title = title.substring(0, 50); // Limit length
+        } catch (error) {
+          console.error("Error generating title, using default:", error);
+          title = `My ${type.charAt(0).toUpperCase() + type.slice(1)} - ${new Date().toLocaleDateString()}`;
+        }
       }
       
       // Update the conversation title
       await updateConversationTitle(conversationId, title);
       
       // Generate a summary using OpenAI
-      const summaryPrompt = `
-      Create a detailed summary of this ${type} conversation.
-      Include the key points and themes discussed.
-      Format your response as a coherent paragraph, not a list.
-      `;
-      
-      const summaryMessages = [
-        { role: 'system', content: summaryPrompt },
-        ...messages // Use all messages for the summary
-      ];
-      
-      const summary = await generateCompletion(summaryMessages);
+      let summary = "";
+      try {
+        const summaryPrompt = `
+        Create a detailed summary of this ${type} conversation.
+        Include the key points and themes discussed.
+        Format your response as a coherent paragraph, not a list.
+        `;
+        
+        const summaryMessages = [
+          { role: 'system', content: summaryPrompt },
+          ...messages // Use all messages for the summary
+        ];
+        
+        summary = await generateCompletion(summaryMessages);
+      } catch (error) {
+        console.error("Error generating summary, using default:", error);
+        summary = `This was a conversation about ${title}. The full details are available in the conversation history.`;
+      }
       
       // Update the conversation summary
       await updateConversationSummary(conversationId, summary);

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useUserData } from "@/context/UserDataContext";
 import { clearCurrentConversationFromStorage, getCurrentConversationFromStorage } from "@/lib/storageUtils";
 import { useGenerateSummary } from "../hooks/useGenerateSummary";
+import { supabase } from '@/integrations/supabase/client';
 
 export function useSaveDialog(
   open: boolean,
@@ -14,7 +15,7 @@ export function useSaveDialog(
 ) {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { fetchJournalEntries } = useUserData();
+  const { fetchJournalEntries, user } = useUserData();
   const [isSaving, setIsSaving] = useState(false);
   const [saveComplete, setSaveComplete] = useState(false);
   const [conversationTitle, setConversationTitle] = useState('');
@@ -57,7 +58,7 @@ export function useSaveDialog(
     () => {
       // Immediately fetch journal entries after saving to update the history view
       console.log("Summary saved, fetching journal entries to refresh history view");
-      fetchJournalEntries(); // Remove the argument as the function doesn't accept one
+      fetchJournalEntries(); 
       
       // If refreshData was requested, note that we've already done it
       if (refreshData) {
@@ -72,6 +73,41 @@ export function useSaveDialog(
       }, 1000);
     }
   );
+
+  const saveConversationDirectly = async (conversationId, title) => {
+    if (!user) return false;
+    
+    try {
+      console.log(`Saving conversation ${conversationId} directly to journal with title: ${title}`);
+      
+      // Create a basic summary content
+      const basicContent = `This conversation has been saved with the title: ${title}. The AI generated summary was not available.`;
+      
+      // Save directly to journal_entries
+      const { data, error } = await supabase
+        .from('journal_entries')
+        .insert({
+          user_id: user.id,
+          conversation_id: conversationId,
+          prompt: title,
+          content: basicContent,
+          type: 'story'
+        })
+        .select('id')
+        .single();
+      
+      if (error) {
+        console.error('Error saving conversation directly:', error);
+        return false;
+      }
+      
+      console.log('Successfully saved conversation directly with entry ID:', data.id);
+      return true;
+    } catch (error) {
+      console.error('Error in saveConversationDirectly:', error);
+      return false;
+    }
+  };
 
   const handleSave = async () => {
     console.log("Save button clicked in SaveChatDialog");
@@ -89,11 +125,35 @@ export function useSaveDialog(
       if (currentConversation && currentConversation.messages.length > 1) {
         console.log("Saving conversation to journal with title:", conversationTitle);
         
-        // Pass the custom title to the generate summary function
-        await generateTitleAndSummary(
-          currentConversation.messages, 
-          conversationTitle
-        );
+        try {
+          // Attempt to generate a summary
+          await generateTitleAndSummary(
+            currentConversation.messages, 
+            conversationTitle
+          );
+        } catch (error) {
+          // If summary generation fails, save directly without a summary
+          console.error("Error generating summary, saving directly:", error);
+          
+          const saved = await saveConversationDirectly(
+            currentConversation.id, 
+            conversationTitle
+          );
+          
+          if (saved) {
+            // Refresh journal entries to show the new entry
+            fetchJournalEntries();
+            
+            setSaveComplete(true);
+            
+            // Redirect to dashboard
+            setTimeout(() => {
+              navigate('/');
+            }, 1000);
+          } else {
+            throw new Error("Failed to save conversation directly");
+          }
+        }
       }
       
       if (!persistConversation) {
