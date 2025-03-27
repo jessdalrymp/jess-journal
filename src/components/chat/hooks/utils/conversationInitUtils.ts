@@ -1,4 +1,3 @@
-
 import { saveCurrentConversationToStorage } from '@/lib/storageUtils';
 import { ConversationSession } from '@/lib/types';
 import { getInitialMessage } from '../../chatUtils';
@@ -81,7 +80,7 @@ export const createConversationWithInitialMessage = async (
       throw new Error('Failed to create conversation - no ID returned');
     }
     
-    // Add initial message and ensure we're capturing the boolean result
+    // Use the provided initial message directly
     console.log(`Adding initial message to conversation ${conversation.id}`);
     const messageAdded = await addMessageFn(
       conversation.id,
@@ -93,16 +92,14 @@ export const createConversationWithInitialMessage = async (
       console.warn('Initial message may not have been added properly');
     }
     
-    // Always use the initial message from chatUtils for a more consistent experience
-    const fullInitialMessage = getInitialMessage(type);
-    
+    // Use the provided initial message for the conversation session
     const updatedSession: ConversationSession = {
       ...conversation,
       messages: [
         {
           id: Date.now().toString(),
           role: 'assistant' as const,
-          content: fullInitialMessage,
+          content: initialMessage,
           timestamp: new Date(),
         },
       ],
