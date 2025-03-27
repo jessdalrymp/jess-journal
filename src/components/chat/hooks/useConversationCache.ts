@@ -1,7 +1,7 @@
 
 import { useCallback } from 'react';
 import { ConversationSession } from '@/lib/types';
-import { getConversationsFromStorage } from '@/lib/storageUtils';
+import { getConversationsFromStorage, saveConversationsToStorage, saveCurrentConversationToStorage } from '@/lib/storageUtils';
 
 export const useConversationCache = (type: 'story' | 'sideQuest' | 'action' | 'journal') => {
   /**
@@ -43,7 +43,36 @@ export const useConversationCache = (type: 'story' | 'sideQuest' | 'action' | 'j
     }
   }, [type]);
   
+  /**
+   * Cache a conversation to both storage and memory
+   */
+  const cacheConversation = useCallback((conversation: ConversationSession) => {
+    try {
+      console.log(`Caching conversation ${conversation.id}`);
+      
+      // Save to application storage
+      saveCurrentConversationToStorage(conversation);
+      
+      // Also update the conversations array
+      const conversations = getConversationsFromStorage();
+      const existingIndex = conversations.findIndex(c => c.id === conversation.id);
+      
+      if (existingIndex >= 0) {
+        // Update existing conversation
+        conversations[existingIndex] = conversation;
+      } else {
+        // Add new conversation
+        conversations.push(conversation);
+      }
+      
+      saveConversationsToStorage(conversations);
+    } catch (error) {
+      console.error('Error caching conversation:', error);
+    }
+  }, []);
+  
   return {
-    getCachedConversation
+    getCachedConversation,
+    cacheConversation
   };
 };
