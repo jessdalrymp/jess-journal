@@ -102,6 +102,18 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           addMessageToConversation
         );
         
+        if (!conversation) {
+          const errorMessage = `Failed to create ${type} conversation`;
+          console.error(errorMessage);
+          setError(errorMessage);
+          toast({
+            title: "Error starting conversation",
+            description: "Please try again later.",
+            variant: "destructive",
+          });
+          return null;
+        }
+        
         console.log(`Successfully created new ${type} conversation`);
         setIsInitialized(true);
         return conversation;

@@ -22,6 +22,12 @@ export const ChatErrorState = ({ type, onBack, error, onRetry }: ChatErrorStateP
     if (errorMsg.includes('not found or not accessible')) {
       return "The conversation you're trying to access doesn't exist or you don't have permission to view it.";
     }
+    if (errorMsg.includes('Cannot access conversations table')) {
+      return "We're having trouble accessing the conversations system. Please try again later.";
+    }
+    if (errorMsg.includes('No user ID provided')) {
+      return "There was an authentication issue. Please try signing out and back in.";
+    }
     return errorMsg || "There was a problem loading this conversation. Please try again.";
   };
   

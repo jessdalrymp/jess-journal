@@ -81,12 +81,12 @@ export const createConversationWithInitialMessage = async (
     
     if (!conversation) {
       console.error('Failed to create conversation - conversation is null or undefined');
-      throw new Error('Failed to create conversation - conversation is null or undefined');
+      return null;
     }
     
     if (!conversation.id) {
       console.error('Failed to create conversation - no ID returned', conversation);
-      throw new Error('Failed to create conversation - no ID returned');
+      return null;
     }
     
     // Use the provided initial message directly
