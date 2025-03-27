@@ -118,7 +118,7 @@ export const LoginSignUpForm = ({
             )}
           </div>
 
-          {error && <ErrorMessage message={error} />}
+          {error && <ErrorMessage error={error} />}
 
           <Button
             type="submit"
@@ -136,7 +136,7 @@ export const LoginSignUpForm = ({
           </Button>
 
           <div className="text-center">
-            <ForgotPasswordLink onClick={onForgotPassword} />
+            <ForgotPasswordLink onForgotPassword={onForgotPassword} />
           </div>
         </form>
       ) : (
@@ -188,7 +188,7 @@ export const LoginSignUpForm = ({
             )}
           </div>
 
-          {error && <ErrorMessage message={error} />}
+          {error && <ErrorMessage error={error} />}
 
           <Button
             type="submit"
