@@ -73,7 +73,7 @@ export const createConversationWithInitialMessage = async (
   addMessageFn: (conversationId: string, content: string, role: 'user' | 'assistant') => Promise<boolean>
 ): Promise<ConversationSession | null> => {
   try {
-    console.log(`Creating new ${type} conversation`);
+    console.log(`Creating new ${type} conversation with initial message`);
     const conversation = await startConversationFn(type);
     
     if (!conversation?.id) {
@@ -93,13 +93,16 @@ export const createConversationWithInitialMessage = async (
       console.warn('Initial message may not have been added properly');
     }
     
+    // Always use the initial message from chatUtils for a more consistent experience
+    const fullInitialMessage = getInitialMessage(type);
+    
     const updatedSession: ConversationSession = {
       ...conversation,
       messages: [
         {
           id: Date.now().toString(),
           role: 'assistant' as const,
-          content: initialMessage,
+          content: fullInitialMessage,
           timestamp: new Date(),
         },
       ],
@@ -120,9 +123,6 @@ export const determineInitialMessage = (
   type: 'story' | 'sideQuest' | 'action' | 'journal',
   isFirstVisit: boolean
 ): string => {
-  if (isFirstVisit && type === 'story') {
-    return "I'm excited to hear your story! What would you like to talk about today?";
-  }
-  
+  // Always use the standard initial message from chatUtils for consistency
   return getInitialMessage(type);
 };

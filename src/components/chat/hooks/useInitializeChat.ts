@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useUserData } from '../../../context/UserDataContext';
 import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { ConversationSession } from '@/lib/types';
 import { saveCurrentConversationToStorage, clearCurrentConversationFromStorage, getConversationsFromStorage } from '@/lib/storageUtils';
 import { 
@@ -88,27 +88,6 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           });
           
           setError(`Failed to load conversation: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-      }
-      
-      // Try to get cached conversation from storage
-      const storedConversations = getConversationsFromStorage();
-      const typeConversations = storedConversations.filter(
-        c => c.type === type && c.userId === authUser.id
-      );
-      
-      if (typeConversations.length > 0) {
-        // Sort by most recent
-        const mostRecentConversation = typeConversations.sort((a, b) => {
-          const dateA = a.updatedAt ? new Date(a.updatedAt) : new Date(a.createdAt);
-          const dateB = b.updatedAt ? new Date(b.updatedAt) : new Date(b.createdAt);
-          return dateB.getTime() - dateA.getTime();
-        })[0];
-        
-        if (mostRecentConversation && mostRecentConversation.messages && mostRecentConversation.messages.length > 0) {
-          console.log(`Using stored conversation for ${type}`);
-          setIsInitialized(true);
-          return mostRecentConversation;
         }
       }
       

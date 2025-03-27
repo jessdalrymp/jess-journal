@@ -30,23 +30,24 @@ export const useStoryConversation = () => {
   };
 
   const handleStartFresh = async () => {
-    if (existingConversationId) {
-      console.log('StoryConversation - Starting fresh conversation');
-      clearCurrentConversationFromStorage('story');
-      
-      try {
+    console.log('StoryConversation - Starting fresh conversation');
+    // Clear current conversation regardless of whether there was an existing one
+    clearCurrentConversationFromStorage('story');
+    
+    try {
+      if (user) {
         await fetchJournalEntries();
         toast({
           title: "New Story Started",
           description: "Your previous story was saved and a new conversation has been started.",
         });
-      } catch (error) {
-        console.error('StoryConversation - Error refreshing journal entries:', error);
       }
-      
-      setExistingConversationId(null);
-      window.location.reload();
+    } catch (error) {
+      console.error('StoryConversation - Error refreshing journal entries:', error);
     }
+    
+    setExistingConversationId(null);
+    window.location.reload();
   };
 
   return {
