@@ -55,9 +55,13 @@ export function useSaveDialog(
     currentConversation?.id || null,
     'story',
     () => {
-      // This callback is called when saving is complete
+      // Immediately fetch journal entries after saving to update the history view
+      console.log("Summary saved, fetching journal entries to refresh history view");
+      fetchJournalEntries(true); // Force refresh to get the latest entries
+      
+      // If refreshData was requested, note that we've already done it
       if (refreshData) {
-        fetchJournalEntries();
+        console.log("Additional refresh was requested, but already done");
       }
       
       setSaveComplete(true);

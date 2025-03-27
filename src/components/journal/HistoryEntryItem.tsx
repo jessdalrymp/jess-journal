@@ -1,5 +1,6 @@
+
 import { Link } from 'react-router-dom';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, MessageSquare, FileText } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon } from '@/components/journal/JournalHistoryUtils';
 import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
@@ -37,7 +38,7 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   
   console.log('Rendering entry in history item:', { 
     id: entry.id, 
-    title: entry.title, 
+    title: getEntryTitle(entry), 
     type: entry.type,
     isConversationEntry,
     isSummary,
@@ -53,7 +54,6 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   
   return (
     <Link 
-      key={entry.id} 
       to={linkPath}
       className="relative border-l-2 border-jess-subtle pl-4 pb-5 block group"
     >
@@ -63,6 +63,18 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
         <span>{formatDate(new Date(entry.createdAt))}</span>
         <Clock size={12} className="ml-2 mr-1" />
         <span>{formatTime(new Date(entry.createdAt))}</span>
+        {isConversationEntry && (
+          <span className="ml-2 inline-flex items-center">
+            <MessageSquare size={12} className="mr-1 text-blue-500" />
+            <span className="text-blue-500">Conversation</span>
+          </span>
+        )}
+        {isSummary && (
+          <span className="ml-2 inline-flex items-center">
+            <FileText size={12} className="mr-1 text-green-500" />
+            <span className="text-green-500">Summary</span>
+          </span>
+        )}
       </div>
       <div className="flex items-center">
         <span className="mr-2">{getEntryIcon(entryType)}</span>

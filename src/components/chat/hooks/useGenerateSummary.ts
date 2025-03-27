@@ -71,13 +71,17 @@ export const useGenerateSummary = (
       // Update the conversation summary
       await updateConversationSummary(conversationId, summary);
       
+      console.log("Creating journal entry from conversation with ID:", conversationId);
+      
       // Create a journal entry with the conversation
-      await createJournalEntryFromConversation(
+      const journalEntryId = await createJournalEntryFromConversation(
         user.id,
         conversationId,
         title,
         summary
       );
+      
+      console.log("Journal entry created with ID:", journalEntryId);
       
       if (onComplete) {
         onComplete();
