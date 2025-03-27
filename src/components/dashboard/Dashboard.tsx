@@ -26,7 +26,7 @@ export const Dashboard = () => {
   useEffect(() => {
     if (user && !dashboardInitialized) {
       console.log("Dashboard mounted - refreshing journal entries");
-      fetchJournalEntries(true) // Force refresh on mount
+      fetchJournalEntries()
         .then(() => setDashboardInitialized(true))
         .catch(err => console.error("Error refreshing journal entries:", err));
     }
