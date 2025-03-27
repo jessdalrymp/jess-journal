@@ -28,6 +28,12 @@ export const ChatErrorState = ({ type, onBack, error, onRetry }: ChatErrorStateP
     if (errorMsg.includes('No user ID provided')) {
       return "There was an authentication issue. Please try signing out and back in.";
     }
+    if (errorMsg.includes('no messages or invalid message format')) {
+      return "The conversation appears to be empty or contains invalid data. Try starting a new conversation.";
+    }
+    if (errorMsg.includes('no ID was returned')) {
+      return "We couldn't create a new conversation. Please try again later.";
+    }
     return errorMsg || "There was a problem loading this conversation. Please try again.";
   };
   

@@ -4,7 +4,7 @@ import { useUserData } from '../../../context/UserDataContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ConversationSession } from '@/lib/types';
-import { saveCurrentConversationToStorage, clearCurrentConversationFromStorage, getConversationsFromStorage } from '@/lib/storageUtils';
+import { saveCurrentConversationToStorage, clearCurrentConversationFromStorage, getCurrentConversationFromStorage } from '@/lib/storageUtils';
 import { 
   loadExistingConversation, 
   createConversationWithInitialMessage, 
@@ -21,7 +21,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
   const { startConversation, addMessageToConversation } = useUserData();
   const { user: authUser } = useAuth();
   const { toast } = useToast();
-  const { getCachedConversation } = useConversationCache(type);
+  const { getCachedConversation, cacheConversation } = useConversationCache(type);
 
   useEffect(() => {
     // Reset initialization status when auth or type changes
@@ -39,10 +39,20 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
     }
 
     if (isInitialized && !loading) {
-      console.log(`Chat for ${type} already initialized, using existing session`);
+      console.log(`Chat for ${type} already initialized, checking for existing session`);
+      // First check if there's a cached session from context
       const cachedConversation = getCachedConversation(authUser.id);
       if (cachedConversation) {
+        console.log(`Using cached ${type} conversation from context:`, cachedConversation.id);
         return cachedConversation;
+      }
+      
+      // Then check local storage
+      const localStorageConversation = getCurrentConversationFromStorage(type);
+      if (localStorageConversation) {
+        console.log(`Using ${type} conversation from localStorage:`, localStorageConversation.id);
+        cacheConversation(localStorageConversation);
+        return localStorageConversation;
       }
     }
 
@@ -73,6 +83,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           const conversation = await loadExistingConversation(conversationId, authUser.id);
           if (conversation) {
             console.log(`Successfully loaded existing conversation with ${conversation.messages.length} messages`);
+            cacheConversation(conversation);
             setIsInitialized(true);
             return conversation;
           }
@@ -82,12 +93,14 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           clearCurrentConversationFromStorage(type);
           toast({
             title: "Error loading conversation",
-            description: "Previous conversation could not be loaded. Starting a new conversation.",
+            description: "Starting a new conversation instead.",
             duration: 5000,
             variant: "destructive"
           });
           
           setError(`Failed to load conversation: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          
+          // Fall through to creating a new conversation
         }
       }
       
@@ -114,7 +127,8 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
           return null;
         }
         
-        console.log(`Successfully created new ${type} conversation`);
+        console.log(`Successfully created new ${type} conversation:`, conversation.id);
+        cacheConversation(conversation);
         setIsInitialized(true);
         return conversation;
       } catch (err) {
@@ -143,7 +157,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       setLoading(false);
       initializationInProgress.current = false;
     }
-  }, [type, authUser, addMessageToConversation, startConversation, toast, isInitialized, loading, getCachedConversation]);
+  }, [type, authUser, addMessageToConversation, startConversation, toast, isInitialized, loading, getCachedConversation, cacheConversation]);
 
   return {
     initializeChat,

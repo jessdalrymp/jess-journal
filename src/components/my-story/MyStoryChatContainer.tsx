@@ -41,7 +41,7 @@ export const MyStoryChatContainer = ({
     toast({
       variant: "destructive",
       title: "Error loading conversation",
-      description: errorMessage || "Failed to load the conversation. Please try again.",
+      description: "Failed to load the conversation. Please try again.",
     });
   };
 
@@ -58,6 +58,11 @@ export const MyStoryChatContainer = ({
 
   const handleReloadPage = () => {
     window.location.reload();
+  };
+
+  const handleStartNew = () => {
+    setError(null);
+    window.location.href = "/my-story";
   };
 
   return (
@@ -78,12 +83,20 @@ export const MyStoryChatContainer = ({
           </div>
           <p className="text-gray-700 font-medium mb-2">Unable to load conversation</p>
           <p className="text-gray-500 text-center mb-4">{error}</p>
-          <button
-            onClick={handleReloadPage}
-            className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
-          >
-            Try Again
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleReloadPage}
+              className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={handleStartNew}
+              className="px-4 py-2 bg-jess-primary text-white rounded-md hover:bg-jess-primary/90 transition-colors"
+            >
+              Start New Conversation
+            </button>
+          </div>
         </div>
       ) : (
         <ChatInterface 
