@@ -5,6 +5,7 @@ import { JournalingDialog } from "../challenges/JournalingDialog";
 import { JournalChallengeDisplay } from "./JournalChallengeDisplay";
 import { JournalWelcomeModal } from "./JournalWelcomeModal";
 import { useJournalPrompt } from "@/hooks/journal";
+import { useToast } from "@/hooks/use-toast";
 
 export const JournalChallengeContent = () => {
   const [showWelcome, setShowWelcome] = useState(false);
@@ -13,6 +14,7 @@ export const JournalChallengeContent = () => {
   // Add a local state to track the toggle visually
   const [localPersonalizedState, setLocalPersonalizedState] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const {
     journalPrompt,
@@ -20,6 +22,7 @@ export const JournalChallengeContent = () => {
     challengeAccepted,
     usePersonalized,
     hasEnoughEntries,
+    isGeneratingPrompt,
     generateNewPrompt,
     togglePersonalizedPrompts,
     acceptChallenge
@@ -52,7 +55,14 @@ export const JournalChallengeContent = () => {
     setLocalPersonalizedState(prev => !prev);
     // Then call the actual toggle function from the hook
     togglePersonalizedPrompts();
-  }, [togglePersonalizedPrompts]);
+    
+    // Show toast to indicate the change is happening
+    toast({
+      title: localPersonalizedState ? "Using standard prompts" : "Using personalized prompts",
+      description: "Generating a new prompt for you...",
+      duration: 3000,
+    });
+  }, [togglePersonalizedPrompts, toast, localPersonalizedState]);
 
   // Mark initial load as complete after the first prompt load
   useEffect(() => {
@@ -82,6 +92,7 @@ export const JournalChallengeContent = () => {
         isPersonalized={localPersonalizedState}
         hasEnoughEntries={hasEnoughEntries}
         isLoading={isLoading && !initialLoadDone} // Only show loading on initial load
+        isGeneratingPrompt={isGeneratingPrompt}
       />
       
       {/* Only render modals when needed */}

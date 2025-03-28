@@ -16,6 +16,7 @@ interface JournalChallengeDisplayProps {
   isPersonalized?: boolean;
   hasEnoughEntries?: boolean;
   isLoading: boolean;
+  isGeneratingPrompt?: boolean;
 }
 
 // Function to format text with proper styling instead of markdown
@@ -46,7 +47,8 @@ export const JournalChallengeDisplay = memo(({
   onTogglePersonalized,
   isPersonalized = false,
   hasEnoughEntries = false,
-  isLoading
+  isLoading,
+  isGeneratingPrompt = false
 }: JournalChallengeDisplayProps) => {
   return (
     <div className="flex flex-col">
@@ -91,7 +93,7 @@ export const JournalChallengeDisplay = memo(({
                 <Switch 
                   checked={isPersonalized} 
                   onCheckedChange={onTogglePersonalized} 
-                  disabled={isLoading}
+                  disabled={isLoading || isGeneratingPrompt}
                 />
                 <Sparkles className="h-4 w-4 text-jess-primary" />
               </div>
@@ -129,7 +131,7 @@ export const JournalChallengeDisplay = memo(({
         <Button 
           onClick={onAcceptChallenge} 
           className="bg-jess-primary hover:bg-jess-primary/90 text-white shadow-md px-3 py-2 text-sm interactive-button"
-          disabled={isLoading}
+          disabled={isLoading || isGeneratingPrompt}
         >
           <Pen className="mr-2 h-4 w-4" />
           Start Journaling
@@ -139,9 +141,9 @@ export const JournalChallengeDisplay = memo(({
           variant="outline" 
           onClick={onNewChallenge}
           className="shadow-md px-3 py-2 text-sm interactive-button"
-          disabled={isLoading}
+          disabled={isLoading || isGeneratingPrompt}
         >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-4 w-4 mr-2 ${(isLoading || isGeneratingPrompt) ? "animate-spin" : ""}`} />
           New Prompt
         </Button>
       </div>

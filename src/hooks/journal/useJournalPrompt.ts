@@ -31,6 +31,7 @@ export const useJournalPrompt = () => {
   });
   
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
   const [challengeAccepted, setChallengeAccepted] = useState(false);
   const [usePersonalized, setUsePersonalized] = useState(false);
   const [initialPromptLoaded, setInitialPromptLoaded] = useState(false);
@@ -107,6 +108,7 @@ export const useJournalPrompt = () => {
 
     setChallengeAccepted(false);
     setIsLoading(true);
+    setIsGeneratingPrompt(true);
     generationInProgress.current = true;
     
     try {
@@ -156,16 +158,16 @@ export const useJournalPrompt = () => {
       setJournalPrompt(DEFAULT_PROMPT);
     } finally {
       setIsLoading(false);
+      setIsGeneratingPrompt(false);
       generationInProgress.current = false;
     }
   }, [user, usePersonalized, journalEntries, toast]);
 
   const togglePersonalizedPrompts = useCallback(() => {
-    // First update the state
+    // Immediately update the state - the UI will respond to this
     setUsePersonalized(prev => !prev);
     
-    // Then immediately generate a new prompt based on the new state
-    // We use setTimeout to ensure the state update has taken effect
+    // Generate a new prompt based on the new state in the next tick
     setTimeout(() => {
       console.log('Toggled personalized prompts, generating new prompt');
       generateNewPrompt();
@@ -179,6 +181,7 @@ export const useJournalPrompt = () => {
   return {
     journalPrompt,
     isLoading,
+    isGeneratingPrompt,
     challengeAccepted,
     usePersonalized,
     hasEnoughEntries: journalEntries && journalEntries.length > 2,
