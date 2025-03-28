@@ -19,7 +19,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
   const initializationInProgress = useRef(false);
 
   const { startConversation, addMessageToConversation } = useUserData();
-  const { user: authUser } = useAuth();
+  const { user: authUser, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const { getCachedConversation, cacheConversation } = useConversationCache(type);
 
@@ -32,9 +32,17 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
   }, [authUser, type]);
 
   const initializeChat = useCallback(async (conversationId?: string | null) => {
+    // Check if auth is still loading
+    if (authLoading) {
+      console.log('Auth state is still loading, deferring chat initialization');
+      const errorMsg = 'Authentication in progress, please wait';
+      setError(errorMsg);
+      return null;
+    }
+    
     if (!authUser) {
       console.log("User not authenticated, cannot initialize chat");
-      setError("Authentication required");
+      setError("User not authenticated");
       return null;
     }
 
@@ -67,9 +75,10 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       console.log(`Initializing chat for type: ${type}${conversationId ? ` with existing conversation id: ${conversationId}` : ''}`);
       console.log("User authentication state:", authUser ? "Authenticated" : "Not authenticated");
       
+      // Double-check authentication
       if (!authUser) {
         console.log("User not authenticated, cannot initialize chat");
-        setError("Authentication required");
+        setError("User not authenticated");
         return null;
       }
 
@@ -157,7 +166,7 @@ export const useInitializeChat = (type: 'story' | 'sideQuest' | 'action' | 'jour
       setLoading(false);
       initializationInProgress.current = false;
     }
-  }, [type, authUser, addMessageToConversation, startConversation, toast, isInitialized, loading, getCachedConversation, cacheConversation]);
+  }, [type, authUser, authLoading, addMessageToConversation, startConversation, toast, isInitialized, loading, getCachedConversation, cacheConversation]);
 
   return {
     initializeChat,

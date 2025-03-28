@@ -36,6 +36,7 @@ export const ChatInterface = ({
   conversationId = null
 }: ChatInterfaceProps) => {
   const [retryCount, setRetryCount] = useState(0);
+  const [authRetried, setAuthRetried] = useState(false);
   
   const {
     user,
@@ -63,6 +64,20 @@ export const ChatInterface = ({
     retryCount // Pass retry count to force re-initialization
   );
   
+  // Auto-retry once for authentication errors
+  useEffect(() => {
+    if (error && error.includes('User not authenticated') && !authRetried) {
+      console.log('Detected auth error, attempting auto-retry...');
+      setAuthRetried(true);
+      const timer = setTimeout(() => {
+        console.log('Executing auto-retry for auth error');
+        setRetryCount(prev => prev + 1);
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [error, authRetried]);
+  
   // Report errors back to parent if needed
   useEffect(() => {
     if (error && onError) {
@@ -71,7 +86,8 @@ export const ChatInterface = ({
   }, [error, onError]);
   
   const handleRetry = useCallback(() => {
-    console.log('Retrying conversation initialization...');
+    console.log('Manually retrying conversation initialization...');
+    setAuthRetried(false); // Reset auth retry flag
     setRetryCount(prev => prev + 1);
   }, []);
   

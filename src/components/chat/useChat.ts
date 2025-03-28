@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { ConversationSession } from '@/lib/types';
 import { useAuth } from '@/context/AuthContext';
@@ -14,10 +13,11 @@ export const useChat = (
 ) => {
   const [session, setSession] = useState<ConversationSession | null>(null);
   const [internalError, setInternalError] = useState<string | null>(null);
+  const [attemptedLoginCheck, setAttemptedLoginCheck] = useState(false);
   const initializationAttempted = useRef(false);
   const initialMessageRef = useRef(initialMessage);
   
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { initializeChat, loading: initLoading, error: initError } = useInitializeChat(type);
   const { sendMessage, loading: sendLoading } = useSendMessage(type);
   const { generateTitleAndSummary, generating: summaryLoading } = useGenerateSummary(
@@ -34,9 +34,23 @@ export const useChat = (
     initialMessageRef.current = initialMessage;
   }, [initialMessage]);
   
+  // Check authentication status and log results
+  useEffect(() => {
+    if (!attemptedLoginCheck && !authLoading) {
+      setAttemptedLoginCheck(true);
+      if (user) {
+        console.log(`useChat: User is authenticated, user ID: ${user.id}`);
+      } else {
+        console.log('useChat: User is NOT authenticated');
+        setInternalError('User not authenticated');
+      }
+    }
+  }, [user, authLoading, attemptedLoginCheck]);
+  
+  // Initialize chat when auth state is confirmed
   useEffect(() => {
     // Only load chat if user exists and we haven't attempted initialization yet
-    if (user && !initializationAttempted.current) {
+    if (user && !initializationAttempted.current && !authLoading) {
       console.log(`Attempting to initialize ${type} chat, user:`, user.id, 
                  conversationId ? `with existing conversation: ${conversationId}` : 'with new conversation');
       
@@ -93,7 +107,7 @@ export const useChat = (
       
       loadChat();
     }
-  }, [initializeChat, user, type, conversationId, toast]);
+  }, [initializeChat, user, type, conversationId, toast, authLoading]);
   
   // Reset initialization flag when user or type changes
   useEffect(() => {
@@ -101,8 +115,13 @@ export const useChat = (
       // Don't reset if we're loading a specific conversation
       return;
     }
-    initializationAttempted.current = false;
-  }, [user, type, conversationId]);
+    
+    if (!authLoading) {
+      // Only reset when auth loading is complete
+      initializationAttempted.current = false;
+      setAttemptedLoginCheck(false); // Reset login check as well
+    }
+  }, [user, type, conversationId, authLoading]);
   
   const handleSendMessage = async (message: string) => {
     if (!session) {

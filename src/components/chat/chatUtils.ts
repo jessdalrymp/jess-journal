@@ -6,7 +6,7 @@ export const formatMessagesForAI = (messages: ChatMessage[], type: 'story' | 'si
   const formattedMessages = messages.map(msg => ({
     role: msg.role === 'assistant' ? 'assistant' : 'user',
     content: msg.content
-  }));
+  })) as DeepseekMessage[];
   
   // Common personality traits to include in all prompts
   const personalityBase = `You are Jess, a quirky sage and AI life coach with a playful, authentic personality. 
