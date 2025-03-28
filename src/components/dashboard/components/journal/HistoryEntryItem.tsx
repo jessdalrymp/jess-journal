@@ -4,7 +4,7 @@ import { Calendar, Clock, MessageSquare, FileText } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon } from '@/components/journal/JournalHistoryUtils';
 import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
-import { getContentPreview, extractFormattedContent } from '@/utils/contentParser';
+import { extractFormattedContent } from '@/utils/contentParser';
 
 interface HistoryEntryItemProps {
   entry: JournalEntry;
@@ -40,16 +40,6 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   
   // Get a shorter preview for display
   const displayContent = contentPreview.substring(0, 200) + (contentPreview.length > 200 ? '...' : '');
-  
-  console.log('Rendering entry in history item:', { 
-    id: entry.id, 
-    title: getEntryTitle(entry), 
-    type: entry.type,
-    isConversationEntry,
-    isSummary,
-    conversation_id: entry.conversation_id,
-    content: displayContent.substring(0, 50) + (displayContent.length > 50 ? '...' : '')
-  });
   
   // Always link to journal entry
   const linkPath = `/journal-entry/${entry.id}`;

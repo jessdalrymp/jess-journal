@@ -28,9 +28,6 @@ export const EntryItem = ({
   
   // Format date with date-fns
   const formattedDate = formatDistanceToNow(new Date(entry.createdAt), { addSuffix: true });
-  
-  // Log entry details for debugging
-  console.log(`EntryItem - Rendering entry: ${entry.id}, type: ${entryType}, hasConversation: ${isConversationSummary}`);
 
   return (
     <div 

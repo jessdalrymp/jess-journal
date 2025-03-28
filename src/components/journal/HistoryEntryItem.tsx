@@ -38,16 +38,6 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   // Get clean content without the initial prompt
   let contentPreview = extractFormattedContent(entry.content);
   
-  console.log('Rendering entry in history item:', { 
-    id: entry.id, 
-    title: getEntryTitle(entry), 
-    type: entry.type,
-    isConversationEntry,
-    isSummary,
-    conversation_id: entry.conversation_id,
-    content: contentPreview.substring(0, 50) + (contentPreview.length > 50 ? '...' : '')
-  });
-  
   // Always link to journal entry page
   const linkPath = `/journal-entry/${entry.id}`;
   
