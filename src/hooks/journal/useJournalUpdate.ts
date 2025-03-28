@@ -12,7 +12,7 @@ export function useJournalUpdate() {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const updateJournalEntry = async (entryId: string, content: string) => {
+  const updateJournalEntry = async (entryId: string, content: string, prompt?: string, type?: string) => {
     if (!user) {
       toast({
         title: "Authentication required",
@@ -24,7 +24,7 @@ export function useJournalUpdate() {
     
     try {
       setLoading(true);
-      const success = await journalService.updateJournalEntry(entryId, content, user.id);
+      const success = await journalService.updateJournalEntry(entryId, content, user.id, prompt, type);
       if (success) {
         toast({
           title: "Journal entry updated",

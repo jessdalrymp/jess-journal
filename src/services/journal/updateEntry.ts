@@ -5,16 +5,25 @@ import { encryptContent } from './encryption';
 /**
  * Updates an existing journal entry
  */
-export const updateJournalEntry = async (entryId: string, content: string, userId: string): Promise<boolean> => {
+export const updateJournalEntry = async (entryId: string, content: string, userId: string, prompt?: string, type?: string): Promise<boolean> => {
   if (!userId) return false;
   
   try {
     // Encrypt the content before updating
     const encryptedContent = encryptContent(content, userId);
     
+    // Build the update object, always including content
+    const updateData: { content: string; prompt?: string; type?: string } = {
+      content: encryptedContent
+    };
+    
+    // Add optional fields if provided
+    if (prompt) updateData.prompt = prompt;
+    if (type) updateData.type = type;
+    
     const { error } = await supabase
       .from('journal_entries')
-      .update({ content: encryptedContent })
+      .update(updateData)
       .eq('id', entryId);
 
     if (error) {

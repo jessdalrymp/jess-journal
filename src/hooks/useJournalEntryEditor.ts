@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { JournalEntry } from "@/lib/types";
 import { useUserData } from "@/context/UserDataContext";
@@ -54,15 +55,34 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
       return false; // Prevent multiple save attempts
     }
     
+    // Check for empty content
+    const trimmedContent = editableContent.trim();
+    if (!trimmedContent) {
+      toast({
+        title: "Cannot save empty entry",
+        description: "Please add some content to your journal entry",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
     setIsSaving(true);
     
     let contentToSave = editableContent;
+    let prompt = entry.prompt || "Untitled Entry";
+    let type = entry.type || "journal";
     
     try {
       const jsonMatch = contentToSave.match(/```json\s*([\s\S]*?)```/);
       if (jsonMatch && jsonMatch[1]) {
         const parsedJson = JSON.parse(jsonMatch[1].trim());
         parsedJson.title = editableTitle;
+        
+        // If there's a type in the JSON, use it
+        if (parsedJson.type) {
+          type = parsedJson.type;
+        }
+        
         contentToSave = `\`\`\`json\n${JSON.stringify(parsedJson, null, 2)}\n\`\`\``;
       }
     } catch (e) {
@@ -70,9 +90,23 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
     }
     
     try {
-      const success = await updateJournalEntry(entry.id, contentToSave, user.id);
+      const success = await updateJournalEntry(entry.id, contentToSave, user.id, prompt, type);
       if (success) {
         setIsEditing(false);
+        
+        // Refresh journal entries to get the updated entry
+        fetchJournalEntries();
+        
+        // Update the local entry with the new content
+        if (entry) {
+          setEntry({
+            ...entry,
+            content: contentToSave,
+            prompt: prompt,
+            type: type
+          });
+        }
+        
         setIsSaving(false);
         return true;
       } else {

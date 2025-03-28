@@ -38,13 +38,23 @@ export const JournalEntryView = ({
   const isConversationSummary = !!entry.conversation_id;
   
   const handleSave = async (): Promise<void> => {
+    const trimmedContent = editableContent.trim();
+    if (!trimmedContent) {
+      return;
+    }
+    
     const result = await handleSaveClick();
     // Consume the boolean result but don't return it
     return;
   };
 
   const handleSaveAndClose = async (): Promise<void> => {
-    const result = await handleSaveAndCloseClick();
+    const trimmedContent = editableContent.trim();
+    if (!trimmedContent) {
+      return;
+    }
+    
+    const result = await handleSaveAndCloseClick?.();
     // Consume the boolean result but don't return it
     return;
   };
