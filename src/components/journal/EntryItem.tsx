@@ -22,7 +22,7 @@ export const EntryItem = ({
   onEntryClick,
 }: EntryItemProps) => {
   const entryType = entry.type || 'journal';
-  const content = getContentPreview(entry.content); // Fix: Pass entry.content instead of the whole entry
+  const content = getContentPreview(entry.content);
   const isConversationSummary = !!entry.conversation_id;
   const isSummary = entry.type === 'summary';
   

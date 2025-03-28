@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, MessageSquare, FileText, Heart, Lightbulb, Sun, Moon, Leaf, Rocket, ListChecks, Sparkles } from 'lucide-react';
+import { Calendar, Clock, MessageSquare, FileText } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 import { getEntryIcon } from '@/components/journal/JournalHistoryUtils';
 import { getEntryTitle } from '@/components/journal/EntryTitleUtils';
@@ -28,45 +28,6 @@ const formatDate = (date: Date) => {
 // Format time from date object
 const formatTime = (date: Date) => {
   return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-};
-
-// Get icon based on prompt content to match prompt categories
-const getCategoryIcon = (entry: JournalEntry) => {
-  // Default icon from the entry type with consistent sizing
-  const defaultIcon = getEntryIcon(entry.type || 'journal', { size: 16 });
-  
-  if (!entry.prompt) return defaultIcon;
-  
-  const prompt = entry.prompt.toLowerCase();
-  
-  // Check for category keywords in the prompt
-  if (prompt.includes('morning') || prompt.includes('intention for today')) {
-    return <Sun className="h-5 w-5 text-amber-500" />;
-  }
-  if (prompt.includes('evening') || prompt.includes('challenges did i encounter today')) {
-    return <Moon className="h-5 w-5 text-indigo-500" />;
-  }
-  if (prompt.includes('gratitude') || prompt.includes('grateful')) {
-    return <Heart className="h-5 w-5 text-rose-500" />;
-  }
-  if (prompt.includes('insight') || prompt.includes('realization') || prompt.includes('breakthrough')) {
-    return <Lightbulb className="h-5 w-5 text-yellow-500" />;
-  }
-  if (prompt.includes('affirmation') || prompt.includes('celebrate') || prompt.includes('empowering truth')) {
-    return <Sparkles className="h-5 w-5 text-purple-500" />;
-  }
-  if (prompt.includes('self-care') || prompt.includes('mindfulness') || prompt.includes('nurture')) {
-    return <Leaf className="h-5 w-5 text-green-500" />;
-  }
-  if (prompt.includes('action') || prompt.includes('goal') || prompt.includes('step')) {
-    return <Rocket className="h-5 w-5 text-cyan-500" />;
-  }
-  if (prompt.includes('week of') || prompt.includes('weekly')) {
-    return <ListChecks className="h-5 w-5 text-violet-500" />;
-  }
-  
-  // Fallback to default icon
-  return defaultIcon;
 };
 
 export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
@@ -118,7 +79,7 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
         )}
       </div>
       <div className="flex items-center">
-        <span className="mr-2">{getCategoryIcon(entry)}</span>
+        <span className="mr-2">{getEntryIcon(entryType)}</span>
         <p className="text-sm font-medium text-jess-foreground group-hover:text-jess-primary transition-colors">
           {getEntryTitle(entry)}
         </p>

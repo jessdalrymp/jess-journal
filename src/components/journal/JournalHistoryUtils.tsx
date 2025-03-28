@@ -1,12 +1,60 @@
 
-import { Pencil, Scroll, Compass, Zap, FileText, Heart, Lightbulb, Sun, Moon, Leaf, Rocket, ListChecks, Sparkles } from 'lucide-react';
+import { 
+  Pencil, Scroll, Compass, Zap, FileText, 
+  Heart, Lightbulb, Sun, Moon, Leaf, 
+  Rocket, ListChecks, Sparkles 
+} from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 import { JournalEntry } from '@/lib/types';
 
 // Define a type for entry types that includes both core types and extended category types
-export type EntryType = JournalEntry['type'] | 
-  'morning' | 'evening' | 'gratitude' | 'insights' | 
-  'affirmations' | 'selfcare' | 'actionPlan' | 'weekly';
+export type EntryType = 
+  | 'journal' | 'story' | 'sideQuest' | 'action' | 'summary'
+  | 'morning' | 'evening' | 'gratitude' | 'insights'
+  | 'affirmations' | 'selfcare' | 'actionPlan' | 'weekly';
+
+// Map entry types to icon components
+export const ENTRY_TYPE_ICONS: Record<EntryType, {
+  icon: LucideIcon;
+  className?: string;
+}> = {
+  // Core entry types
+  journal: { icon: Pencil },
+  story: { icon: Scroll },
+  sideQuest: { icon: Compass },
+  action: { icon: Zap },
+  summary: { icon: FileText, className: "text-blue-500" },
+  
+  // Additional category types
+  morning: { icon: Sun, className: "text-amber-500" },
+  evening: { icon: Moon, className: "text-indigo-500" },
+  gratitude: { icon: Heart, className: "text-rose-500" },
+  insights: { icon: Lightbulb, className: "text-yellow-500" },
+  affirmations: { icon: Sparkles, className: "text-purple-500" },
+  selfcare: { icon: Leaf, className: "text-green-500" },
+  actionPlan: { icon: Rocket, className: "text-cyan-500" },
+  weekly: { icon: ListChecks, className: "text-violet-500" }
+};
+
+// Map entry types to display names
+export const ENTRY_TYPE_NAMES: Record<EntryType, string> = {
+  // Core entry types
+  journal: 'Journal Entry',
+  story: 'Story',
+  sideQuest: 'Side Quest',
+  action: 'Action Plan',
+  summary: 'Daily Summary',
+  
+  // Additional category types
+  morning: 'Morning Reflection',
+  evening: 'Evening Reflection',
+  gratitude: 'Gratitude Journal',
+  insights: 'Insight & Growth',
+  affirmations: 'Affirmations',
+  selfcare: 'Self-Care Note',
+  actionPlan: 'Action & Purpose',
+  weekly: 'Weekly Theme'
+};
 
 // Interface for icon options to make the function more flexible
 interface IconOptions {
@@ -22,45 +70,11 @@ interface IconOptions {
  */
 export const getEntryIcon = (type: string, options: IconOptions = {}) => {
   const { size = 16, className = '' } = options;
-
-  // Helper function to create icon with consistent props
-  const createIcon = (Icon: LucideIcon, defaultClassName: string = '') => {
-    return <Icon size={size} className={`${defaultClassName} ${className}`.trim()} />;
-  };
+  const entryType = type as EntryType || 'journal';
+  const { icon: Icon, className: defaultClassName = '' } = 
+    ENTRY_TYPE_ICONS[entryType] || ENTRY_TYPE_ICONS.journal;
   
-  switch (type) {
-    // Core entry types
-    case 'journal':
-      return createIcon(Pencil);
-    case 'story':
-      return createIcon(Scroll);
-    case 'sideQuest':
-      return createIcon(Compass);
-    case 'action':
-      return createIcon(Zap);
-    case 'summary':
-      return createIcon(FileText, "text-blue-500");
-      
-    // Additional category-specific icons
-    case 'morning':
-      return createIcon(Sun, "text-amber-500");
-    case 'evening':
-      return createIcon(Moon, "text-indigo-500");
-    case 'gratitude':
-      return createIcon(Heart, "text-rose-500");
-    case 'insights':
-      return createIcon(Lightbulb, "text-yellow-500");
-    case 'affirmations':
-      return createIcon(Sparkles, "text-purple-500");
-    case 'selfcare':
-      return createIcon(Leaf, "text-green-500");
-    case 'actionPlan':
-      return createIcon(Rocket, "text-cyan-500");
-    case 'weekly':
-      return createIcon(ListChecks, "text-violet-500");
-    default:
-      return createIcon(Pencil);
-  }
+  return <Icon size={size} className={`${defaultClassName} ${className}`.trim()} />;
 };
 
 /**
@@ -69,39 +83,8 @@ export const getEntryIcon = (type: string, options: IconOptions = {}) => {
  * @returns The human-readable name for the entry type
  */
 export const getEntryTypeName = (type: string): string => {
-  switch (type) {
-    // Core entry types
-    case 'journal':
-      return 'Journal Entry';
-    case 'story':
-      return 'Story';
-    case 'sideQuest':
-      return 'Side Quest';
-    case 'action':
-      return 'Action Plan';
-    case 'summary':
-      return 'Daily Summary';
-      
-    // Additional category types
-    case 'morning':
-      return 'Morning Reflection';
-    case 'evening':
-      return 'Evening Reflection';
-    case 'gratitude':
-      return 'Gratitude Journal';
-    case 'insights':
-      return 'Insight & Growth';
-    case 'affirmations':
-      return 'Affirmations';
-    case 'selfcare':
-      return 'Self-Care Note';
-    case 'actionPlan':
-      return 'Action & Purpose';
-    case 'weekly':
-      return 'Weekly Theme';
-    default:
-      return 'Journal Entry';
-  }
+  const entryType = type as EntryType || 'journal';
+  return ENTRY_TYPE_NAMES[entryType] || ENTRY_TYPE_NAMES.journal;
 };
 
 /**

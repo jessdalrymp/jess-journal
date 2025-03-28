@@ -5,8 +5,6 @@ import { ThemeProvider } from "./components/ui/theme-provider";
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from './context/AuthContext';
 import { UserDataProvider } from './context/UserDataProvider';
-import LandingPage from './pages/LandingPage';
-import FreeJournalPrompts from './pages/FreeJournalPrompts';
 import Dashboard from './pages/Dashboard';
 import Account from './pages/Account';
 import MyStory from './pages/MyStory';
@@ -31,7 +29,6 @@ const App = () => {
           <UserDataProvider>
             <Routes>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/free-journal-prompts" element={<FreeJournalPrompts />} />
               <Route path="/dashboard" element={<Navigate to="/" replace />} />
               <Route path="/account" element={<Account />} />
               <Route path="/subscription" element={<Subscription />} />
@@ -48,7 +45,6 @@ const App = () => {
               <Route path="/404" element={<NotFound />} />
               <Route path="*" element={<Navigate to="/404" replace />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
-              {/* <Route path="/auth/reset-password" element={<ResetPasswordPage />} /> */}
             </Routes>
             <Toaster />
           </UserDataProvider>
