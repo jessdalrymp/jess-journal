@@ -73,6 +73,10 @@ export const ChatMessageList = memo(({ messages }: ChatMessageListProps) => {
               msg.role === 'user' ? 'bg-jess-primary bg-opacity-10 ml-auto max-w-[80%]' : 'bg-gray-100 mr-auto max-w-[80%]'
             } leading-tight`}
           >
+            {/* Display JESS label for assistant messages */}
+            {msg.role === 'assistant' && (
+              <div className="text-xs text-jess-primary font-semibold mb-1">JESS</div>
+            )}
             {processMessageContent(msg.content, msg.role === 'assistant')}
           </div>
         ))}

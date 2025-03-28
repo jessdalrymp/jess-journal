@@ -1,9 +1,10 @@
+
 import { ChatMessage } from '@/lib/types';
 import { DeepseekMessage } from '@/utils/deepseekApi';
 
 export const formatMessagesForAI = (messages: ChatMessage[], type: 'story' | 'sideQuest' | 'action' | 'journal'): DeepseekMessage[] => {
   const formattedMessages = messages.map(msg => ({
-    role: msg.role as 'user' | 'assistant',
+    role: msg.role === 'assistant' ? 'assistant' : 'user',
     content: msg.content
   }));
   
