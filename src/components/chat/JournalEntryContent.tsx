@@ -23,18 +23,8 @@ export const JournalEntryContent = ({ entry, parsedContent }: JournalEntryConten
       });
     }
     
-    // Remove the prompt from the content if it exists
-    let displayContent = entry.content;
-    if (entry.prompt && displayContent.includes(entry.prompt)) {
-      // More thorough prompt removal
-      displayContent = displayContent.replace(entry.prompt, '').trim();
-      
-      // Also remove any Q: or A: prefixes that might remain
-      displayContent = displayContent.replace(/^[\s\S]*?[Q|A][:.]?\s*/im, '').trim();
-    }
-    
-    // Clean up any JSON code blocks in the content - improved cleaning for nested JSON
-    const cleanedContent = extractFormattedContent(displayContent);
+    // Extract user's response from the content
+    const cleanedContent = extractFormattedContent(entry.content);
     
     // Render the content with newlines
     return cleanedContent.split('\n').map((paragraph, index) => {

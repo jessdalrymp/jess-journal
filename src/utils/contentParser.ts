@@ -1,4 +1,3 @@
-
 /**
  * Extracts formatted content from a journal entry, removing JSON code blocks and other formatting
  */
@@ -19,24 +18,23 @@ export const extractFormattedContent = (content: string): string => {
       }
     }
     
-    // Remove any leading prompt text
-    // This finds the first instance of user response after a prompt
-    const userResponseMatch = content.match(/^[\s\S]*?(?:Q:|Question:|Prompt:)[\s\S]*?\n([\s\S]*)$/im);
+    // Try to extract user response from conversation format
+    const userResponseMatch = content.match(/user:\s*([\s\S]*?)(?:assistant:|$)/i);
     if (userResponseMatch && userResponseMatch[1]) {
-      content = userResponseMatch[1].trim();
+      return userResponseMatch[1].trim();
     }
     
-    // Also look for assistant/user conversation patterns and extract the first user message
-    const conversationMatch = content.match(/assistant:[\s\S]*?user:([\s\S]*?)(?:assistant:|$)/i);
-    if (conversationMatch && conversationMatch[1]) {
-      content = conversationMatch[1].trim();
+    // Try to extract response after a prompt
+    const afterPromptMatch = content.match(/(?:Q:|Question:|Prompt:)[\s\S]*?\n([\s\S]*)/im);
+    if (afterPromptMatch && afterPromptMatch[1]) {
+      return afterPromptMatch[1].trim();
     }
     
     // Clean up any remaining markdown or code block syntax
     content = content
       .replace(/```json\n[\s\S]*?\n```/g, '') // Remove JSON code blocks
-      .replace(/```[\s\S]*?```/g, '')        // Remove other code blocks
-      .replace(/^[#]+\s+.*$/gm, '')          // Remove markdown headers
+      .replace(/```[\s\S]*?```/g, '')         // Remove other code blocks
+      .replace(/^[#]+\s+.*$/gm, '')           // Remove markdown headers
       .trim();
     
     return content;

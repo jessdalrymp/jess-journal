@@ -35,7 +35,7 @@ export const HistoryEntryItem = ({ entry }: HistoryEntryItemProps) => {
   const isConversationEntry = !!entry.conversation_id;
   const isSummary = entry.type === 'summary';
   
-  // Get clean content without the initial prompt
+  // Get clean content without the initial prompt - focus on extracting user response
   let contentPreview = extractFormattedContent(entry.content);
   
   // Get a shorter preview for display

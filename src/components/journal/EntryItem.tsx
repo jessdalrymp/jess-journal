@@ -3,7 +3,7 @@ import { JournalEntry } from "@/lib/types";
 import { Edit, Trash2, MessageCircle } from "lucide-react";
 import { getEntryIcon } from "./JournalHistoryUtils";
 import { getEntryTitle } from "./EntryTitleUtils";
-import { getContentPreview } from "@/utils/contentParser";
+import { extractFormattedContent } from "@/utils/contentParser";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { EntryTags } from "./EntryTags";
@@ -22,7 +22,8 @@ export const EntryItem = ({
   onEntryClick,
 }: EntryItemProps) => {
   const entryType = entry.type || 'journal';
-  const content = getContentPreview(entry.content);
+  // Get user's response rather than prompt
+  const content = extractFormattedContent(entry.content);
   const isConversationSummary = !!entry.conversation_id;
   const isSummary = entry.type === 'summary';
   
