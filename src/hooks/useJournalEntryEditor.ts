@@ -104,7 +104,8 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
         
         // Refresh journal entries to get the updated entry
         console.log('useJournalEntryEditor - Save successful, refreshing entries');
-        await fetchJournalEntries(true); // Force refresh
+        // Remove the boolean parameter since fetchJournalEntries doesn't accept parameters
+        await fetchJournalEntries();
         
         // Update the local entry with the new content
         if (entry) {

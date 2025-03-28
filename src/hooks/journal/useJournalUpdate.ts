@@ -47,7 +47,8 @@ export function useJournalUpdate() {
         
         // Force refresh journal entries to clear any cache
         console.log('Refreshing journal entries after update');
-        await fetchJournalEntries(true);
+        // Remove the boolean parameter since fetchJournalEntries doesn't accept parameters
+        await fetchJournalEntries();
       } else {
         toast({
           title: "Error updating entry",
