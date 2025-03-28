@@ -55,6 +55,23 @@ const BlankJournal = () => {
       return;
     }
 
+    // Check for empty content
+    let hasContent = false;
+    try {
+      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
+      if (jsonMatch && jsonMatch[1]) {
+        const parsedJson = JSON.parse(jsonMatch[1].trim());
+        hasContent = !!parsedJson.summary?.trim();
+      }
+    } catch (e) {
+      console.error("Error checking JSON content", e);
+    }
+
+    if (!hasContent) {
+      toast.error("Cannot save an empty journal entry");
+      return;
+    }
+
     setIsSaving(true);
     
     try {

@@ -60,18 +60,28 @@ export const JournalingDialog = ({
   };
 
   const handleSaveAndClose = async () => {
-    if (!user || !journalContent.trim()) return;
+    const trimmedContent = journalContent.trim();
+    if (!user || !trimmedContent) {
+      if (!trimmedContent && user) {
+        toast({
+          title: "Cannot save empty entry",
+          description: "Please write something before saving.",
+          variant: "destructive"
+        });
+      }
+      return;
+    }
     
     try {
       setIsSaving(true);
       
-      const contentPreview = journalContent.trim().substring(0, 40) + (journalContent.length > 40 ? '...' : '');
+      const contentPreview = trimmedContent.substring(0, 40) + (trimmedContent.length > 40 ? '...' : '');
       const titlePrefix = challengeType === 'action' ? 'Action' : 'Journal';
       const entryTitle = `${titlePrefix} Challenge: ${contentPreview}`;
       
       const jsonContent = JSON.stringify({
         title: entryTitle,
-        summary: journalContent.trim(),
+        summary: trimmedContent,
         timeSpent: timeSpent,
         prompt: promptText || ""
       }, null, 2);

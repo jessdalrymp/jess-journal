@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useUserData } from '@/context/UserDataContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { PromptCategory, Prompt } from './data/promptCategories';
 
 interface QuickJournalDialogProps {
@@ -22,19 +23,29 @@ export const QuickJournalDialog = ({ isOpen, onClose, category, prompt }: QuickJ
   const { toast } = useToast();
   
   const handleSave = async () => {
-    if (!user || !content.trim() || !prompt || !category) return;
+    const trimmedContent = content.trim();
+    if (!user || !trimmedContent || !prompt || !category) {
+      if (!trimmedContent && user) {
+        toast({
+          title: "Cannot save empty entry",
+          description: "Please write something before saving.",
+          variant: "destructive"
+        });
+      }
+      return;
+    }
     
     setIsSaving(true);
     
     try {
       // Generate a title based on the user's response, not the prompt
-      const contentPreview = content.trim().substring(0, 40) + (content.length > 40 ? '...' : '');
+      const contentPreview = trimmedContent.substring(0, 40) + (trimmedContent.length > 40 ? '...' : '');
       const entryTitle = `${category.name}: ${contentPreview}`;
       
       const journalContent = JSON.stringify({
         title: entryTitle,
         prompt: prompt, // Store the original prompt for reference
-        summary: content,
+        summary: trimmedContent,
         type: category.id
       });
       

@@ -15,6 +15,9 @@ export const saveJournalEntry = async (
   type = 'journal'
 ): Promise<JournalEntry | null> => {
   if (!userId) return null;
+  if (!content.trim()) return null; // Prevent empty content
+  if (!prompt.trim()) prompt = "Untitled Entry"; // Set default prompt if empty
+  if (!type.trim()) type = "journal"; // Set default type if empty
 
   try {
     // Encrypt the content before saving

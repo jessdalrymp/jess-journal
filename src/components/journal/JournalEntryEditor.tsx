@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -47,7 +48,7 @@ export const JournalEntryEditor = ({
     
     try {
       const jsonObj = {
-        title: title,
+        title: title.trim() || "Untitled Entry",
         summary: newValue.trim()
       };
       
