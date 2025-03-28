@@ -115,6 +115,7 @@ export const useJournalPrompt = () => {
       // When generating a new prompt, we should explicitly invalidate the cache
       // to ensure we get a fresh prompt every time the user clicks "New Prompt"
       if (usePersonalized && journalEntries && journalEntries.length > 2) {
+        console.log('Generating personalized prompt');
         newPrompt = await generatePersonalizedPrompt(user.id);
         
         // Cache the personalized prompt
@@ -123,6 +124,7 @@ export const useJournalPrompt = () => {
           promptCache.timestamp = Date.now();
         }
       } else {
+        console.log('Generating standard prompt');
         newPrompt = await generateStandardJournalPrompt();
         
         // Cache the standard prompt
@@ -159,14 +161,15 @@ export const useJournalPrompt = () => {
   }, [user, usePersonalized, journalEntries, toast]);
 
   const togglePersonalizedPrompts = useCallback(() => {
-    setUsePersonalized(prev => {
-      const newValue = !prev;
-      // Generate new prompt when toggling personalization
-      if (newValue !== prev) {
-        setTimeout(() => generateNewPrompt(), 0);
-      }
-      return newValue;
-    });
+    // First update the state
+    setUsePersonalized(prev => !prev);
+    
+    // Then immediately generate a new prompt based on the new state
+    // We use setTimeout to ensure the state update has taken effect
+    setTimeout(() => {
+      console.log('Toggled personalized prompts, generating new prompt');
+      generateNewPrompt();
+    }, 0);
   }, [generateNewPrompt]);
 
   const acceptChallenge = useCallback(() => {

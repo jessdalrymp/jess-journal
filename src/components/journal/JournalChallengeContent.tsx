@@ -38,6 +38,12 @@ export const JournalChallengeContent = () => {
     generateNewPrompt();
   }, [generateNewPrompt]);
 
+  // Handle personalized toggle
+  const handleTogglePersonalized = useCallback(() => {
+    console.log('Toggling personalized prompts');
+    togglePersonalizedPrompts();
+  }, [togglePersonalizedPrompts]);
+
   // Mark initial load as complete after the first prompt load
   useEffect(() => {
     if (!isLoading && !initialLoadDone) {
@@ -62,7 +68,7 @@ export const JournalChallengeContent = () => {
         onBack={handleBack}
         onAcceptChallenge={handleAcceptChallenge}
         onNewChallenge={handleNewChallenge}
-        onTogglePersonalized={togglePersonalizedPrompts}
+        onTogglePersonalized={handleTogglePersonalized}
         isPersonalized={usePersonalized}
         hasEnoughEntries={hasEnoughEntries}
         isLoading={isLoading && !initialLoadDone} // Only show loading on initial load
