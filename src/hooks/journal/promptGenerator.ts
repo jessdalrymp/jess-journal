@@ -43,20 +43,16 @@ const FALLBACK_PROMPTS: JournalPrompt[] = [
 ];
 
 export async function generateStandardJournalPrompt(): Promise<JournalPrompt | null> {
-  // Check if we have a cached prompt that's not expired
-  const now = Date.now();
-  if (promptCache.has(CACHE_KEY) && (now - lastCacheTime) < CACHE_EXPIRY) {
-    console.log('Using cached journal prompt');
-    return promptCache.get(CACHE_KEY) || null;
-  }
-
+  // When explicitly generating a new prompt, we'll bypass the cache
+  // or use a random cache entry to ensure variety
+  
   // Set a request timeout
   const timeoutPromise = new Promise<null>((resolve) => {
     setTimeout(() => resolve(null), 10000); // 10-second timeout
   });
 
   try {
-    const systemPrompt = `You are Jess, an AI life coach specializing in creating personalized writing prompts and journaling exercises.
+    const systemPrompt = `You are JESS, an AI life coach specializing in creating personalized writing prompts and journaling exercises.
     Create a unique, reflective journaling prompt that will help users gain insights into their thought patterns, behaviors, and growth.
     
     Your response must follow this exact format:
@@ -83,7 +79,7 @@ export async function generateStandardJournalPrompt(): Promise<JournalPrompt | n
     // Race between API call and timeout
     const responsePromise = generateDeepseekResponse([
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: 'Generate a new journaling challenge for me that will help me reflect on my growth and patterns' }
+      { role: 'user', content: 'Generate a completely new journaling challenge for me that will help me reflect on my growth and patterns. Make it different from any previous challenges.' }
     ]);
     
     const response = await Promise.race([responsePromise, timeoutPromise]);
@@ -92,8 +88,6 @@ export async function generateStandardJournalPrompt(): Promise<JournalPrompt | n
     if (!response) {
       console.log('API request timed out, using fallback prompt');
       const fallbackPrompt = FALLBACK_PROMPTS[Math.floor(Math.random() * FALLBACK_PROMPTS.length)];
-      promptCache.set(CACHE_KEY, fallbackPrompt);
-      lastCacheTime = now;
       return fallbackPrompt;
     }
     
@@ -104,16 +98,11 @@ export async function generateStandardJournalPrompt(): Promise<JournalPrompt | n
     if (jsonMatch) {
       try {
         const prompt = JSON.parse(jsonMatch[0]);
-        // Cache the prompt
-        promptCache.set(CACHE_KEY, prompt);
-        lastCacheTime = now;
         return prompt;
       } catch (e) {
         console.error("Error parsing journal prompt JSON:", e);
         // Use fallback prompt if parsing fails
         const fallbackPrompt = FALLBACK_PROMPTS[Math.floor(Math.random() * FALLBACK_PROMPTS.length)];
-        promptCache.set(CACHE_KEY, fallbackPrompt);
-        lastCacheTime = now;
         return fallbackPrompt;
       }
     } else {
@@ -123,8 +112,6 @@ export async function generateStandardJournalPrompt(): Promise<JournalPrompt | n
     console.error("Error generating standard journal prompt:", error);
     // Use fallback prompt if API call fails
     const fallbackPrompt = FALLBACK_PROMPTS[Math.floor(Math.random() * FALLBACK_PROMPTS.length)];
-    promptCache.set(CACHE_KEY, fallbackPrompt);
-    lastCacheTime = now;
     return fallbackPrompt;
   }
 }
@@ -134,14 +121,7 @@ const personalizedCache = new Map<string, {prompt: JournalPrompt, timestamp: num
 const PERSONALIZED_CACHE_EXPIRY = 12 * 60 * 60 * 1000; // 12 hours
 
 export async function generatePersonalizedPrompt(userId: string): Promise<JournalPrompt | null> {
-  // Check if we have a cached personalized prompt that's not expired
-  const now = Date.now();
-  const cachedItem = personalizedCache.get(userId);
-  
-  if (cachedItem && (now - cachedItem.timestamp) < PERSONALIZED_CACHE_EXPIRY) {
-    console.log('Using cached personalized journal prompt');
-    return cachedItem.prompt;
-  }
+  // We'll always generate a new personalized prompt when requested
   
   // Set a request timeout
   const timeoutPromise = new Promise<null>((resolve) => {
@@ -156,12 +136,11 @@ export async function generatePersonalizedPrompt(userId: string): Promise<Journa
     if (!personalizedPromptText) {
       console.log('Personalized API request timed out, using fallback prompt');
       const fallbackPrompt = FALLBACK_PROMPTS[Math.floor(Math.random() * FALLBACK_PROMPTS.length)];
-      personalizedCache.set(userId, { prompt: fallbackPrompt, timestamp: now });
       return fallbackPrompt;
     }
     
     // Format the personalized prompt in the standard format
-    const systemPrompt = `You are Jess, an AI life coach specializing in creating personalized writing prompts.
+    const systemPrompt = `You are JESS, an AI life coach specializing in creating personalized writing prompts.
     Here is a personalized journal prompt: "${personalizedPromptText}"
     
     Format this prompt into a structured journaling exercise that follows this exact JSON format:
@@ -181,7 +160,7 @@ export async function generatePersonalizedPrompt(userId: string): Promise<Journa
 
     const formattingPromise = generateDeepseekResponse([
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: 'Format this personalized prompt into a structured journal challenge' }
+      { role: 'user', content: 'Format this personalized prompt into a structured journal challenge that is fresh and unique' }
     ]);
     
     const formattingResponse = await Promise.race([formattingPromise, timeoutPromise]);
@@ -193,7 +172,6 @@ export async function generatePersonalizedPrompt(userId: string): Promise<Journa
         ...FALLBACK_PROMPTS[Math.floor(Math.random() * FALLBACK_PROMPTS.length)],
         prompt: personalizedPromptText as string
       };
-      personalizedCache.set(userId, { prompt: fallbackPrompt, timestamp: now });
       return fallbackPrompt;
     }
     
@@ -204,11 +182,6 @@ export async function generatePersonalizedPrompt(userId: string): Promise<Journa
     if (jsonMatch) {
       try {
         const prompt = JSON.parse(jsonMatch[0]);
-        // Cache the personalized prompt
-        personalizedCache.set(userId, {
-          prompt,
-          timestamp: now
-        });
         return prompt;
       } catch (error) {
         console.error("Error parsing personalized journal prompt JSON:", error);
@@ -217,7 +190,6 @@ export async function generatePersonalizedPrompt(userId: string): Promise<Journa
           ...FALLBACK_PROMPTS[Math.floor(Math.random() * FALLBACK_PROMPTS.length)],
           prompt: personalizedPromptText as string
         };
-        personalizedCache.set(userId, { prompt: fallbackPrompt, timestamp: now });
         return fallbackPrompt;
       }
     } else {
@@ -227,7 +199,6 @@ export async function generatePersonalizedPrompt(userId: string): Promise<Journa
     console.error("Error generating personalized journal prompt:", error);
     // Use fallback prompt if API call fails
     const fallbackPrompt = FALLBACK_PROMPTS[Math.floor(Math.random() * FALLBACK_PROMPTS.length)];
-    personalizedCache.set(userId, { prompt: fallbackPrompt, timestamp: now });
     return fallbackPrompt;
   }
 }

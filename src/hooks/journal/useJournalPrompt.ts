@@ -112,33 +112,23 @@ export const useJournalPrompt = () => {
     try {
       let newPrompt: JournalPrompt | null = null;
       
-      // First check if we have a valid cached prompt
-      if (isCacheValid()) {
-        if (usePersonalized && promptCache.personalized.has(user.id)) {
-          newPrompt = promptCache.personalized.get(user.id) || null;
-        } else if (!usePersonalized && promptCache.standard) {
-          newPrompt = promptCache.standard;
+      // When generating a new prompt, we should explicitly invalidate the cache
+      // to ensure we get a fresh prompt every time the user clicks "New Prompt"
+      if (usePersonalized && journalEntries && journalEntries.length > 2) {
+        newPrompt = await generatePersonalizedPrompt(user.id);
+        
+        // Cache the personalized prompt
+        if (newPrompt) {
+          promptCache.personalized.set(user.id, newPrompt);
+          promptCache.timestamp = Date.now();
         }
-      }
-      
-      // If no cached prompt, generate a new one
-      if (!newPrompt) {
-        if (usePersonalized && journalEntries && journalEntries.length > 2) {
-          newPrompt = await generatePersonalizedPrompt(user.id);
-          
-          // Cache the personalized prompt
-          if (newPrompt) {
-            promptCache.personalized.set(user.id, newPrompt);
-            promptCache.timestamp = Date.now();
-          }
-        } else {
-          newPrompt = await generateStandardJournalPrompt();
-          
-          // Cache the standard prompt
-          if (newPrompt) {
-            promptCache.standard = newPrompt;
-            promptCache.timestamp = Date.now();
-          }
+      } else {
+        newPrompt = await generateStandardJournalPrompt();
+        
+        // Cache the standard prompt
+        if (newPrompt) {
+          promptCache.standard = newPrompt;
+          promptCache.timestamp = Date.now();
         }
       }
       

@@ -83,16 +83,19 @@ export async function generatePersonalizedJournalPrompt(
     }
     
     // Generate a personalized prompt
-    const systemPrompt = `You are Jess, an AI life coach specializing in creating personalized writing prompts.
+    const systemPrompt = `You are JESS, an AI life coach specializing in creating personalized writing prompts.
     Create a unique journaling prompt based on the user's previous journal entries.
     Identify patterns, themes, or areas for further reflection based on what they've written.
     If there are no previous entries, create a general prompt about self-discovery.
     
+    IMPORTANT: Create a prompt that is completely different from any previous prompts.
+    Make it thought-provoking, insightful, and tailored to the user's specific journey.
+    
     Your response should be a single, thought-provoking question or statement.`;
     
     const userPrompt = previousEntries 
-      ? `Here are my previous journal entries:\n\n${previousEntries}\n\nBased on these entries, suggest a personalized journaling prompt that will help me go deeper.` 
-      : "I'm starting my journaling journey. Suggest a prompt for self-discovery.";
+      ? `Here are my previous journal entries:\n\n${previousEntries}\n\nBased on these entries, suggest a completely new personalized journaling prompt that will help me go deeper and explore a different angle than I've written about before.` 
+      : "I'm starting my journaling journey. Suggest a unique prompt for self-discovery.";
     
     const response = await generateDeepseekResponse([
       { role: 'system', content: systemPrompt },

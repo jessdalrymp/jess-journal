@@ -104,7 +104,7 @@ export const JournalChallengeDisplay = memo(({
           className="shadow-md px-3 py-2 text-sm interactive-button"
           disabled={isLoading}
         >
-          <RefreshCw className="h-4 w-4 mr-2" />
+          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
           New Prompt
         </Button>
       </div>
