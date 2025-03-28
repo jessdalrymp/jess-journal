@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, RefreshCw, Pen, Sparkles } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { JournalPrompt } from "@/hooks/useJournalPrompt";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface JournalChallengeDisplayProps {
   journalPrompt: JournalPrompt;
@@ -43,11 +45,23 @@ export const JournalChallengeDisplay = memo(({
       
       <div className="p-3">
         {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-3"></div>
-              <p className="text-lg mb-2">Generating your journal prompt...</p>
-              <p className="text-sm text-jess-muted">This may take a moment. We're creating a thoughtful prompt for you.</p>
+          <div className="flex flex-col items-center justify-center py-8 space-y-4">
+            <div className="w-full max-w-md space-y-4">
+              <Progress value={65} className="h-2 bg-jess-subtle" />
+              <div className="text-center">
+                <p className="text-lg font-medium mb-2">Crafting your journal prompt...</p>
+                <p className="text-sm text-jess-muted">JESS is creating a thoughtful prompt just for you</p>
+              </div>
+              
+              <div className="space-y-3 mt-4">
+                <Skeleton className="h-6 w-3/4 mx-auto bg-jess-subtle/50" />
+                <Skeleton className="h-24 w-full bg-jess-subtle/30" />
+                <div className="space-y-2 mt-2">
+                  <Skeleton className="h-4 w-full bg-jess-subtle/20" />
+                  <Skeleton className="h-4 w-5/6 bg-jess-subtle/20" />
+                  <Skeleton className="h-4 w-4/6 bg-jess-subtle/20" />
+                </div>
+              </div>
             </div>
           </div>
         ) : (
