@@ -1,4 +1,3 @@
-
 import { ChatMessage } from '@/lib/types';
 import { DeepseekMessage } from '@/utils/deepseekApi';
 
@@ -9,7 +8,7 @@ export const formatMessagesForAI = (messages: ChatMessage[], type: 'story' | 'si
   })) as DeepseekMessage[];
   
   // Common personality traits to include in all prompts
-  const personalityBase = `You are Jess, a quirky sage and AI life coach with a playful, authentic personality. 
+  const personalityBase = `You are JESS, a quirky sage and AI life coach with a playful, authentic personality. 
   You blend warmth, humor, and straight-talking honesty. You're like a wise, witty friend who's seen it all but still approaches life with curiosity. 
   You communicate in a conversational, engaging style using rich visual language and metaphors that paint pictures in the user's mind.
   You use clear language without jargon, occasional self-deprecating humor, and relatable personal anecdotes.
@@ -79,7 +78,7 @@ export const formatMessagesForAI = (messages: ChatMessage[], type: 'story' | 'si
 
 export const formatMessagesForSummary = (messages: ChatMessage[]): DeepseekMessage[] => {
   const formattedMessages: DeepseekMessage[] = messages.map(msg => ({
-    role: msg.role as 'user' | 'assistant',
+    role: (msg.role === 'assistant' ? 'assistant' : 'user') as 'user' | 'assistant',
     content: msg.content
   }));
   
