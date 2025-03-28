@@ -10,6 +10,8 @@ export const JournalChallengeContent = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showJournaling, setShowJournaling] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
+  // Add a local state to track the toggle visually
+  const [localPersonalizedState, setLocalPersonalizedState] = useState(false);
   const navigate = useNavigate();
   
   const {
@@ -22,6 +24,11 @@ export const JournalChallengeContent = () => {
     togglePersonalizedPrompts,
     acceptChallenge
   } = useJournalPrompt();
+
+  // Sync local state with the usePersonalized from hook
+  useEffect(() => {
+    setLocalPersonalizedState(usePersonalized);
+  }, [usePersonalized]);
 
   // Use useCallback to memoize handler functions
   const handleBack = useCallback(() => {
@@ -41,6 +48,9 @@ export const JournalChallengeContent = () => {
   // Handle personalized toggle
   const handleTogglePersonalized = useCallback(() => {
     console.log('Toggling personalized prompts');
+    // Update local state immediately for UI feedback
+    setLocalPersonalizedState(prev => !prev);
+    // Then call the actual toggle function from the hook
     togglePersonalizedPrompts();
   }, [togglePersonalizedPrompts]);
 
@@ -69,7 +79,7 @@ export const JournalChallengeContent = () => {
         onAcceptChallenge={handleAcceptChallenge}
         onNewChallenge={handleNewChallenge}
         onTogglePersonalized={handleTogglePersonalized}
-        isPersonalized={usePersonalized}
+        isPersonalized={localPersonalizedState}
         hasEnoughEntries={hasEnoughEntries}
         isLoading={isLoading && !initialLoadDone} // Only show loading on initial load
       />
