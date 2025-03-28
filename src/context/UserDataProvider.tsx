@@ -65,32 +65,17 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
     }
   }, [user]);
 
-  // Always fetch journal entries when user is loaded - force refresh to bypass cache
+  // Fetch journal entries when user is loaded - only on initial load
   useEffect(() => {
     if (user) {
-      console.log("UserDataProvider - User loaded, fetching journal entries with force refresh");
+      console.log("UserDataProvider - User loaded, fetching journal entries");
       fetchJournalEntries(true); // Force refresh when user is loaded
       checkSubscriptionStatus();
     }
   }, [user]);
 
-  // Add a recurring refresh for journal entries
-  useEffect(() => {
-    if (!user) return;
-    
-    console.log("UserDataProvider - Setting up periodic journal refresh");
-    
-    const refreshInterval = setInterval(() => {
-      console.log("UserDataProvider - Periodic journal refresh - forcing refresh");
-      fetchJournalEntries(true); // Force refresh on periodic updates
-    }, 30000); // Refresh every 30 seconds
-    
-    return () => {
-      console.log("UserDataProvider - Clearing periodic journal refresh");
-      clearInterval(refreshInterval);
-    };
-  }, [user, fetchJournalEntries]);
-
+  // Remove periodic refresh for journal entries to prevent refreshing while on the page
+  
   const handleAddMessageToConversation = async (conversationId: string, content: string, role: 'user' | 'assistant'): Promise<boolean> => {
     try {
       console.log(`Adding message to conversation ${conversationId}, role: ${role}`);
@@ -102,17 +87,10 @@ export const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) 
           setIsJournalFetched(false);
           
           // Force refresh journal entries immediately after conversation update
-          // with increased delay to ensure database has time to update
           setTimeout(() => {
-            console.log("Delayed journal refresh after conversation update");
+            console.log("Refreshing journal entries after conversation update");
             fetchJournalEntries(true); // Force refresh
           }, 1000);
-          
-          // Do an additional refresh after a longer delay as a safety measure
-          setTimeout(() => {
-            console.log("Secondary delayed journal refresh after conversation update");
-            fetchJournalEntries(true); // Force refresh
-          }, 3000);
         }
       }
       

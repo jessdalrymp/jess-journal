@@ -28,63 +28,16 @@ export const JournalHistoryContent = ({
 }: JournalHistoryContentProps) => {
   const [renderedEntries, setRenderedEntries] = useState<JournalEntry[]>([]);
   
-  // Any time entries prop changes, update rendering and log details
+  // Only update entries when they change, don't refresh while on page
   useEffect(() => {
-    // Log entries for debugging
-    console.log(`JournalHistory - Processing ${entries.length} entries for display`);
-    
     if (entries.length > 0) {
       // Sort entries by date (newest first) to ensure proper ordering
       const sortedEntries = [...entries].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
       
-      // Log the date range of entries for debugging date filtering issues
-      const newestDate = new Date(sortedEntries[0].createdAt);
-      const oldestDate = new Date(sortedEntries[sortedEntries.length - 1].createdAt);
-      
-      console.log('JournalHistory - Entries date range:', {
-        newest: newestDate.toISOString(),
-        oldest: oldestDate.toISOString(),
-        count: sortedEntries.length
-      });
-      
-      // Log the first 5 entries for debugging
-      console.log('JournalHistory - First 5 entries:', sortedEntries.slice(0, 5).map(e => ({
-        id: e.id,
-        title: e.title?.substring(0, 30) + '...',
-        type: e.type,
-        date: new Date(e.createdAt).toISOString(),
-        conversationId: e.conversation_id
-      })));
-      
-      // Log entries by type for debugging
-      console.log('JournalHistory - Types breakdown:', 
-        sortedEntries.reduce((acc, entry) => {
-          acc[entry.type] = (acc[entry.type] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>)
-      );
-      
-      // Log conversation entries
-      const conversationEntries = sortedEntries.filter(e => e.conversation_id);
-      console.log('JournalHistory - Conversation entries count:', conversationEntries.length);
-      
-      if (conversationEntries.length > 0) {
-        console.log('JournalHistory - Conversation entries details:', 
-          conversationEntries.map(e => ({
-            id: e.id,
-            type: e.type,
-            title: e.title,
-            date: new Date(e.createdAt).toISOString(),
-            conversationId: e.conversation_id
-          }))
-        );
-      }
-      
       setRenderedEntries(sortedEntries);
     } else {
-      console.log('JournalHistory - No entries to display');
       setRenderedEntries([]);
     }
   }, [entries]);

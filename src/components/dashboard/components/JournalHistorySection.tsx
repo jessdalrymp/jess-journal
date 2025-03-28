@@ -24,28 +24,7 @@ export const JournalHistorySection = () => {
       .slice(0, 5)
     : [];
   
-  // Debug logs to help identify issues
-  console.log('Journal History - entries count:', journalEntries?.length);
-  console.log('Journal History - entries with conversation_id:', 
-    journalEntries?.filter(e => e.conversation_id)?.length);
-  
-  // Log conversations specifically to debug
-  const conversationEntries = journalEntries?.filter(e => e.conversation_id) || [];
-  console.log('Journal History - conversation entries:', conversationEntries.length);
-  if (conversationEntries.length > 0) {
-    console.log('Journal History - conversation entries sample:', 
-      conversationEntries.slice(0, 2).map(e => ({
-        id: e.id,
-        title: e.title,
-        type: e.type,
-        conversationId: e.conversation_id
-      }))
-    );
-  }
-  
-  console.log('Journal History - recent entries sample:', recentEntries?.slice(0, 2));
-  
-  // Force refresh when the component mounts
+  // Refresh only on mount
   const refreshEntries = useCallback(async () => {
     try {
       console.log("JournalHistorySection - Refreshing entries");
@@ -59,19 +38,9 @@ export const JournalHistorySection = () => {
   useEffect(() => {
     console.log("JournalHistorySection - Component mounted, refreshing entries");
     refreshEntries();
-  }, [refreshEntries]);
+  }, []); // Only run once on mount
   
-  // Refresh again after a short delay (helps with race conditions)
-  useEffect(() => {
-    const timeSinceMounted = Date.now() - mountedTime;
-    if (timeSinceMounted < 5000) { // Only do this near initial load
-      const timer = setTimeout(() => {
-        console.log("JournalHistorySection - Delayed refresh");
-        refreshEntries();
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [mountedTime, refreshEntries]);
+  // No additional delayed refresh
   
   const handleRefresh = async () => {
     setIsRefreshing(true);

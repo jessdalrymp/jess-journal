@@ -14,7 +14,7 @@ export const useJournalEntryData = () => {
   const [retryCount, setRetryCount] = useState(0);
   const { toast } = useToast();
   
-  // Load entries when component mounts or retry count changes
+  // Load entries only when component mounts or when explicitly refreshed via retry count
   useEffect(() => {
     const loadEntries = async () => {
       setIsLoading(true);

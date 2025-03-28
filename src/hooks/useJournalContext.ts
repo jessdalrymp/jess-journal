@@ -16,11 +16,11 @@ export function useJournalContext(userId: string | null | undefined) {
   const { fetchJournalEntries: fetchEntries, loading: journalActionsLoading } = useJournalEntries();
   const { toast } = useToast();
   
-  // Force a refresh when userId changes or component mounts
+  // Only fetch on mount, not continuously
   useEffect(() => {
     if (userId) {
       console.log("useJournalContext - userId changed or component mounted, fetching entries");
-      fetchJournalEntries(true); // Force refresh on mount
+      fetchJournalEntries(true); // Force refresh on mount only
     }
   }, [userId]);
   
@@ -64,27 +64,6 @@ export function useJournalContext(userId: string | null | undefined) {
         const sortedEntries = [...entries].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-        
-        // Log date range for debugging
-        if (sortedEntries.length > 0) {
-          console.log('Sorted entries date range:', {
-            newest: new Date(sortedEntries[0].createdAt).toISOString(),
-            oldest: new Date(sortedEntries[sortedEntries.length - 1].createdAt).toISOString()
-          });
-        }
-        
-        // Log conversation-related entries for debugging
-        const conversationEntries = entries.filter(e => e.conversation_id);
-        if (conversationEntries.length > 0) {
-          console.log(`Found ${conversationEntries.length} entries with conversation_id`);
-          console.log('Conversation entries:', conversationEntries.map(e => ({
-            id: e.id,
-            title: e.title,
-            type: e.type,
-            createdAt: e.createdAt,
-            conversation_id: e.conversation_id
-          })));
-        }
         
         setJournalEntries(sortedEntries);
         setIsJournalFetched(true);
