@@ -18,8 +18,10 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
   const { user } = useAuth();
   const { toast } = useToast();
 
+  // Initialize editor state when entry is set or changes
   useEffect(() => {
     if (entry) {
+      console.log(`useJournalEntryEditor - Initializing with entry ${entry.id}, type: ${entry.type}`);
       const parsed = parseEntryContent(entry.content);
       setParsedContent(parsed);
       setEditableContent(formatContentForEditing(entry));
@@ -27,16 +29,20 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
     }
   }, [entry]);
 
+  // Reset editable content when editing mode changes
   useEffect(() => {
     if (isEditing && entry) {
+      console.log(`useJournalEntryEditor - Edit mode changed, resetting content for entry ${entry.id}`);
       setEditableContent(formatContentForEditing(entry));
       const parsed = parseEntryContent(entry.content);
       setEditableTitle(parsed?.title || entry.title);
     }
   }, [isEditing, entry]);
 
+  // Update local entry when initialEntry changes
   useEffect(() => {
     if (initialEntry) {
+      console.log(`useJournalEntryEditor - Initial entry updated: ${initialEntry.id}`);
       setEntry(initialEntry);
     }
   }, [initialEntry]);
@@ -67,6 +73,7 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
     }
     
     setIsSaving(true);
+    console.log(`useJournalEntryEditor - Saving entry ${entry.id}, type: ${entry.type}`);
     
     let contentToSave = editableContent;
     let prompt = entry.prompt || "Untitled Entry";
@@ -75,36 +82,45 @@ export const useJournalEntryEditor = (initialEntry: JournalEntry | null) => {
     try {
       const jsonMatch = contentToSave.match(/```json\s*([\s\S]*?)```/);
       if (jsonMatch && jsonMatch[1]) {
-        const parsedJson = JSON.parse(jsonMatch[1].trim());
-        parsedJson.title = editableTitle;
-        
-        // If there's a type in the JSON, use it
-        if (parsedJson.type) {
-          type = parsedJson.type;
+        try {
+          const parsedJson = JSON.parse(jsonMatch[1].trim());
+          parsedJson.title = editableTitle;
+          
+          // If there's a type in the JSON, use it
+          if (parsedJson.type) {
+            type = parsedJson.type;
+          }
+          
+          contentToSave = `\`\`\`json\n${JSON.stringify(parsedJson, null, 2)}\n\`\`\``;
+        } catch (e) {
+          console.error("Error updating title in JSON content", e);
         }
-        
-        contentToSave = `\`\`\`json\n${JSON.stringify(parsedJson, null, 2)}\n\`\`\``;
       }
-    } catch (e) {
-      console.error("Error updating title in JSON content", e);
-    }
-    
-    try {
+      
       const success = await updateJournalEntry(entry.id, contentToSave, user.id, prompt, type);
+      
       if (success) {
         setIsEditing(false);
         
         // Refresh journal entries to get the updated entry
-        fetchJournalEntries();
+        console.log('useJournalEntryEditor - Save successful, refreshing entries');
+        await fetchJournalEntries(true); // Force refresh
         
         // Update the local entry with the new content
         if (entry) {
-          setEntry({
+          const updatedEntry = {
             ...entry,
             content: contentToSave,
             prompt: prompt,
-            type: type
-          });
+            type: type,
+            title: editableTitle // Update the title in our local state
+          };
+          
+          setEntry(updatedEntry);
+          
+          // Update parsed content
+          const newParsedContent = parseEntryContent(contentToSave);
+          setParsedContent(newParsedContent);
         }
         
         setIsSaving(false);

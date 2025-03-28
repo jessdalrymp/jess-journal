@@ -22,6 +22,12 @@ export const JournalEntryEditor = ({
   const isMobile = useIsMobile();
 
   useEffect(() => {
+    // Only attempt to parse if we have content
+    if (!content || content.trim() === '') {
+      setCleanedContent('');
+      return;
+    }
+    
     const jsonCodeBlockRegex = /^```json\s*([\s\S]*?)```$/;
     const match = content.match(jsonCodeBlockRegex);
     
@@ -32,13 +38,18 @@ export const JournalEntryEditor = ({
         let formattedContent = '';
         if (parsedJson.summary) {
           formattedContent += parsedJson.summary;
+        } else if (parsedJson.content) {
+          formattedContent += parsedJson.content;
         }
         
         setCleanedContent(formattedContent);
       } catch (e) {
+        // If JSON parsing fails, use the content as is
+        console.error('Error parsing JSON in content:', e);
         setCleanedContent(match[1].trim());
       }
     } else {
+      // If not in JSON format, use the content directly
       setCleanedContent(content);
     }
   }, [content]);
@@ -52,13 +63,17 @@ export const JournalEntryEditor = ({
         summary: newValue.trim()
       };
       
+      // Don't include undefined values
       Object.keys(jsonObj).forEach(key => 
         jsonObj[key] === undefined && delete jsonObj[key]
       );
       
       const jsonString = JSON.stringify(jsonObj, null, 2);
       onChange(`\`\`\`json\n${jsonString}\n\`\`\``);
+      
+      console.log('Content updated to JSON format with title:', title);
     } catch (e) {
+      console.error('Error formatting content as JSON:', e);
       onChange(newValue);
     }
   };

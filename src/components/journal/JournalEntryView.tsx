@@ -37,15 +37,21 @@ export const JournalEntryView = ({
 }: JournalEntryViewProps) => {
   const isConversationSummary = !!entry.conversation_id;
   
+  // Log entries for debugging
+  useEffect(() => {
+    console.log('JournalEntryView - Current entry:', entry.id, 'title:', entry.title);
+    console.log('JournalEntryView - Editable content length:', editableContent.length);
+    console.log('JournalEntryView - Is editing:', isEditing);
+  }, [entry, editableContent, isEditing]);
+  
   const handleSave = async (): Promise<void> => {
     const trimmedContent = editableContent.trim();
     if (!trimmedContent) {
       return;
     }
     
-    const result = await handleSaveClick();
-    // Consume the boolean result but don't return it
-    return;
+    console.log('JournalEntryView - Saving entry with content length:', trimmedContent.length);
+    await handleSaveClick();
   };
 
   const handleSaveAndClose = async (): Promise<void> => {
@@ -54,9 +60,8 @@ export const JournalEntryView = ({
       return;
     }
     
-    const result = await handleSaveAndCloseClick?.();
-    // Consume the boolean result but don't return it
-    return;
+    console.log('JournalEntryView - Saving and closing entry with content length:', trimmedContent.length);
+    await handleSaveAndCloseClick?.();
   };
 
   // View for a regular journal entry

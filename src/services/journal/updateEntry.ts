@@ -6,13 +6,20 @@ import { encryptContent } from './encryption';
  * Updates an existing journal entry
  */
 export const updateJournalEntry = async (entryId: string, content: string, userId: string, prompt?: string, type?: string): Promise<boolean> => {
-  if (!userId) return false;
+  if (!userId || !entryId) return false;
   
   try {
-    // Encrypt the content before updating
-    const encryptedContent = encryptContent(content, userId);
+    // Don't allow empty content
+    const trimmedContent = content.trim();
+    if (!trimmedContent) {
+      console.error('Cannot save empty content');
+      return false;
+    }
     
-    // Build the update object, always including content
+    // Encrypt the content before updating
+    const encryptedContent = encryptContent(trimmedContent, userId);
+    
+    // Build the update object with required fields
     const updateData: { content: string; prompt?: string; type?: string } = {
       content: encryptedContent
     };
@@ -21,16 +28,20 @@ export const updateJournalEntry = async (entryId: string, content: string, userI
     if (prompt) updateData.prompt = prompt;
     if (type) updateData.type = type;
     
-    const { error } = await supabase
+    console.log(`Updating entry ${entryId} with type: ${type}, prompt length: ${prompt?.length || 0}`);
+    
+    const { error, data } = await supabase
       .from('journal_entries')
       .update(updateData)
-      .eq('id', entryId);
+      .eq('id', entryId)
+      .select();
 
     if (error) {
       console.error('Error updating journal entry:', error);
       return false;
     }
 
+    console.log(`Successfully updated entry ${entryId}`);
     return true;
   } catch (error) {
     console.error('Error updating journal entry:', error);
