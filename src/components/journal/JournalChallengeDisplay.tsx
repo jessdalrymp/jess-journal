@@ -18,6 +18,25 @@ interface JournalChallengeDisplayProps {
   isLoading: boolean;
 }
 
+// Function to format text with proper styling instead of markdown
+const formatText = (text: string): JSX.Element[] => {
+  if (!text) return [<span key="empty"></span>];
+  
+  // Replace markdown bold with styled spans
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  
+  return parts.map((part, index) => {
+    // Check if this part is a bold markdown section
+    if (part.startsWith('**') && part.endsWith('**')) {
+      // Extract the text between the asterisks
+      const boldText = part.slice(2, -2);
+      return <span key={index} className="font-bold">{boldText}</span>;
+    }
+    // Regular text
+    return <span key={index}>{part}</span>;
+  });
+};
+
 // Use memo to prevent unnecessary re-renders
 export const JournalChallengeDisplay = memo(({
   journalPrompt,
@@ -80,12 +99,16 @@ export const JournalChallengeDisplay = memo(({
             
             <h1 className="text-xl font-bold mb-2">{journalPrompt.title}</h1>
             <div className="mb-2 bg-jess-subtle p-3 rounded-lg">
-              <p className="text-sm leading-tight">{journalPrompt.prompt}</p>
+              <p className="text-sm leading-tight">
+                {formatText(journalPrompt.prompt)}
+              </p>
             </div>
             <h3 className="text-base font-medium mb-1.5">Instructions:</h3>
             <ol className="list-decimal pl-5 space-y-1">
               {journalPrompt.instructions.map((instruction, index) => (
-                <li key={index} className="text-sm leading-tight">{instruction}</li>
+                <li key={index} className="text-sm leading-tight">
+                  {formatText(instruction)}
+                </li>
               ))}
             </ol>
             
